@@ -1,0 +1,259 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{F5BA02AA-0F77-4F98-BC99-7DA166FC7DDE}</ProjectGuid>
+    <ProjectTypeGuids>{A1591282-1198-4647-A2B1-27E5FF5F6F3B};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Bio.Framework.Client.SL</RootNamespace>
+    <AssemblyName>Bio.Framework.Client.SL.Controls</AssemblyName>
+    <TargetFrameworkIdentifier>Silverlight</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+    <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
+    <SilverlightApplication>false</SilverlightApplication>
+    <ValidateXaml>true</ValidateXaml>
+    <ThrowErrorsInValidation>true</ThrowErrorsInValidation>
+    <Utf8Output>true</Utf8Output>
+    <ExpressionBlendVersion>4.0.20525.0</ExpressionBlendVersion>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <!-- This property group is only here to support building this project using the 
+       MSBuild 3.5 toolset. In order to work correctly with this older toolset, it needs 
+       to set the TargetFrameworkVersion to v3.5 -->
+  <PropertyGroup Condition="'$(MSBuildToolsVersion)' == '3.5'">
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>Bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;TRACE;SILVERLIGHT</DefineConstants>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>Bin\Release</OutputPath>
+    <DefineConstants>TRACE;SILVERLIGHT</DefineConstants>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="System.ComponentModel.DataAnnotations, Version=5.0.5.0, Culture=neutral, PublicKeyToken=ddd0da4d3e678217, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\Microsoft SDKs\Silverlight\v5.0\Libraries\Client\System.ComponentModel.DataAnnotations.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows" />
+    <Reference Include="system" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Controls, Version=5.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\Microsoft SDKs\Silverlight\v5.0\Libraries\Client\System.Windows.Controls.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows.Controls.Data, Version=5.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\Microsoft SDKs\Silverlight\v5.0\Libraries\Client\System.Windows.Controls.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows.Controls.Data.Input, Version=5.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\Microsoft SDKs\Silverlight\v5.0\Libraries\Client\System.Windows.Controls.Data.Input.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows.Controls.Input.Toolkit, Version=4.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Windows.Controls.Toolkit, Version=4.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Windows.Data, Version=5.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\Microsoft SDKs\Silverlight\v5.0\Libraries\Client\System.Windows.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Windows.Browser" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CJSGridPropsCols.xaml.cs">
+      <DependentUpon>CJSGridPropsCols.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="CDataGrid.cs" />
+    <Compile Include="CExpClient.cs" />
+    <Compile Include="CJSClient\CEditorBase.cs" />
+    <Compile Include="CJSPropertyGrid\ComboBoxRmtEditor.cs" />
+    <Compile Include="CJSPropertyGrid\ComboBoxRmtEditorAttribute.cs" />
+    <Compile Include="CJSPropertyGrid\CJSPropertyGrid.cs" />
+    <Compile Include="CJSPropertyGrid\ASelectorValueControl.cs" />
+    <Compile Include="CJSPropertyGrid\SelectValueEditor1.cs" />
+    <Compile Include="CJSPropertyGrid\SelectValueEditorAttribute.cs" />
+    <Compile Include="CJSTreeSource.cs" />
+    <Compile Include="CLongOpClient.cs" />
+    <Compile Include="CDSFetchClient.cs" />
+    <Compile Include="CJSComboBox.cs" />
+    <Compile Include="CJSListBox.cs" />
+    <Compile Include="CFilterControl.cs" />
+    <Compile Include="CJSGridProps.xaml.cs">
+      <DependentUpon>CJSGridProps.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="CJSGridPropsNav.xaml.cs">
+      <DependentUpon>CJSGridPropsNav.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="CVSelectorControl.cs" />
+    <Compile Include="CWebDBClient.cs" />
+    <Compile Include="CRptClient.cs" />
+    <Compile Include="CRmtClient\CRmtClientBase.cs" />
+    <Compile Include="CRmtClient\CRmtClientView.xaml.cs">
+      <DependentUpon>CRmtClientView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="CRmtClient\CRmtStateReader.cs" />
+    <Compile Include="CSQLRClient.cs" />
+    <Compile Include="CJSClient\CustomSortDescriptionCollection.cs" />
+    <Compile Include="CJSClient\RefreshEventArgs.cs" />
+    <Compile Include="CJSClient\SortableCollectionView.cs" />
+    <Compile Include="CJSGrid.cs" />
+    <Compile Include="CJSClient\CJsonStoreClient.cs" />
+    <Compile Include="CJSTree.cs" />
+    <Compile Include="CTreeSource.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="CTreeView.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="CJSGridPropsCols.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="CJSGridProps.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="CJSGridPropsNav.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="CRmtClient\CRmtClientView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Properties\DesignTimeResources.xaml" Condition="'$(DesignTime)'=='true' OR ('$(SolutionPath)'!='' AND Exists('$(SolutionPath)') AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true')">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+      <ContainsDesignTimeResources>true</ContainsDesignTimeResources>
+    </Page>
+    <Page Include="Themes\CJSGridTemplate.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\CJSTreeTemplate.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\CFilterTemplate.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\CVSelectorTemplate.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\Generic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\home_24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Bio.Helpers\Bio.Ajax.SL\Bio.Helpers.Ajax.SL.csproj">
+      <Project>{D00E34F8-382A-4BCB-9182-2F2FF8CC84D8}</Project>
+      <Name>Bio.Helpers.Ajax.SL</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Bio.Helpers\Bio.Common\Bio.Helpers.Common.SL.csproj">
+      <Project>{DA66598D-E5EC-4623-B0A1-7CB85F30F0C3}</Project>
+      <Name>Bio.Helpers.Common.SL</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Bio.Helpers\Bio.Controls.SL\Bio.Helpers.Controls.SL.csproj">
+      <Project>{21DF37CF-E82F-444C-9F5C-9CC98F5261A6}</Project>
+      <Name>Bio.Helpers.Controls.SL</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Bio.Helpers\Newtonsoft.Json\Newtonsoft.Json.SL.csproj">
+      <Project>{E933B667-2DF3-4392-8003-EDCCE95200DB}</Project>
+      <Name>Newtonsoft.Json.SL</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Packets\Bio.Framework.Packets.SL.csproj">
+      <Project>{DC3C6F3D-2CA1-4278-9B79-63770FB3EA2D}</Project>
+      <Name>Bio.Framework.Packets.SL</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Interface\Bio.Framework.Client.SL.Interface.csproj">
+      <Project>{D4411A4B-64D6-4F55-B463-5D680FED443A}</Project>
+      <Name>Bio.Framework.Client.SL.Interface</Name>
+      <Private>False</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\1leftarrow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\2rightarrow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\1rightarrow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\2leftarrow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\table_refresh_32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\agt_reload.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\dss_down_32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\attribute_ok_32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\up.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\down.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{A1591282-1198-4647-A2B1-27E5FF5F6F3B}">
+        <SilverlightProjectProperties />
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

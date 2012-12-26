@@ -1,0 +1,23 @@
+﻿<hctrls:FloatableWindow x:Class="Bio.Helpers.Controls.SL.msgBx"
+           xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+           xmlns:controls="clr-namespace:System.Windows.Controls;assembly=System.Windows.Controls"
+           xmlns:hctrls="clr-namespace:Bio.Helpers.Controls.SL;assembly=Bio.Helpers.Controls.SL" 
+           Width="737" Height="329" 
+           Title="msgBx" xmlns:sdk="http://schemas.microsoft.com/winfx/2006/xaml/presentation/sdk">
+  <Grid x:Name="LayoutRoot" Margin="0,0,7,7">
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+    <Button x:Name="OKButton" Content="OK" Click="OKButton_Click" Width="75" Height="23" HorizontalAlignment="Right" Margin="0,12,12,0" Grid.Row="1" />
+    <Grid Name="grid1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition />
+      </Grid.RowDefinitions>
+      <sdk:Label Grid.Row="0" Height="20" HorizontalAlignment="Left" Name="laCaption" VerticalAlignment="Center" Content="Сообщение:" Margin="4,0"/>
+      <TextBox Grid.Row="1" HorizontalAlignment="Stretch" x:Name="txtMsg" Text="Message text" VerticalAlignment="Stretch" Margin="4,0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" IsReadOnly="True" />
+    </Grid>
+  </Grid>
+</hctrls:FloatableWindow>

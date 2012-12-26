@@ -1,0 +1,27 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:Bio.Framework.Client.SL"
+    xmlns:vsm="clr-namespace:System.Windows;assembly=System.Windows" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:sdk="http://schemas.microsoft.com/winfx/2006/xaml/presentation/sdk"
+    mc:Ignorable="d">
+
+  <ControlTemplate x:Key="CFilterControlTemplate" TargetType="local:CFilterControl">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="70"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+      <sdk:Label Grid.Column="0" Content="Фильтр:" HorizontalContentAlignment="Right" Margin="4"/>
+      <TextBox Grid.Column="1" x:Name="tbxText" Text="" Margin="2" VerticalContentAlignment="Center" HorizontalContentAlignment="Left">
+        <ToolTipService.ToolTip>
+          <ToolTip>
+            <TextBlock x:Name="fltrHint" TextAlignment="Left" TextWrapping="Wrap"/>
+          </ToolTip>
+        </ToolTipService.ToolTip>
+      </TextBox>
+    </Grid>
+  </ControlTemplate>
+</ResourceDictionary>

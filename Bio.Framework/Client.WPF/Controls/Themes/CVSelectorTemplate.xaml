@@ -1,0 +1,19 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:Bio.Framework.Client.SL"
+    xmlns:vsm="clr-namespace:System.Windows;assembly=System.Windows" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d">
+
+  <ControlTemplate x:Key="CVSelectorControlTemplate" TargetType="local:CVSelectorControl">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="40"/>
+      </Grid.ColumnDefinitions>
+      <TextBox Grid.Column="0" x:Name="tbxText" IsReadOnly="True" Text="" VerticalContentAlignment="Center" HorizontalContentAlignment="Left"/>
+      <Button Grid.Column="1" x:Name="btnSelect" Content="..." Cursor="Hand"/>
+    </Grid>
+  </ControlTemplate>
+</ResourceDictionary>

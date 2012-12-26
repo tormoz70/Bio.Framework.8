@@ -1,0 +1,12 @@
+#tfs
+*.vssscc
+*.vspscc
+
+#vs
+*.suo
+*.user
+
+#tmplocal
+BuildProcessTemplates/
+obj/
+Debug/

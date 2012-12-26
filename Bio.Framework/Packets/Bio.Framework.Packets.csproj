@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{8777B6C1-3185-428C-9549-13FB86259786}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Bio.Framework.Packets</RootNamespace>
+    <AssemblyName>Bio.Framework.Packets</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BioRequestType.cs" />
+    <Compile Include="CBioLoginRequest.cs" />
+    <Compile Include="CBioRequest.cs" />
+    <Compile Include="CBioRequestTyped.cs" />
+    <Compile Include="CBioSQLRequest.cs" />
+    <Compile Include="CJsonStore\CDSFetchClientRequest.cs" />
+    <Compile Include="CJsonStore\CJsonStoreAttrs.cs" />
+    <Compile Include="CJsonStore\CJsonStoreData.cs" />
+    <Compile Include="CJsonStore\CJsonStoreFilter.cs" />
+    <Compile Include="CJsonStore\CJsonStoreMetadata.cs" />
+    <Compile Include="CJsonStore\CJsonStoreRequest.cs" />
+    <Compile Include="CJsonStore\CJsonStoreRequestGet.cs" />
+    <Compile Include="CJsonStore\CJsonStoreRequestPost.cs" />
+    <Compile Include="CJsonStore\CJsonStoreResponse.cs" />
+    <Compile Include="CJsonStore\CJsonStoreRows.cs" />
+    <Compile Include="CGlobalCfgPack.cs" />
+    <Compile Include="CLongOpClientRequest.cs" />
+    <Compile Include="CLongOpStatePack.cs" />
+    <Compile Include="CRemoteProcessStatePack.cs" />
+    <Compile Include="CBioResponse.cs" />
+    <Compile Include="CQueryParams.cs" />
+    <Compile Include="CRmtClientRequest.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Bio.Helpers\Bio.Common\Bio.Helpers.Common.csproj">
+      <Project>{177BFF45-E55C-4BC3-BCA9-7E0A5725969C}</Project>
+      <Name>Bio.Helpers.Common</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Bio.Helpers\Newtonsoft.Json\Newtonsoft.Json.csproj">
+      <Project>{A9AE40FF-1A21-414A-9FE7-3BE13644CC6D}</Project>
+      <Name>Newtonsoft.Json</Name>
+      <Private>False</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,147 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{B5999504-0CD1-4466-B4C1-B2F05EF644D4}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>deploy2ekb8</RootNamespace>
+    <AssemblyName>deploy2ekb8</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\givc\ekb-2\Ekb.Client.SL\ekb\bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Bio.Framework\Packets\Bio.Framework.Packets.csproj">
+      <Project>{8777B6C1-3185-428C-9549-13FB86259786}</Project>
+      <Name>Bio.Framework.Packets</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bio.Framework\Server\hndlrs\DS2XL\Bio.Framework.Server.Handler.DS2XL.csproj">
+      <Project>{9C587EF8-62F0-40B8-888F-526C18EDA04E}</Project>
+      <Name>Bio.Framework.Server.Handler.DS2XL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bio.Framework\Server\hndlrs\DSFetch\Bio.Framework.Server.Handler.DSFetch.csproj">
+      <Project>{48E9DD2F-F45D-47F8-8E61-602117BC05FB}</Project>
+      <Name>Bio.Framework.Server.Handler.DSFetch</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bio.Framework\Server\hndlrs\DStore\Bio.Framework.Server.Handler.DStore.csproj">
+      <Project>{62F35705-9CB5-46C2-97CE-69084EA8C1B0}</Project>
+      <Name>Bio.Framework.Server.Handler.DStore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bio.Framework\Server\hndlrs\FileSrv\Bio.Framework.Server.Handler.FileSrv.csproj">
+      <Project>{9C8BD43E-864F-4334-BDF3-75E793C21D59}</Project>
+      <Name>Bio.Framework.Server.Handler.FileSrv</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bio.Framework\Server\hndlrs\LongOp\Bio.Framework.Server.Handler.LongOp.csproj">
+      <Project>{744B8CA4-F3D2-47CF-BDFB-999D350FF16B}</Project>
+      <Name>Bio.Framework.Server.Handler.LongOp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bio.Framework\Server\hndlrs\Pipe\Bio.Framework.Server.Handler.Pipe.csproj">
+      <Project>{17E84FAA-9D11-4DF6-A896-91F31C02DD4E}</Project>
+      <Name>Bio.Framework.Server.Handler.Pipe</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bio.Framework\Server\hndlrs\Rpt\Bio.Framework.Server.Handler.Rpt.csproj">
+      <Project>{E7AA1240-8C4C-4AFF-BA6F-7AC536945FB0}</Project>
+      <Name>Bio.Framework.Server.Handler.Rpt</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bio.Framework\Server\hndlrs\SQLR\Bio.Framework.Server.Handler.SQLR.csproj">
+      <Project>{22B82460-9D41-420F-A1F2-FC544205AFCE}</Project>
+      <Name>Bio.Framework.Server.Handler.SQLR</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bio.Framework\Server\hndlrs\Template\Bio.Framework.Server.Handler.Template.csproj">
+      <Project>{9853805B-3012-46D8-A75D-61DB8A1856C7}</Project>
+      <Name>Bio.Framework.Server.Handler.Template</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bio.Framework\Server\hndlrs\Tree\Bio.Framework.Server.Handler.Tree.csproj">
+      <Project>{830A0136-3718-411F-A569-5F6A9F47E2B7}</Project>
+      <Name>Bio.Framework.Server.Handler.Tree</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bio.Framework\Server\hndlrs\WebDB\Bio.Framework.Server.Handler.WebDB.csproj">
+      <Project>{A8F6D3FC-7A93-496A-BD06-A1B9789E83F9}</Project>
+      <Name>Bio.Framework.Server.Handler.WebDB</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bio.Framework\Server\HttpHndlr\Bio.Framework.Server.HttpHndlr.csproj">
+      <Project>{9353D3DA-5D34-44D8-8994-FE82E64E0517}</Project>
+      <Name>Bio.Framework.Server.HttpHndlr</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bio.Framework\Server\JStore\Bio.Framework.Server.JStore.csproj">
+      <Project>{3C9DF0E8-DE0C-44D5-B453-B936CEC306EB}</Project>
+      <Name>Bio.Framework.Server.JStore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bio.Framework\Server\LongOp\Bio.Framework.Server.LongOp.csproj">
+      <Project>{9696C3BB-995A-4F7B-8C23-FB40CECCD08A}</Project>
+      <Name>Bio.Framework.Server.LongOp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bio.Framework\Server\Types\Bio.Framework.Server.Types.csproj">
+      <Project>{430F3A39-DF87-4C63-8682-C399F9222634}</Project>
+      <Name>Bio.Framework.Server.Types</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bio.Helpers\Bio.Common\Bio.Helpers.Common.csproj">
+      <Project>{177BFF45-E55C-4BC3-BCA9-7E0A5725969C}</Project>
+      <Name>Bio.Helpers.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bio.Helpers\Bio.DOA\Bio.Helpers.DOA.csproj">
+      <Project>{DF3836D7-B3A7-4C1D-B376-96FE6848F7AD}</Project>
+      <Name>Bio.Helpers.DOA</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bio.Helpers\Bio.XLFRpt2\Bio.XLFRpt2.DefaultDataFactory\Bio.Helpers.XLFRpt2.DefaultDataFactory.csproj">
+      <Project>{C0106AF9-99F8-456B-8694-CE37A42D72A9}</Project>
+      <Name>Bio.Helpers.XLFRpt2.DefaultDataFactory</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bio.Helpers\Bio.XLFRpt2\Bio.XLFRpt2.Engine\Bio.Helpers.XLFRpt2.Engine.csproj">
+      <Project>{08D297CB-A0B5-4CE9-BE47-BD03C7FF8F20}</Project>
+      <Name>Bio.Helpers.XLFRpt2.Engine</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bio.Helpers\Bio.XLFRpt2\Bio.XLFRpt2.MSSQLDataFactory\Bio.Helpers.XLFRpt2.MSSQLDataFactory.csproj">
+      <Project>{6686F065-6708-40CC-A6A9-E682604F82E6}</Project>
+      <Name>Bio.Helpers.XLFRpt2.MSSQLDataFactory</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bio.Helpers\Newtonsoft.Json\Newtonsoft.Json.csproj">
+      <Project>{A9AE40FF-1A21-414A-9FE7-3BE13644CC6D}</Project>
+      <Name>Newtonsoft.Json</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

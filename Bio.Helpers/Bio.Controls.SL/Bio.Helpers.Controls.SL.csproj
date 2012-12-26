@@ -1,0 +1,226 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(MSBuildToolsVersion)' == '3.5'">
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{21DF37CF-E82F-444C-9F5C-9CC98F5261A6}</ProjectGuid>
+    <ProjectTypeGuids>{A1591282-1198-4647-A2B1-27E5FF5F6F3B};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Bio.Helpers.Controls.SL</RootNamespace>
+    <AssemblyName>Bio.Helpers.Controls.SL</AssemblyName>
+    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+    <SilverlightApplication>false</SilverlightApplication>
+    <ValidateXaml>true</ValidateXaml>
+    <ThrowErrorsInValidation>false</ThrowErrorsInValidation>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <TargetFrameworkIdentifier>Silverlight</TargetFrameworkIdentifier>
+    <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>Bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;SILVERLIGHT</DefineConstants>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>Bin\Debug\Bio.Helpers.Controls.SL.xml</DocumentationFile>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>Bin\Release\Silverlight\</OutputPath>
+    <DefineConstants>TRACE;SILVERLIGHT</DefineConstants>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>Bin\Release\Silverlight\Bio.Helpers.Controls.SL.xml</DocumentationFile>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Windows" />
+    <Reference Include="mscorlib" />
+    <Reference Include="system" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Controls, Version=5.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\Microsoft SDKs\Silverlight\v5.0\Libraries\Client\System.Windows.Controls.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows.Controls.Data, Version=5.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\Microsoft SDKs\Silverlight\v5.0\Libraries\Client\System.Windows.Controls.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows.Controls.Data.Input, Version=5.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\Microsoft SDKs\Silverlight\v5.0\Libraries\Client\System.Windows.Controls.Data.Input.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows.Controls.Toolkit, Version=4.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Windows.Browser" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="FloatableWindow\FloatableWindow.cs" />
+    <Compile Include="ImgButton\CImgButton.cs" />
+    <Compile Include="msgBx.SL.xaml.cs">
+      <DependentUpon>msgBx.SL.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="PopupMenu\PopupMenu.cs" />
+    <Compile Include="PopupMenu\PopupMenuItem.cs" />
+    <Compile Include="PopupMenu\PopupMenuManager.cs" />
+    <Compile Include="PopupMenu\PopupMenuQueryPartial.cs" />
+    <Compile Include="PopupMenu\PopupMenuSeparator.cs" />
+    <Compile Include="PopupMenu\PopupMenuUtils.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SLPGrid\BooleanValueEditor.cs" />
+    <Compile Include="SLPGrid\BusinessObject.cs" />
+    <Compile Include="SLPGrid\ComboBoxEditorBase.cs" />
+    <Compile Include="SLPGrid\Converters\BaseNumberConverter.cs" />
+    <Compile Include="SLPGrid\Converters\BooleanConverter.cs" />
+    <Compile Include="SLPGrid\Converters\ByteConverter.cs" />
+    <Compile Include="SLPGrid\Converters\CharConverter.cs" />
+    <Compile Include="SLPGrid\Converters\DecimalConverter.cs" />
+    <Compile Include="SLPGrid\Converters\DoubleConverter.cs" />
+    <Compile Include="SLPGrid\Converters\EnumTypeConverter.cs" />
+    <Compile Include="SLPGrid\Converters\EnumValueConverter.cs" />
+    <Compile Include="SLPGrid\Converters\GuidConverter.cs" />
+    <Compile Include="SLPGrid\Converters\Int16Converter.cs" />
+    <Compile Include="SLPGrid\Converters\Int32Converter.cs" />
+    <Compile Include="SLPGrid\Converters\Int64Converter.cs" />
+    <Compile Include="SLPGrid\Converters\SByteConverter.cs" />
+    <Compile Include="SLPGrid\Converters\SingleConverter.cs" />
+    <Compile Include="SLPGrid\Converters\StringConverter.cs" />
+    <Compile Include="SLPGrid\Converters\TimeSpanConverter.cs" />
+    <Compile Include="SLPGrid\Converters\TypeConverterHelper.cs" />
+    <Compile Include="SLPGrid\Converters\UInt16Converter.cs" />
+    <Compile Include="SLPGrid\Converters\UInt32Converter.cs" />
+    <Compile Include="SLPGrid\Converters\UInt64Converter.cs" />
+    <Compile Include="SLPGrid\TextBlockEditor.cs" />
+    <Compile Include="SLPGrid\DateTimeValueEditor.cs" />
+    <Compile Include="SLPGrid\DateValueEditor.cs" />
+    <Compile Include="SLPGrid\EditorAttribute.cs" />
+    <Compile Include="SLPGrid\EnumValueEditor.cs" />
+    <Compile Include="SLPGrid\ExceptionEventArgs.cs" />
+    <Compile Include="SLPGrid\IPropertyEditor.cs" />
+    <Compile Include="SLPGrid\PropertyGrid.cs" />
+    <Compile Include="SLPGrid\PropertyGridLabel.cs" />
+    <Compile Include="SLPGrid\PropertyItem.cs" />
+    <Compile Include="SLPGrid\StringValueEditor.cs" />
+    <Compile Include="SLPGrid\PropertyEditor.cs" />
+    <Compile Include="TextEditField\CTextEditField.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="FloatableWindow\Template.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="ImgButton\Template.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="msgBx.SL.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="PopupMenu\Template.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="SLPGrid\Template.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="TextEditField\Template.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\Generic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\home_24.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="SLPGrid\Assets\minus.png" />
+    <Resource Include="SLPGrid\Assets\plus.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Bio.Common\Bio.Helpers.Common.SL.csproj">
+      <Project>{DA66598D-E5EC-4623-B0A1-7CB85F30F0C3}</Project>
+      <Name>Bio.Helpers.Common.SL</Name>
+      <Private>False</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{A1591282-1198-4647-A2B1-27E5FF5F6F3B}">
+        <SilverlightProjectProperties />
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

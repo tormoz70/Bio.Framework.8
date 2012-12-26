@@ -1,0 +1,1 @@
+del /s *.vspscc vssver2.scc mssccprj.scc *.vssscc
