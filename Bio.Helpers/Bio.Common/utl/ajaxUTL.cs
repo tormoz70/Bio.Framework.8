@@ -70,42 +70,42 @@
     /// <summary>
     /// Выполняет синхронный запрос к серверу
     /// </summary>
-    /// <param name="pURL">URL</param>
-    /// <param name="pProxy"></param>
-    /// <param name="pParams">Дополнительные параметры запроса</param>
-    /// <param name="pUserAgentName">Название клиента</param>
-    /// <param name="vResponseText">Ответ сервера</param>
-    /// <param name="vRequestException">Ошибка, которая произошла при запросе</param>
+    /// <param name="url">URL</param>
+    /// <param name="proxy"></param>
+    /// <param name="prms">Дополнительные параметры запроса</param>
+    /// <param name="userAgentName">Название клиента</param>
+    /// <param name="responseText">Ответ сервера</param>
+    /// <param name="requestException">Ошибка, которая произошла при запросе</param>
     /// <param name="pOnLogLine">Метод пишущий лог</param>
-    public static void getDataFromSrv(String pURL, WebProxy pProxy, CParams pParams, String pUserAgentName,
-                                      ref String vResponseText, ref EBioException vRequestException,
+    public static void getDataFromSrv(String url, WebProxy proxy, CParams prms, String userAgentName,
+                                      ref String responseText, ref EBioException requestException,
                                       DOnLogLine pOnLogLine, int timeOut) {
       syncObj4WebRequest.WaitOne();
       try {
-        vResponseText = null;
+        responseText = null;
         Uri vUri = null;
         try {
-          vUri = new Uri(pURL);
+          vUri = new Uri(url);
         } catch (Exception ex) {
-          vRequestException = new EBioException("Строка URL [" + pURL + "] имеет некорректный формат. Сообщение: " + ex.Message, ex);
-          vResponseText = ex.ToString();
+          requestException = new EBioException("Строка URL [" + url + "] имеет некорректный формат. Сообщение: " + ex.Message, ex);
+          responseText = ex.ToString();
           return;
         }
 
         FCli = (HttpWebRequest)WebRequest.Create(vUri);
         FCli.Timeout = (timeOut <= 0) ? RequestTimeout : timeOut;
-        if (pProxy != null)
-          FCli.Proxy = pProxy;
+        if (proxy != null)
+          FCli.Proxy = proxy;
         FCli.CookieContainer = new CookieContainer();
         if (sessionID != null) {
           FCli.CookieContainer.Add(sessionID);
         }
         addLogLine("<request>: Host: " + vUri.Host, pOnLogLine);
-        addLogLine("<request>: URL: " + pURL, pOnLogLine);
+        addLogLine("<request>: URL: " + url, pOnLogLine);
         FCli.Method = "POST";
-        FCli.UserAgent = pUserAgentName;
+        FCli.UserAgent = userAgentName;
         addLogLine("<request>: Method: " + FCli.Method, pOnLogLine);
-        CParams vParams = (pParams == null) ? new CParams() : pParams;
+        CParams vParams = (prms == null) ? new CParams() : prms;
         vParams.Add("ajaxrqtimeout", ""+FCli.Timeout);
         String vParamsToPost = vParams.bldUrlParams();
 
@@ -125,19 +125,19 @@
               postStream.Close();
           }
         } catch (Exception ex) {
-          vRequestException = new EBioException("Ошибка при обрщении к серверу. Сообщение: " + ex.Message, ex);
-          vResponseText = ex.ToString();
+          requestException = new EBioException("Ошибка при обрщении к серверу. Сообщение: " + ex.Message, ex);
+          responseText = ex.ToString();
         }
         //}
         DateTime vStartTimeRequest = DateTime.Now;
         HttpWebResponse vRsp = null;
-        if (vRequestException == null) {
+        if (requestException == null) {
           try {
             vRsp = (HttpWebResponse)FCli.GetResponse();
           } catch (Exception ex) {
-            vRequestException = new EBioException("Ошибка при получении ответа с сервера. Сообщение: " + ex.Message + "\n"
+            requestException = new EBioException("Ошибка при получении ответа с сервера. Сообщение: " + ex.Message + "\n"
               + "Параметры: " + vUri.AbsoluteUri + "?" + vParamsToPost, ex);
-            vResponseText = ex.ToString();
+            responseText = ex.ToString();
           }
         }
         if((vRsp != null) && FCli.HaveResponse) {
@@ -159,18 +159,18 @@
           Stream data = vRsp.GetResponseStream();
           StreamReader reader = new StreamReader(data, Encoding.UTF8);
           try {
-            vResponseText = reader.ReadToEnd();
-            addLogLine("<recived>: " + vResponseText, pOnLogLine);
+            responseText = reader.ReadToEnd();
+            addLogLine("<recived>: " + responseText, pOnLogLine);
           } catch (Exception ex) {
-            vRequestException = new EBioException("Ошибка при получении ответа с сервера. Сообщение: " + ex.Message + "\n"
+            requestException = new EBioException("Ошибка при получении ответа с сервера. Сообщение: " + ex.Message + "\n"
               + "Параметры: " + vUri.AbsoluteUri + "?" + vParamsToPost, ex);
-            vResponseText = ex.ToString();
+            responseText = ex.ToString();
           } finally {
             data.Close();
             reader.Close();
           }
-          if (String.IsNullOrEmpty(vResponseText))
-            vRequestException = new EBioException("Сервер вернул пустой ответ!");
+          if (String.IsNullOrEmpty(responseText))
+            requestException = new EBioException("Сервер вернул пустой ответ!");
         }
       } finally {
         FCli = null;
