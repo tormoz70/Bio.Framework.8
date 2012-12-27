@@ -16,8 +16,7 @@
   /// </summary>
   /// <param name="pLine"></param>
   public delegate void DOnLogLine(String pLine);
-  //public delegate void GetDataFromSrvDelegate(CAjaxRequest request, CAjaxResponse response, Object userToken);
-
+  
   /// <summary>
   /// Аналог Ajax - клиента в JavaScript
   /// </summary>
@@ -162,10 +161,6 @@
           try {
             vResponseText = reader.ReadToEnd();
             addLogLine("<recived>: " + vResponseText, pOnLogLine);
-            //} catch (WebException ex) {
-            //  vEx = new EBioException("Ошибка при получении ответа с сервера. Сообщение: " + ex.Message + "\n"
-            //    + "Параметры: " + vUri.AbsoluteUri + "?" + vParamsToPost, ex);
-            //  responseText = ex.ToString();
           } catch (Exception ex) {
             vRequestException = new EBioException("Ошибка при получении ответа с сервера. Сообщение: " + ex.Message + "\n"
               + "Параметры: " + vUri.AbsoluteUri + "?" + vParamsToPost, ex);
@@ -200,10 +195,6 @@
       if (request.callback != null)
         request.callback(null, new AjaxResponseEventArgs { request = request, response = vResponse });
     }
-    //private static GetDataFromSrvDelegate _callback = null;
-    //private static CAjaxRequest _request = null;
-    //private static JsonConverter[] _converters = null;
-    //private static WebClient _client = null;
     /// <summary>
     /// Выполняет синхронный запрос к серверу
     /// </summary>
@@ -302,9 +293,6 @@
     /// </summary>
     /// <param name="pServerUrl">URL сервера до уровня приложения</param>
     /// <returns></returns>
-    //public static String bldURL(String pServerUrl) {
-    //  return Utl.bldURL(pServerUrl, null);
-    //}
 
     public static CAjaxResponse CreResponseObject(EBioException requestException, String responseText, JsonConverter[] converters) {
       CAjaxResponse vResponse = null;
