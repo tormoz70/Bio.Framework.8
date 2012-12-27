@@ -23,7 +23,6 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
     Restart = 2
   };
 
-  //public delegate void XLRQueueOnRemoveEventHandler(Object pOpener, IXLReportInst pReport);
   public class CXLRptItem {
     public String uid { get; set; }
     public String code { get; set; }
@@ -84,7 +83,6 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
     protected abstract XmlDocument doOnGetQueue(String userUID, String remoteIP);
     protected abstract String doOnGetUsrRoles(String userUID);
     protected abstract String doOnCheckUsrLogin(String usr, String pwd);
-    //protected abstract XmlDocument doOnGetRptTreeNode(String userUID, String remoteIP, String startPath);
     protected abstract void doOnAddQueueState(String rptUID, RemoteProcState newState, String newStateDesc, String userUID, String remoteIP);
     protected abstract void doOnDropReportInst(String rptUID, String userUID, String remoteIP);
     protected abstract Queue<CXLRptItem> doOnGetReportsReady();
@@ -143,7 +141,6 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
 
     private Boolean _stopRequsted = false;
     public void Stop() {
-      //this._thread.stop();
       this._stopRequsted = true;
     }
 
@@ -193,7 +190,6 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
             this.doOnAddQueueState(rptUID, RemoteProcState.Error, errMsg, csInternalUserName, Utl.getLocalIP());
             throw ex;
           }
-          //this.log_msg(String.Format("Отчет \"{0}\" добавлен в очередь пользователем \"{1}\".", rptCode, userUID));
         }
         if (rptBuilder != null) {
           rptBuilder.Run((ThreadPriority)priority);
@@ -202,13 +198,11 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
     }
 
     void rptBuilder_OnError(object pOpener, CXLReport pReport, Exception pEx) {
-      //throw new NotImplementedException();
       this.log_msg(String.Format("В процессе построения отчета \"{0}\", UID:\"{1}\" - произошла ошибка.", pReport.RptDefinition.FullCode, pReport.UID));
       this.log_err(pEx);
     }
 
     void rptBuilder_OnAfterBuild(object opener, CXLReport report) {
-      //throw new NotImplementedException();
       String v_uid = report.UID;
       String v_full_code = report.FullCode;
       RemoteProcState v_state = report.State;
@@ -271,26 +265,12 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
       }
     }
 
-    //private void removeFinishedReportsFromPool() {
-    //  lock (this.FRunningReports) {
-    //    CXLReport[] rpts = new CXLReport[this.FRunningReports.Count];
-    //    this.FRunningReports.Values.CopyTo(rpts, 0);
-    //    foreach (CXLReport itm in rpts) {
-    //      if (itm.IsFinished){
-    //        this.remove_from_running(itm.RptUID);
-    //      }
-    //    }
-    //  }
-    //}
-
     private String FLastErrorText = null;
     private void processQueue() {
-      //Thread.Sleep(30 * 1000);
       try {
         this.markBadReports();
         this.breakBreakingReports();
         this.restartRestartingReports();
-        //this.removeFinishedReportsFromPool();
         lock (this.FRunningReports) {
           Queue<CXLRptItem> v_rpts = this.doOnGetReportsReady();
           while (this.FRunningReports.Count < this._cfg.poolSize) {
@@ -303,8 +283,6 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
               break;
           }
           if (this._stopRequsted) { 
-            //foreach(var rpt in this.FRunningReports)
-            //  rpt.Value.Abort();
             Thread.CurrentThread.Abort();
           }
         }

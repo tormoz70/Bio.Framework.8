@@ -4,39 +4,12 @@
   using System.Linq;
   using System.Text;
   using Newtonsoft.Json;
-  //using Bio.Packets.Ex;
   using Newtonsoft.Json.Converters;
   using System.Reflection;
   using Newtonsoft.Json.Serialization;
   using Bio.Helpers.Common.Types;
   using System.ComponentModel;
   using System.Runtime.Serialization.Formatters;
-//#if SILVERLIGHT
-//  using System.Runtime.Serialization.Formatters;
-//#endif
-
-  /*public enum FTypeMap {
-    [Description("unknown")]
-    ftUnknown = 0x0000,
-    [Description("string")]
-    ftString = 0x0001,
-    [Description("float")]
-    ftFloat = 0x0002,
-    [Description("int")]
-    ftInt = 0x0004,
-    [Description("boolean")]
-    ftBoolean = 0x0008,
-    [Description("date")]
-    ftDate = 0x0010,
-    [Description("clob")]
-    ftClob = 0x0020,
-    [Description("object")]
-    ftObject = 0x0040,
-    [Description("blob")]
-    ftBlob = 0x0080,
-    [Description("currency")]
-    ftCurrency = 0x0100
-  };*/
 
   public enum CJSAlignment {
     [Description("left")]
@@ -70,20 +43,8 @@
         return null;
     }
 
-    //public static Object Decode(String jsonString) {
-    //  if (!String.IsNullOrEmpty(jsonString)) {
-    //    JsonSerializerSettings st = new JsonSerializerSettings() {
-    //      ContractResolver = new CContractResolver(),
-    //      TypeNameHandling = TypeNameHandling.Objects | TypeNameHandling.Arrays,
-    //      Converters = new JsonConverter[] { new EBioExceptionConverter(), new CJsonStoreRowConverter() }
-    //    };
-    //    return Newtonsoft.Json.JsonConvert.DeserializeObject(jsonString, null, st);
-    //  } else
-    //    return null;
-    //}
-
     public static Object Decode(String pJsonString, Type ptype, JsonConverter[] coverters) {
-      JsonConverter[] v_coverters = coverters; // MergeConverters(coverters, new JsonConverter[] { new LocDateTimeConverter() });
+      JsonConverter[] v_coverters = coverters;
       if (!String.IsNullOrEmpty(pJsonString)) {
         JsonSerializerSettings st = new JsonSerializerSettings() {
           ContractResolver = new CContractResolver(),
@@ -100,7 +61,7 @@
     }
 
     public static T decode<T>(String jsonString, JsonConverter[] coverters) {
-      JsonConverter[] v_coverters = coverters; // MergeConverters(coverters, new JsonConverter[] { new LocDateTimeConverter() });
+      JsonConverter[] v_coverters = coverters;
       if (!String.IsNullOrEmpty(jsonString)) {
         JsonSerializerSettings st = new JsonSerializerSettings() {
           ContractResolver = new CContractResolver(),
@@ -113,7 +74,7 @@
     }
 
     public static String encode(Object obj, JsonConverter[] coverters) {
-      JsonConverter[] v_coverters = coverters; // MergeConverters(coverters, new JsonConverter[] { new LocDateTimeConverter() });
+      JsonConverter[] v_coverters = coverters;
       JsonSerializerSettings st = new JsonSerializerSettings() {
         ContractResolver = new CContractResolver(),
         NullValueHandling = NullValueHandling.Ignore,
@@ -121,14 +82,12 @@
         Converters = v_coverters,
         TypeNameAssemblyFormat = FormatterAssemblyStyle.Full
       };
-      //"Newtonsoft.Json.Utilities.ReflectionUtils.GetTypeName
       var v_rslt = JsonConvert.SerializeObject(obj, Newtonsoft.Json.Formatting.None, st);
       return v_rslt;
     }
 
     public static CFieldType detectFieldType(String typeName) {
       CFieldType rslt = ftypeHelper.ConvertStrToFType(typeName);
-      //rslt = (rslt == FTypeMap.Unknown) ? FTypeMap.String : rslt;
       return rslt;
     }
 
@@ -157,15 +116,9 @@
     public override JsonContract ResolveContract(Type type) {
       if (type.Equals(typeof(EBioException)) || type.IsSubclassOf(typeof(EBioException))) {
         JsonContract contract = new JsonObjectContract(type);
-        //#if !SILVERLIGHT
-        //        contract.DefaultCreator = new Func<EBioException>(() => {
-        //          return EBioException.CreateEBioEx(type, null);
-        //        });
-        //#else
         contract.DefaultCreator = new Func<Object>(() => {
           return EBioException.CreateEBioEx(type, null);
         });
-        //#endif
         return contract;
       } else if (type.Equals(typeof(CAjaxRequest)) || type.IsSubclassOf(typeof(CAjaxRequest))) {
         JsonContract contract = base.ResolveContract(type);
@@ -175,8 +128,6 @@
         c = (contract as JsonObjectContract).Properties.GetProperty("userToken", StringComparison.CurrentCulture);
         if (c != null)
           c.ShouldSerialize = new Predicate<Object>((o) => { return false; });
-        //JsonContract contract = new Newtonsoft.Json.Serialization.JsonObjectContract(type);
-        //contract.
         return contract;
       } else if (type.Equals(typeof(Byte[]))) {
         return new JsonArrayContract(typeof(Byte[]));

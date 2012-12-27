@@ -32,8 +32,6 @@ namespace Bio.Helpers.Common {
   using System.Xml;
   using System.IO.IsolatedStorage;
   
-  //public delegate void PutOffDelegate(CParams pParams);
-
   /// <summary>
   /// Утилиты общего назначения
   /// </summary>
@@ -99,16 +97,16 @@ namespace Bio.Helpers.Common {
     /// <summary>
     /// Вытаскивает из URL строки начение параметра по имени
     /// </summary>
-    /// <param name="pQueryURI"></param>
-    /// <param name="pParam"></param>
+    /// <param name="queryURI"></param>
+    /// <param name="prm"></param>
     /// <returns></returns>
-    public static String GetQueryParam(String pQueryURI, String pParam) {
-      if (pQueryURI != null) {
-        String pQString = HttpUtility.UrlDecode(pQueryURI.Substring(pQueryURI.IndexOf("?") + 1));
+    public static String GetQueryParam(String queryURI, String prm) {
+      if (queryURI != null) {
+        String pQString = HttpUtility.UrlDecode(queryURI.Substring(queryURI.IndexOf("?") + 1));
         Char[] spr = new Char[] { '&' };
         String[] pars = pQString.Split(spr);
         for (int i = 0; i < pars.Length; i++) {
-          String pName = pParam + "=";
+          String pName = prm + "=";
           if (pars[i].StartsWith(pName)) {
             String rslt = pars[i].Substring(pName.Length);
             if (rslt.Trim().Equals(""))
@@ -125,14 +123,14 @@ namespace Bio.Helpers.Common {
     /// <summary>
     /// кодирует ANSII -> UTF
     /// </summary>
-    /// <param name="vMessage"></param>
+    /// <param name="msg"></param>
     /// <returns></returns>
-    public static String EncodeANSII2UTF(String vMessage) {
+    public static String EncodeANSII2UTF(String msg) {
 #if !SILVERLIGHT
-      if (vMessage != null) {
+      if (msg != null) {
         String Result = "";
         UTF8Encoding enc = new UTF8Encoding();
-        byte[] bfr = enc.GetBytes(vMessage);
+        byte[] bfr = enc.GetBytes(msg);
         Encoding.Convert(Encoding.GetEncoding(Enc_Windows_1251), Encoding.GetEncoding(SYS_ENCODING), bfr);
         String tmps = enc.GetString(bfr);
         Result = tmps;
@@ -252,14 +250,6 @@ namespace Bio.Helpers.Common {
       }
     }
 
-    //  static public java.util.Date GetCurDateTime(){
-    //    return new java.util.Date();
-    //  }
-
-    //static public void WriteLog(String vMessage) {
-    //  //    System.Write("["+GetCurDateTime().ToString()+"] - "+vMessage);
-    //}
-
 #if !SILVERLIGHT
     static public String GetMsg_ToAdminPlease(String vAdmName, XmlNodeList vAdmCntcts) {
       String rslt = "Обратитесь к администратору системы.<br>";
@@ -373,10 +363,6 @@ namespace Bio.Helpers.Common {
     public static void AppendStringToFile(String fileName, String line, Encoding encoding) {
       AppendStringToFile(fileName, line, encoding, false);
     }
-
-    //public static String GetNowStr() {
-    //  return DateTime.Now.ToString("yyyy.MM.dd hh:mm:ss") + " - ";
-    //}
 
     public static void SaveStringToFile(String fileName, String line, Encoding encoding) {
       if (File.Exists(fileName))
@@ -582,26 +568,6 @@ namespace Bio.Helpers.Common {
         return null;
     }
 
-    //public static LitJson_killd.JsonData jsonDecode(String s) {
-    //  LitJson_killd.JsonData vJsonData = null;
-    //  if (s != null) {
-    //    try {
-    //      vJsonData = LitJson_killd.JsonMapper.ToObject(s);
-    //    } catch (Exception) { }
-    //  }
-    //  return vJsonData;
-    //}
-
-    //public static LitJson_killd.JsonData jsonGetKey(LitJson_killd.JsonData pJsonObj, String pKey) {
-    //  LitJson_killd.JsonData vResult = null;
-    //  if (pJsonObj != null) {
-    //    try {
-    //      vResult = pJsonObj[pKey];
-    //    } catch (KeyNotFoundException) { }
-    //  }
-    //  return vResult;
-    //}
-
     /// <summary>
     /// Сравнивает две версии
     /// </summary>
@@ -609,7 +575,6 @@ namespace Bio.Helpers.Common {
     /// <param name="verRight"></param>
     /// <returns>[-1]-меньше; [0]-равно; [1]-больше</returns>
     public static int compareVer(String verLeft, String verRight) {
-      //int vResult = 0;
       String[] vVerLeft = SplitString(verLeft, '.');
       String[] vVerRight = SplitString(verRight, '.');
       int vUpIndex = Math.Max(vVerLeft.Length, vVerRight.Length);
@@ -942,23 +907,11 @@ namespace Bio.Helpers.Common {
           } else if (v_in_type.Equals(typeof(DateTime))) {
             v_rslt = inValue;
           } else if (v_in_type.Equals(typeof(String))) {
-            //IFormatProvider ifp = new DateTimeFormatInfo();
             v_rslt = DateTimeParser.Instance.ParsDateTime((String)inValue);
           } else {
             throw new Exception("Значение типа " + tp + " не может быть представлено как DateTime!!! ", null);
           }
 
-        //} else if (pTargetType.Equals(typeof(DateTime?))) {
-        //  if(tp == null) {
-        //    return null;
-        //  } else if(tp.Equals(typeof(DateTime))) {
-        //    return (DateTime?)pValue;
-        //  } else if(tp.Equals(typeof(String))) {
-        //    //IFormatProvider ifp = new DateTimeFormatInfo();
-        //    return (DateTime?)DateTimeParser.Instance.ParsDateTime((String)pValue);
-        //  } else {
-        //    throw new Exception("Значение типа " + tp + " не может быть представлено как DateTime!!! ", null);
-        //  }
         } else if (v_out_type.Equals(typeof(Boolean))) {
           if (inValue == null)
             v_rslt = false;
@@ -973,19 +926,6 @@ namespace Bio.Helpers.Common {
           } else {
             throw new Exception("Значение типа " + tp + " не может быть представлено как boolean!!! ", null);
           }
-        //} else if (pTargetType.Equals(typeof(Boolean?))) {
-        //  if (tp == null)
-        //    return null;
-        //  else if (tp.Equals(typeof(Boolean)) || tp.Equals(typeof(Boolean?)))
-        //    return pValue;
-        //  else if (typeIsNumeric(tp)) {
-        //    return (!pValue.Equals(0));
-        //  } else if (tp.Equals(typeof(String))) {
-        //    String vValStr = ((String)pValue).ToUpper();
-        //    return (vValStr.Equals("1") || vValStr.Equals("Y") || vValStr.Equals("T") || vValStr.ToUpper().Equals("TRUE") || vValStr.ToUpper().Equals("ON"));
-        //  } else {
-        //    throw new Exception("Значение типа " + tp + " не может быть представлено как boolean!!! ", null);
-        //  }
         } else if (typeIsNumeric(v_out_type)) {
           IFormatProvider ifp = CultureInfo.CurrentCulture.NumberFormat;//new NumberFormatInfo();
           if (inValue == null)
@@ -1010,7 +950,6 @@ namespace Bio.Helpers.Common {
         } else if (v_out_type.Equals(typeof(String))) {
           v_rslt = _objectAsString(inValue);
         }
-        //typeof(Nullable<>).MakeGenericType(new[] { propertyType });
 
         return v_rslt;
       }
@@ -1026,77 +965,7 @@ namespace Bio.Helpers.Common {
     /// <returns></returns>
     public static pTargetType Convert2Type<pTargetType>(Object pValue) {
       return (pTargetType)Convert2Type(pValue, typeof(pTargetType));
-      ////if((pTargetType != null)) {
-      //  Type tp = ((pValue == null) || (pValue == DBNull.Value)) ? null : pValue.GetType();
-      //  Object vResult = pValue;
-      //  if(typeof(pTargetType).Equals(typeof(DateTime))) {
-      //    if(tp == null) {
-      //      vResult = DateTime.MinValue;
-      //    } else if(tp.Equals(typeof(DateTime))) {
-      //      vResult = pValue;
-      //    } else if(tp.Equals(typeof(String))) {
-      //      //IFormatProvider ifp = new DateTimeFormatInfo();
-      //      vResult = DateTimeParser.Instance.ParsDateTime((String)pValue);
-      //    } else {
-      //      throw new EBioException("Значение типа " + tp + " не может быть представлено как DateTime!!! ", null);
-      //    }
-      //  } else if(typeof(pTargetType).Equals(typeof(Boolean))) {
-      //    if(tp == null)
-      //      vResult = false;
-      //    else if(tp.Equals(typeof(Boolean)))
-      //      vResult = pValue;
-      //    else if(typeIsNumeric(tp)) {
-      //      vResult = !pValue.Equals(0);
-      //    } else if(tp.Equals(typeof(String))) {
-      //      String vValStr = ((String)pValue).ToUpper();
-      //      vResult = vValStr.Equals("1") || vValStr.Equals("Y") || vValStr.Equals("T") || vValStr.ToUpper().Equals("TRUE") || vValStr.ToUpper().Equals("ON");
-      //    } else {
-      //      throw new EBioException("Значение типа " + tp + " не может быть представлено как boolean!!! ", null);
-      //    }
-      //  } else if(typeIsNumeric(typeof(pTargetType))) {
-      //    if(tp == null)
-      //      vResult = 0;
-      //    if(typeIsNumeric(tp)) {
-      //      vResult = Convert.ChangeType(pValue, typeof(pTargetType));
-      //    } else if(tp.Equals(typeof(Boolean))) {
-      //      vResult = (Boolean)pValue ? 1 : 0;
-      //    } else if(tp.Equals(typeof(String))) {
-      //      String vValStr = (String)pValue;
-      //      vValStr = String.IsNullOrEmpty(vValStr) ? "0" : vValStr;
-      //      String vDecSep = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
-      //      vValStr = vValStr.Replace(",", vDecSep);
-      //      vValStr = vValStr.Replace(".", vDecSep);
-      //      vResult = Convert.ChangeType(vValStr, typeof(pTargetType));
-      //    } else {
-      //      throw new EBioException("Значение типа " + tp + " не может быть представлено как Numeric!!! ", null);
-      //    }
-      //  } else if(typeof(pTargetType).Equals(typeof(String))) {
-      //    vResult = _objectAsString(pValue);
-      //  }
-      ////}
-
-      //  return (pTargetType)vResult;
     }
-
-    //public static void doGridLayuot(Control pCt, int pCols, int pRowHeight) {
-    //  int vCellHeight = pRowHeight;
-    //  int vCellWidth = (pCt.ClientSize.Width - (pCt.Padding.Left + pCt.Padding.Right)) / pCols;
-    //  int vIndx = 0;
-    //  int vColIndx = 0;
-    //  int vRowIndx = 0;
-    //  foreach (Control vItem in pCt.Controls) {
-    //    Control vCell = vItem;
-    //    vCell.Location = new Point(vColIndx * vCellWidth + pCt.Padding.Left, vRowIndx * vCellHeight + pCt.Padding.Top);
-    //    vCell.Size = new Size(vCellWidth, vCellHeight);
-    //    vIndx++;
-    //    vColIndx++;
-    //    if (vColIndx == pCols) {
-    //      vRowIndx++;
-    //      vColIndx = 0;
-    //    }
-    //  }
-    //}
-
 
     /// <summary>
     /// Уменьшает период на 1
@@ -1205,43 +1074,6 @@ namespace Bio.Helpers.Common {
       }
       return v_rslt;
     }
-
-    //class CPutOffCfg {
-    //  public int FTimeout { get; set; }
-    //  public PutOffDelegate FPrc { get; set; }
-    //  public CParams FParams { get; set; }
-    //  public Control FSyncCtrl { get; set; }
-    //}
-    
-    ///// <summary>
-    ///// Выполняет процедуру с параметрами pParams, и с задержкой pTimeout
-    ///// </summary>
-    ///// <param name="pTimeout"></param>
-    ///// <param name="pPrc"></param>
-    ///// <param name="pParams"></param>
-    ///// <param name="pSyncCtrl">В случае если процедура изменяет визуальный компонент, тогда
-    ///// сюда надо передать ссылку на этот компонент для синхронизации потоков</param>
-    //public static void putOff(int pTimeout, PutOffDelegate pPrc, CParams pParams, Control pSyncCtrl) {
-    //  if(pTimeout > 0) {
-    //    Thread vThread = new Thread((Object p) => {
-    //      CPutOffCfg c = (CPutOffCfg)p;
-    //      Thread.Sleep(c.FTimeout);
-    //      if(c.FPrc != null) {
-    //        if((c.FSyncCtrl != null) && c.FSyncCtrl.InvokeRequired)
-    //          c.FSyncCtrl.Invoke(c.FPrc, new Object[] { c.FParams });
-    //        else
-    //          c.FPrc(c.FParams);
-    //      }
-    //    });
-    //    CPutOffCfg vCfg = new CPutOffCfg() { FTimeout = pTimeout, FPrc = pPrc, FParams = pParams, FSyncCtrl = pSyncCtrl };
-    //    vThread.Start(vCfg);
-    //  } else {
-    //    if((pSyncCtrl != null) && pSyncCtrl.InvokeRequired)
-    //      pSyncCtrl.Invoke(pPrc, new Object[] { pParams });
-    //    else
-    //      pPrc(pParams);
-    //  }
-    //}
 
 #if !SILVERLIGHT
     /// <summary>
@@ -1377,11 +1209,6 @@ namespace Bio.Helpers.Common {
     }
 
     public static void DrawAnSeldCell(Rectangle cellBounds, Boolean focused, Graphics gra, AnchorStyles borders) {
-      //Rectangle rct = new Rectangle(cellBounds.Location, cellBounds.Size);
-      //rct.X = rct.X + 1;
-      //rct.Y = rct.Y + 1;
-      //rct.Width = rct.Width - 3;
-      //rct.Height = rct.Height - 3;
       Color col1 = Color.RoyalBlue;
       Color col2 = Color.Blue;
       if (!focused) {
@@ -1449,8 +1276,6 @@ namespace Bio.Helpers.Common {
       DataGridViewPaintParts vPrts = DataGridViewPaintParts.All;
       vPrts &= ~DataGridViewPaintParts.SelectionBackground;
       vPrts &= ~DataGridViewPaintParts.Focus;
-      //vPrts &= ~DataGridViewPaintParts.ContentBackground;
-      //vPrts &= ~DataGridViewPaintParts.ContentForeground;
       a.Paint(a.CellBounds, vPrts);
       drawSeldCell(grid, a, focused);
       a.Handled = true;
@@ -1465,14 +1290,6 @@ namespace Bio.Helpers.Common {
     /// <param name="a"></param>
     /// <param name="focused"></param>
     public static void DrawTreeSelectionAlt(TreeView tree, DrawTreeNodeEventArgs a, Boolean focused) {
-      //TreeViewPaintParts vPrts = DataGridViewPaintParts.All & ~DataGridViewPaintParts.SelectionBackground;
-      //vPrts &= ~DataGridViewPaintParts.Focus;
-      //a.Paint(a.CellBounds, vPrts);
-      //drawSeldCell(grid, a, focused);
-      //Font vFnt = new Font(a.Node.TreeView.Font, FontStyle.Regular);
-      //SolidBrush vBrsh = new SolidBrush(Color.Black);
-      //RectangleF vR = new RectangleF(new PointF(a.Bounds.Location.X, a.Bounds.Location.Y), new SizeF(a.Bounds.Size.Width, a.Bounds.Size.Height));
-      //a.Graphics.DrawString(a.Node.Text, vFnt, vBrsh, vR, new StringFormat(StringFormatFlags.DirectionRightToLeft));
 
       Rectangle nodeBounds = a.Node.Bounds;
       nodeBounds.Width += 10;
@@ -1480,24 +1297,20 @@ namespace Bio.Helpers.Common {
       DrawAnSeldCell(nodeBounds, focused, a.Graphics, AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom);
 
       Font nodeFont = a.Node.TreeView.Font;
-      //if (nodeFont == null) nodeFont = a.Node.TreeView.Font;
-      //textClip.Width += 5;
       RectangleF nodeBoundsF = Rectangle.Inflate(nodeBounds, 0, 0);
-      //nodeBoundsF.Width += 10;
       a.Graphics.DrawString(a.Node.Text, nodeFont, Brushes.Black, nodeBoundsF);
-      //a.Handled = true;
       a.DrawDefault = false;
     }
 #endif
 
 #if !SILVERLIGHT
-    private static RegistryValueKind getRegistryType(Type pType) {
-      if (pType != null) {
-        if (pType.Equals(typeof(Int16)) || pType.Equals(typeof(Int32)) || pType.Equals(typeof(Double)) || pType.Equals(typeof(Decimal)))
+    private static RegistryValueKind getRegistryType(Type type) {
+      if (type != null) {
+        if (type.Equals(typeof(Int16)) || type.Equals(typeof(Int32)) || type.Equals(typeof(Double)) || type.Equals(typeof(Decimal)))
           return RegistryValueKind.DWord;
-        if (pType.Equals(typeof(Int64)))
+        if (type.Equals(typeof(Int64)))
           return RegistryValueKind.QWord;
-        if (pType.Equals(typeof(String)))
+        if (type.Equals(typeof(String)))
           return RegistryValueKind.String;
       }
       return RegistryValueKind.Unknown;
@@ -1510,13 +1323,12 @@ namespace Bio.Helpers.Common {
     /// Записывает значение реестр
     /// </summary>
     /// <param name="pRegKeyName">Путь в реестре.</param>
-    /// <param name="pValName">Имя параметра.</param>
-    /// <param name="pValue"></param>
-    public static void RegistryCUSetValue(String pRegKeyName, String pValName, Object pValue, Type pType) {
-      Type type = pType;
+    /// <param name="valName">Имя параметра.</param>
+    /// <param name="value"></param>
+    public static void RegistryCUSetValue(String regKeyName, String valName, Object value, Type type) {
       if(type == null)
-        type = (pValue != null) ? pValue.GetType() : null;
-      Object val = pValue;
+        type = (value != null) ? value.GetType() : null;
+      Object val = value;
       RegistryValueKind knd = getRegistryType(type);
       if (knd == RegistryValueKind.Unknown) {
         if (type != null) {
@@ -1532,8 +1344,8 @@ namespace Bio.Helpers.Common {
 
       if (val == null)
         val = (knd == RegistryValueKind.String) ? (Object)String.Empty : 0;
-      RegistryKey key = Registry.CurrentUser.CreateSubKey(pRegKeyName);
-      key.SetValue(pValName, val, knd);
+      RegistryKey key = Registry.CurrentUser.CreateSubKey(regKeyName);
+      key.SetValue(valName, val, knd);
     }
 #endif
 
@@ -1541,13 +1353,13 @@ namespace Bio.Helpers.Common {
     /// <summary>
     /// Загружает параметр из реестра.
     /// </summary>
-    /// <param name="pRegKeyName">Путь в реестре.</param>
-    /// <param name="pValName">Имя параметра.</param>
-    /// <param name="pDefVal">Значение по умолчанию.</param>
+    /// <param name="regKeyName">Путь в реестре.</param>
+    /// <param name="valName">Имя параметра.</param>
+    /// <param name="defVal">Значение по умолчанию.</param>
     /// <returns>Значение параметра.</returns>
-    public static Object RegistryCUGetValue(String pRegKeyName, String pValName, object pDefVal) {
-      RegistryKey key = Registry.CurrentUser.CreateSubKey(pRegKeyName);
-      Object vResult = key.GetValue(pValName, pDefVal) ?? pDefVal;
+    public static Object RegistryCUGetValue(String regKeyName, String valName, object defVal) {
+      RegistryKey key = Registry.CurrentUser.CreateSubKey(regKeyName);
+      Object vResult = key.GetValue(valName, defVal) ?? defVal;
       return vResult;
     }
 #endif
@@ -1581,11 +1393,11 @@ namespace Bio.Helpers.Common {
     /// <summary>
     /// Создает строку, которую можно подставить в URL
     /// </summary>
-    /// <param name="pBaseURL"></param>
+    /// <param name="baseURL"></param>
     /// <returns></returns>
-    public static String buidQueryStrParams(String pBaseURL, Dictionary<String, String> prms) {
+    public static String buidQueryStrParams(String baseURL, Dictionary<String, String> prms) {
       String rslt = buidQueryStrParams(prms);
-      return (pBaseURL.IndexOf('?') >= 0) ? pBaseURL + "&" + rslt : pBaseURL + "?" + rslt;
+      return (baseURL.IndexOf('?') >= 0) ? baseURL + "&" + rslt : baseURL + "?" + rslt;
     }
 
     /// <summary>
@@ -1634,10 +1446,10 @@ namespace Bio.Helpers.Common {
     /// <summary>
     /// Достраивает путь к папке до абсолютного и нормализует
     /// </summary>
-    /// <param name="p_path"></param>
+    /// <param name="path"></param>
     /// <returns></returns>
-    public static String resolvePath(String p_path) {
-      return NormalizeDir(String.IsNullOrEmpty(p_path) ? Directory.GetCurrentDirectory() : Path.GetFullPath(p_path));
+    public static String resolvePath(String path) {
+      return NormalizeDir(String.IsNullOrEmpty(path) ? Directory.GetCurrentDirectory() : Path.GetFullPath(path));
     }
 
 #if !SILVERLIGHT
@@ -1687,15 +1499,6 @@ namespace Bio.Helpers.Common {
           String vLine = String.Format("[{0} {1}] - {2}", v_point.ToShortDateString(), v_point.ToLongTimeString(), "Ошибка!!!");
           sw.WriteLine(vLine);
           sw.WriteLine(buildErrorLogMsg(ex, v_point));
-          //sw.WriteLine("^^-ERROR-BEGIN---------------------------------------------------------------------------^^");
-          //sw.WriteLine("Source        : " + ex.Source.ToString().Trim());
-          //sw.WriteLine("Method        : " + ex.TargetSite.Name.ToString());
-          //sw.WriteLine("Date          : " + v_point.ToShortDateString());
-          //sw.WriteLine("Time          : " + v_point.ToLongTimeString());
-          //sw.WriteLine("Computer      : " + Dns.GetHostName().ToString());
-          //sw.WriteLine("Error         : " + ex.Message.ToString().Trim());
-          //sw.WriteLine("Stack Trace   : " + ex.StackTrace.ToString().Trim());
-          //sw.WriteLine("^^-ERROR-END-----------------------------------------------------------------------------^^");
           sw.Flush();
           sw.Close();
         }
@@ -1712,7 +1515,7 @@ namespace Bio.Helpers.Common {
     public static String getLocalIP() {
       String localHost = Dns.GetHostName();
       IPAddress[] addrss = Dns.GetHostAddresses(Dns.GetHostName());
-      String localeIP = null;//addrss[0].ToString();
+      String localeIP = null;
       foreach (IPAddress a in addrss) {
         if (a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork) {
           localeIP = a.ToString();
@@ -1729,7 +1532,6 @@ namespace Bio.Helpers.Common {
     public static CommandType detectCommandType(String sqlText) {
       Boolean hasSelect = Utl.regexMatch(sqlText, @"\bSELECT\b", true);
       hasSelect = hasSelect && Utl.regexMatch(sqlText, @"\bFROM\b", true);
-      //Utl.regexMatch(sqlText, @"\wSELECT\s*[)]", "(" + vArgs + ")", true);
       if (hasSelect)
         return CommandType.Text;
       else

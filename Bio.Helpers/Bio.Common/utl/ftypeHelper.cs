@@ -13,8 +13,6 @@ namespace Bio.Helpers.Common {
   internal class MappingAttribute : Attribute {
 
     public MappingAttribute(String xmlName, Type toType, Type[] fromTypes) {
-      //if (String.IsNullOrEmpty(xmlName)) throw new ArgumentNullException("xmlName");
-      //if (netType == null) throw new ArgumentNullException("netType");
       this.XmlName = xmlName;
       this.ToNetType = toType;
       this.FromNetTypes = fromTypes;
@@ -25,8 +23,6 @@ namespace Bio.Helpers.Common {
   }
 
   public enum CFieldType {
-    //[Mapping("unknown", null, null)]
-    //Unknown = 0x0000,
 
     [Mapping("string", typeof(String), null)]
     String      = 0x0000,
@@ -60,8 +56,6 @@ namespace Bio.Helpers.Common {
   };
   
   public static class ftypeHelper {
-//#if SILVERLIGHT
-//#endif
 
     /// <summary>
     /// Преобразует имя типа в объект типа System.Type.

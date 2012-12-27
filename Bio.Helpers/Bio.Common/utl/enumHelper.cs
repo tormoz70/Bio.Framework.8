@@ -206,15 +206,5 @@ namespace Bio.Helpers.Common {
     public String Name { get { return this._name; } set { this._name = value; } }
     private Object _value = null;
     public Object Value { get { return this._value; } set { this._value = value; } }
-    //public override string ToString() {
-    //  return this.Name;
-    //}
-
-    //public override Int32 GetHashCode() {
-    //  return (this.Value != null) ? this.Value.GetHashCode() : 0;
-    //}
-    //public override Boolean Equals(Object obj) {
-    //  return (this.Value != null) ? this.Value.Equals(obj) : obj == null;
-    //}
   }
 }
