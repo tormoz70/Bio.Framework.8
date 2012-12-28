@@ -138,7 +138,7 @@ namespace Bio.Helpers.Common {
       } else
         return null;
 #else
-      return vMessage;
+      return msg;
 #endif
     }
 
