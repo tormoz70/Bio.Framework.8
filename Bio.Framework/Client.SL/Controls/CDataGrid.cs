@@ -20,7 +20,8 @@ namespace Bio.Framework.Client.SL {
 
   public class CDataGrid : DataGrid {
     private CJSGrid _owner = null;
-    public CDataGrid() : base() {
+    public CDataGrid()
+      : base() {
       this.LayoutUpdated += new EventHandler(this._layoutUpdated);
     }
 
@@ -58,8 +59,8 @@ namespace Bio.Framework.Client.SL {
     }
 
     void _jsClient_AfterLoadData(CJsonStoreClient sender, AjaxResponseEventArgs args) {
-      if ((this._owner != null) && 
-            (this._owner._jsClient != null) && 
+      if ((this._owner != null) &&
+            (this._owner._jsClient != null) &&
               (this._owner._jsClient.jsMetadata != null)) {
         var v_pk_fld = this._owner._jsClient.jsMetadata.getPKFields().FirstOrDefault();
         if (v_pk_fld != null)
@@ -129,43 +130,43 @@ namespace Bio.Framework.Client.SL {
       if (this._owner != null) {
         if ((this.HeadersVisibility & DataGridHeadersVisibility.Row) == DataGridHeadersVisibility.Row) {
           //if (row.Header == null) {
-            Int32 v_row_index = row.GetIndex();
-            Int64 v_start_row = 0;
-            if (this._owner._jsClient.pageSize > 0) 
-              v_start_row = (this._owner._jsClient.pageCurrent - 1) * this._owner._jsClient.pageSize;
-            String v_max_rownum = "" + (v_start_row + ((this._owner._jsClient.pageSize > 0) ? this._owner._jsClient.pageSize : this._owner._jsClient.DS.Count()));
-            var v_max_rownum_len = v_max_rownum.Length;
-            String v_num_fmt = new String('0', v_max_rownum_len);
-            String v_rnum = String.Format("{0:" + v_num_fmt + "} ", v_start_row + v_row_index + 1);
-            if (!this._owner.SuppressMultiselection && this._owner._jsClient.jsMetadata.multiselection) {
-              var v_hpan = new StackPanel();
-              v_hpan.HorizontalAlignment = System.Windows.HorizontalAlignment.Right;
-              v_hpan.Orientation = Orientation.Horizontal;
-              v_hpan.FlowDirection = System.Windows.FlowDirection.LeftToRight;
+          Int32 v_row_index = row.GetIndex();
+          Int64 v_start_row = 0;
+          if (this._owner._jsClient.pageSize > 0)
+            v_start_row = (this._owner._jsClient.pageCurrent - 1) * this._owner._jsClient.pageSize;
+          String v_max_rownum = "" + (v_start_row + ((this._owner._jsClient.pageSize > 0) ? this._owner._jsClient.pageSize : this._owner._jsClient.DS.Count()));
+          var v_max_rownum_len = v_max_rownum.Length;
+          String v_num_fmt = new String('0', v_max_rownum_len);
+          String v_rnum = String.Format("{0:" + v_num_fmt + "} ", v_start_row + v_row_index + 1);
+          if (!this._owner.SuppressMultiselection && this._owner._jsClient.jsMetadata.multiselection) {
+            var v_hpan = new StackPanel();
+            v_hpan.HorizontalAlignment = System.Windows.HorizontalAlignment.Right;
+            v_hpan.Orientation = Orientation.Horizontal;
+            v_hpan.FlowDirection = System.Windows.FlowDirection.LeftToRight;
 
-              var v_htxt = new TextBlock();
-              v_htxt.Text = v_rnum;
-              v_hpan.Children.Add(v_htxt);
+            var v_htxt = new TextBlock();
+            v_htxt.Text = v_rnum;
+            v_hpan.Children.Add(v_htxt);
 
-              var v_row_data = row.DataContext as CRTObject;
-              var v_hcbx = new CheckBox();
-              var v_is_selected = this._owner._multiselection.CheckSelected(v_row_data);
-              if (this._owner._multiselection.Inversion)
-                v_hcbx.IsChecked = !v_is_selected;
-              else
-                v_hcbx.IsChecked = v_is_selected;
+            var v_row_data = row.DataContext as CRTObject;
+            var v_hcbx = new CheckBox();
+            var v_is_selected = this._owner._multiselection.CheckSelected(v_row_data);
+            if (this._owner._multiselection.Inversion)
+              v_hcbx.IsChecked = !v_is_selected;
+            else
+              v_hcbx.IsChecked = v_is_selected;
 
-              v_hpan.Children.Add(v_hcbx);
-              v_hcbx.Checked += new RoutedEventHandler((s1, e1) => {
-                this._doOnRowCheckedChanged(v_row_data, true);
-              });
-              v_hcbx.Unchecked += new RoutedEventHandler((s1, e1) => {
-                this._doOnRowCheckedChanged(v_row_data, false);
-              });
-              v_row_data.ExtObject = v_hcbx;
-              row.Header = v_hpan;
-            } else
-              row.Header = v_rnum;
+            v_hpan.Children.Add(v_hcbx);
+            v_hcbx.Checked += new RoutedEventHandler((s1, e1) => {
+              this._doOnRowCheckedChanged(v_row_data, true);
+            });
+            v_hcbx.Unchecked += new RoutedEventHandler((s1, e1) => {
+              this._doOnRowCheckedChanged(v_row_data, false);
+            });
+            v_row_data.ExtObject = v_hcbx;
+            row.Header = v_hpan;
+          } else
+            row.Header = v_rnum;
 
 
 
@@ -178,7 +179,7 @@ namespace Bio.Framework.Client.SL {
       if (this._owner != null) {
         if ((this.HeadersVisibility & DataGridHeadersVisibility.Row) == DataGridHeadersVisibility.Row) {
           //if (e.Row.Header != null) {
-            row.Header = null;
+          row.Header = null;
           //}
         }
       }
@@ -215,7 +216,7 @@ namespace Bio.Framework.Client.SL {
         var v_cbx = r.ExtObject as CheckBox;
         if (v_cbx != null) {
           this._onRowCheckedChangedEnabled = false; // отключаем вызовы this._miltiselection.AddSelected и this._miltiselection.RemoveSelected
-                                                    // при изменении состояния чекбокса
+          // при изменении состояния чекбокса
           if (this._owner._multiselection.CheckSelected(r))
             v_cbx.IsChecked = !this._owner._multiselection.Inversion;
           else
@@ -314,6 +315,7 @@ namespace Bio.Framework.Client.SL {
               e.Column.Header = headerStr;
             if (e.Column is DataGridTextColumn) {
               (e.Column as DataGridBoundColumn).Binding.Converter = new CurrFormatter(fldDef, e.Column);
+              (e.Column as DataGridBoundColumn).Binding.ValidatesOnDataErrors = true;
               HorizontalAlignment v_alignment = fldDef.GetHorAlignment();
               Style st = new Style(typeof(TextBlock));
               st.Setters.Add(new Setter { Property = TextBlock.HorizontalAlignmentProperty, Value = v_alignment });

@@ -31,7 +31,7 @@ namespace Bio.Helpers.Common {
   using System.Text;
   using System.Xml;
   using System.IO.IsolatedStorage;
-  
+
   /// <summary>
   /// Утилиты общего назначения
   /// </summary>
@@ -179,7 +179,7 @@ namespace Bio.Helpers.Common {
     /// <returns>0 или входная строка</returns>
     public static String BlankTo0(String str) {
       String vStr = "";
-      if((str == "") || (str == null))
+      if ((str == "") || (str == null))
         vStr = "0";
       else
         vStr = str;
@@ -320,9 +320,9 @@ namespace Bio.Helpers.Common {
       return SplitString(str, new String[] { delimiter });
     }
 
-    public static String CombineString(String[] lines, String delimiter){
+    public static String CombineString(String[] lines, String delimiter) {
       String vResult = null;
-      foreach(String vLine in lines)
+      foreach (String vLine in lines)
         appendStr(ref vResult, vLine, delimiter);
       return vResult;
     }
@@ -437,7 +437,7 @@ namespace Bio.Helpers.Common {
       return vRslt;
     }
 
-    public static void TruncArrayLeft(ref String[] arr, int cnt) { 
+    public static void TruncArrayLeft(ref String[] arr, int cnt) {
       String[] vList1 = new String[arr.Length - 1];
       for (int i = cnt; i < arr.Length; i++)
         vList1[i - cnt] = arr[i];
@@ -535,9 +535,9 @@ namespace Bio.Helpers.Common {
     }
 
     public static String NormalizeDir(String dir) {
-      if(!String.IsNullOrEmpty(dir)) {
+      if (!String.IsNullOrEmpty(dir)) {
         String Result = dir.Trim();
-        if(Result.Substring(Result.Length - 1, 1) != "\\")
+        if (Result.Substring(Result.Length - 1, 1) != "\\")
           Result = Result + "\\";
         return Result;
       } else
@@ -652,7 +652,7 @@ namespace Bio.Helpers.Common {
     public static Int32 regexPos(String line, String regex, Boolean ignoreCase) {
       Regex vr = new Regex(regex, ((ignoreCase) ? RegexOptions.IgnoreCase : RegexOptions.None));
       Match vM = vr.Match(line);
-      if(vM.Success)
+      if (vM.Success)
         return vM.Index;
       else
         return -1;
@@ -693,9 +693,9 @@ namespace Bio.Helpers.Common {
 
     public static String buildConnectionStr(IDictionary<String, String> connStr) {
       String vRslt = null;
-      if(connStr != null) {
-        foreach(KeyValuePair<String, String> vItem in connStr) {
-          Utl.appendStr(ref vRslt, vItem.Key+"="+vItem.Value, ";");
+      if (connStr != null) {
+        foreach (KeyValuePair<String, String> vItem in connStr) {
+          Utl.appendStr(ref vRslt, vItem.Key + "=" + vItem.Value, ";");
         }
       }
       return vRslt;
@@ -730,6 +730,15 @@ namespace Bio.Helpers.Common {
       parsLogin(login, ref usrName, ref psswrd);
       return usrName;
     }
+
+    public static String extractUrlQueryString(String url) {
+      String[] lst = Utl.SplitString(url, '?');
+      if (lst.Length > 1)
+        return lst[1];
+      else
+        return null;
+    }
+
     public static String extractUsrPwdFromLogin(String login) {
       String usrName = null; String psswrd = null;
       parsLogin(login, ref usrName, ref psswrd);
@@ -787,9 +796,9 @@ namespace Bio.Helpers.Common {
 
     private static String _objectAsString(Object pObject) {
       String rslt = null;
-      if(pObject != null) {
+      if (pObject != null) {
         Type tp = pObject.GetType();
-        if(tp.Equals(typeof(System.DBNull)))
+        if (tp.Equals(typeof(System.DBNull)))
           rslt = null;
         else if (tp.Equals(typeof(System.String)))
           rslt = pObject.ToString();
@@ -815,8 +824,8 @@ namespace Bio.Helpers.Common {
       return EncodeANSII2UTF(rslt);
     }
 
-    private static Object convertFromNullable(Object value) { 
-      if(value == null)
+    private static Object convertFromNullable(Object value) {
+      if (value == null)
         return null;
       Type conversionType = value.GetType();
       if (conversionType.IsGenericType &&
@@ -836,20 +845,20 @@ namespace Bio.Helpers.Common {
         return value;
     }
 
-    private static Object convertToNullable(Object value) { 
-      if(value == null)
+    private static Object convertToNullable(Object value) {
+      if (value == null)
         return null;
       Type conversionType = value.GetType();
       if (conversionType.IsGenericType &&
         !conversionType.GetGenericTypeDefinition().Equals(typeof(Nullable<>))) {
-          if (conversionType.Equals(typeof(Boolean))) return (Boolean?)value;
-          else if (conversionType.Equals(typeof(Int16))) return (Int16?)value;
-          else if (conversionType.Equals(typeof(Int32))) return (Int32?)value;
-          else if (conversionType.Equals(typeof(Int64))) return (Int64?)value;
-          else if (conversionType.Equals(typeof(Decimal))) return (Decimal?)value;
-          else if (conversionType.Equals(typeof(Double))) return (Double?)value;
-          else if (conversionType.Equals(typeof(Single))) return (Single?)value;
-          else if (conversionType.Equals(typeof(DateTime))) return (DateTime?)value;
+        if (conversionType.Equals(typeof(Boolean))) return (Boolean?)value;
+        else if (conversionType.Equals(typeof(Int16))) return (Int16?)value;
+        else if (conversionType.Equals(typeof(Int32))) return (Int32?)value;
+        else if (conversionType.Equals(typeof(Int64))) return (Int64?)value;
+        else if (conversionType.Equals(typeof(Decimal))) return (Decimal?)value;
+        else if (conversionType.Equals(typeof(Double))) return (Double?)value;
+        else if (conversionType.Equals(typeof(Single))) return (Single?)value;
+        else if (conversionType.Equals(typeof(DateTime))) return (DateTime?)value;
         else
           return value;
       } else
@@ -867,7 +876,7 @@ namespace Bio.Helpers.Common {
         return inValue;
       if ((targetType != null) && (targetType != typeof(Object))) {
         Type tp = ((inValue == null) || (inValue == DBNull.Value)) ? null : inValue.GetType();
-        
+
         Type v_out_type = Nullable.GetUnderlyingType(targetType);
         Boolean v_out_isNullable = v_out_type != null;
         v_out_type = v_out_type ?? targetType;
@@ -897,7 +906,7 @@ namespace Bio.Helpers.Common {
         if ((inValue == null) && (v_out_isNullable))
           return null;
 
-        if(v_in_isNullable)
+        if (v_in_isNullable)
           inValue = convertFromNullable(inValue);
 
         Object v_rslt = null;
@@ -940,7 +949,11 @@ namespace Bio.Helpers.Common {
             String vDecSep = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
             vValStr = vValStr.Replace(",", vDecSep);
             vValStr = vValStr.Replace(".", vDecSep);
-            v_rslt = Convert.ChangeType(vValStr, v_out_type, ifp);
+            try {
+              v_rslt = Convert.ChangeType(vValStr, v_out_type, ifp);
+            } catch (Exception ex) {
+              throw new Exception("Значение [" + vValStr + "] типа " + v_in_type.Name + " не может быть представлено как Numeric!!! ", null);
+            }
           } else {
             throw new Exception("Значение типа " + tp + " не может быть представлено как Numeric!!! ", null);
           }
@@ -973,11 +986,11 @@ namespace Bio.Helpers.Common {
     /// <param name="pPeriod">Период в формате YYYYMM</param>
     /// <returns>Период в формате YYYYMM</returns>
     public static String periodDec(String pPeriod) {
-      if(pPeriod != null) {
+      if (pPeriod != null) {
         int vYear = Int32.Parse(pPeriod.Substring(0, 4));
         int vMonth = Int32.Parse(pPeriod.Substring(4, 2));
         vMonth--;
-        if(vMonth == 0) {
+        if (vMonth == 0) {
           vYear--;
           vMonth = 12;
         }
@@ -995,7 +1008,7 @@ namespace Bio.Helpers.Common {
       int vYear = Int32.Parse(pPeriod.Substring(0, 4));
       int vMonth = Int32.Parse(pPeriod.Substring(4, 2));
       vMonth++;
-      if(vMonth == 13) {
+      if (vMonth == 13) {
         vYear++;
         vMonth = 1;
       }
@@ -1046,12 +1059,12 @@ namespace Bio.Helpers.Common {
     /// <param name="pEcoding">Кодировка</param>
     /// <param name="pBuff">Буфер</param>
     public static void LoadStrFile(String pFileName, Encoding pEcoding, ref String pBuff) {
-      if(File.Exists(pFileName)) {
+      if (File.Exists(pFileName)) {
         FileStream fs = new FileStream(pFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
         StreamReader fFile = new StreamReader(fs, pEcoding);
         String vLine = null;
         StringWriter bfr = new StringWriter();
-        while((vLine = fFile.ReadLine()) != null)
+        while ((vLine = fFile.ReadLine()) != null)
           bfr.WriteLine(vLine);
         pBuff = bfr.ToString();
         fs.Close();
@@ -1103,7 +1116,7 @@ namespace Bio.Helpers.Common {
         return null;
     }
 
-    public static PropertyInfo GetPropertyInfo(Type type, String propertyName) { 
+    public static PropertyInfo GetPropertyInfo(Type type, String propertyName) {
       return GetPropertyInfo(type, propertyName, true);
     }
 
@@ -1381,7 +1394,7 @@ namespace Bio.Helpers.Common {
     /// Создает строку, которую можно подставить в URL
     /// </summary>
     /// <returns></returns>
-    public static String buidQueryStrParams(Dictionary<String, String> prms) { 
+    public static String buidQueryStrParams(Dictionary<String, String> prms) {
       String rslt = null;
       foreach (String k in prms.Keys) {
         String vParamStr = k + "=" + HttpUtility.UrlEncode(prms[k] as String);
@@ -1439,8 +1452,8 @@ namespace Bio.Helpers.Common {
             vMsg = exMessage.Substring(vStrtIndx, vLen);
           errCode = Int32.Parse(vMsg.Substring(4, 5));
           errMsg = vMsg.Substring(11);
-        } 
-      } 
+        }
+      }
     }
 
     /// <summary>
@@ -1566,7 +1579,7 @@ namespace Bio.Helpers.Common {
         wc.OpenReadAsync(new Uri(xapName, UriKind.Relative));
       }
     }
-    
+
     public static Boolean DesignTime {
       get {
         return DesignerProperties.IsInDesignTool;
@@ -1591,7 +1604,7 @@ namespace Bio.Helpers.Common {
       String[] cookies = null;
       try {
         cookies = HtmlPage.Document.Cookies.Split(';');
-      } catch(Exception ex) {
+      } catch (Exception ex) {
         if (!silent)
           throw ex;
       }
@@ -1717,12 +1730,12 @@ namespace Bio.Helpers.Common {
       return defObj;
     }
 
-    public static T RestoreUserObjectCookie0<T>(String objName, T defObj) { 
+    public static T RestoreUserObjectCookie0<T>(String objName, T defObj) {
       var jsonObj = browserUtl.GetCookie(objName);
       if (!String.IsNullOrEmpty(jsonObj)) {
         try {
           return jsonUtl.decode<T>(jsonObj);
-        } catch(Newtonsoft.Json.JsonSerializationException) {
+        } catch (Newtonsoft.Json.JsonSerializationException) {
           return defObj;
         }
       } else
@@ -1789,7 +1802,7 @@ namespace Bio.Helpers.Common {
     }
 
     private static int CHUNKSIZE = 40000;
-    public static void LoadFileToBuffer(Stream stream, out Byte[] buffer){
+    public static void LoadFileToBuffer(Stream stream, out Byte[] buffer) {
       buffer = new Byte[stream.Length];
       int chunkSize;
       int chunkPos = 0;

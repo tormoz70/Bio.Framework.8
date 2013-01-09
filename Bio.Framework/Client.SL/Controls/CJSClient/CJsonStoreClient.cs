@@ -29,9 +29,10 @@ using System.Windows.Threading;
 using System.Runtime.CompilerServices;
 
 namespace Bio.Framework.Client.SL {
-  public class JSClientBeforeMonRowEventArgs:CancelEventArgs{
+  public class JSClientBeforeMonRowEventArgs : CancelEventArgs {
     public CRTObject Row { get; private set; }
-    public JSClientBeforeMonRowEventArgs(Boolean cancel, CRTObject row) : base(cancel) {
+    public JSClientBeforeMonRowEventArgs(Boolean cancel, CRTObject row)
+      : base(cancel) {
       this.Row = row;
     }
   }
@@ -42,7 +43,7 @@ namespace Bio.Framework.Client.SL {
       this.Row = row;
     }
   }
-  public class JSClientRowPropertyChangingEventArgs:CancelEventArgs{
+  public class JSClientRowPropertyChangingEventArgs : CancelEventArgs {
     public CRTObject Row { get; private set; }
     public String PropertyName { get; private set; }
     public JSClientRowPropertyChangingEventArgs(Boolean cancel, CRTObject row, String propertyName)
@@ -74,10 +75,10 @@ namespace Bio.Framework.Client.SL {
   public class CJSChangedRow {
     public CJSChangedRow(Int32 index, CJsonStoreRowChangeType state, CRTObject newRow, CRTObject origRow)
       : base() {
-        this.Index = index;
-        this.State = state;
-        this.OrigRow = origRow;
-        this.CurRow = newRow;
+      this.Index = index;
+      this.State = state;
+      this.OrigRow = origRow;
+      this.CurRow = newRow;
     }
     public Int32 Index { get; private set; }
     public CJsonStoreRowChangeType State { get; private set; }
@@ -103,21 +104,21 @@ namespace Bio.Framework.Client.SL {
     public IAjaxMng ajaxMng { get; set; }
     public String bioCode { get; set; }
     private CParams _bioParams = null;
-    public CParams bioParams { 
+    public CParams bioParams {
       get {
         if (this._bioParams == null)
           this._bioParams = new CParams();
         return this._bioParams;
-      } 
+      }
       set {
         this._bioParams = value;
-      } 
+      }
     }
     private Int64 _pageSize = 0L;
-    public Int64 pageSize { 
+    public Int64 pageSize {
       get {
         return this._pageSize;
-      } 
+      }
     }
 
     public void setPageSize(Int64 pageSize) {
@@ -139,7 +140,7 @@ namespace Bio.Framework.Client.SL {
           Name = fieldDef.name,
           DisplayName = fieldDef.header,
           Type = fieldDef.GetDotNetType(),
-          Group = (fieldDef.group > 0) ? "Group-"+fieldDef.group : String.Empty,
+          Group = (fieldDef.group > 0) ? "Group-" + fieldDef.group : String.Empty,
           Hidden = fieldDef.hidden
         });
       return rslt;
@@ -172,24 +173,24 @@ namespace Bio.Framework.Client.SL {
     private List<CJSChangedRow> _ds_changes = null;
 
     private IEnumerable _ds = null;
-    public IEnumerable ds0 { get { return this._ds; } } 
-    public IEnumerable<CRTObject> DS { 
-      get { 
-        return (this._ds != null) ? this._ds.Cast<CRTObject>() : null; 
-      } 
+    public IEnumerable ds0 { get { return this._ds; } }
+    public IEnumerable<CRTObject> DS {
+      get {
+        return (this._ds != null) ? this._ds.Cast<CRTObject>() : null;
+      }
     }
-    
+
     public List<CJSChangedRow> Changes { get { return this._ds_changes; } }
     public String groupDefinition { get; set; }
 
-    public CJSGrid grid { 
+    public CJSGrid grid {
       get {
         return this._grid;
       }
       set {
         if (this._grid != value) {
           this._grid = value;
-          if((this._grid != null) && (this._grid._dataGrid != null)){
+          if ((this._grid != null) && (this._grid._dataGrid != null)) {
             //this._grid._dataGrid.AutoGeneratingColumn += new EventHandler<DataGridAutoGeneratingColumnEventArgs>(_grid_AutoGeneratingColumn);
             this._grid._dataGrid.AutoGenerateColumns = true;
             //if ((this._grid._dataGrid.HeadersVisibility & DataGridHeadersVisibility.Row) == DataGridHeadersVisibility.Row)
@@ -273,7 +274,7 @@ namespace Bio.Framework.Client.SL {
 
     private List<CJsonStoreMetadataFieldDef> _creFldDefsRmt(CJsonStoreMetadata metaData) {
       List<CJsonStoreMetadataFieldDef> flds = new List<CJsonStoreMetadataFieldDef>();
-      foreach (CJsonStoreMetadataFieldDef fld in metaData.fields) 
+      foreach (CJsonStoreMetadataFieldDef fld in metaData.fields)
         flds.Add(fld);
       return flds;
     }
@@ -288,11 +289,11 @@ namespace Bio.Framework.Client.SL {
     //}
 
     private void _regChanges(CJSChangedRow chng) {
-      var v_exists = this._ds_changes.FirstOrDefault((c) => { 
-        return c.CurRow.Equals(chng.CurRow); 
+      var v_exists = this._ds_changes.FirstOrDefault((c) => {
+        return c.CurRow.Equals(chng.CurRow);
       });
       if (chng.State == CJsonStoreRowChangeType.Added) {
-        if(v_exists == null)
+        if (v_exists == null)
           this._ds_changes.Add(chng);
         else {
           if ((v_exists.State == CJsonStoreRowChangeType.Deleted) ||
@@ -323,7 +324,7 @@ namespace Bio.Framework.Client.SL {
     private void _doOnBeforeInsertRow(ref Boolean cancel, CRTObject row) {
       if (!this._rowMonEventsDisabled) {
         var eve = this.OnBeforeInsertRow;
-        if (eve != null){
+        if (eve != null) {
           var args = new JSClientBeforeMonRowEventArgs(cancel, row);
           eve(this, args);
           cancel = args.Cancel;
@@ -392,7 +393,7 @@ namespace Bio.Framework.Client.SL {
             v_ds.Add(row);
           this._doOnAfterInsertRow(row);
         }
-        
+
       }
     }
     public CRTObject InsertRow(Int32 index) {
@@ -406,7 +407,7 @@ namespace Bio.Framework.Client.SL {
     public CRTObject AddRow() {
       return this.InsertRow(-1);
     }
-    
+
     //public void doOnRowPropChanged(Object row) {
     //  Thread.Sleep(100);
     //}
@@ -419,7 +420,7 @@ namespace Bio.Framework.Client.SL {
       //String prop = e.PropertyName;
       this._lastPreChangedRow = (sender as CRTObject).Copy();
       var eve = this.OnRowPropertyChanging;
-      if (eve != null){
+      if (eve != null) {
         var ee = new JSClientRowPropertyChangingEventArgs(false, this._lastPreChangedRow, e.PropertyName);
         eve(this, ee);
       }
@@ -610,11 +611,11 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    private String            _lastRequestedBioCode = null;
+    private String _lastRequestedBioCode = null;
     //private CJsonStoreFilter  _lastRequestedLocate = null;
-    private CParams           _lastRequestedParams = null;
-    private CParams           _lastReturnedParams = null;
-    private CRTObject         _lastLocatedRow = null;
+    private CParams _lastRequestedParams = null;
+    private CParams _lastReturnedParams = null;
+    private CRTObject _lastLocatedRow = null;
 
     private Boolean _paramsChanged(CParams bioPrms) {
 
@@ -672,7 +673,7 @@ namespace Bio.Framework.Client.SL {
     }
 
     public event JSClientEventHandler<AjaxResponseEventArgs> AfterLoadData;
-    private void doAfterLoadData(AjaxResponseEventArgs args){
+    private void doAfterLoadData(AjaxResponseEventArgs args) {
       var handler = this.AfterLoadData;
       if (handler != null)
         handler(this, args);
@@ -723,7 +724,7 @@ namespace Bio.Framework.Client.SL {
         //var v_pk_value = this.grid.SelectedItem.GetValue<String>(CJsonStoreMetadata.csPKFieldName);
         //var v_pk_vals = this._metadata.parsPK(v_pk_value);
         var v_pk_vals = this._metadata.getPK(this.grid.SelectedItem);
-        v_pkSelection = new CJsonStoreFilter { 
+        v_pkSelection = new CJsonStoreFilter {
           fromPosition = 0,
           joinCondition = CJSFilterItemSplitterType.And
         };
@@ -962,7 +963,7 @@ namespace Bio.Framework.Client.SL {
     }
 
     private void _goto(Int64? startFrom, String waitMsg, AjaxRequestDelegate callback, CJsonStoreFilter locate) {
-      if (this.grid != null) 
+      if (this.grid != null)
         this.grid.showBusyIndicator(waitMsg);
       try {
         this._load(null, (s, a) => {
@@ -991,7 +992,7 @@ namespace Bio.Framework.Client.SL {
         this._doOnLocation(v_row, null, callback);
       else {
         this._goto(0, "Поиск...", (s, a) => {
-          if (a.response.success) 
+          if (a.response.success)
             this._doOnLocation(this._lastLocatedRow, null, callback);
           else
             this._doOnLocation(null, a.response.ex, callback);
@@ -1133,7 +1134,7 @@ namespace Bio.Framework.Client.SL {
       } else
         return null;
     }
-    private CJsonStoreRows _getChangesAsJSRows() { 
+    private CJsonStoreRows _getChangesAsJSRows() {
       CJsonStoreRows v_rows = new CJsonStoreRows();
       foreach (var c in this._ds_changes) {
         var v_row = this._rowAsJSRow(c);
@@ -1190,7 +1191,7 @@ namespace Bio.Framework.Client.SL {
       } else {
         var v_args = new AjaxResponseEventArgs() {
           request = null,
-          response = new CAjaxResponse() { 
+          response = new CAjaxResponse() {
             ex = null,
             success = true,
             responseText = String.Empty
@@ -1228,7 +1229,7 @@ namespace Bio.Framework.Client.SL {
     }
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
       if (!String.IsNullOrEmpty(this._fldDef.format)) {
-        
+
         if (value is Decimal) {
           return ((Decimal)value).ToString(this._fldDef.format);
         } else if (value is Double) {
@@ -1242,7 +1243,7 @@ namespace Bio.Framework.Client.SL {
             return null;
         } else
           return value;
-        
+
         //if (value != null)
         //  value.ToString();
       } else
@@ -1250,7 +1251,16 @@ namespace Bio.Framework.Client.SL {
     }
 
     public Object ConvertBack(Object value, Type targetType, Object parameter, CultureInfo culture) {
-      return Utl.Convert2Type(value, targetType);
+      try {
+        return Utl.Convert2Type(value, targetType);
+      } catch (Exception) {
+        if (Utl.typeIsNumeric(targetType))
+          return 0;
+        else if (targetType == typeof(DateTime))
+          return DateTime.MinValue;
+        else
+          return null;
+      }
     }
   }
 

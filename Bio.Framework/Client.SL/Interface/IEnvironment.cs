@@ -67,20 +67,6 @@ namespace Bio.Framework.Client.SL {
     void LoadPlugin(IPlugin ownerPlugin, String pluginName, String pluginID, Action<LoadPluginCompletedEventArgs> act);    
 
     /// <summary>
-    /// ќпредел€ет существует ли плагин в системе
-    /// </summary>
-    /// <param name="pPlgName"></param>
-    /// <returns></returns>
-    Boolean PluginExists(String pPlgName);
-
-    /// <summary>
-    /// ¬озвращает ссылку на существующий плагин
-    /// </summary>
-    /// <param name="pPluginID">»м€ плагина = имени модул€ без расширени€</param>
-    /// <returns></returns>
-    IPlugin GetPlugin(String pPluginID);
-
-    /// <summary>
     /// ƒоступ по индексу к плагину, зарегестрированному в среде обитани€
     /// »ндекс плагина определ€етс€ пор€дком регистрации в среде обитани€.
     /// </summary>
@@ -91,21 +77,6 @@ namespace Bio.Framework.Client.SL {
     ///  оличество зарегистрированных плагинов
     /// </summary>
     Int32 PlgCount { get; }
-
-    /// <summary>
-    /// URL, с которого было запущено приложение
-    /// </summary>
-    String AppURL { get; }
-
-    /// <summary>
-    /// ѕерезапуск программы
-    /// </summary>
-    void doRestart();
-
-    /// <summary>
-    /// «авершение программы
-    /// </summary>
-    void doExit();
 
     /// <summary>
     /// ¬озвращает им€ клиента дл€ параметра User-Agent в запросе к серверу

@@ -325,9 +325,6 @@ namespace Bio.Framework.Client.SL {
         String moduleName = pluginName + csModuleExtention;
         // Запускаем процедуру загрузки плагина
         LoadModuleDelegate v_loadModuleDelegate = null;
-        //if (BioGlobal.Debug)
-        //  v_loadModuleDelegate = this._loadModuleDirect;
-        //else
         v_loadModuleDelegate = this._loadModuleUsingLocalStore1;
         v_loadModuleDelegate(moduleName, (e, assembly) => {
           // Сборка загружена. Создаем экземпляр плагина.
@@ -363,24 +360,6 @@ namespace Bio.Framework.Client.SL {
       this.LoadPlugin(ownerPlugin, pluginName, null, act);
     }
     
-    /*
-    private Boolean _loaded = false;
-    public LoadPluginCompletedEventArgs LoadPluginSync(IPlugin ownerPlugin, String pluginName, String pluginID) {
-      this._loaded = false;
-      LoadPluginCompletedEventArgs rslt = null;
-      LoadPlugin(null, pluginName, pluginID, (a) => {
-        rslt = a;
-        this._loaded = true;
-      });
-      while (!this._loaded) {
-        Thread.Sleep(500);
-      }
-      return rslt;
-    }
-    public LoadPluginCompletedEventArgs LoadPluginSync(IPlugin ownerPlugin, String pluginName) {
-      return LoadPluginSync(ownerPlugin, pluginName, null);
-    }
-    */
     #region IEnvironment Members
 
     public void setAppAttrs(string pProducerCompany, string pAppName, string pAppTitle, string pAppVersion) {
@@ -403,14 +382,6 @@ namespace Bio.Framework.Client.SL {
       get { return this.PluginRoot.AppVersion; }
     }
 
-    public bool PluginExists(String plgName) {
-      throw new NotImplementedException();
-    }
-
-    public IPlugin GetPlugin(String pluginID) {
-      throw new NotImplementedException();
-    }
-
     public IPlugin this[int index] {
       get {
         String[] v_keys = new String[this._plugins.Keys.Count];
@@ -421,18 +392,6 @@ namespace Bio.Framework.Client.SL {
 
     public int PlgCount {
       get { return this._plugins.Count; }
-    }
-
-    public String AppURL {
-      get { throw new NotImplementedException(); }
-    }
-
-    public void doRestart() {
-      throw new NotImplementedException();
-    }
-
-    public void doExit() {
-      throw new NotImplementedException();
     }
 
     public String UserAgentName {
@@ -500,8 +459,6 @@ namespace Bio.Framework.Client.SL {
       } 
     }
     public void Connect(AjaxRequestDelegate callback) {
-      //this.FConnMask.ShowMask("Соединение с сервером [" + this.fAjaxConnect.ServerUrl + "]...", true);
-      //this.ConnState = ConnState.Unconnected;
       this.AjaxMng.Request(new CBioRequest {
         requestType = RequestType.doPing,
         prms = null,
@@ -510,27 +467,15 @@ namespace Bio.Framework.Client.SL {
           if ((rsp != null) && (rsp.gCfg != null))
             BioGlobal.Debug = rsp.gCfg.Debug;
           if (this.AjaxMng.CurUsr != null) {
-            //Utl.SetCurUsrIsDebugger(this.AjaxMng.CurUsr.isBioAdmin() || this.AjaxMng.CurUsr.isDebugger());
             BioGlobal.CurUsrIsDebugger = this.AjaxMng.CurUsr.isBioAdmin() || this.AjaxMng.CurUsr.isDebugger();
             BioGlobal.CurSessionIsLoggedOn = true;
           }
           if (callback != null) callback(this, args);
-          //if (this.FConnMask.InvokeRequired)
-          //  this.FConnMask.HideMask();
         }
       });
     }
 
-    //private void _closeAllPlugins() {
-    //  foreach (var r in this._plugins) {
-    //    if ()(r.Value.View != null) {
-    //      r.Value.View.Close();
-    //    }
-    //  }
-    //}
-
     public void Disconnect(AjaxRequestDelegate callback, Boolean silent) {
-      //this._closeAllPlugins();
       this.AjaxMng.Request(new CBioRequest {
         requestType = RequestType.doLogout,
         silent = silent,
@@ -573,35 +518,6 @@ namespace Bio.Framework.Client.SL {
 
     #endregion
 
-    /*public static void loadRootPlugin(String xapName, Action<OpenReadCompletedEventArgs, IPluginRoot> action) {
-      if (!String.IsNullOrEmpty(xapName)) {
-        WebClient wc = new WebClient();
-        wc.OpenReadCompleted += new OpenReadCompletedEventHandler((sndr, atrs) => {
-          String appManifest = new StreamReader(Application.GetResourceStream(new StreamResourceInfo(atrs.Result, null),
-                               new Uri("AppManifest.xaml", UriKind.Relative)).Stream).ReadToEnd();
-
-
-          XElement deploymentRoot = XDocument.Parse(appManifest).Root;
-          List<XElement> deploymentParts = (from assemblyParts in deploymentRoot.Elements().Elements()
-                                            select assemblyParts).ToList();
-          Object ue = null;
-
-          foreach (XElement xElement in deploymentParts.Reverse<XElement>()) {
-            String source = xElement.Attribute("Source").Value;
-            StreamResourceInfo streamInfo = Application.GetResourceStream(new StreamResourceInfo(atrs.Result,
-                                              "application/binary"), new Uri(source, UriKind.Relative));
-
-            AssemblyPart asmPart = new AssemblyPart();
-            Assembly asm = asmPart.Load(streamInfo.Stream);
-            ue = asm.CreateInstance(typeof(T).FullName) as UIElement;
-          }
-          if (action != null)
-            action(atrs, ue as T);
-        });
-        wc.OpenReadAsync(new Uri(xapName, UriKind.Relative));
-      }
-    }*/
-
     private static Type findType(Type[] types, Type type) {
       if ((types != null) && (type != null)) {
         foreach (Type oType in types) {
@@ -620,16 +536,6 @@ namespace Bio.Framework.Client.SL {
       } else
         return null;
     }
-
-    //public static void loadStartUp(ContentControl dockSite, Action<OpenReadCompletedEventArgs, IPluginRoot> action) {
-    //  Utl.loadRemoteAssembly("Bio.Framework.Client.SL.xap", (args, asm) => {
-    //    Type tp = findType(asm.GetTypes(), typeof(CPluginRoot));
-    //    if (tp != null) {
-    //      ConstructorInfo ci = tp.GetConstructor(new Type[0]);
-    //      User rslt = (UserControl)ci.Invoke(new Object[0]);
-    //    }
-    //  });
-    //}
 
     public String LastSuccessPwd { get; set; }
   }

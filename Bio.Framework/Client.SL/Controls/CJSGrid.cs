@@ -123,7 +123,7 @@ namespace Bio.Framework.Client.SL {
     }
 
     public void SetSelection(String selection) {
-      if (selection != null){
+      if (selection != null) {
         var v_selection = VMultiSelection.Create(selection);
         this.SetSelection(v_selection);
       }
@@ -209,7 +209,7 @@ namespace Bio.Framework.Client.SL {
     }
     public void hideBusyIndicator() {
       Utl.UiThreadInvoke(() => {
-        if (this.busyIndicator != null) 
+        if (this.busyIndicator != null)
           this.busyIndicator.IsBusy = false;
       });
     }
@@ -234,7 +234,7 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    private Dictionary<String, String> _getColumnHeaderList() { 
+    private Dictionary<String, String> _getColumnHeaderList() {
       var rslt = new Dictionary<String, String>();
       foreach (var c in this._dataGrid.Columns)
         rslt.Add(GetDataGridColumnName(c).ToUpper(), ((String)c.Header).Replace("\n", " "));
@@ -414,6 +414,12 @@ namespace Bio.Framework.Client.SL {
       this._dataIsLoaded = true;
     }
 
+    public Boolean DataIsLoaded {
+      get {
+        return this._dataIsLoaded;
+      }
+    }
+
     private CJsonStoreClient _forward_sender = null;
     private AjaxResponseEventArgs _forward_args = null;
     void _dataGrid_LayoutUpdated(object sender, EventArgs e) {
@@ -589,7 +595,7 @@ namespace Bio.Framework.Client.SL {
         return this._isShown;
       }
     }
-    
+
     //public static DependencyProperty SelectedItemProperty = DependencyProperty.Register("SelectedItem", typeof(Object), typeof(CJSGrid), new PropertyMetadata(null));
     public CRTObject SelectedItem {
       get { return this._selectedItem; }
@@ -652,12 +658,12 @@ namespace Bio.Framework.Client.SL {
 
     //public static DependencyProperty ItemsSourceProperty = DependencyProperty.Register("ItemsSource", typeof(IEnumerable), typeof(CJSGrid), new PropertyMetadata(null));
     public IEnumerable ItemsSource {
-      get { 
-        return (this._dataGrid != null) ? this._dataGrid.ItemsSource : null; 
+      get {
+        return (this._dataGrid != null) ? this._dataGrid.ItemsSource : null;
       }
       set {
         if (this._dataGrid != null)
-          this._dataGrid.ItemsSource = value; 
+          this._dataGrid.ItemsSource = value;
       }
     }
 
@@ -719,7 +725,7 @@ namespace Bio.Framework.Client.SL {
       set { this.SetValue(SelectionModeProperty, value); }
     }
 
-    private class LoadParams<T> { 
+    private class LoadParams<T> {
       public CParams bioParams { get; set; }
       public T callback { get; set; }
       public CJsonStoreFilter locate { get; set; }
@@ -909,7 +915,7 @@ namespace Bio.Framework.Client.SL {
       var v_seld = new List<CRTObject>();
       foreach (var r in this._dataGrid.SelectedItems)
         v_seld.Add(r as CRTObject);
-      foreach(var r in v_seld)
+      foreach (var r in v_seld)
         this._jsClient.RemoveRow(r as CRTObject);
       this.SelectedIndex = v_seld_indx;
     }
@@ -968,11 +974,11 @@ namespace Bio.Framework.Client.SL {
     private Int32 _autoRefreshPeriodSecs = 20;
     public Int32 AutoRefreshPeriod {
       get { return this._autoRefreshPeriodSecs; }
-      set { 
+      set {
         this._autoRefreshPeriodSecs = value;
-        if (this._autoRefreshTimer != null) 
+        if (this._autoRefreshTimer != null)
           this._autoRefreshTimer.Interval = new TimeSpan(0, 0, this._autoRefreshPeriodSecs);
-        
+
       }
     }
 
@@ -1014,7 +1020,7 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    private CJSGridConfig _creCfg(){
+    private CJSGridConfig _creCfg() {
       var v_rslt = new CJSGridConfig();
       if (this._jsClient != null)
         v_rslt.pageSize = this.DefaultPageSize;
@@ -1023,19 +1029,19 @@ namespace Bio.Framework.Client.SL {
     }
 
     private void _editCfg() {
-        var v_cfgEditor = new CJSGridProps();
-        v_cfgEditor.Title = "Выбор колонок таблицы";
-        v_cfgEditor.Closed += new EventHandler((Object sender, EventArgs e) => {
-          if (((FloatableWindow)sender).DialogResult == true) {
-            this._applyCfgToGrid();
-            this._storeCfg(true);
-            this._updNavPanelVisibility();
-            this.Refresh(null);
-          }
-        });
-        if (this._cfg == null)
-          this._restoreCfg();
-        v_cfgEditor.ShowDialog(this._cfg);
+      var v_cfgEditor = new CJSGridProps();
+      v_cfgEditor.Title = "Выбор колонок таблицы";
+      v_cfgEditor.Closed += new EventHandler((Object sender, EventArgs e) => {
+        if (((FloatableWindow)sender).DialogResult == true) {
+          this._applyCfgToGrid();
+          this._storeCfg(true);
+          this._updNavPanelVisibility();
+          this.Refresh(null);
+        }
+      });
+      if (this._cfg == null)
+        this._restoreCfg();
+      v_cfgEditor.ShowDialog(this._cfg);
     }
 
     private void _applyCfgToGrid() {
@@ -1089,7 +1095,7 @@ namespace Bio.Framework.Client.SL {
     public Boolean SuspendFirstLoad { get; set; }
   }
 
-#region CoClasses
+  #region CoClasses
 
   public static class Extensions {
     //public static DataGridColumn getCol(this DataGridColumnHeader element) {
@@ -1147,7 +1153,7 @@ namespace Bio.Framework.Client.SL {
 
 
   }
-  
+
   public class GridRowEnumerator : IEnumerator<DataGridRow> {
     private DataGrid m_Grid;
 
@@ -1207,7 +1213,7 @@ namespace Bio.Framework.Client.SL {
 
     #endregion
   }
-  
+
   public class MyConverter : IValueConverter {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
       return "[" + (value as CollectionViewGroup).Items.Count + "]";
@@ -1232,6 +1238,6 @@ namespace Bio.Framework.Client.SL {
     }
   }
 
-#endregion
+  #endregion
 
 }

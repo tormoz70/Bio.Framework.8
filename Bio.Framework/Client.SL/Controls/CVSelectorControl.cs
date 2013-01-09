@@ -30,47 +30,48 @@ namespace Bio.Framework.Client.SL {
     public override void OnApplyTemplate() {
       base.OnApplyTemplate();
 
-      var view = Utl.FindParentElem1<IPluginComponent>(this);
-      if (view == null) {
-        throw new EBioException("[view] not found. Parent fom mast implement IPluginComponent interface!");
-      }
-      this._ownerPlugin = (view as IPluginComponent).ownerPlugin;
-      //this._selection = new VSingleSelection();
-
-      this._txt = this.GetTemplateChild("tbxText") as TextBox;
-      if (this._txt != null) {
-        this._txt.KeyDown += new KeyEventHandler((s, e) => {
-          if ((e.Key == Key.Delete) || (e.Key == Key.Back)) {
-            this.Value = null;
-          }
-        });
-      }
-
-      var btn = this.GetTemplateChild("btnSelect") as Button;
-      if (btn != null)
-        btn.Click += new RoutedEventHandler((s, a) => {
-          this._showSelector();
-        });
-
-      this._get_selector((selector) => {
-        if (this.IsMultiselector) {
-          this._selection = new VMultiSelection {
-            Value = this.Value
-          };
-        } else {
-          this._selection = new VSingleSelection {
-            ValueField = this.ValueField,
-            Value = this.Value,
-            DisplayField = this.DisplayField,
-            Display = null
-          };
+      if (!Utl.DesignTime) {
+        var view = Utl.FindParentElem1<IPluginComponent>(this);
+        if (view == null) {
+          throw new EBioException("[view] not found. Parent form mast implement IPluginComponent interface!");
         }
-        this._txt.Text = VSelection.csNotSeldText;
-        if (!this._selection.IsEmpty())
-          this._setSelection(this._selection);
-      });
+        this._ownerPlugin = (view as IPluginComponent).ownerPlugin;
+        //this._selection = new VSingleSelection();
 
+        this._txt = this.GetTemplateChild("tbxText") as TextBox;
+        if (this._txt != null) {
+          this._txt.KeyDown += new KeyEventHandler((s, e) => {
+            if ((e.Key == Key.Delete) || (e.Key == Key.Back)) {
+              this.Value = null;
+            }
+          });
+        }
 
+        var btn = this.GetTemplateChild("btnSelect") as Button;
+        if (btn != null)
+          btn.Click += new RoutedEventHandler((s, a) => {
+            this._showSelector();
+          });
+
+        this._get_selector((selector) => {
+          if (this.IsMultiselector) {
+            this._selection = new VMultiSelection {
+              Value = this.Value
+            };
+          } else {
+            this._selection = new VSingleSelection {
+              ValueField = this.ValueField,
+              Value = this.Value,
+              DisplayField = this.DisplayField,
+              Display = null
+            };
+          }
+          this._txt.Text = VSelection.csNotSeldText;
+          if (!this._selection.IsEmpty())
+            this._setSelection(this._selection);
+        });
+
+      }
     }
 
     public static DependencyProperty SelectorPluginProperty = DependencyProperty.Register("SelectorPlugin", typeof(String), typeof(CVSelectorControl), new PropertyMetadata(String.Empty));
@@ -88,7 +89,7 @@ namespace Bio.Framework.Client.SL {
     public static DependencyProperty ValueFieldProperty = DependencyProperty.Register("ValueField", typeof(String), typeof(CVSelectorControl), new PropertyMetadata(String.Empty));
     public override String ValueField {
       get { return (String)this.GetValue(ValueFieldProperty); }
-      set { 
+      set {
         this.SetValue(ValueFieldProperty, value);
         if (this._selection != null)
           this._selection.ValueField = value;
@@ -98,7 +99,7 @@ namespace Bio.Framework.Client.SL {
     public static DependencyProperty DisplayFieldProperty = DependencyProperty.Register("DisplayField", typeof(String), typeof(CVSelectorControl), new PropertyMetadata(String.Empty));
     public override String DisplayField {
       get { return (String)this.GetValue(DisplayFieldProperty); }
-      set { 
+      set {
         this.SetValue(DisplayFieldProperty, value);
         if (this._selection != null)
           this._selection.DisplayField = value;
