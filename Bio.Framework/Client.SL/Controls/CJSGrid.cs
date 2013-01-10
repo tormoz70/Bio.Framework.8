@@ -356,7 +356,11 @@ namespace Bio.Framework.Client.SL {
       }
       var handler = this.SelectedChanged;
       if (handler != null) {
-        handler(this, e);
+        try {
+          handler(this, e);
+        } catch (Exception ex) {
+          throw new EBioException("Непредвиденная ошибка при вызове обработчика собития \"SelectedChanged\"! Сообщение: " + ex.Message, ex); 
+        }
       }
     }
 
