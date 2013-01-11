@@ -46,7 +46,7 @@ namespace Bio.Framework.Client.SL {
       this._multiselection = new VMultiSelection();
       this._jsClient = new CJsonStoreClient();
       this._jsClient.grid = this;
-      this._jsClient.BeforeLoadData += this._onBeforeLoadData;
+      this._jsClient.OnBeforeLoadData += this._onBeforeLoadData;
       this._jsClient.AfterLoadData += this._onAfterLoadData;
       this._jsClient.OnRowPropertyChanging += new JSClientEventHandler<JSClientRowPropertyChangingEventArgs>(_jsClient_OnRowPropertyChanging);
       this._jsClient.OnRowPropertyChanged += new JSClientEventHandler<JSClientRowPropertyChangedEventArgs>(_jsClient_OnRowPropertyChanged);
@@ -396,11 +396,10 @@ namespace Bio.Framework.Client.SL {
     }
 
     public event JSClientEventHandler<CancelEventArgs> OnBeforeLoadData;
-    void _onBeforeLoadData(CJsonStoreClient sender, CancelEventArgs args) {
+    private void _onBeforeLoadData(CJsonStoreClient sender, CancelEventArgs args) {
       this._dataIsLoaded = false;
-      var handler = this.OnBeforeLoadData;
-      if (handler != null) {
-        handler(sender, args);
+      if (this.OnBeforeLoadData != null) {
+        this.OnBeforeLoadData(sender, args);
       }
     }
 
@@ -754,7 +753,7 @@ namespace Bio.Framework.Client.SL {
         };
         this._suspendLoadParams = null;
         this._callOnShowDelaied(() => {
-          this.showBusyIndicator("загрузка...");
+          
           try {
             this._jsClient.Load(loadParams.bioParams, (sndr, a) => {
               this.hideBusyIndicator();

@@ -155,9 +155,9 @@ namespace Bio.Helpers.Common.Types {
 
     #region Properties
 
-    public CParam this[String pName] {
+    public CParam this[String name] {
       get {
-        return this.ParamByName(pName);
+        return this.ParamByName(name);
       }
     }
 
@@ -183,8 +183,8 @@ namespace Bio.Helpers.Common.Types {
 
     #region Public methods
 
-    public int IndexOf(String pItemName) {
-      return base.IndexOf(this.ParamByName(pItemName));
+    public int IndexOf(String itemName) {
+      return base.IndexOf(this.ParamByName(itemName));
     }
 
     public CParam Remove(CParam item) {
@@ -276,70 +276,70 @@ namespace Bio.Helpers.Common.Types {
     /// <summary>
     /// Добавляет набор параметров к существующему экземпляру.
     /// </summary>
-    /// <param name="pParams">Набор параметров.</param>
-    /// <param name="Overwrite">Перезаписывать или нет параметры с совпадающими именами.</param>
-    public CParams Merge(CParams pParams, bool Overwrite) {
-      if((pParams != null) && (pParams != this)) {
-        lock(pParams) {
-          foreach(CParam pp in pParams) {
-            this.Add(pp.Export(this), Overwrite);
+    /// <param name="prms">Набор параметров.</param>
+    /// <param name="overwrite">Перезаписывать или нет параметры с совпадающими именами.</param>
+    public CParams Merge(CParams prms, bool overwrite) {
+      if((prms != null) && (prms != this)) {
+        lock(prms) {
+          foreach(CParam pp in prms) {
+            this.Add(pp.Export(this), overwrite);
           }
         }
       }
       return this;
     }
 
-    public Object ObjByName(String pName, bool pIgnoreCase) {
-      CParam vPrm = this.ParamByName(pName, pIgnoreCase);
+    public Object ObjByName(String name, bool ignoreCase) {
+      CParam vPrm = this.ParamByName(name, ignoreCase);
       return vPrm != null ? vPrm.InnerObject : null;
     }
 
-    public String ValAsStrByName(String pName, bool pIgnoreCase) {
-      CParam vPrm = this.ParamByName(pName, pIgnoreCase);
+    public String ValAsStrByName(String name, bool ignoreCase) {
+      CParam vPrm = this.ParamByName(name, ignoreCase);
       return vPrm != null ? vPrm.ValueAsString() : null;
     }
 
-    public Object ValByName(String pName, bool pIgnoreCase) {
-      CParam vPrm = this.ParamByName(pName, pIgnoreCase);
+    public Object ValByName(String name, bool ignoreCase) {
+      CParam vPrm = this.ParamByName(name, ignoreCase);
       return vPrm != null ? vPrm.Value : null;
     }
 
     /// <summary>
     /// Проверяет параметр на существование
     /// </summary>
-    /// <param name="pName">Имя параметра (Чувствительно к регистру)</param>
+    /// <param name="name">Имя параметра (Чувствительно к регистру)</param>
     /// <returns>null, если ненайден</returns>
-    public Boolean ParamExists(String pName) {
-      return this.ParamByName(pName, false, false) != null;
+    public Boolean ParamExists(String name) {
+      return this.ParamByName(name, false, false) != null;
     }
     /// <summary>
     /// Проверяет параметр на существование
     /// </summary>
-    /// <param name="pName">Имя параметра</param>
-    /// <param name="pIgnoreCase">По умолчанию false</param>
+    /// <param name="name">Имя параметра</param>
+    /// <param name="ignoreCase">По умолчанию false</param>
     /// <returns>null, если ненайден</returns>
-    public Boolean ParamExists(String pName, bool pIgnoreCase) {
-      return this.ParamByName(pName, pIgnoreCase, false) != null;
+    public Boolean ParamExists(String name, bool ignoreCase) {
+      return this.ParamByName(name, ignoreCase, false) != null;
     }
 
 
     /// <summary>
     /// Вытаскивает параметр по имени
     /// </summary>
-    /// <param name="pName">Имя параметра</param>
+    /// <param name="name">Имя параметра</param>
     /// <returns>null, если ненайден</returns>
-    public CParam ParamByName(String pName) {
-      return this.ParamByName(pName, false, false);
+    public CParam ParamByName(String name) {
+      return this.ParamByName(name, false, false);
     }
 
     /// <summary>
     /// Вытаскивает параметр по имени
     /// </summary>
-    /// <param name="pName">Имя параметра</param>
-    /// <param name="pIgnoreCase">По умолчанию false</param>
+    /// <param name="name">Имя параметра</param>
+    /// <param name="ignoreCase">По умолчанию false</param>
     /// <returns>null, если ненайден</returns>
-    public CParam ParamByName(String pName, bool pIgnoreCase) {
-      return this.ParamByName(pName, pIgnoreCase, false);
+    public CParam ParamByName(String name, bool ignoreCase) {
+      return this.ParamByName(name, ignoreCase, false);
     }
 
     /// <summary>
@@ -375,11 +375,11 @@ namespace Bio.Helpers.Common.Types {
     /// Устанавливает значение существующего параметра, 
     /// если параметр не существует, то добавляет его.
     /// </summary>
-    /// <param name="pName">Имя параметра. Не чувствительно к регистру.</param>
-    /// <param name="pValue"></param>
+    /// <param name="name">Имя параметра. Не чувствительно к регистру.</param>
+    /// <param name="value"></param>
     /// <returns></returns>
-    public CParam SetValue(String pName, Object pValue) {
-      return SetValue(this, pName, pValue);
+    public CParam SetValue(String name, Object value) {
+      return SetValue(this, name, value);
     }
 
     /// <summary>
@@ -474,10 +474,10 @@ namespace Bio.Helpers.Common.Types {
     /// <summary>
     /// Восстанвливает объект из Json-строки
     /// </summary>
-    /// <param name="pJsonString"></param>
+    /// <param name="jsonString"></param>
     /// <returns></returns>
-    public static CParams Decode(String pJsonString) {
-      return jsonUtl.decode<CParams>(pJsonString, new JsonConverter[] { new EBioExceptionConverter() });
+    public static CParams Decode(String jsonString) {
+      return jsonUtl.decode<CParams>(jsonString, new JsonConverter[] { new EBioExceptionConverter() });
     }
 
     /// <summary>
@@ -520,12 +520,12 @@ namespace Bio.Helpers.Common.Types {
     }
 
     /// <summary>
-    /// Создает новый экземпляр если pParams == null, иначе возвращает pParams
+    /// Создает новый экземпляр если prms == null, иначе возвращает prms
     /// </summary>
     /// <param name="pParams"></param>
     /// <returns></returns>
-    public static CParams CreNewIfNull(CParams pParams) {
-      return pParams ?? new CParams();
+    public static CParams CreNewIfNull(CParams prms) {
+      return prms ?? new CParams();
     }
 
     /// <summary>
@@ -644,68 +644,5 @@ namespace Bio.Helpers.Common.Types {
 
   }
   #endregion
-
-  
-  //public class CParamConverter : CustomCreationConverter<CParam> {
-  //  public override CParam Create(Type objectType) {
-  //    return new CParam();
-  //  }
-
-  //  public override bool CanWrite {
-  //    get {
-  //      return true;
-  //    }
-  //  }
-
-  //  public override bool CanRead {
-  //    get {
-  //      return false;
-  //    }
-  //  }
-
-  //  public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) {
-  //    String tw = jsonUtl.Encode(value, new JsonConverter[] { new EBioExceptionConverter() });
-  //    writer.WriteRawValue(tw);
-  //  }
-
-  //  /*public override object ReadJson(Newtonsoft.Json.JsonReader reader, Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer) {
-  //    //return base.ReadJson(reader, objectType, existingValue, serializer);
- 
-  //  //public String Name { get; set; }
-  //  //public Object Value { get; set; }
-
-  //  //public Object InnerObject { get; set; }
-  //  //public Object InnerObjectEx { get; set; }
-
-  //  //public Type ParamType { get; set; }
-  //  //public int ParamSize { get; set; }
-  //  //public ParameterDirection ParamDirection { get; set; }
-      
-  //    CParam vresult = new CParam();
-  //    reader.Read();
-
-  //    reader.Read();
-  //    reader.Read();
-
-  //    if (String.Equals((String)reader.Value, "Name")) {
-  //      reader.Read();
-  //      vresult.Name = (String)reader.Value;
-  //      reader.Read();
-  //    }
-
-  //    if (String.Equals((String)reader.Value, "Value")) {
-  //      reader.Read();
-  //      vresult.Value = jsonUtl.restoreObj((String)reader.Value);
-  //      reader.Read();
-  //    }
-
-  //    //StringWriter jsonString = new StringWriter();
-  //    while (reader.Read()) { }
-  //    //  jsonString.Write(reader.Value);
-  //    //CParam vresult = jsonUtl.Decode<CParam>(jsonString.ToString(), new JsonConverter[] { new CBioResponseConverter(), new EBioExceptionConverter() });
-  //    return vresult;
-  //  }*/
-    
-  //}
 
 }

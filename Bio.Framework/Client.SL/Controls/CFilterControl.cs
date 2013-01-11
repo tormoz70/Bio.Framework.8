@@ -37,17 +37,17 @@ namespace Bio.Framework.Client.SL {
     public static DependencyProperty FilterValsProperty = DependencyProperty.Register("FilterVals", typeof(String), typeof(CFilterControl), new PropertyMetadata(String.Empty));
     public String FilterVals {
       get { 
-        //return (String)this.GetValue(FilterValsProperty); 
         return this._bldVals();
       }
       set { 
-        //this.SetValue(FilterValsProperty, value); 
         var v_vals = Utl.SplitString(value, ccPathDelimeter);
-        for (int i = 0; i < this._vals.Length; i++) {
-          if (i < v_vals.Length)
-            this._vals[i] = v_vals[i];
-          else
-            this._vals[i] = null;
+        if ((this._vals != null) && (v_vals != null)) {
+          for (int i = 0; i < this._vals.Length; i++) {
+            if (i < v_vals.Length)
+              this._vals[i] = v_vals[i];
+            else
+              this._vals[i] = null;
+          }
         }
         if (this._tbx != null) {
           this._tbx.Text = this._bldMask();
