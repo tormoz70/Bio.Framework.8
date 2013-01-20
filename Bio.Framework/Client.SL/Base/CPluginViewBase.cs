@@ -21,8 +21,6 @@ namespace Bio.Framework.Client.SL {
     public CPluginViewBase() {
       this.IsDialog = false;
       if(!Utl.DesignTime){
-        //this.LayoutUpdated += new EventHandler(this.CPluginViewBase_LayoutUpdated);
-        //this.v
         this.Loaded += new RoutedEventHandler(CPluginViewBase_Loaded);
       }
     }
@@ -30,7 +28,6 @@ namespace Bio.Framework.Client.SL {
     public CPluginViewBase(IPlugin owner)
       : this() {
       this.ownerPlugin = owner;
-      //this.Loaded += new RoutedEventHandler(CPluginViewBase_Loaded);
     }
 
     /// <summary>
@@ -54,11 +51,10 @@ namespace Bio.Framework.Client.SL {
           (this._container as Panel).Children.Add(this);
         else if (this._container is ContentControl) {
           (this._container as ContentControl).Content = this;
-          //(this._container as ContentControl).con
         }
         this._container.UpdateLayout();
-        //this.UpdateLayout();
-        //this.ApplyTemplate();
+
+
       }
     }
 
@@ -165,8 +161,6 @@ namespace Bio.Framework.Client.SL {
     }
 
     private void _remove() {
-      //try {
-      //this._clearData(this.Content);
       if (this._container is Panel)
         (this._container as Panel).Children.Remove(this);
       else if (this._container is ContentControl)
@@ -174,11 +168,10 @@ namespace Bio.Framework.Client.SL {
       this._container = null;
 
       if (this._shown && this._closing) {
-        this._shown = false;
-        this._closing = false;
         this.doOnClose();
       }
-
+      this._shown = false;
+      this._closing = false;
     }
 
     public void Close() {
