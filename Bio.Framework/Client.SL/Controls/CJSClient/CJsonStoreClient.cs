@@ -183,83 +183,12 @@ namespace Bio.Framework.Client.SL {
         if (this._grid != value) {
           this._grid = value;
           if ((this._grid != null) && (this._grid._dataGrid != null)) {
-            //this._grid._dataGrid.AutoGeneratingColumn += new EventHandler<DataGridAutoGeneratingColumnEventArgs>(_grid_AutoGeneratingColumn);
             this._grid._dataGrid.AutoGenerateColumns = true;
-            //if ((this._grid._dataGrid.HeadersVisibility & DataGridHeadersVisibility.Row) == DataGridHeadersVisibility.Row)
-            //  this._grid._dataGrid.LoadingRow += new EventHandler<DataGridRowEventArgs>(this._grid_LoadingRow);
           }
         }
       }
     }
 
-    //void _grid_LoadingRow(object sender, DataGridRowEventArgs e) {
-    //  Int64 v_start_row = 0;
-    //  if(this.pageSize > 0){
-    //    v_start_row = (this._curPage - 1) * this.pageSize;
-    //  }
-    //  e.Row.Header = String.Format("{0} ", v_start_row + e.Row.GetIndex() + 1);
-    //}
-
-    //private void _doBeforeGenColumn(DataGridAutoGeneratingColumnEventArgs e) {
-    //  var eve = this.OnBeforeGenColumn;
-    //  if (eve != null)
-    //    eve(this, e);
-    //}
-
-    //private void _doAfterGenColumn(JSClientAfterGenColumnEventArgs e) {
-    //  var eve = this.OnAfterGenColumn;
-    //  if (eve != null)
-    //    eve(this, e);
-    //}
-
-    /*private void _grid_AutoGeneratingColumn(Object sender, DataGridAutoGeneratingColumnEventArgs e) {
-      //this._grid.Columns.Select((col, r) => { 
-      //  (col as DataGridBoundColumn).Binding.Path == e.PropertyName
-      //});
-      //DataGridBoundColumn c = this._grid.Columns.Select((col, r) => {
-      //  return col as DataGridBoundColumn;
-      //}).Where((col) => { return col.Binding.Path.Path == e.PropertyName; }).First<DataGridBoundColumn>();
-      //this._grid.so
-      DataGridBoundColumn c = this._grid._dataGrid.Columns.Cast<DataGridBoundColumn>().Where((col) => {
-        return String.Equals(col.Binding.Path.Path, e.PropertyName, StringComparison.CurrentCultureIgnoreCase);
-      }).FirstOrDefault();
-      e.Cancel = c != null;
-      
-      if (!e.Cancel)
-        this._doBeforeGenColumn(e);
-      if (!e.Cancel) {
-
-        CJsonStoreMetadataFieldDef fldDef = this.fieldDefByName(e.PropertyName);
-        e.Cancel = ((fldDef == null) || fldDef.hidden);
-        if (!e.Cancel) {
-          if (fldDef != null) {
-            e.Column.IsReadOnly = fldDef.readOnly;
-            if (fldDef.width > 0) {
-              //Double vWidth = new Double(fldDef.width);
-              e.Column.Width = new DataGridLength(fldDef.width);
-            }
-            String headerStr = fldDef.header;
-            if (!String.IsNullOrEmpty(headerStr))
-              e.Column.Header = headerStr;
-
-            if (e.Column is DataGridTextColumn) {
-              (e.Column as DataGridBoundColumn).Binding.Converter = new CurrFormatter(fldDef, e.Column);
-              HorizontalAlignment v_alignment = fldDef.GetHorAlignment();
-              Style st = new Style(typeof(TextBlock));
-              st.Setters.Add(new Setter { Property = TextBlock.HorizontalAlignmentProperty, Value = v_alignment });
-              (e.Column as DataGridBoundColumn).ElementStyle = st;
-            }
-
-            if (e.Column is DataGridCheckBoxColumn) {
-              //Thread.Sleep(100);
-              //(e.Column as DataGridCheckBoxColumn).
-            }
-
-            this._doAfterGenColumn(new JSClientAfterGenColumnEventArgs(e.PropertyName, e.Column, fldDef));
-          }
-        }
-      }
-    }*/
     public CJsonStoreClient() {
       this._ds_changes = new List<CJSChangedRow>();
     }
@@ -270,15 +199,6 @@ namespace Bio.Framework.Client.SL {
         flds.Add(fld);
       return flds;
     }
-
-    //private IDictionary<String, Type> _creFldDefsLoc(ObservableCollection<DataGridColumn> cols) {
-    //  IDictionary<String, Type> flds = new Dictionary<String, Type>();
-    //  foreach (DataGridBoundColumn col in cols) {
-    //    //String
-    //    flds.Add(col.Binding.Path, fld.GetDotNetType());
-    //  }
-    //  return flds;
-    //}
 
     private void _regChanges(CJSChangedRow chng) {
       var v_exists = this._ds_changes.FirstOrDefault((c) => {
@@ -400,16 +320,8 @@ namespace Bio.Framework.Client.SL {
       return this.InsertRow(-1);
     }
 
-    //public void doOnRowPropChanged(Object row) {
-    //  Thread.Sleep(100);
-    //}
-    //private CJSChangedRow _findRowInChanges(Object row) {
-    //  return this._ds_changes.FirstOrDefault((c) => { return c.CurRow.Equals(row); });
-    //}
-
     private CRTObject _lastPreChangedRow = null;
     private void _doOnRowPropertyChanging(Object sender, PropertyChangingEventArgs e) {
-      //String prop = e.PropertyName;
       this._lastPreChangedRow = (sender as CRTObject).Copy();
       var eve = this.OnRowPropertyChanging;
       if (eve != null) {
@@ -418,12 +330,8 @@ namespace Bio.Framework.Client.SL {
       }
     }
     private void _doOnRowPropertyChanged(Object sender, PropertyChangedEventArgs e) {
-      //String prop = e.PropertyName;
-      //var changedRow = this._findRowInChanges(sender);
-      //if(changedRow == null){
       var v_indx = this.indexOf(this._lastPreChangedRow);
       this._regChanges(new CJSChangedRow(v_indx, CJsonStoreRowChangeType.Modified, (CRTObject)sender, this._lastPreChangedRow));
-      //}
       var eve = this.OnRowPropertyChanged;
       if (eve != null) {
         var ee = new JSClientRowPropertyChangedEventArgs(this._lastPreChangedRow, e.PropertyName);
@@ -439,7 +347,6 @@ namespace Bio.Framework.Client.SL {
         try {
           String v_intRowUID = Guid.NewGuid().ToString("N");
           this._setFieldValue(row, csInternalROWUID_FieldName, v_intRowUID);
-          //this._setFieldValue(row, CJsonStoreMetadata.csPKFieldName, v_intRowUID);
         } finally {
           row.EnableEvents();
         }
@@ -473,11 +380,6 @@ namespace Bio.Framework.Client.SL {
 
     private void _setFieldValue(CRTObject row, String fldName, Object value) {
       if (row != null) {
-        //PropertyInfo v_property = CTypeFactory.FindPropertyOfObject(row, fldName);
-        //if (v_property != null) {
-        //  var v_value = Utl.Convert2Type(value, v_property.PropertyType);
-        //  v_property.SetValue(row, v_value, null);
-        //}
         row[fldName] = value;
       }
     }
@@ -506,7 +408,6 @@ namespace Bio.Framework.Client.SL {
                     var value = r.Values[v_jsRsp.packet.metaData.indexOf(fld.name)];
                     this._setFieldValue(row, fld.name, value);
                   }
-                  //this.AddRow(row);
                 } finally {
                   row.EnableEvents();
                 }
@@ -604,7 +505,6 @@ namespace Bio.Framework.Client.SL {
     }
 
     private String _lastRequestedBioCode = null;
-    //private CJsonStoreFilter  _lastRequestedLocate = null;
     private CParams _lastRequestedParams = null;
     private CParams _lastReturnedParams = null;
     private CRTObject _lastLocatedRow = null;
@@ -693,22 +593,12 @@ namespace Bio.Framework.Client.SL {
 
     private void _refreshGreadReadOnly() {
       if (this.grid._dataGrid != null) {
-        //this.grid._dataGrid.IsReadOnly = this.readOnly;
-        //foreach (var col in this.grid._dataGrid.Columns) {
-        //  if (col is DataGridBoundColumn) {
-        //    var fld = this.fieldDefByName((col as DataGridBoundColumn).Binding.Path.Path);
-        //    col.IsReadOnly = fld.readOnly;
-        //  }
-        //}
       }
     }
 
-    //private CJsonStoreFilter _storedPKSelection = null;
     private CJsonStoreFilter _getCurrentSelection() {
       CJsonStoreFilter v_pkSelection = null;
       if ((this.grid != null) && (this.grid.SelectedItem != null) && (this._metadata != null)) {
-        //var v_pk_value = this.grid.SelectedItem.GetValue<String>(CJsonStoreMetadata.csPKFieldName);
-        //var v_pk_vals = this._metadata.parsPK(v_pk_value);
         var v_pk_vals = this._metadata.getPK(this.grid.SelectedItem);
         v_pkSelection = new CJsonStoreFilter {
           fromPosition = 0,
@@ -750,7 +640,6 @@ namespace Bio.Framework.Client.SL {
       if (String.IsNullOrEmpty(this.bioCode))
         throw new EBioException("Свойство \"bioCode\" должно быть определено!");
 
-      //Boolean cancel = false;
       this.doBeforLoadData((bla) => {
         if (bla.Cancel) {
           return;
