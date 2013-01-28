@@ -31,17 +31,6 @@ namespace Bio.Framework.Client.SL {
     private BindingExpression bE;
     public CJSComboBox() {
       this.SelectionChanged += this._selectionChanged;
-      //this.KeyDown += this._keyDown;
-    }
-
-    private void _keyDown(object sender, KeyEventArgs e) {
-      //if ((e.Key == Key.Delete) || (e.Key == Key.Back)) {
-      //  //if (this.bE != null) {
-      //  //  Utl.SetPropertyValue(this.bE.DataItem, this.bE.ParentBinding.Path.Path, null);
-      //  //} else
-      //  this.SelectedIndex = -1;
-
-      //}
     }
 
     private void _selectionChanged(Object sender, SelectionChangedEventArgs e) {
@@ -54,34 +43,86 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    public static void LoadItems(IAjaxMng ajaxMng, ComboBox cbx, String bioCode, CParams bioParams, Action<ComboBox> callback, Boolean addNullItem) {
+    private static void _storeItems(String bioCode, CbxItems items) {
+      //Utl.StoreUserObjectStrg("cbxItems-" + bioCode, items);
+    }
+
+    private static CbxItems _restoreItems(String bioCode) {
+      //return Utl.RestoreUserObjectStrg<CbxItems>("cbxItems-" + bioCode, null);
+      return null;
+    }
+
+    private static void _loadItems(ComboBox cbx, CbxItems items, Boolean addNullItem) {
+      if ((items != null) && (items.metadata.fields.Count > 1)) {
+        cbx.SelectedValuePath = items.metadata.fields[0].name;
+        cbx.DisplayMemberPath = items.metadata.fields[1].name;
+        if (addNullItem) {
+          var v_NullRow = items.NewRow();
+          v_NullRow.SetValue(cbx.SelectedValuePath, null);
+          v_NullRow.SetValue(cbx.DisplayMemberPath, "<не выбрано>");
+          (items.ds as IList).Insert(0, v_NullRow);
+        }
+        cbx.ItemsSource = items.ds;
+        if (addNullItem)
+          cbx.SelectedIndex = 0;
+      }
+    }
+
+    public static void LoadItems(IAjaxMng ajaxMng, ComboBox cbx, String bioCode, CParams bioParams, Action<ComboBox> callback, Boolean addNullItem, Boolean useCache) {
       var v_cli = new CJsonStoreClient {
         ajaxMng = ajaxMng,
         bioCode = bioCode
       };
-      v_cli.Load(bioParams, (s, a) => {
-        if (a.response.success) {
-          //var v_rsp = a.response as CJsonStoreResponse;
-          if (v_cli.jsMetadata.fields.Count > 1) {
-            cbx.SelectedValuePath = v_cli.jsMetadata.fields[0].name;
-            cbx.DisplayMemberPath = v_cli.jsMetadata.fields[1].name;
-            if (addNullItem) {
-              var v_NullRow = v_cli.NewRow();
-              v_NullRow.SetValue(cbx.SelectedValuePath, null);
-              v_NullRow.SetValue(cbx.DisplayMemberPath, "<не выбрано>");
-              v_cli.InsertRow(0, v_NullRow);
-            }
-            cbx.ItemsSource = v_cli.DS;
-            if (addNullItem) 
-              cbx.SelectedIndex = 0;
+      CbxItems storedItems = null;
+      if (useCache)
+        storedItems = _restoreItems(bioCode);
+      if (storedItems != null) {
+        _loadItems(cbx, storedItems, addNullItem);
+        if (callback != null)
+          callback(cbx);
+      } else {
+        v_cli.Load(bioParams, (s, a) => {
+          if (a.response.success) {
+            var cbxitems = new CbxItems { metadata = v_cli.jsMetadata, ds = v_cli.DS };
+            if (useCache)
+              _storeItems(bioCode, cbxitems);
+            _loadItems(cbx, cbxitems, addNullItem);
+            if (callback != null)
+              callback(cbx);
           }
-          if (callback != null)
-            callback(cbx);
-        }
-      });
+        });
+      }
     }
+    public static void LoadItems(IAjaxMng ajaxMng, ComboBox cbx, String bioCode, CParams bioParams, Action<ComboBox> callback, Boolean addNullItem) {
+      LoadItems(ajaxMng, cbx, bioCode, bioParams, callback, addNullItem, false);
+    }
+
     public static void LoadItems(IAjaxMng ajaxMng, ComboBox cbx, String bioCode, CParams bioParams, Action<ComboBox> callback) {
-      LoadItems(ajaxMng, cbx, bioCode, bioParams, callback, false);
+      LoadItems(ajaxMng, cbx, bioCode, bioParams, callback, false, false);
+    }
+
+  }
+
+  public class CbxItems {
+    public CJsonStoreMetadata metadata = null;
+    public IEnumerable<CRTObject> ds = null;
+
+    public CRTObject NewRow() {
+      if ((this.ds != null) && (this.ds.First() != null)) {
+        var row = CTypeFactory.CreateInstance(this.ds.First().GetType(), null, null);
+        row.DisableEvents();
+        try {
+          String v_intRowUID = Guid.NewGuid().ToString("N");
+          if (row != null) {
+            row[CJsonStoreClient.csInternalROWUID_FieldName] = v_intRowUID;
+          }
+
+        } finally {
+          row.EnableEvents();
+        }
+        return row;
+      } else
+        return null;
     }
 
   }
