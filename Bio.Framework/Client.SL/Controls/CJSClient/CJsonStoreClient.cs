@@ -117,7 +117,7 @@ namespace Bio.Framework.Client.SL {
       this._pageSize = pageSize;
     }
 
-    private const String csInternalROWUID_FieldName = "InternalROWUID";
+    public const String csInternalROWUID_FieldName = "InternalROWUID";
     private List<CPropertyMetadata> _genPropertyDefs(List<CJsonStoreMetadataFieldDef> fieldDefs) {
       List<CPropertyMetadata> rslt = new List<CPropertyMetadata>();
       rslt.Add(new CPropertyMetadata {
