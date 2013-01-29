@@ -74,10 +74,10 @@ namespace Bio.Framework.Client.SL {
 
     private const Int64 ciQuota = 10000 * 1024;
     public void IncreaseQuota() {
-      using (var store = IsolatedStorageFile.GetUserStoreForApplication()) {
-        if (store.Quota < ciQuota)
-          store.IncreaseQuotaTo(ciQuota);
-      }
+      //using (var store = IsolatedStorageFile.GetUserStoreForApplication()) {
+      //  if (store.Quota < ciQuota)
+      //    store.IncreaseQuotaTo(ciQuota);
+      //}
     }
     private const String csISPluginFolderName = "plugins";
     private void _saveModuleToLoc(Stream stream, String moduleName, String version) {
