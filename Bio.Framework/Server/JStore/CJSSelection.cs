@@ -82,20 +82,20 @@ namespace Bio.Framework.Server {
       }
     }
 
-    public void prepareSQL(String pBioSelection, CJSCursor pCur, ref String vSQL) {
-      this.FInvert = this.extractInvert(pBioSelection);
-      this.FPKs = this.extractPKS(pBioSelection, pCur);
+    public void PrepareSQL(String selection, CJSCursor cursor, ref String sql) {
+      this.FInvert = this.extractInvert(selection);
+      this.FPKs = this.extractPKS(selection, cursor);
 
       String vWhereSQL = null;
       String vInvertStr = "";
       if(this.Invert)
         vInvertStr = "not ";
-      foreach(CParam vPK in this.PKs) {
+      foreach(var pk in this.PKs) {
         String oneCond = null;
-        foreach(CParam vPKFldItem in ((CParams)vPK.InnerObject)) {
-          CField cFld = (CField)vPKFldItem.InnerObject;
-          Utl.appendStr(ref oneCond, cFld.FieldName + " = " + ":" + cFld.FieldName + "", " and ");
-          pCur.Params.Add(cFld.FieldName, vPKFldItem.Value);
+        foreach(var fldItem in ((CParams)pk.InnerObject)) {
+          var fld = (CField)fldItem.InnerObject;
+          Utl.AppendStr(ref oneCond, fld.FieldName + " = " + ":" + fld.FieldName + "", " and ");
+          cursor.Params.Add(fld.FieldName, fldItem.Value);
         }
         if(vWhereSQL == null)
           vWhereSQL = " " + vInvertStr + "(" + oneCond + ")";
@@ -104,7 +104,7 @@ namespace Bio.Framework.Server {
       }
 
       if(vWhereSQL != null)
-        vSQL = String.Format("SELECT * FROM ({0}) WHERE {1}", vSQL, vWhereSQL);
+        sql = String.Format("SELECT * FROM ({0}) WHERE {1}", sql, vWhereSQL);
 
     }
   }

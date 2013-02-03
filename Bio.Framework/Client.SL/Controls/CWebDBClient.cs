@@ -85,10 +85,10 @@ namespace Bio.Framework.Client.SL {
       var v_opts = opts ?? new HtmlPopupWindowOptions { Width = 600, Height = 500 };
       v_cli.Exec(null, (s, a) => {
         var v_opts_line = "";
-        Utl.appendStr(ref v_opts_line, "resizable:" + ((v_opts.Resizeable) ? "yes" : "no"), ";");
-        Utl.appendStr(ref v_opts_line, "menubar:no;status:no;center:yes;help:no;minimize:no;maximize:no;border:think;statusbar:no", ";");
-        Utl.appendStr(ref v_opts_line, "dialogWidth:" + v_opts.Width + "px", ";");
-        Utl.appendStr(ref v_opts_line, "dialogHeight:" + v_opts.Height + "px", ";");
+        Utl.AppendStr(ref v_opts_line, "resizable:" + ((v_opts.Resizeable) ? "yes" : "no"), ";");
+        Utl.AppendStr(ref v_opts_line, "menubar:no;status:no;center:yes;help:no;minimize:no;maximize:no;border:think;statusbar:no", ";");
+        Utl.AppendStr(ref v_opts_line, "dialogWidth:" + v_opts.Width + "px", ";");
+        Utl.AppendStr(ref v_opts_line, "dialogHeight:" + v_opts.Height + "px", ";");
         //var v_rsp = a.response as CBioResponse;
         var v_html = "Сообщение" + "||" + v_url_body; 
         var v_js = String.Format("self.showModalDialog('{0}', '{1}', '{2}');", v_url, v_html, v_opts_line);

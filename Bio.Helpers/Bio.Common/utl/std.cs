@@ -1,7 +1,5 @@
 namespace Bio.Helpers.Common {
   using System;
-  //using System.Xml;
-  //using System.Text;
   using System.Text.RegularExpressions;
   using System.IO;
 #if !SILVERLIGHT
@@ -10,27 +8,24 @@ namespace Bio.Helpers.Common {
   using System.Drawing;
   using System.Data;
   using Microsoft.Win32;
+  using System.Threading;
+  using System.Xml;
 #else
+  using System.IO.IsolatedStorage;
+  using System.Windows;
   using System.Windows.Browser;
-  using System.Windows.Controls;
   using System.Xml.Linq;
   using System.Windows.Resources;
 #endif
-  using System.Collections;
   using System.Collections.Generic;
-  using System.Collections.Specialized;
   using System.Globalization;
   using System.ComponentModel;
-  using System.Threading;
   using System.Reflection;
   using System.Linq;
 
-  using Bio.Helpers.Common.Types;
+  using Types;
   using System.Net;
-  using System.Windows;
   using System.Text;
-  using System.Xml;
-  using System.IO.IsolatedStorage;
 
   /// <summary>
   /// Утилиты общего назначения
@@ -40,32 +35,35 @@ namespace Bio.Helpers.Common {
     /// <summary>
     /// Константа - имя кодировки
     /// </summary>
-    public const String Enc_ISO_8859_1 = "ISO-8859-1";
+    public const String EncIso88591 = "ISO-8859-1";
     /// <summary>
     /// Константа - имя кодировки
     /// </summary>
-    public const String Enc_UTF_8 = "UTF-8";
+    public const String EncUtf8 = "UTF-8";
     /// <summary>
     /// Константа - имя кодировки
     /// </summary>
-    public const String Enc_Cp866 = "Cp866";
+    public const String EncCp866 = "Cp866";
     /// <summary>
     /// Константа - имя кодировки
     /// </summary>
-    public const String Enc_ISO_8859_5 = "ISO-8859-5";
+    public const String EncIso88595 = "ISO-8859-5";
     /// <summary>
     /// Константа - имя кодировки
     /// </summary>
-    public const String Enc_Windows_1251 = "WINDOWS-1251";
+    public const String EncWindows1251 = "WINDOWS-1251";
     /// <summary>
     /// 
     /// </summary>
-    public const String SYS_ENCODING = Enc_UTF_8;
+    public const String SYS_ENCODING = EncUtf8;
 
 #if SILVERLIGHT
-    public static System.Text.Encoding DefaultEncoding = System.Text.Encoding.UTF8;
+    public static Encoding DefaultEncoding = Encoding.UTF8;
 #else
-    public static System.Text.Encoding DefaultEncoding = System.Text.Encoding.Default;
+    /// <summary>
+    /// Кодировка по умолчанию
+    /// </summary>
+    public static Encoding DefaultEncoding = Encoding.Default;
 #endif
 
     /// <summary>
@@ -97,22 +95,23 @@ namespace Bio.Helpers.Common {
     /// <summary>
     /// Вытаскивает из URL строки начение параметра по имени
     /// </summary>
-    /// <param name="queryURI"></param>
+    /// <param name="queryUri"></param>
     /// <param name="prm"></param>
     /// <returns></returns>
-    public static String GetQueryParam(String queryURI, String prm) {
-      if (queryURI != null) {
-        String pQString = HttpUtility.UrlDecode(queryURI.Substring(queryURI.IndexOf("?") + 1));
-        Char[] spr = new Char[] { '&' };
-        String[] pars = pQString.Split(spr);
-        for (int i = 0; i < pars.Length; i++) {
-          String pName = prm + "=";
-          if (pars[i].StartsWith(pName)) {
-            String rslt = pars[i].Substring(pName.Length);
-            if (rslt.Trim().Equals(""))
-              return null;
-            else
-              return rslt;
+    public static String GetQueryParam(String queryUri, String prm) {
+      if (queryUri != null) {
+        var v_s = HttpUtility.UrlDecode(queryUri.Substring(queryUri.IndexOf("?", StringComparison.Ordinal) + 1));
+        var v_spr = new[] { '&' };
+        if (v_s != null) {
+          var v_pars = v_s.Split(v_spr);
+          foreach (var t in v_pars) {
+            var v_name = prm + "=";
+            if (t.StartsWith(v_name)) {
+              var v_rslt = t.Substring(v_name.Length);
+              if (v_rslt.Trim().Equals(""))
+                return null;
+              return v_rslt;
+            }
           }
         }
       }
@@ -128,15 +127,15 @@ namespace Bio.Helpers.Common {
     public static String EncodeANSII2UTF(String msg) {
 #if !SILVERLIGHT
       if (msg != null) {
-        String Result = "";
-        UTF8Encoding enc = new UTF8Encoding();
-        byte[] bfr = enc.GetBytes(msg);
-        Encoding.Convert(Encoding.GetEncoding(Enc_Windows_1251), Encoding.GetEncoding(SYS_ENCODING), bfr);
-        String tmps = enc.GetString(bfr);
-        Result = tmps;
-        return Result;
-      } else
-        return null;
+        String v_result;
+        var v_enc = new UTF8Encoding();
+        var v_bfr = v_enc.GetBytes(msg);
+        v_bfr = Encoding.Convert(Encoding.GetEncoding(EncWindows1251), Encoding.GetEncoding(SYS_ENCODING), v_bfr);
+        var v_tmps = v_enc.GetString(v_bfr);
+        v_result = v_tmps;
+        return v_result;
+      }
+      return null;
 #else
       return msg;
 #endif
@@ -157,200 +156,243 @@ namespace Bio.Helpers.Common {
     /// <param name="value"></param>
     /// <returns></returns>
     public static String NullToBlank(String value) {
-      if (value == null)
-        return "";
-      else
-        return value;
-    }
-
-    public static String NullToNULL(String value) {
-      if (value == null)
-        return "NULL";
-      else if (value.Equals(""))
-        return "NULL";
-      else
-        return value;
+      return value ?? String.Empty;
     }
 
     /// <summary>
-    /// если на входе пустая строка или null, то возвращает ноль (нуна для перевода в double)
+    /// Если на NullOrEmpty, то возвращает строку "NULL" иначе возвращает значение value
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public static String NullToNULL(String value) {
+      return String.IsNullOrEmpty(value) ? "NULL" : value;
+    }
+
+    /// <summary>
+    /// Если на входе пустая строка или null, то возвращает ноль (нуна для перевода в double)
     /// </summary>
     /// <param name="str"></param>
     /// <returns>0 или входная строка</returns>
     public static String BlankTo0(String str) {
-      String vStr = "";
-      if ((str == "") || (str == null))
-        vStr = "0";
-      else
-        vStr = str;
-      return vStr;
+      return String.IsNullOrEmpty(str) ? "0" : str;
     }
 
     /// <summary>
-    /// строку в double
+    /// Ковертирует строку в double
     /// </summary>
     /// <param name="prm"></param>
     /// <returns></returns>
     public static Double ToDbl(String prm) {
-      NumberFormatInfo provider = new NumberFormatInfo();
-      provider.NumberDecimalSeparator = ".";
-      return Double.Parse(BlankTo0(prm.Replace(",", ".")), provider);
+      var v_provider = new NumberFormatInfo {NumberDecimalSeparator = "."};
+      return Double.Parse(BlankTo0(prm.Replace(",", ".")), v_provider);
     }
 
+    /// <summary>
+    /// Если true, тогда возвращает "Y" иначе "N"
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
     public static String BoolToStr(Boolean value) {
       return (value) ? "Y" : "N";
     }
 
 #if !SILVERLIGHT
-    public static String GetCookieByName(HttpCookieCollection vcook, String vName) {
-      String Result = "null";
-      for (int i = 0; i < vcook.Count; i++) {
-        if (vcook[i].Name.Equals(vName))
-          Result = vcook[i].Value;
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="vcook"></param>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    public static String GetCookieByName(HttpCookieCollection vcook, String name) {
+      foreach (String key in vcook.Keys) {
+        if (String.Equals(key, name)) {
+          var v_httpCookie = vcook.Get(key);
+          if (v_httpCookie != null) return v_httpCookie.Value;
+        }
       }
-      return Result;
+      return "null";
     }
 #endif
 
-    static public String encode(String newStr) {
-      Char[] ar = new Char[newStr.Length];
-      for (int i = 0; i < ar.Length; i++) {
-        if (ar[i] == '"')
-          ar[i] = '$';
-        if (ar[i] == '\'')
-          ar[i] = '*';
-      }
-      return new String(ar);
+    /// <summary>
+    /// Возвращяет source ?? target
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="target"></param>
+    /// <returns></returns>
+    static public String Nvl(String source, String target) {
+      return source ?? target;
     }
 
-    static public String decode(String newStr) {
-      Char[] ar = new Char[newStr.Length];
-      for (int i = 0; i < ar.Length; i++) {
-        if (ar[i] == '$')
-          ar[i] = '"';
-        if (ar[i] == '*')
-          ar[i] = '\'';
-      }
-      return new String(ar);
-    }
-
-    static public String nvl(String source, String target) {
-      if (source != null) {
-        return source;
-      } else {
-        return target;
-      }
-    }
-
-    static public Int32 nvl(Int32 source, Int32 target) {
-      if ((Object)source != null) {
-        return source;
-      } else {
-        return target;
-      }
+    /// <summary>
+    /// Возвращяет source ?? target
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="target"></param>
+    /// <returns></returns>
+    static public Int32 Nvl(Int32? source, Int32 target) {
+      return source ?? target;
     }
 
 #if !SILVERLIGHT
+    /// <summary>
+    /// Строит сообщение администратору
+    /// </summary>
+    /// <param name="vAdmName"></param>
+    /// <param name="vAdmCntcts"></param>
+    /// <returns></returns>
     static public String GetMsg_ToAdminPlease(String vAdmName, XmlNodeList vAdmCntcts) {
-      String rslt = "Обратитесь к администратору системы.<br>";
-      rslt += "Контактная информация:<br>";
-      for (int i = 0; i < vAdmCntcts.Count; i++) {
-        XmlElement cCntct = (XmlElement)vAdmCntcts[i];
-        String cc = "";
-        if (cCntct.GetAttribute("type").Equals("office"))
-          cc = "ком. №";
-        else if (cCntct.GetAttribute("type").Equals("phone"))
-          cc = "телефон";
-        else if (cCntct.GetAttribute("type").Equals("mail"))
-          cc = "эл. почта";
-        rslt += cc + " : " + ((XmlElement)cCntct).InnerText + "<br>";
+      var v_rslt = "Обратитесь к администратору системы.<br>";
+      v_rslt += "Контактная информация:<br>";
+      for (var i = 0; i < vAdmCntcts.Count; i++) {
+        var v_cntct = (XmlElement)vAdmCntcts[i];
+        var v_cc = "";
+        if (v_cntct.GetAttribute("type").Equals("office"))
+          v_cc = "ком. №";
+        else if (v_cntct.GetAttribute("type").Equals("phone"))
+          v_cc = "телефон";
+        else if (v_cntct.GetAttribute("type").Equals("mail"))
+          v_cc = "эл. почта";
+        v_rslt += v_cc + " : " + v_cntct.InnerText + "<br>";
       }
-      rslt += "имя : " + vAdmName + "<br>";
-      return rslt;
+      v_rslt += "имя : " + vAdmName + "<br>";
+      return v_rslt;
     }
 #endif
 
+    /// <summary>
+    /// Подставляет appURL вместо "SYS_APP_URL"
+    /// </summary>
+    /// <param name="appURL"></param>
+    /// <param name="url"></param>
+    /// <returns></returns>
     public static String NormalizeURL(String appURL, String url) {
-      if (url != null)
-        return url.Replace("SYS_APP_URL", appURL);
-      else
-        return null;
+      return url != null ? url.Replace("SYS_APP_URL", appURL) : null;
     }
 
+    /// <summary>
+    /// Разбивает строку str на подстроки String[] с разделителями delimiter[]
+    /// </summary>
+    /// <param name="str"></param>
+    /// <param name="delimeter"></param>
+    /// <returns></returns>
     public static String[] SplitString(String str, Char[] delimeter) {
-      if (str != null) {
-        String[] aRows = str.Split(delimeter);
-        return aRows;
-      } else
-        return new String[0];
+      return str == null ? new String[0] : str.Split(delimeter);
     }
+
+    /// <summary>
+    /// Разбивает строку str на подстроки String[] с разделителем delimiter
+    /// </summary>
+    /// <param name="str"></param>
+    /// <param name="delimiter"></param>
+    /// <returns></returns>
     public static String[] SplitString(String str, Char delimiter) {
-      return SplitString(str, new Char[] { delimiter });
+      return SplitString(str, new[] { delimiter });
     }
 
 
+    /// <summary>
+    /// Разбивает строку str на подстроки String[] с разделителями delimiter[]
+    /// </summary>
+    /// <param name="str"></param>
+    /// <param name="delimeter"></param>
+    /// <returns></returns>
     public static String[] SplitString(String str, String[] delimeter) {
       if (!String.IsNullOrEmpty(str)) {
-        String vLine = str;
-        String v_dlmtr = null;
+        var v_line = str;
+        String v_dlmtr;
         if (delimeter.Length > 1) {
           const String csDlmtrPG = "#inner_pg_delimeter_str#";
-          for (int i = 0; i < delimeter.Length; i++)
-            vLine = vLine.Replace(delimeter[i], csDlmtrPG);
+          foreach (var d in delimeter)
+            v_line = v_line.Replace(d, csDlmtrPG);
+          v_dlmtr = csDlmtrPG;
         } else
           v_dlmtr = delimeter.FirstOrDefault();
-        IList<String> vList = new List<String>();
-        int v_item_bgn = 0;
-        //int v_item_end = 0;
-        while (v_item_bgn <= vLine.Length) {
-          String v_line2Add = String.Empty;
-          int v_dlmtrPos = vLine.IndexOf(v_dlmtr, v_item_bgn);
-          if (v_dlmtrPos == -1)
-            v_dlmtrPos = vLine.Length;
-          v_line2Add = vLine.Substring(v_item_bgn, v_dlmtrPos - v_item_bgn);
-          vList.Add(v_line2Add);
-          v_item_bgn += v_line2Add.Length + v_dlmtr.Length;
+        if (v_dlmtr != null) {
+          IList<String> v_list = new List<String>();
+          var v_itemBgn = 0;
+          while (v_itemBgn <= v_line.Length) {
+            var v_dlmtrPos = v_line.IndexOf(v_dlmtr, v_itemBgn, StringComparison.Ordinal);
+            if (v_dlmtrPos == -1)
+              v_dlmtrPos = v_line.Length;
+            var v_line2Add = v_line.Substring(v_itemBgn, v_dlmtrPos - v_itemBgn);
+            v_list.Add(v_line2Add);
+            v_itemBgn += v_line2Add.Length + v_dlmtr.Length;
+          }
+          return v_list.ToArray();
         }
-        return (String[])vList.ToArray();
-      } else
-        return new String[] { };
+        return new String[0];
+      }
+      return new String[] {};
     }
 
+    /// <summary>
+    /// Разбивает строку str на подстроки String[] с разделителем delimiter
+    /// </summary>
+    /// <param name="str"></param>
+    /// <param name="delimiter"></param>
+    /// <returns></returns>
     public static String[] SplitString(String str, String delimiter) {
-      return SplitString(str, new String[] { delimiter });
+      return SplitString(str, new[] { delimiter });
     }
 
+    /// <summary>
+    /// Объединяет строки lines[] в одну строку через разделитель delimiter
+    /// </summary>
+    /// <param name="lines"></param>
+    /// <param name="delimiter"></param>
+    /// <returns></returns>
     public static String CombineString(String[] lines, String delimiter) {
-      String vResult = null;
-      foreach (String vLine in lines)
-        appendStr(ref vResult, vLine, delimiter);
-      return vResult;
+      String v_result = null;
+      foreach (var v_line in lines)
+        AppendStr(ref v_result, v_line, delimiter);
+      return v_result;
     }
 
-
+    /// <summary>
+    /// Заменяет "&" на "&amp;"
+    /// </summary>
+    /// <param name="line"></param>
+    /// <returns></returns>
     public static String UrlEncode(String line) {
       return line.Replace("&", "&amp;");
     }
 
+    /// <summary>
+    /// Заменяет "&amp;" на "&"
+    /// </summary>
+    /// <param name="line"></param>
+    /// <returns></returns>
     public static String UrlDecode(String line) {
       return line.Replace("&amp;", "&");
     }
 
+    /// <summary>
+    /// Возвращает x - (x / y) * y
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <returns></returns>
     public static int Mod(int x, int y) {
       return x - (x / y) * y;
     }
 
-    private static Mutex FMutexOfLogFile = new Mutex();
+    private static readonly Mutex FMutexOfLogFile = new Mutex();
+    /// <summary>
+    /// Добавляет строку line в файл fileName
+    /// </summary>
+    /// <param name="fileName"></param>
+    /// <param name="line"></param>
+    /// <param name="encoding">Кодировка для записи</param>
+    /// <param name="createPath">Создать путь если не сужествует</param>
     public static void AppendStringToFile(String fileName, String line, Encoding encoding, Boolean createPath) {
       FMutexOfLogFile.WaitOne();
       try {
         if (!Directory.Exists(Path.GetDirectoryName(fileName)) && createPath)
           Directory.CreateDirectory(Path.GetDirectoryName(fileName));
-        FileStream fs = new FileStream(fileName, FileMode.Append, FileAccess.Write, FileShare.Read);
-        Encoding vEncode = encoding;
-        if (vEncode == null)
-          vEncode = Utl.DefaultEncoding;
-        using (StreamWriter sw = new StreamWriter(fs, vEncode)) {
+        var v_fs = new FileStream(fileName, FileMode.Append, FileAccess.Write, FileShare.Read);
+        var v_encoding = encoding ?? DefaultEncoding;
+        using (var sw = new StreamWriter(v_fs, v_encoding)) {
           sw.WriteLine(line);
           sw.Flush();
           sw.Close();
@@ -360,212 +402,316 @@ namespace Bio.Helpers.Common {
       }
     }
 
+    /// <summary>
+    /// Добавляет строку line в файл fileName
+    /// </summary>
+    /// <param name="fileName"></param>
+    /// <param name="line"></param>
+    /// <param name="encoding"></param>
     public static void AppendStringToFile(String fileName, String line, Encoding encoding) {
       AppendStringToFile(fileName, line, encoding, false);
     }
 
+    /// <summary>
+    /// Сохраняет строку line в файл fileName
+    /// </summary>
+    /// <param name="fileName"></param>
+    /// <param name="line"></param>
+    /// <param name="encoding"></param>
     public static void SaveStringToFile(String fileName, String line, Encoding encoding) {
       if (File.Exists(fileName))
         File.Delete(fileName);
       AppendStringToFile(fileName, line, encoding);
     }
 
+    /// <summary>
+    /// Добавляет obj.ToString() в строку  через разделители
+    /// </summary>
+    /// <param name="line"></param>
+    /// <param name="delimiter"></param>
+    /// <param name="obj"></param>
     public static void AddObjToLine(ref String line, String delimiter, Object obj) {
-      if (obj != null) {
-        if (line == null)
-          line = obj.ToString();
-        else
-          line += delimiter + obj.ToString();
-      } else {
-        if (line == null)
-          line = "";
-        else
-          line += delimiter + "";
-      }
+      if (obj != null) 
+        AppendStr(ref line, obj.ToString(), delimiter);
+      else
+        AppendStr(ref line, String.Empty, delimiter);
     }
 
-    public static void ReadBinFileInBuffer(ref byte[] buffer, String fileName) {
+    private const int CHUNKSIZE = 40000;
+    /// <summary>
+    /// Читает поток в массив байтов
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <param name="buffer"></param>
+    public static void ReadBinStreamInBuffer(Stream stream, out Byte[] buffer) {
+      buffer = new Byte[stream.Length];
+      var v_chunkPos = 0;
+      while (stream.Position > -1 && stream.Position < stream.Length) {
+        int v_chunkSize;
+        if (stream.Length - stream.Position >= CHUNKSIZE)
+          v_chunkSize = CHUNKSIZE;
+        else
+          v_chunkSize = (int)(stream.Length - stream.Position);
+        stream.Read(buffer, v_chunkPos, v_chunkSize);
+        v_chunkPos += v_chunkSize;
+      }
+
+    }
+
+    /// <summary>
+    /// Загружает файл в массив байтов
+    /// </summary>
+    /// <param name="buffer"></param>
+    /// <param name="fileName"></param>
+    public static void ReadBinFileInBuffer(String fileName, ref Byte[] buffer) {
       if (File.Exists(fileName)) {
-        FileInfo vFileInf = new FileInfo(fileName);
-        long vFSize = vFileInf.Length;
-        buffer = new byte[vFSize];
-        FileStream vFStr = new FileStream(fileName, FileMode.Open);
-        try {
-          BinaryReader vBr = new BinaryReader(vFStr);
-          int vFSizeInt = (int)vFSize;
-          vBr.Read(buffer, 0, vFSizeInt);
-        } finally {
-          vFStr.Close();
-        }
+        var v_stream = new FileStream(fileName, FileMode.Open);
+        ReadBinStreamInBuffer(v_stream, out buffer);
       }
     }
 
-    public static void WriteBuffer2BinFile(String fileName, byte[] buffer) {
+    /// <summary>
+    /// Пишет массив байтов в файл
+    /// </summary>
+    /// <param name="fileName"></param>
+    /// <param name="buffer"></param>
+    public static void WriteBuffer2BinFile(String fileName, Byte[] buffer) {
       if (File.Exists(fileName))
         File.Delete(fileName);
-      FileStream vFStr = new FileStream(fileName, FileMode.CreateNew);
+      var v_fileStream = new FileStream(fileName, FileMode.CreateNew);
       try {
-        BinaryWriter vBr = new BinaryWriter(vFStr);
-        vBr.Write(buffer, 0, buffer.Length);
+        var v_binaryWriter = new BinaryWriter(v_fileStream);
+        v_binaryWriter.Write(buffer, 0, buffer.Length);
       } finally {
-        vFStr.Close();
+        v_fileStream.Close();
       }
     }
 
 
+    /// <summary>
+    /// Ковертирует строку вида ###0(S|M|H|D) в кол-во милисекунд, где S-сек, M-мин, H-час, D-дней
+    /// </summary>
+    /// <param name="period"></param>
+    /// <returns></returns>
     public static long StrTimePeriodToMilliseconds(String period) {
-      Int64 vRslt = 0;
+      Int64 v_rslt = 0;
       if (period != null) {
-        int vMult = 1;
-        String vPeriod = period.ToUpper();
-        Char vPeriodType = vPeriod[vPeriod.Length - 1];
-        if (vPeriodType == 'S') {
-          vMult = 1000;
-          vPeriod = vPeriod.Substring(0, vPeriod.Length - 1);
-        } else if (vPeriodType == 'M') {
-          vMult = 1000 * 60;
-          vPeriod = vPeriod.Substring(0, vPeriod.Length - 1);
-        } else if (vPeriodType == 'H') {
-          vMult = 1000 * 3600;
-          vPeriod = vPeriod.Substring(0, vPeriod.Length - 1);
-        } else if (vPeriodType == 'D') {
-          vMult = 1000 * 3600 * 24;
-          vPeriod = vPeriod.Substring(0, vPeriod.Length - 1);
+        var v_mult = 1;
+        var v_period = period.ToUpper();
+        var v_periodType = v_period[v_period.Length - 1];
+        if (v_periodType == 'S') {
+          v_mult = 1000;
+          v_period = v_period.Substring(0, v_period.Length - 1);
+        } else if (v_periodType == 'M') {
+          v_mult = 1000 * 60;
+          v_period = v_period.Substring(0, v_period.Length - 1);
+        } else if (v_periodType == 'H') {
+          v_mult = 1000 * 3600;
+          v_period = v_period.Substring(0, v_period.Length - 1);
+        } else if (v_periodType == 'D') {
+          v_mult = 1000 * 3600 * 24;
+          v_period = v_period.Substring(0, v_period.Length - 1);
         }
-        vRslt = Int64.Parse(vPeriod) * vMult;
+        v_rslt = Int64.Parse(v_period) * v_mult;
       }
-      return vRslt;
+      return v_rslt;
     }
 
-    public static void TruncArrayLeft(ref String[] arr, int cnt) {
-      String[] vList1 = new String[arr.Length - 1];
-      for (int i = cnt; i < arr.Length; i++)
-        vList1[i - cnt] = arr[i];
-      arr = vList1;
+    /// <summary>
+    /// Сдвигает массив влево на указанное кол-во элементов 
+    /// </summary>
+    /// <param name="arr"></param>
+    /// <param name="cnt"></param>
+    public static void ShiftArrayLeft(ref String[] arr, int cnt) {
+      var v_list1 = new String[arr.Length - 1];
+      for (var i = cnt; i < arr.Length; i++)
+        v_list1[i - cnt] = arr[i];
+      arr = v_list1;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="line"></param>
+    /// <param name="delimiter"></param>
+    /// <returns></returns>
     public static String CutElementFromDelimitedLine(ref String line, String delimiter) {
-      String vResult = null;
-      String[] vList = Utl.SplitString(line, delimiter);
-      if (vList.Length > 0) {
-        vResult = vList[0];
-        if (vList.Length > 1) {
-          TruncArrayLeft(ref vList, 1);
-          line = CombineString(vList, delimiter);
+      String v_result = null;
+      var v_list = SplitString(line, delimiter);
+      if (v_list.Length > 0) {
+        v_result = v_list[0];
+        if (v_list.Length > 1) {
+          ShiftArrayLeft(ref v_list, 1);
+          line = CombineString(v_list, delimiter);
         } else {
           line = null;
         }
       }
-      return vResult;
+      return v_result;
     }
 
+    /// <summary>
+    /// Проверяет содержит ли строка line элемент elem
+    /// </summary>
+    /// <param name="line"></param>
+    /// <param name="elem"></param>
+    /// <param name="delimiter"></param>
+    /// <returns></returns>
     public static bool IsElementInDelimitedLine(String line, String elem, Char delimiter) {
-      bool vRslt = false;
-      String[] vList = Utl.SplitString(line, delimiter);
-      for (int i = 0; i < vList.Length; i++) {
-        if (vList[i].Equals(elem)) {
-          vRslt = true;
+      var v_rslt = false;
+      var v_list = SplitString(line, delimiter);
+      foreach (var t in v_list) {
+        if (t.Equals(elem)) {
+          v_rslt = true;
           break;
         }
       }
-      return vRslt;
+      return v_rslt;
     }
 
-    public static bool IsElementInDelimitedLine(String line, String elem, Char[] delimeter) {
-      String[] lst = Utl.SplitString(line, delimeter);
-      for (int i = 0; i < lst.Length; i++)
-        if (lst[i].Equals(elem))
+    /// <summary>
+    /// Проверяет содержит ли строка line элемент elem
+    /// </summary>
+    /// <param name="line"></param>
+    /// <param name="elem"></param>
+    /// <param name="delimeters"></param>
+    /// <returns></returns>
+    public static bool IsElementInDelimitedLine(String line, String elem, Char[] delimeters) {
+      var v_lst = SplitString(line, delimeters);
+      foreach (var t in v_lst)
+        if (t.Equals(elem))
           return true;
       return false;
     }
 
-    public static bool DelimitedLineHasCommonTags(String line1, String line2, Char[] delimeter) {
-      String[] lst = Utl.SplitString(line1, delimeter);
-      for (int i = 0; i < lst.Length; i++)
-        if (IsElementInDelimitedLine(line2, lst[i], delimeter))
+    /// <summary>
+    /// Проверяет имеют ли два списка общие элементы
+    /// </summary>
+    /// <param name="line1"></param>
+    /// <param name="line2"></param>
+    /// <param name="delimeter"></param>
+    /// <returns></returns>
+    public static Boolean DelimitedLineHasCommonTags(String line1, String line2, Char[] delimeter) {
+      var v_lst = SplitString(line1, delimeter);
+      foreach (var t in v_lst)
+        if (IsElementInDelimitedLine(line2, t, delimeter))
           return true;
       return false;
     }
 
-    public static bool CheckRoles(String objRoles, String userRoles, Char[] delimeter) {
-      String vObjectRoles = objRoles;
-      if ((vObjectRoles == null) || (vObjectRoles.Equals("")))
-        vObjectRoles = "*";
+    /// <summary>
+    /// Проверяет есть ли хоть одна роль из userRoles в objRoles
+    /// </summary>
+    /// <param name="objRoles"></param>
+    /// <param name="userRoles"></param>
+    /// <param name="delimeter"></param>
+    /// <returns></returns>
+    public static Boolean CheckRoles(String objRoles, String userRoles, Char[] delimeter) {
+      var v_objectRoles = objRoles;
+      if ((v_objectRoles == null) || (v_objectRoles.Equals("")))
+        v_objectRoles = "*";
 
-      bool vResult = false;
       // Проверяем наличие * в pObjectRoles
-      vResult = IsElementInDelimitedLine(vObjectRoles, "*", delimeter);
+      Boolean v_result = IsElementInDelimitedLine(v_objectRoles, "*", delimeter);
 
-      if (!vResult) {
+      if (!v_result) {
         //* нет в pObjectRoles проверяем пересечение
-        vResult = DelimitedLineHasCommonTags(vObjectRoles, userRoles, delimeter);
+        v_result = DelimitedLineHasCommonTags(v_objectRoles, userRoles, delimeter);
       }
 
-      if (vResult) {
+      if (v_result) {
         //Проверяем наличие исключающих ролей
-        String[] lst = userRoles.Split(delimeter);
-        for (int i = 0; i < lst.Length; i++)
-          if (IsElementInDelimitedLine(vObjectRoles, "!" + lst[i], delimeter))
-            vResult = false;
+        var v_lst = userRoles.Split(delimeter);
+        foreach (var t in v_lst)
+          if (IsElementInDelimitedLine(v_objectRoles, "!" + t, delimeter))
+            v_result = false;
       }
 
-      return vResult;
+      return v_result;
     }
 
+    /// <summary>
+    /// Создает папку если ее не существует
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
     public static String ForceDirectory(String path) {
       if (!Directory.Exists(path))
         Directory.CreateDirectory(path);
       return path;
     }
 
-    public static bool CheckBoolValue(String value) {
-      return (value != null) && ((value.ToUpper().Equals("true")) || (value.ToUpper().Equals("TRUE")));
+    /// <summary>
+    /// Проверяет value == "true", не чуствительно к регистру
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public static Boolean CheckBoolValue(String value) {
+      return String.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
     }
 
 
+    /// <summary>
+    /// Преобразует массив строк в список строк разделенных запятой
+    /// </summary>
+    /// <param name="array"></param>
+    /// <returns></returns>
     public static String ArrayToHTML(String[] array) {
-      String res = "";
-      for (int i = 0; i < array.Length; i++) {
-        if (res.Equals(""))
-          res += "\"" + array[i] + "\"";
+      var v_res = "";
+      foreach (var t in array) {
+        if (v_res.Equals(""))
+          v_res += "\"" + t + "\"";
         else
-          res += ",\"" + array[i] + "\"";
+          v_res += ",\"" + t + "\"";
       }
-      return res;
+      return v_res;
     }
 
+    /// <summary>
+    /// Нормализует путь к папке - добавляет в конец "\" если нужно
+    /// </summary>
+    /// <param name="dir"></param>
+    /// <returns></returns>
     public static String NormalizeDir(String dir) {
       if (!String.IsNullOrEmpty(dir)) {
-        String Result = dir.Trim();
-        if (Result.Substring(Result.Length - 1, 1) != "\\")
-          Result = Result + "\\";
-        return Result;
-      } else
-        return dir;
-    }
-
-    public static String FullPath(String path, String rootPath) {
-      String Result = path.Trim();
-      Regex vr = new Regex("^\\D[:].*");
-      if (!vr.IsMatch(Result)) {
-        if (!Result.Substring(0, 3).Equals("..\\")) {
-          if (!Result.Substring(0, 1).Equals("\\"))
-            Result = NormalizeDir(rootPath) + Result;
-          else
-            Result = NormalizeDir(rootPath) + Result.Substring(1);
-        } else
-          Result = NormalizeDir(Path.GetFullPath(rootPath));
+        var v_result = dir.Trim();
+        if (v_result.Substring(v_result.Length - 1, 1) != "\\")
+          v_result = v_result + "\\";
+        return v_result;
       }
-      Result = NormalizeDir(Result);
-      return Result;
+      return dir;
     }
 
-    public static String genBioLocalPath(String bioCode) {
-      int fLstIndx = bioCode.LastIndexOf(".");
-      if (fLstIndx >= 0)
-        return bioCode.Substring(0, fLstIndx + 1).Replace(".", "\\");
-      else
-        return null;
+    /// <summary>
+    /// Строит полный путь из относительного
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="rootPath"></param>
+    /// <returns></returns>
+    public static String FullPath(String path, String rootPath) {
+      var v_result = path.Trim();
+      var v_vr = new Regex("^\\D[:].*");
+      if (!v_vr.IsMatch(v_result)) {
+        if (!v_result.Substring(0, 3).Equals("..\\")) {
+          if (!v_result.Substring(0, 1).Equals("\\"))
+            v_result = NormalizeDir(rootPath) + v_result;
+          else
+            v_result = NormalizeDir(rootPath) + v_result.Substring(1);
+        } else
+          v_result = NormalizeDir(Path.GetFullPath(rootPath));
+      }
+      v_result = NormalizeDir(v_result);
+      return v_result;
+    }
+
+    /// <summary>
+    /// Возвращаяет путь к информационному объекту по коду
+    /// </summary>
+    /// <param name="bioCode"></param>
+    /// <returns></returns>
+    public static String GenBioLocalPath(String bioCode) {
+      var v_fLstIndx = bioCode.LastIndexOf(".", StringComparison.Ordinal);
+      return v_fLstIndx >= 0 ? bioCode.Substring(0, v_fLstIndx + 1).Replace(".", "\\") : null;
     }
 
     /// <summary>
@@ -574,15 +720,15 @@ namespace Bio.Helpers.Common {
     /// <param name="verLeft"></param>
     /// <param name="verRight"></param>
     /// <returns>[-1]-меньше; [0]-равно; [1]-больше</returns>
-    public static int compareVer(String verLeft, String verRight) {
-      String[] vVerLeft = SplitString(verLeft, '.');
-      String[] vVerRight = SplitString(verRight, '.');
-      int vUpIndex = Math.Max(vVerLeft.Length, vVerRight.Length);
-      for (int i = 0; i < vUpIndex; i++) {
-        int vIntLeft = (i < vVerLeft.Length) ? Int32.Parse(vVerLeft[i]) : 0;
-        int vIntRight = (i < vVerRight.Length) ? Int32.Parse(vVerRight[i]) : 0;
-        if (vIntLeft < vIntRight) return -1;
-        else if (vIntLeft > vIntRight) return 1;
+    public static int CompareVer(String verLeft, String verRight) {
+      var v_verLeft = SplitString(verLeft, '.');
+      var v_verRight = SplitString(verRight, '.');
+      var v_upIndex = Math.Max(v_verLeft.Length, v_verRight.Length);
+      for (var i = 0; i < v_upIndex; i++) {
+        var v_intLeft = (i < v_verLeft.Length) ? Int32.Parse(v_verLeft[i]) : 0;
+        var v_intRight = (i < v_verRight.Length) ? Int32.Parse(v_verRight[i]) : 0;
+        if (v_intLeft < v_intRight) return -1;
+        if (v_intLeft > v_intRight) return 1;
       }
       return 0;
     }
@@ -592,7 +738,7 @@ namespace Bio.Helpers.Common {
     /// Удаляет содержимое папки
     /// </summary>
     /// <param name="path"></param>
-    public static void clearDir(String path) {
+    public static void ClearDir(String path) {
       try {
         if (Directory.Exists(path))
           Directory.Delete(path, true);
@@ -606,14 +752,14 @@ namespace Bio.Helpers.Common {
     /// <param name="login"></param>
     /// <param name="user"></param>
     /// <param name="password"></param>
-    public static void parsLogin(String login, ref String user, ref String password) {
+    public static void ParsLogin(String login, ref String user, ref String password) {
       user = null;
       password = null;
-      String[] lst = Utl.SplitString(login, '/');
-      if (lst.Length > 0)
-        user = lst[0];
-      if (lst.Length > 1)
-        password = lst[1];
+      var v_lst = Utl.SplitString(login, '/');
+      if (v_lst.Length > 0)
+        user = v_lst[0];
+      if (v_lst.Length > 1)
+        password = v_lst[1];
     }
 
     /// <summary>
@@ -623,10 +769,10 @@ namespace Bio.Helpers.Common {
     /// <param name="regex"></param>
     /// <param name="ignoreCase"></param>
     /// <returns></returns>
-    public static Boolean regexMatch(String line, String regex, Boolean ignoreCase) {
-      Regex vr = new Regex(regex, ((ignoreCase) ? RegexOptions.IgnoreCase : RegexOptions.None));
-      Match vM = vr.Match(line);
-      return vM.Success;
+    public static Boolean RegexMatch(String line, String regex, Boolean ignoreCase) {
+      var v_regex = new Regex(regex, ((ignoreCase) ? RegexOptions.IgnoreCase : RegexOptions.None));
+      var v_match = v_regex.Match(line);
+      return v_match.Success;
     }
 
     /// <summary>
@@ -636,10 +782,10 @@ namespace Bio.Helpers.Common {
     /// <param name="regex"></param>
     /// <param name="ignoreCase"></param>
     /// <returns></returns>
-    public static String regexFind(String line, String regex, Boolean ignoreCase) {
-      Regex vr = new Regex(regex, ((ignoreCase) ? RegexOptions.IgnoreCase : RegexOptions.None));
-      Match vM = vr.Match(line);
-      return vM.Value;
+    public static String RegexFind(String line, String regex, Boolean ignoreCase) {
+      var v_regex = new Regex(regex, ((ignoreCase) ? RegexOptions.IgnoreCase : RegexOptions.None));
+      var v_match = v_regex.Match(line);
+      return v_match.Success ? v_match.Value : null;
     }
 
     /// <summary>
@@ -649,13 +795,10 @@ namespace Bio.Helpers.Common {
     /// <param name="regex"></param>
     /// <param name="ignoreCase"></param>
     /// <returns></returns>
-    public static Int32 regexPos(String line, String regex, Boolean ignoreCase) {
-      Regex vr = new Regex(regex, ((ignoreCase) ? RegexOptions.IgnoreCase : RegexOptions.None));
-      Match vM = vr.Match(line);
-      if (vM.Success)
-        return vM.Index;
-      else
-        return -1;
+    public static Int32 RegexPos(String line, String regex, Boolean ignoreCase) {
+      var v_regex = new Regex(regex, ((ignoreCase) ? RegexOptions.IgnoreCase : RegexOptions.None));
+      var v_match = v_regex.Match(line);
+      return v_match.Success ? v_match.Index : -1;
     }
 
     /// <summary>
@@ -665,88 +808,144 @@ namespace Bio.Helpers.Common {
     /// <param name="regex"></param>
     /// <param name="rplcmnt"></param>
     /// <param name="ignoreCase"></param>
-    public static void regexReplace(ref String line, String regex, String rplcmnt, Boolean ignoreCase) {
-      Regex vr = new Regex(regex, ((ignoreCase) ? RegexOptions.IgnoreCase : RegexOptions.None));
-      line = vr.Replace(line, rplcmnt);
+    public static void RegexReplace(ref String line, String regex, String rplcmnt, Boolean ignoreCase) {
+      var v_regex = new Regex(regex, ((ignoreCase) ? RegexOptions.IgnoreCase : RegexOptions.None));
+      line = v_regex.Replace(line, rplcmnt);
     }
 
-    public static IDictionary<String, String> parsConnectionStr(String connStr) {
-      IDictionary<String, String> vRslt = new Dictionary<String, String>();
+    /// <summary>
+    /// Разбирает Connection String
+    /// </summary>
+    /// <param name="connStr"></param>
+    /// <returns></returns>
+    public static IDictionary<String, String> ParsConnectionStr(String connStr) {
+      IDictionary<String, String> v_rslt = new Dictionary<String, String>();
       if (connStr != null) {
-        Char[] spr = new Char[] { ';' };
-        String[] lst = connStr.Split(spr);
-        for (int i = 0; i < lst.Length; i++) {
-          String fpar = lst[i];
-          spr[0] = '=';
-          String[] ppp = fpar.Split(spr);
-          String pName = null;
-          String pValue = null;
-          if (ppp.Length > 0)
-            pName = ppp[0];
-          if (ppp.Length > 1)
-            pValue = ppp[1];
-          vRslt.Add(pName, pValue);
+        var v_spr = new Char[] { ';' };
+        var v_lst = connStr.Split(v_spr);
+        foreach (var fpar in v_lst) {
+          v_spr[0] = '=';
+          var v_ppp = fpar.Split(v_spr);
+          String v_name = null;
+          String v_value = null;
+          if (v_ppp.Length > 0)
+            v_name = v_ppp[0];
+          if (v_ppp.Length > 1)
+            v_value = v_ppp[1];
+          v_rslt.Add(v_name, v_value);
         }
       }
-      return vRslt;
+      return v_rslt;
     }
 
-    public static String buildConnectionStr(IDictionary<String, String> connStr) {
-      String vRslt = null;
+    /// <summary>
+    /// Строит Connection String
+    /// </summary>
+    /// <param name="connStr"></param>
+    /// <returns></returns>
+    public static String BuildConnectionStr(IDictionary<String, String> connStr) {
+      String v_rslt = null;
       if (connStr != null) {
-        foreach (KeyValuePair<String, String> vItem in connStr) {
-          Utl.appendStr(ref vRslt, vItem.Key + "=" + vItem.Value, ";");
+        foreach (var v_item in connStr) {
+          Utl.AppendStr(ref v_rslt, v_item.Key + "=" + v_item.Value, ";");
         }
       }
-      return vRslt;
+      return v_rslt;
     }
 
-
-    public static String getFncName(String eveName) {
+    /// <summary>
+    /// Вытаскивает имя функции из строки типа "functionName(param, ...)"
+    /// </summary>
+    /// <param name="eveName"></param>
+    /// <returns></returns>
+    public static String GetFncName(String eveName) {
       if (eveName != null) {
-        int vFncNamEnd = eveName.IndexOf('(');
-        if (vFncNamEnd >= 0)
-          return eveName.Substring(0, eveName.Length - (eveName.Length - vFncNamEnd));
+        var v_fncNamEnd = eveName.IndexOf('(');
+        if (v_fncNamEnd >= 0)
+          return eveName.Substring(0, eveName.Length - (eveName.Length - v_fncNamEnd)).Trim();
       }
       return null;
     }
 
-    public static void appendStr(ref String line, String str, String delimiter) {
+    /// <summary>
+    /// Добавляет строку str в конец строки line через разделитель delimiter
+    /// </summary>
+    /// <param name="line"></param>
+    /// <param name="str"></param>
+    /// <param name="delimiter"></param>
+    /// <param name="ignoreNull">если str - null or empty, то ничего не добавляется</param>
+    public static void AppendStr(ref String line, String str, String delimiter, Boolean ignoreNull) {
+      if (String.IsNullOrEmpty(str) && ignoreNull)
+        return;
       if (String.IsNullOrEmpty(line))
         line = str;
       else
         line += delimiter + str;
     }
 
-    public static String bldURL(String serverHost, String requestType) {
-      String vURL = String.Format(SrvURLTemplate, serverHost);
+    /// <summary>
+    /// Добавляет строку str в конец строки line через разделитель delimiter
+    /// </summary>
+    /// <param name="line"></param>
+    /// <param name="str"></param>
+    /// <param name="delimiter"></param>
+    public static void AppendStr(ref String line, String str, String delimiter) {
+      AppendStr(ref line, str, delimiter, false);
+    }
+
+    /// <summary>
+    /// Вовращает строку - URL для запроса к серверу Bio
+    /// </summary>
+    /// <param name="serverHost"></param>
+    /// <param name="requestType"></param>
+    /// <returns></returns>
+    public static String BuildURL(String serverHost, String requestType) {
+      var v_url = String.Format(SrvURLTemplate, serverHost);
       if (requestType != null)
-        vURL = vURL + "?mtp=" + requestType;
-      return vURL;
+        v_url = v_url + "?mtp=" + requestType;
+      return v_url;
     }
 
-    public static String extractUsrNameFromLogin(String login) {
-      String usrName = null; String psswrd = null;
-      parsLogin(login, ref usrName, ref psswrd);
-      return usrName;
+    /// <summary>
+    /// Вытаскивает из строки вида "username/password" имя пользователя
+    /// </summary>
+    /// <param name="login"></param>
+    /// <returns></returns>
+    public static String ExtractUsrNameFromLogin(String login) {
+      String v_user = null; String v_psswrd = null;
+      ParsLogin(login, ref v_user, ref v_psswrd);
+      return v_user;
     }
 
-    public static String extractUrlQueryString(String url) {
-      String[] lst = Utl.SplitString(url, '?');
-      if (lst.Length > 1)
-        return lst[1];
-      else
-        return null;
+    /// <summary>
+    /// Вытаскивает из URL подстроку с параметрами запроса (все что после ?)
+    /// </summary>
+    /// <param name="url"></param>
+    /// <returns></returns>
+    public static String ExtractUrlQueryString(String url) {
+      var v_lst = SplitString(url, '?');
+      return v_lst.Length > 1 ? v_lst[1] : null;
     }
 
-    public static String extractUsrPwdFromLogin(String login) {
-      String usrName = null; String psswrd = null;
-      parsLogin(login, ref usrName, ref psswrd);
-      return psswrd;
+    /// <summary>
+    /// Вытаскивает из строки вида "username/password" пароль
+    /// </summary>
+    /// <param name="login"></param>
+    /// <returns></returns>
+    public static String ExtractUsrPwdFromLogin(String login) {
+      String v_usrName = null; String v_psswrd = null;
+      ParsLogin(login, ref v_usrName, ref v_psswrd);
+      return v_psswrd;
     }
 
 #if !SILVERLIGHT 
-    public static Boolean columnExists(DataColumnCollection cols, String fieldName) {
+    /// <summary>
+    /// Проверяет наличие колонки в коллекции DataColumnCollection
+    /// </summary>
+    /// <param name="cols"></param>
+    /// <param name="fieldName"></param>
+    /// <returns></returns>
+    public static Boolean ColumnExists(DataColumnCollection cols, String fieldName) {
       if (!String.IsNullOrEmpty(fieldName)) {
         foreach (DataColumn vCol in cols) {
           if (String.Equals(vCol.ColumnName, fieldName, StringComparison.CurrentCultureIgnoreCase)) {
@@ -757,112 +956,133 @@ namespace Bio.Helpers.Common {
       return false;
     }
 
-    public static void dataRowSetValue(DataRow pRow, String pFieldName, Object pValue) {
-      foreach (DataColumn vCol in pRow.Table.Columns) {
-        if (vCol.ColumnName.ToUpper().Equals(pFieldName.ToUpper())) {
-          pRow[vCol.ColumnName] = Convert2Type(pValue, vCol.DataType);
+    /// <summary>
+    /// Устанавливает значение value в поле fieldName строки row
+    /// </summary>
+    /// <param name="row"></param>
+    /// <param name="fieldName"></param>
+    /// <param name="value"></param>
+    public static void DataRowSetValue(DataRow row, String fieldName, Object value) {
+      foreach (DataColumn vCol in row.Table.Columns) {
+        if (vCol.ColumnName.ToUpper().Equals(fieldName.ToUpper())) {
+          row[vCol.ColumnName] = Convert2Type(value, vCol.DataType);
         }
       }
     }
 
-    public static Object dataRowGetValue(DataRow pRow, String pFieldName, Object pIfNull) {
+    /// <summary>
+    /// Вытаскивает значение поля fieldName из строки row
+    /// </summary>
+    /// <param name="row"></param>
+    /// <param name="fieldName"></param>
+    /// <param name="ifNull"></param>
+    /// <returns></returns>
+    public static Object DataRowGetValue(DataRow row, String fieldName, Object ifNull) {
       Object vResult = null;
-      if (pRow != null && pRow.RowState != DataRowState.Detached) {
-        foreach (DataColumn vCol in pRow.Table.Columns)
-          if (vCol.ColumnName.ToUpper().Equals(pFieldName.ToUpper())) {
-            vResult = pRow[vCol.ColumnName];
+      if (row != null && row.RowState != DataRowState.Detached) {
+        foreach (DataColumn vCol in row.Table.Columns)
+          if (vCol.ColumnName.ToUpper().Equals(fieldName.ToUpper())) {
+            vResult = row[vCol.ColumnName];
             break;
           }
       }
-      return (vResult == null) ? pIfNull : vResult;
+      return vResult ?? ifNull;
     }
 #endif
 
-    public static bool typeIsNumeric(Type pType) {
-      return pType.Equals(typeof(Double)) || pType.Equals(typeof(Double?)) ||
-             pType.Equals(typeof(float)) || pType.Equals(typeof(float?)) ||
-             pType.Equals(typeof(Decimal)) || pType.Equals(typeof(Decimal?)) ||
-             pType.Equals(typeof(Int16)) || pType.Equals(typeof(Int16?)) ||
-             pType.Equals(typeof(Int32)) || pType.Equals(typeof(Int32?)) ||
-             pType.Equals(typeof(Int64)) || pType.Equals(typeof(Int64?)) ||
-             pType.Equals(typeof(UInt16)) || pType.Equals(typeof(UInt16?)) ||
-             pType.Equals(typeof(UInt32)) || pType.Equals(typeof(UInt32?)) ||
-             pType.Equals(typeof(UInt64)) || pType.Equals(typeof(UInt64?));
+    /// <summary>
+    /// Проверяет является ли тип числовым
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    public static bool TypeIsNumeric(Type type) {
+      return type == typeof(Double) || type == typeof(Double?) ||
+             type == typeof(float) || type == typeof(float?) ||
+             type == typeof(Decimal) || type == typeof(Decimal?) ||
+             type == typeof(Int16) || type == typeof(Int16?) ||
+             type == typeof(Int32) || type == typeof(Int32?) ||
+             type == typeof(Int64) || type == typeof(Int64?) ||
+             type == typeof(UInt16) || type == typeof(UInt16?) ||
+             type == typeof(UInt32) || type == typeof(UInt32?) ||
+             type == typeof(UInt64) || type == typeof(UInt64?);
     }
 
+    /// <summary>
+    /// Преобразует объект в строку
+    /// </summary>
+    /// <param name="pObject"></param>
+    /// <returns></returns>
     public static String ObjectAsString(Object pObject) {
       return Convert2Type<String>(pObject);
     }
 
-    private static String _objectAsString(Object pObject) {
-      String rslt = null;
-      if (pObject != null) {
-        Type tp = pObject.GetType();
-        if (tp.Equals(typeof(System.DBNull)))
-          rslt = null;
-        else if (tp.Equals(typeof(System.String)))
-          rslt = pObject.ToString();
+    private static String _objectAsString(Object @object) {
+      String v_rslt = null;
+      if (@object != null) {
+        var v_tp = @object.GetType();
+        if (v_tp == typeof(System.DBNull))
+          v_rslt = null;
+        else if (v_tp == typeof(System.String))
+          v_rslt = @object.ToString();
         else {
 #if !SILVERLIGHT
-          CultureInfo culture = new CultureInfo(CultureInfo.CurrentCulture.Name, true);
+          var v_culture = new CultureInfo(CultureInfo.CurrentCulture.Name, true);
 #else
-          CultureInfo culture = new CultureInfo(CultureInfo.CurrentCulture.Name);
+          var v_culture = new CultureInfo(CultureInfo.CurrentCulture.Name);
 #endif
-          culture.NumberFormat.NumberDecimalSeparator = ".";
+          v_culture.NumberFormat.NumberDecimalSeparator = ".";
 #if !SILVERLIGHT
-          culture.DateTimeFormat.DateSeparator = "-";
+          v_culture.DateTimeFormat.DateSeparator = "-";
 #else
-          //culture.DateTimeFormat. = "-";
+          //
 #endif
-          culture.DateTimeFormat.ShortDatePattern = "dd.MM.yyyy H:mm:ss";
-          culture.DateTimeFormat.LongTimePattern = "";
-          rslt = Convert.ToString(pObject, culture);
-          if (tp.Equals(typeof(System.DateTime)))
-            rslt = rslt.Trim();
+          v_culture.DateTimeFormat.ShortDatePattern = "dd.MM.yyyy H:mm:ss";
+          v_culture.DateTimeFormat.LongTimePattern = "";
+          v_rslt = Convert.ToString(@object, v_culture);
+          if (v_tp == typeof(System.DateTime))
+            v_rslt = v_rslt.Trim();
         }
       }
-      return EncodeANSII2UTF(rslt);
+      return EncodeANSII2UTF(v_rslt);
     }
 
-    private static Object convertFromNullable(Object value) {
+    private static Object _convertFromNullable(Object value) {
       if (value == null)
         return null;
-      Type conversionType = value.GetType();
-      if (conversionType.IsGenericType &&
-        conversionType.GetGenericTypeDefinition().Equals(typeof(Nullable<>))) {
-        Type nnType = Nullable.GetUnderlyingType(conversionType);
-        if (nnType.Equals(typeof(Boolean))) return (Boolean)value;
-        else if (nnType.Equals(typeof(Int16))) return (Int16)value;
-        else if (nnType.Equals(typeof(Int32))) return (Int32)value;
-        else if (nnType.Equals(typeof(Int64))) return (Int64)value;
-        else if (nnType.Equals(typeof(Decimal))) return (Decimal)value;
-        else if (nnType.Equals(typeof(Double))) return (Double)value;
-        else if (nnType.Equals(typeof(Single))) return (Single)value;
-        else if (nnType.Equals(typeof(DateTime))) return (DateTime)value;
-        else
-          throw new Exception(String.Format("Невозможно конвертировать {0} в {1}", conversionType.Name, nnType.Name));
-      } else
-        return value;
+      var v_conversionType = value.GetType();
+      if (v_conversionType.IsGenericType &&
+        v_conversionType.GetGenericTypeDefinition() == typeof(Nullable<>)) {
+        var v_type = Nullable.GetUnderlyingType(v_conversionType);
+        if (v_type == typeof(Boolean)) return (Boolean)value;
+        if (v_type == typeof(Int16)) return (Int16)value;
+        if (v_type == typeof(Int32)) return (Int32)value;
+        if (v_type == typeof(Int64)) return (Int64)value;
+        if (v_type == typeof(Decimal)) return (Decimal)value;
+        if (v_type == typeof(Double)) return (Double)value;
+        if (v_type == typeof(Single)) return (Single)value;
+        if (v_type == typeof(DateTime)) return (DateTime)value;
+        throw new Exception(String.Format("Невозможно конвертировать {0} в {1}", v_conversionType.Name, v_type.Name));
+      }
+      return value;
     }
 
-    private static Object convertToNullable(Object value) {
+    private static Object _convertToNullable(Object value) {
       if (value == null)
         return null;
-      Type conversionType = value.GetType();
-      if (conversionType.IsGenericType &&
-        !conversionType.GetGenericTypeDefinition().Equals(typeof(Nullable<>))) {
-        if (conversionType.Equals(typeof(Boolean))) return (Boolean?)value;
-        else if (conversionType.Equals(typeof(Int16))) return (Int16?)value;
-        else if (conversionType.Equals(typeof(Int32))) return (Int32?)value;
-        else if (conversionType.Equals(typeof(Int64))) return (Int64?)value;
-        else if (conversionType.Equals(typeof(Decimal))) return (Decimal?)value;
-        else if (conversionType.Equals(typeof(Double))) return (Double?)value;
-        else if (conversionType.Equals(typeof(Single))) return (Single?)value;
-        else if (conversionType.Equals(typeof(DateTime))) return (DateTime?)value;
-        else
-          return value;
-      } else
+      var v_conversionType = value.GetType();
+      if (v_conversionType.IsGenericType &&
+        v_conversionType.GetGenericTypeDefinition() != typeof(Nullable<>)) {
+        if (v_conversionType == typeof(Boolean)) return (Boolean?)value;
+        if (v_conversionType == typeof(Int16)) return (Int16?)value;
+        if (v_conversionType == typeof(Int32)) return (Int32?)value;
+        if (v_conversionType == typeof(Int64)) return (Int64?)value;
+        if (v_conversionType == typeof(Decimal)) return (Decimal?)value;
+        if (v_conversionType == typeof(Double)) return (Double?)value;
+        if (v_conversionType == typeof(Single)) return (Single?)value;
+        if (v_conversionType == typeof(DateTime)) return (DateTime?)value;
         return value;
+      }
+      return value;
     }
 
     /// <summary>
@@ -872,95 +1092,92 @@ namespace Bio.Helpers.Common {
     /// <param name="targetType"></param>
     /// <returns></returns>
     public static Object Convert2Type(Object inValue, Type targetType) {
-      if ((inValue != null) && (targetType != null) && inValue.GetType().Equals(targetType))
+      if ((inValue != null) && (targetType != null) && inValue.GetType() == targetType)
         return inValue;
       if ((targetType != null) && (targetType != typeof(Object))) {
-        Type tp = ((inValue == null) || (inValue == DBNull.Value)) ? null : inValue.GetType();
+        var v_tp = ((inValue == null) || (inValue == DBNull.Value)) ? null : inValue.GetType();
 
-        Type v_out_type = Nullable.GetUnderlyingType(targetType);
-        Boolean v_out_isNullable = v_out_type != null;
-        v_out_type = v_out_type ?? targetType;
-        Boolean v_out_isClass = v_out_type.IsClass;
-        if (tp == null) {
-          if (v_out_isNullable || v_out_isClass)
+        var v_outType = Nullable.GetUnderlyingType(targetType);
+        var v_outIsNullable = v_outType != null;
+        v_outType = v_outType ?? targetType;
+        var v_outIsClass = v_outType.IsClass;
+        if (v_tp == null) {
+          if (v_outIsNullable || v_outIsClass)
             return null;
           else {
-            if (v_out_type.Equals(typeof(String)) || v_out_type.Equals(typeof(Object)))
+            if (v_outType == typeof(String) || v_outType == typeof(Object))
               return null;
-            else if (v_out_type.Equals(typeof(DateTime)))
+            else if (v_outType == typeof(DateTime))
               return DateTime.MinValue;
-            else if (v_out_type.Equals(typeof(Boolean)))
+            else if (v_outType == typeof(Boolean))
               return false;
-            else if (typeIsNumeric(v_out_type)) {
-              IFormatProvider ifp = CultureInfo.CurrentCulture.NumberFormat;
-              return Convert.ChangeType(0, v_out_type, ifp);
+            else if (TypeIsNumeric(v_outType)) {
+              IFormatProvider v_format = CultureInfo.CurrentCulture.NumberFormat;
+              return Convert.ChangeType(0, v_outType, v_format);
             } else
-              throw new Exception("Значение null не может быть представлено как " + v_out_type.Name + "!!! ", null);
+              throw new Exception("Значение null не может быть представлено как " + v_outType.Name + "!!! ", null);
           }
         }
 
-        Type v_in_type = Nullable.GetUnderlyingType(tp);
-        Boolean v_in_isNullable = v_in_type != null;
-        v_in_type = v_in_type ?? tp;
+        var v_inType = Nullable.GetUnderlyingType(v_tp);
+        var v_inIsNullable = v_inType != null;
+        v_inType = v_inType ?? v_tp;
 
-        if ((inValue == null) && (v_out_isNullable))
-          return null;
-
-        if (v_in_isNullable)
-          inValue = convertFromNullable(inValue);
+        if (v_inIsNullable)
+          inValue = _convertFromNullable(inValue);
 
         Object v_rslt = null;
-        if (v_out_type.Equals(typeof(DateTime))) {
+        if (v_outType == typeof(DateTime)) {
           if (inValue == null) {
             v_rslt = DateTime.MinValue;
-          } else if (v_in_type.Equals(typeof(DateTime))) {
+          } else if (v_inType == typeof(DateTime)) {
             v_rslt = inValue;
-          } else if (v_in_type.Equals(typeof(String))) {
+          } else if (v_inType == typeof(String)) {
             v_rslt = DateTimeParser.Instance.ParsDateTime((String)inValue);
           } else {
-            throw new Exception("Значение типа " + tp + " не может быть представлено как DateTime!!! ", null);
+            throw new Exception("Значение типа " + v_tp + " не может быть представлено как DateTime!!! ", null);
           }
 
-        } else if (v_out_type.Equals(typeof(Boolean))) {
+        } else if (v_outType == typeof(Boolean)) {
           if (inValue == null)
             v_rslt = false;
-          else if (v_in_type.Equals(typeof(Boolean)))
+          else if (v_inType == typeof(Boolean))
             v_rslt = inValue;
-          else if (typeIsNumeric(v_in_type)) {
-            Decimal v_invalDec = (Decimal)Convert.ChangeType(inValue, typeof(Decimal), CultureInfo.CurrentCulture.NumberFormat);
+          else if (TypeIsNumeric(v_inType)) {
+            var v_invalDec = (Decimal)Convert.ChangeType(inValue, typeof(Decimal), CultureInfo.CurrentCulture.NumberFormat);
             v_rslt = (!v_invalDec.Equals(new Decimal(0)));
-          } else if (v_in_type.Equals(typeof(String))) {
-            String vValStr = ((String)inValue).ToUpper();
-            v_rslt = (vValStr.Equals("1") || vValStr.Equals("Y") || vValStr.Equals("T") || vValStr.ToUpper().Equals("TRUE") || vValStr.ToUpper().Equals("ON"));
+          } else if (v_inType == typeof(String)) {
+            var v_valStr = ((String)inValue).ToUpper();
+            v_rslt = (v_valStr.Equals("1") || v_valStr.Equals("Y") || v_valStr.Equals("T") || v_valStr.ToUpper().Equals("TRUE") || v_valStr.ToUpper().Equals("ON"));
           } else {
-            throw new Exception("Значение типа " + tp + " не может быть представлено как boolean!!! ", null);
+            throw new Exception("Значение типа " + v_tp + " не может быть представлено как boolean!!! ", null);
           }
-        } else if (typeIsNumeric(v_out_type)) {
-          IFormatProvider ifp = CultureInfo.CurrentCulture.NumberFormat;//new NumberFormatInfo();
+        } else if (TypeIsNumeric(v_outType)) {
+          IFormatProvider v_numberFormat = CultureInfo.CurrentCulture.NumberFormat;//new NumberFormatInfo();
           if (inValue == null)
-            v_rslt = Convert.ChangeType(0, v_out_type, ifp);
-          if (typeIsNumeric(v_in_type)) {
-            v_rslt = Convert.ChangeType(inValue, v_out_type, ifp);
-          } else if (v_in_type.Equals(typeof(Boolean))) {
-            v_rslt = ((Boolean)inValue) ? 1 : 0;
-          } else if (v_in_type.Equals(typeof(String))) {
-            String vValStr = (String)inValue;
-            vValStr = String.IsNullOrEmpty(vValStr) ? "0" : vValStr;
-            String vDecSep = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
-            vValStr = vValStr.Replace(",", vDecSep);
-            vValStr = vValStr.Replace(".", vDecSep);
+            v_rslt = Convert.ChangeType(0, v_outType, v_numberFormat);
+          if (TypeIsNumeric(v_inType)) {
+            v_rslt = Convert.ChangeType(inValue, v_outType, v_numberFormat);
+          } else if (v_inType == typeof(Boolean)) {
+            v_rslt = (inValue != null) && ((Boolean)inValue) ? 1 : 0;
+          } else if (v_inType == typeof(String)) {
+            var v_valStr = (String)inValue;
+            v_valStr = String.IsNullOrEmpty(v_valStr) ? "0" : v_valStr;
+            var v_decSep = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+            v_valStr = v_valStr.Replace(",", v_decSep);
+            v_valStr = v_valStr.Replace(".", v_decSep);
             try {
-              v_rslt = Convert.ChangeType(vValStr, v_out_type, ifp);
+              v_rslt = Convert.ChangeType(v_valStr, v_outType, v_numberFormat);
             } catch (Exception ex) {
-              throw new Exception("Значение [" + vValStr + "] типа " + v_in_type.Name + " не может быть представлено как Numeric!!! ", null);
+              throw new Exception("Значение [" + v_valStr + "] типа " + v_inType.Name + " не может быть представлено как Numeric!!! ", null);
             }
           } else {
-            throw new Exception("Значение типа " + tp + " не может быть представлено как Numeric!!! ", null);
+            throw new Exception("Значение типа " + v_tp + " не может быть представлено как Numeric!!! ", null);
           }
-          if (v_out_isNullable)
-            v_rslt = convertToNullable(v_rslt);
+          if (v_outIsNullable)
+            v_rslt = _convertToNullable(v_rslt);
 
-        } else if (v_out_type.Equals(typeof(String))) {
+        } else if (v_outType == typeof(String)) {
           v_rslt = _objectAsString(inValue);
         }
 
@@ -973,11 +1190,11 @@ namespace Bio.Helpers.Common {
     /// <summary>
     /// Преобразует значение к конкретному типу
     /// </summary>
-    /// <typeparam name="pTargetType">Тип</typeparam>
+    /// <typeparam name="T">Тип</typeparam>
     /// <param name="pValue">Значение</param>
     /// <returns></returns>
-    public static pTargetType Convert2Type<pTargetType>(Object pValue) {
-      return (pTargetType)Convert2Type(pValue, typeof(pTargetType));
+    public static T Convert2Type<T>(Object pValue) {
+      return (T)Convert2Type(pValue, typeof(T));
     }
 
     /// <summary>
@@ -985,16 +1202,16 @@ namespace Bio.Helpers.Common {
     /// </summary>
     /// <param name="pPeriod">Период в формате YYYYMM</param>
     /// <returns>Период в формате YYYYMM</returns>
-    public static String periodDec(String pPeriod) {
+    public static String PeriodDec(String pPeriod) {
       if (pPeriod != null) {
-        int vYear = Int32.Parse(pPeriod.Substring(0, 4));
-        int vMonth = Int32.Parse(pPeriod.Substring(4, 2));
-        vMonth--;
-        if (vMonth == 0) {
-          vYear--;
-          vMonth = 12;
+        var v_year = Int32.Parse(pPeriod.Substring(0, 4));
+        var v_month = Int32.Parse(pPeriod.Substring(4, 2));
+        v_month--;
+        if (v_month == 0) {
+          v_year--;
+          v_month = 12;
         }
-        return String.Format("{0:0000}{1:00}", vYear, vMonth);
+        return String.Format("{0:0000}{1:00}", v_year, v_month);
       } else
         return null;
     }
@@ -1002,17 +1219,17 @@ namespace Bio.Helpers.Common {
     /// <summary>
     /// Увеличивает период на 1
     /// </summary>
-    /// <param name="pPeriod">Период в формате YYYYMM</param>
+    /// <param name="period">Период в формате YYYYMM</param>
     /// <returns>Период в формате YYYYMM</returns>
-    public static String periodInc(String pPeriod) {
-      int vYear = Int32.Parse(pPeriod.Substring(0, 4));
-      int vMonth = Int32.Parse(pPeriod.Substring(4, 2));
-      vMonth++;
-      if (vMonth == 13) {
-        vYear++;
-        vMonth = 1;
+    public static String PeriodInc(String period) {
+      var v_year = Int32.Parse(period.Substring(0, 4));
+      var v_month = Int32.Parse(period.Substring(4, 2));
+      v_month++;
+      if (v_month == 13) {
+        v_year++;
+        v_month = 1;
       }
-      return String.Format("{0:0000}{1:00}", vYear, vMonth);
+      return String.Format("{0:0000}{1:00}", v_year, v_month);
     }
 
     /// <summary>
@@ -1021,7 +1238,7 @@ namespace Bio.Helpers.Common {
     /// <param name="pFileName">Имя файла</param>
     /// <param name="pBuff">Буфер</param>
     public static void LoadWINFile(String pFileName, ref String pBuff) {
-      LoadStrFile(pFileName, Enc_Windows_1251, ref pBuff);
+      LoadStrFile(pFileName, EncWindows1251, ref pBuff);
     }
 
     /// <summary>
@@ -1030,7 +1247,7 @@ namespace Bio.Helpers.Common {
     /// <param name="pFileName">Имя файла</param>
     /// <param name="pBuff">Буфер</param>
     public static void LoadDOSFile(String pFileName, ref String pBuff) {
-      LoadStrFile(pFileName, Enc_Cp866, ref pBuff);
+      LoadStrFile(pFileName, EncCp866, ref pBuff);
     }
 
     /// <summary>
@@ -1039,53 +1256,59 @@ namespace Bio.Helpers.Common {
     /// <param name="pFileName">Имя файла</param>
     /// <param name="pBuff">Буфер</param>
     public static void LoadUTF8File(String pFileName, ref String pBuff) {
-      LoadStrFile(pFileName, Enc_UTF_8, ref pBuff);
+      LoadStrFile(pFileName, EncUtf8, ref pBuff);
     }
 
     /// <summary>
     /// Загружает текстовый файл в буфер
     /// </summary>
-    /// <param name="pFileName">Имя файла</param>
+    /// <param name="fileName">Имя файла</param>
     /// <param name="pEcoding">Имя кодировки</param>
-    /// <param name="pBuff">Буфер</param>
-    public static void LoadStrFile(String pFileName, String pEcoding, ref String pBuff) {
-      LoadStrFile(pFileName, System.Text.Encoding.GetEncoding(pEcoding), ref pBuff);
+    /// <param name="buff">Буфер</param>
+    public static void LoadStrFile(String fileName, String pEcoding, ref String buff) {
+      LoadStrFile(fileName, Encoding.GetEncoding(pEcoding), ref buff);
     }
 
     /// <summary>
     /// Загружает текстовый файл в буфер
     /// </summary>
-    /// <param name="pFileName">Имя файла</param>
-    /// <param name="pEcoding">Кодировка</param>
-    /// <param name="pBuff">Буфер</param>
-    public static void LoadStrFile(String pFileName, Encoding pEcoding, ref String pBuff) {
-      if (File.Exists(pFileName)) {
-        FileStream fs = new FileStream(pFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
-        StreamReader fFile = new StreamReader(fs, pEcoding);
-        String vLine = null;
-        StringWriter bfr = new StringWriter();
-        while ((vLine = fFile.ReadLine()) != null)
-          bfr.WriteLine(vLine);
-        pBuff = bfr.ToString();
-        fs.Close();
+    /// <param name="fileName">Имя файла</param>
+    /// <param name="encoding">Кодировка</param>
+    /// <param name="buff">Буфер</param>
+    public static void LoadStrFile(String fileName, Encoding encoding, ref String buff) {
+      if (File.Exists(fileName)) {
+        var v_fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+        var v_file = new StreamReader(v_fs, encoding);
+        String v_line = null;
+        var v_bfr = new StringWriter();
+        while ((v_line = v_file.ReadLine()) != null)
+          v_bfr.WriteLine(v_line);
+        buff = v_bfr.ToString();
+        v_fs.Close();
       }
 
     }
 
-    public static List<String> LoadStrFile(String pFileName, Encoding pEcoding) {
-      var v_rslt = new List<String>();
-      if (File.Exists(pFileName)) {
-        FileStream fs = new FileStream(pFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+    /// <summary>
+    /// Загружает текстовый файл в List<String>
+    /// </summary>
+    /// <param name="fileName"></param>
+    /// <param name="encoding"></param>
+    /// <returns></returns>
+    public static List<String> LoadStrFile(String fileName, Encoding encoding) {
+      var v_result = new List<String>();
+      if (File.Exists(fileName)) {
+        var v_fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
         try {
-          StreamReader fFile = new StreamReader(fs, pEcoding);
-          String vLine = null;
-          while ((vLine = fFile.ReadLine()) != null)
-            v_rslt.Add(vLine);
+          var v_file = new StreamReader(v_fs, encoding);
+          String v_line = null;
+          while ((v_line = v_file.ReadLine()) != null)
+            v_result.Add(v_line);
         } finally {
-          fs.Close();
+          v_fs.Close();
         }
       }
-      return v_rslt;
+      return v_result;
     }
 
 #if !SILVERLIGHT
@@ -1094,7 +1317,7 @@ namespace Bio.Helpers.Common {
     /// </summary>
     /// <param name="pControl"></param>
     /// <param name="dlg"></param>
-    public static void runDelegateOnControl(Control pControl, Action dlg) {
+    public static void RunDelegateOnControl(Control pControl, Action dlg) {
       if(pControl.IsHandleCreated && !pControl.IsDisposed && !pControl.Disposing) {
         try {
           if(pControl.InvokeRequired)
@@ -1108,42 +1331,83 @@ namespace Bio.Helpers.Common {
 
 #endif
 
+    /// <summary>
+    /// Возвращает PropertyInfo по propertyName типа type
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="propertyName"></param>
+    /// <param name="caseSensetive">С учето регистра</param>
+    /// <returns></returns>
     public static PropertyInfo GetPropertyInfo(Type type, String propertyName, Boolean caseSensetive) {
       if (type != null) {
-        PropertyInfo prop = type.GetProperties().Where((p) => { return p.Name.Equals(propertyName, (caseSensetive ? StringComparison.CurrentCulture : StringComparison.CurrentCultureIgnoreCase)); }).FirstOrDefault();
+        var prop = type.GetProperties().Where((p) => { return p.Name.Equals(propertyName, (caseSensetive ? StringComparison.CurrentCulture : StringComparison.CurrentCultureIgnoreCase)); }).FirstOrDefault();
         return prop;
       } else
         return null;
     }
 
+    /// <summary>
+    /// Возвращает PropertyInfo по propertyName типа type
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="propertyName"></param>
+    /// <returns></returns>
     public static PropertyInfo GetPropertyInfo(Type type, String propertyName) {
       return GetPropertyInfo(type, propertyName, true);
     }
 
-    public static AttrType GetPropertyAttr<AttrType>(PropertyInfo prop) where AttrType : Attribute {
+    /// <summary>
+    /// Возвращает атрибут типа AttrType для prop
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="prop"></param>
+    /// <returns></returns>
+    public static T GetPropertyAttr<T>(PropertyInfo prop) where T : Attribute {
       if (prop != null) {
-        Object[] attrs = prop.GetCustomAttributes(typeof(AttrType), true);
+        var attrs = prop.GetCustomAttributes(typeof(T), true);
         if (attrs.Length > 0) {
-          return attrs[0] as AttrType;
+          return attrs[0] as T;
         } else
           return null;
       } else
         return null;
     }
 
-    public static AttrType GetPropertyAttr<AttrType>(Type type, String propertyName) where AttrType : Attribute {
-      PropertyInfo prop = GetPropertyInfo(type, propertyName);
-      return GetPropertyAttr<AttrType>(prop);
+    /// <summary>
+    /// Возвращает атрибут типа AttrType для propertyName типа type
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="type"></param>
+    /// <param name="propertyName"></param>
+    /// <returns></returns>
+    public static T GetPropertyAttr<T>(Type type, String propertyName) where T : Attribute {
+      var prop = GetPropertyInfo(type, propertyName);
+      return GetPropertyAttr<T>(prop);
     }
 
-    public static void SetPropertyAttr<AttrType>(Type type, String propertyName, String attrPropertyName, Object attrPropValue) where AttrType : Attribute {
-      PropertyInfo prop = GetPropertyInfo(type, propertyName);
-      var attr = GetPropertyAttr<AttrType>(prop);
+    /// <summary>
+    /// Устанавливает значение атрибута типа T для свойства propertyName
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="type"></param>
+    /// <param name="propertyName"></param>
+    /// <param name="attrPropertyName"></param>
+    /// <param name="attrPropValue"></param>
+    public static void SetPropertyAttr<T>(Type type, String propertyName, String attrPropertyName, Object attrPropValue) where T : Attribute {
+      var prop = GetPropertyInfo(type, propertyName);
+      var attr = GetPropertyAttr<T>(prop);
       if (attr != null)
         Utl.SetPropertyValue(attr, attrPropertyName, attrPropValue);
     }
 
 #if !SILVERLIGHT
+    /// <summary>
+    /// Возвращает значение атрибута типа A свойства propName для типа T
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="A"></typeparam>
+    /// <param name="propName"></param>
+    /// <returns></returns>
     public static A GetAttributeOfProp<T, A>(String propName) where A:Attribute {
       PropertyDescriptorCollection pdc = TypeDescriptor.GetProperties(typeof(T));
       foreach (PropertyDescriptor pd in pdc) {
@@ -1162,17 +1426,17 @@ namespace Bio.Helpers.Common {
     ///           2) Если файл "some_file(1).ext" существует, то функция вернет "some_file(2).ext"
     ///           и т.д.
     /// </summary>
-    /// <param name="pFileName"></param>
+    /// <param name="fileName"></param>
     /// <returns></returns>
-    public static String incFileNameIndexIfExists(String pFileName) {
-      String vResult = pFileName;
-      if(File.Exists(pFileName)) {
-        String vExt = Path.GetExtension(vResult);
-        Regex vr = new Regex("[(]\\d+[)][\\.]", RegexOptions.IgnoreCase);
-        Match vMatch = vr.Match(vResult);
+    public static String IncFileNameIndexIfExists(String fileName) {
+      var vResult = fileName;
+      if(File.Exists(fileName)) {
+        var vExt = Path.GetExtension(vResult);
+        var vr = new Regex("[(]\\d+[)][\\.]", RegexOptions.IgnoreCase);
+        var vMatch = vr.Match(vResult);
         if(vMatch.Success) {
-          String vNumStr = vMatch.Value.Substring(1, vMatch.Value.Length - 3);
-          Int16 vNum = Int16.Parse(vNumStr); vNum++;
+          var vNumStr = vMatch.Value.Substring(1, vMatch.Value.Length - 3);
+          var vNum = Int16.Parse(vNumStr); vNum++;
           vResult = vr.Replace(vResult, "(" + vNum + ").");
         } else
           vResult = Utl.NormalizeDir(Path.GetDirectoryName(vResult)) + Path.GetFileNameWithoutExtension(vResult) + "(1)" + vExt;
@@ -1181,17 +1445,17 @@ namespace Bio.Helpers.Common {
     }
 
     /// <summary>
-    /// Проверяет является ли данный vText именем файла, если да, 
-    /// то загружает содержимое этого файла а vText
+    /// Проверяет является ли данный text именем файла, если да, 
+    /// то загружает содержимое этого файла а text
     /// </summary>
     /// <param name="pCurrentPath"></param>
     /// <param name="vText"></param>
-    public static void tryLoadTextAsFile(String pCurrentPath, ref String vText) {
-      String vCurrentDirectory = Directory.GetCurrentDirectory();
-      String vCurrentPath = Path.GetFullPath(pCurrentPath);
+    public static void TryLoadTextAsFile(String pCurrentPath, ref String vText) {
+      var vCurrentDirectory = Directory.GetCurrentDirectory();
+      var vCurrentPath = Path.GetFullPath(pCurrentPath);
       Directory.SetCurrentDirectory(vCurrentPath);
       try {
-        String vSQLFileFN = vText;
+        var vSQLFileFN = vText;
         if(File.Exists(vSQLFileFN)) {
           try {
             Bio.Helpers.Common.Utl.LoadWINFile(vSQLFileFN, ref vText);
@@ -1205,25 +1469,27 @@ namespace Bio.Helpers.Common {
     }
 
     /// <summary>
-    /// Ищет в vText переменные вида {text-file:..\ftw.sql} c именем файла, если находит, 
-    /// то загружает содержимое соответствующего файла в соответствующую позицию vText
+    /// Ищет в text переменные вида {text-file:..\ftw.sql} c именем файла, если находит, 
+    /// то загружает содержимое соответствующего файла в соответствующую позицию text
     /// </summary>
-    /// <param name="pCurrentPath"></param>
-    /// <param name="vText"></param>
-    public static void tryLoadMappedFiles(String pCurrentPath, ref String vText) {
-      String csTemplate = "{text-file:[^{]+?}";
-      Regex vr = new Regex(csTemplate, RegexOptions.IgnoreCase);
-      Match vMatch = vr.Match(vText);
-      if(vMatch.Success) {
-        String vFileContext = vMatch.Value.Substring(11, vMatch.Value.Length - 12);
-        tryLoadTextAsFile(pCurrentPath, ref vFileContext);
-        vText = vText.Replace(vMatch.Value, vFileContext);
-      } 
+    /// <param name="currentPath"></param>
+    /// <param name="text"></param>
+    public static void TryLoadMappedFiles(String currentPath, ref String text) {
+      var fileContent = RegexFind(text, "(?<={text-file:).+(?=})", true);
+      TryLoadTextAsFile(currentPath, ref fileContent);
+      RegexReplace(ref text, "{text-file:.+}", fileContent, true);
     }
 
-    public static void DrawAnSeldCell(Rectangle cellBounds, Boolean focused, Graphics gra, AnchorStyles borders) {
-      Color col1 = Color.RoyalBlue;
-      Color col2 = Color.Blue;
+    /// <summary>
+    /// Отрисовывает на канве выбранную ячейку
+    /// </summary>
+    /// <param name="cellBounds"></param>
+    /// <param name="focused"></param>
+    /// <param name="gra"></param>
+    /// <param name="borders"></param>
+    public static void DrawAnSelctedCell(Rectangle cellBounds, Boolean focused, Graphics gra, AnchorStyles borders) {
+      var col1 = Color.RoyalBlue;
+      var col2 = Color.Blue;
       if (!focused) {
         col1 = Color.LightGray;
         col2 = Color.Gray;
@@ -1272,7 +1538,7 @@ namespace Bio.Helpers.Common {
         if (vCellSelection || (a.ColumnIndex == grid.Columns.Count - 1))
           vBorders = vBorders | AnchorStyles.Right;
 
-        DrawAnSeldCell(rct, focused, a.Graphics, vBorders);
+        DrawAnSelctedCell(rct, focused, a.Graphics, vBorders);
 
       }
     }
@@ -1307,7 +1573,7 @@ namespace Bio.Helpers.Common {
       Rectangle nodeBounds = a.Node.Bounds;
       nodeBounds.Width += 10;
       a.Graphics.FillRectangle(Brushes.White, nodeBounds);
-      DrawAnSeldCell(nodeBounds, focused, a.Graphics, AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom);
+      DrawAnSelctedCell(nodeBounds, focused, a.Graphics, AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom);
 
       Font nodeFont = a.Node.TreeView.Font;
       RectangleF nodeBoundsF = Rectangle.Inflate(nodeBounds, 0, 0);
@@ -1394,11 +1660,11 @@ namespace Bio.Helpers.Common {
     /// Создает строку, которую можно подставить в URL
     /// </summary>
     /// <returns></returns>
-    public static String buidQueryStrParams(Dictionary<String, String> prms) {
+    public static String BuidQueryStrParams(Dictionary<String, String> prms) {
       String rslt = null;
       foreach (String k in prms.Keys) {
         String vParamStr = k + "=" + HttpUtility.UrlEncode(prms[k] as String);
-        Utl.appendStr(ref rslt, vParamStr, "&");
+        Utl.AppendStr(ref rslt, vParamStr, "&");
       }
       return rslt;
     }
@@ -1408,8 +1674,8 @@ namespace Bio.Helpers.Common {
     /// </summary>
     /// <param name="baseURL"></param>
     /// <returns></returns>
-    public static String buidQueryStrParams(String baseURL, Dictionary<String, String> prms) {
-      String rslt = buidQueryStrParams(prms);
+    public static String BuidQueryStrParams(String baseURL, Dictionary<String, String> prms) {
+      String rslt = BuidQueryStrParams(prms);
       return (baseURL.IndexOf('?') >= 0) ? baseURL + "&" + rslt : baseURL + "?" + rslt;
     }
 
@@ -1418,36 +1684,31 @@ namespace Bio.Helpers.Common {
     /// </summary>
     /// <param name="val"></param>
     /// <returns></returns>
-    public static Boolean parsBoolean(String val) {
+    public static Boolean ParsBoolean(String val) {
       if (String.IsNullOrEmpty(val))
         return false;
       else {
         val = val.ToUpper();
-        if (val.Equals("TRUE") || val.Equals("T") || val.Equals("1") || val.Equals("Y"))
-          return true;
-        else
-          return false;
+        return val.Equals("TRUE") || val.Equals("T") || val.Equals("1") || val.Equals("Y");
       }
-
     }
 
     /// <summary>
     /// Вытаскивает из ораклового сообщения об ошибке текст в случае если это ошибка создана через
     /// raise_application_error(2xxxx, 'message');, тогда вернет "message" иначе null.
     /// </summary>
-    /// <param name="pMessage"></param>
     /// <returns></returns>
-    public static void extractOracleApplicationError(String exMessage, out Int32 errCode, out String errMsg) {
+    public static void ExtractOracleApplicationError(String exMessage, out Int32 errCode, out String errMsg) {
       errCode = 0;
       errMsg = null;
       if (exMessage != null) {
-        int vStrtIndx = exMessage.IndexOf("ORA-2");
+        var vStrtIndx = exMessage.IndexOf("ORA-2", System.StringComparison.Ordinal);
         if (vStrtIndx >= 0) {
-          int vEndIndx = exMessage.IndexOf("ORA-", vStrtIndx + 5);
-          int vLen = vEndIndx - vStrtIndx;
+          var vEndIndx = exMessage.IndexOf("ORA-", vStrtIndx + 5, System.StringComparison.Ordinal);
+          var vLen = vEndIndx - vStrtIndx;
           if (vLen < 0)
             vLen = exMessage.Length - vStrtIndx;
-          String vMsg = exMessage;
+          var vMsg = exMessage;
           if (vLen > 0)
             vMsg = exMessage.Substring(vStrtIndx, vLen);
           errCode = Int32.Parse(vMsg.Substring(4, 5));
@@ -1461,7 +1722,7 @@ namespace Bio.Helpers.Common {
     /// </summary>
     /// <param name="path"></param>
     /// <returns></returns>
-    public static String resolvePath(String path) {
+    public static String ResolvePath(String path) {
       return NormalizeDir(String.IsNullOrEmpty(path) ? Directory.GetCurrentDirectory() : Path.GetFullPath(path));
     }
 
@@ -1543,8 +1804,8 @@ namespace Bio.Helpers.Common {
     }
 
     public static CommandType detectCommandType(String sqlText) {
-      Boolean hasSelect = Utl.regexMatch(sqlText, @"\bSELECT\b", true);
-      hasSelect = hasSelect && Utl.regexMatch(sqlText, @"\bFROM\b", true);
+      Boolean hasSelect = Utl.RegexMatch(sqlText, @"\bSELECT\b", true);
+      hasSelect = hasSelect && Utl.RegexMatch(sqlText, @"\bFROM\b", true);
       if (hasSelect)
         return CommandType.Text;
       else
@@ -1554,24 +1815,29 @@ namespace Bio.Helpers.Common {
 #endif
 
 #if SILVERLIGHT
-    public static void loadRemoteAssembly(String xapName, Action<OpenReadCompletedEventArgs, Assembly> onLoadAction) {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="xapName"></param>
+    /// <param name="onLoadAction"></param>
+    public static void LoadRemoteAssembly(String xapName, Action<OpenReadCompletedEventArgs, Assembly> onLoadAction) {
       if (!String.IsNullOrEmpty(xapName)) {
-        WebClient wc = new WebClient();
+        var wc = new WebClient();
         wc.OpenReadCompleted += new OpenReadCompletedEventHandler((sndr, atrs) => {
-          String appManifest = new StreamReader(Application.GetResourceStream(new StreamResourceInfo(atrs.Result, null),
+          var appManifest = new StreamReader(System.Windows.Application.GetResourceStream(new StreamResourceInfo(atrs.Result, null),
                                new Uri("AppManifest.xaml", UriKind.Relative)).Stream).ReadToEnd();
 
 
-          XElement deploymentRoot = XDocument.Parse(appManifest).Root;
-          List<XElement> deploymentParts = (from assemblyParts in deploymentRoot.Elements().Elements()
+          var deploymentRoot = XDocument.Parse(appManifest).Root;
+          var deploymentParts = (from assemblyParts in deploymentRoot.Elements().Elements()
                                             select assemblyParts).ToList();
-          foreach (XElement xElement in deploymentParts.Reverse<XElement>()) {
-            String source = xElement.Attribute("Source").Value;
-            StreamResourceInfo streamInfo = Application.GetResourceStream(new StreamResourceInfo(atrs.Result,
+          foreach (var xElement in deploymentParts.Reverse<XElement>()) {
+            var source = xElement.Attribute("Source").Value;
+            var streamInfo = System.Windows.Application.GetResourceStream(new StreamResourceInfo(atrs.Result,
                                               "application/binary"), new Uri(source, UriKind.Relative));
 
-            AssemblyPart asmPart = new AssemblyPart();
-            Assembly asm = asmPart.Load(streamInfo.Stream);
+            var asmPart = new System.Windows.AssemblyPart();
+            var asm = asmPart.Load(streamInfo.Stream);
             if (onLoadAction != null)
               onLoadAction(atrs, asm);
           }
@@ -1580,46 +1846,66 @@ namespace Bio.Helpers.Common {
       }
     }
 
+    /// <summary>
+    /// true - DesignTime
+    /// </summary>
     public static Boolean DesignTime {
       get {
         return DesignerProperties.IsInDesignTool;
       }
     }
 
-    private static String csCookieValTypeSplitter = "|value-type|";
+    private const String csCookieValTypeSplitter = "|value-type|";
+
+    /// <summary>
+    /// Сохраняет значение в Cookie
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <param name="expireDays"></param>
+    /// <param name="silent"></param>
+    /// <exception cref="Exception"></exception>
     public static void SetCookie(String key, Object value, Int32 expireDays, Boolean silent) {
-      DateTime expireDate = DateTime.Now + TimeSpan.FromDays(expireDays);
-      Type newCookieValueType = value != null ? value.GetType() : typeof(String);
-      String newCookieValue = value + csCookieValTypeSplitter + newCookieValueType.FullName;
-      String newCookie = key.Trim() + "=" + newCookieValue + ";expires=" + expireDate.ToString("R");
+      var expireDate = DateTime.Now + TimeSpan.FromDays(expireDays);
+      var newCookieValueType = value != null ? value.GetType() : typeof(String);
+      var newCookieValue = value + csCookieValTypeSplitter + newCookieValueType.FullName;
+      var newCookie = key.Trim() + "=" + newCookieValue + ";expires=" + expireDate.ToString("R");
       try {
         HtmlPage.Document.SetProperty("cookie", newCookie);
-      } catch (Exception ex) {
+      } catch (Exception) {
         if (!silent)
-          throw ex;
+          throw;
       }
     }
 
+    /// <summary>
+    /// Вытаскивает значение из Cookie
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="defaultValue"></param>
+    /// <param name="silent"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
     public static Object GetCookie(String key, Object defaultValue, Boolean silent) {
       String[] cookies = null;
       try {
         cookies = HtmlPage.Document.Cookies.Split(';');
-      } catch (Exception ex) {
+      } catch (Exception) {
         if (!silent)
-          throw ex;
+          throw;
       }
       if (cookies != null) {
         foreach (String cookie in cookies) {
-          String[] keyValue = cookie.Trim().Split('=');
+          var keyValue = cookie.Trim().Split('=');
           if (keyValue.Length == 2) {
             if (String.Equals(keyValue[0], key)) {
-              String valFullStr = keyValue[1];
-              String[] valueParts = Utl.SplitString(valFullStr, csCookieValTypeSplitter);
+              var valFullStr = keyValue[1];
+              var valueParts = Utl.SplitString(valFullStr, csCookieValTypeSplitter);
               if (valueParts.Length == 2) {
-                String valStr = valueParts[0];
-                String valTypeName = valueParts[1];
-                Type valType = Type.GetType(valTypeName);
-                Object valObj = Utl.Convert2Type(valStr, valType);
+                var valStr = valueParts[0];
+                var valTypeName = valueParts[1];
+                var valType = Type.GetType(valTypeName);
+                var valObj = Utl.Convert2Type(valStr, valType);
                 return valObj;
               } else
                 return null;
@@ -1631,6 +1917,9 @@ namespace Bio.Helpers.Common {
 
     }
 
+    /// <summary>
+    /// Проверяет является
+    /// </summary>
     public static Boolean IsUiThread {
       get {
         return Deployment.Current.Dispatcher.CheckAccess();
@@ -1742,26 +2031,6 @@ namespace Bio.Helpers.Common {
         return defObj;
     }
 
-    //public static void SetDebug(Boolean debug) {
-    //  Utl.StoreUserObject("debug", debug);
-    //}
-    //public static Boolean GetDebug() {
-    //  return Utl.RestoreUserObject<Boolean>("debug", false);
-    //}
-
-    //public static void SetCurUsrIsDebugger(Boolean debug) {
-    //  Utl.StoreUserObject("cur_usr_is_debugger", debug);
-    //}
-    //public static Boolean CurUsrIsDebugger() {
-    //  return Utl.RestoreUserObject<Boolean>("cur_usr_is_debugger", false);
-    //}
-    //public static void SetCurSessionIsLoggedOn(Boolean debug) {
-    //  Utl.StoreUserObject("cur_sess_is_loggedon", debug);
-    //}
-    //public static Boolean CurSessionIsLoggedOn() {
-    //  return Utl.RestoreUserObject<Boolean>("cur_sess_is_loggedon", false);
-    //}
-
     public static String GetAssemblyVersion(Assembly assembly) {
       AssemblyName assemblyName = new AssemblyName(assembly.FullName);
       return assemblyName.Version.ToString();
@@ -1799,23 +2068,6 @@ namespace Bio.Helpers.Common {
         return (v_nodes.Length > 0) ? v_nodes[v_nodes.Length - 1] : null;
       } else
         return null;
-    }
-
-    private static int CHUNKSIZE = 40000;
-    public static void LoadFileToBuffer(Stream stream, out Byte[] buffer) {
-      buffer = new Byte[stream.Length];
-      int chunkSize;
-      int chunkPos = 0;
-      while (stream.Position > -1 && stream.Position < stream.Length) {
-        if (stream.Length - stream.Position >= CHUNKSIZE)
-          chunkSize = CHUNKSIZE;
-        else
-          chunkSize = (int)(stream.Length - stream.Position);
-        //byte[] fileBytes = new byte[chunkSize];
-        int byteCount = stream.Read(buffer, chunkPos, chunkSize);
-        chunkPos += chunkSize;
-      }
-
     }
 
     public static T[] combineArrays<T>(T[] array1, T[] array2) {

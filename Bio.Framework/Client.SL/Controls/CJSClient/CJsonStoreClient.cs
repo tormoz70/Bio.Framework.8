@@ -499,7 +499,7 @@ namespace Bio.Framework.Client.SL {
         });
         String v_grpDef = null;
         foreach (var f in v_groups)
-          Utl.appendStr(ref v_grpDef, f.field, ";");
+          Utl.AppendStr(ref v_grpDef, f.field, ";");
         this.groupDefinition = v_grpDef;
       }
     }
@@ -1130,7 +1130,7 @@ namespace Bio.Framework.Client.SL {
       try {
         return Utl.Convert2Type(value, targetType);
       } catch (Exception) {
-        if (Utl.typeIsNumeric(targetType))
+        if (Utl.TypeIsNumeric(targetType))
           return 0;
         else if (targetType == typeof(DateTime))
           return DateTime.MinValue;

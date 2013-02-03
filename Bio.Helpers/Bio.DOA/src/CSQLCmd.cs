@@ -143,7 +143,7 @@ namespace Bio.Helpers.DOA {
       Match m = vr.Match(pSQL);
       while(m.Success) {
         //Console.WriteLine("fnd :" + m.Value);
-        Utl.appendStr(ref vResultStr, m.Value, csDelimiter);
+        Utl.AppendStr(ref vResultStr, m.Value, csDelimiter);
         m = m.NextMatch();
       }
       if(!String.IsNullOrEmpty(vResultStr))
@@ -224,7 +224,7 @@ namespace Bio.Helpers.DOA {
                                                 "Для использования автогенерации аргументов с помощью переменной $PRMLIST\n" +
                                                 "необходимо, чтобы все имена аргументов начинались с префикса " + csArgPrefix + " !");
                   vParName = vParName.Substring(2);
-                  Utl.appendStr(ref vArgs, ":" + vParName, ",");
+                  Utl.AppendStr(ref vArgs, ":" + vParName, ",");
                   String vParTypeName = vReader.GetString(vReader.GetOrdinal("data_type"));
                   String vParDirName = vReader.GetString(vReader.GetOrdinal("in_out"));
                   Object vLenObj = vReader.GetValue(vReader.GetOrdinal("data_length"));

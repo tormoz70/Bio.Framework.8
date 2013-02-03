@@ -69,9 +69,9 @@ namespace Bio.Helpers.Common.Types {
       String vInnrObjExStr = (this.InnerObjectEx == null) ? null : "oex"+this.InnerObjectEx.ToString();
       String vObjsStr = null;
       if(!String.IsNullOrEmpty(vInnrObjStr))
-        Utl.appendStr(ref vObjsStr, vInnrObjStr, ";");
+        Utl.AppendStr(ref vObjsStr, vInnrObjStr, ";");
       if(!String.IsNullOrEmpty(vInnrObjExStr))
-        Utl.appendStr(ref vObjsStr, vInnrObjExStr, ";");
+        Utl.AppendStr(ref vObjsStr, vInnrObjExStr, ";");
       if(!String.IsNullOrEmpty(vObjsStr))
         vObjsStr = "("+vObjsStr+")";
       String valStr = String.Format("{0}{1}", this.Value, vObjsStr);
@@ -165,7 +165,7 @@ namespace Bio.Helpers.Common.Types {
       get {
         String rslt = null;
         for (int i = 0; i < this.Count; i++)
-          Utl.appendStr(ref rslt, "\"" + this[i].Name + "\"", ",");
+          Utl.AppendStr(ref rslt, "\"" + this[i].Name + "\"", ",");
         return rslt;
       }
     }
@@ -174,7 +174,7 @@ namespace Bio.Helpers.Common.Types {
       get {
         String rslt = null;
         for (int i = 0; i < this.Count; i++)
-          Utl.appendStr(ref rslt, "\"" + this[i].ValueAsString() + "\"", ",");
+          Utl.AppendStr(ref rslt, "\"" + this[i].ValueAsString() + "\"", ",");
         return rslt;
       }
     }
@@ -438,7 +438,7 @@ namespace Bio.Helpers.Common.Types {
       String rslt = null;
       foreach(CParam prm in this) {
         String vParamStr = prm.Name + "=" + HttpUtility.UrlEncode(prm.ValueAsString());
-        Utl.appendStr(ref rslt, vParamStr, "&");
+        Utl.AppendStr(ref rslt, vParamStr, "&");
       }
       return rslt;
     }
@@ -460,7 +460,7 @@ namespace Bio.Helpers.Common.Types {
     public override String ToString() {
       String rslt = null;
       foreach(CParam prm in this) 
-        Utl.appendStr(ref rslt, prm.ToString(), ";");
+        Utl.AppendStr(ref rslt, prm.ToString(), ";");
       return rslt;
     }
 

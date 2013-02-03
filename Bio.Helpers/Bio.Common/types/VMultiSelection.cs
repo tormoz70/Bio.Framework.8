@@ -63,7 +63,7 @@ namespace Bio.Helpers.Common.Types {
     public override string ToString() {
       var v_rslt = String.Empty;
       foreach (var c in this.Values)
-        Utl.appendStr(ref v_rslt, c, ";");
+        Utl.AppendStr(ref v_rslt, c, ";");
       v_rslt = (this.Inversion ? "1" : "0") + "||" + v_rslt;
       return v_rslt;
     }

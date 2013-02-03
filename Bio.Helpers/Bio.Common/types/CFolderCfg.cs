@@ -90,7 +90,7 @@
       XmlNodeList vMdls = pFldLocal.SelectNodes("assembly");
       foreach(XmlElement vNode in vMdls) {
         XmlElement vRNode = (XmlElement)pFldRemote.SelectSingleNode("assembly[@name='" + vNode.GetAttribute("name") + "']");
-        if((vRNode != null) && (Utl.compareVer(vRNode.GetAttribute("version"), vNode.GetAttribute("version")) > 0)) {
+        if((vRNode != null) && (Utl.CompareVer(vRNode.GetAttribute("version"), vNode.GetAttribute("version")) > 0)) {
           XmlNode vNewEl = pFldLocal.OwnerDocument.ImportNode(vRNode, true);
           pFldLocal.ReplaceChild(vNewEl, vNode);
         } else {

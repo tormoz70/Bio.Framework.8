@@ -123,8 +123,8 @@
             if (callback != null) callback(new EBioCancel());
           } else {
             // Пользователь ввел логин
-            String vCurUsrName = Utl.extractUsrNameFromLogin(newLogin);
-            String vCurUsrPwd = Utl.extractUsrPwdFromLogin(newLogin);
+            String vCurUsrName = Utl.ExtractUsrNameFromLogin(newLogin);
+            String vCurUsrPwd = Utl.ExtractUsrPwdFromLogin(newLogin);
             // Запускаем процедуру проверки логина 
             postLogin(newLogin, (r) => {
               EBioException vExcp = decBioLoginExcp(r.ex);

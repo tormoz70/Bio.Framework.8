@@ -85,7 +85,7 @@ namespace Bio.Helpers.Common.Types {
     public AjaxRequestDelegate callback { get; set; }
 
     //internal void buildFURL(String pServerUrl) {
-    //  this.FURL = ajaxUTL.bldURL(pServerUrl);
+    //  this.FURL = ajaxUTL.BuildURL(pServerUrl);
     //}
     public CAjaxRequest() {
       //this.async = true;

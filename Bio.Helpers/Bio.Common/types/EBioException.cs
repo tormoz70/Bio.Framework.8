@@ -29,7 +29,7 @@ namespace Bio.Helpers.Common.Types {
       : base(pMsg, pInnerExeption) {
       Int32 errCode = 0;
       String errMsg = null;
-      Utl.extractOracleApplicationError(pMsg, out errCode, out errMsg);
+      Utl.ExtractOracleApplicationError(pMsg, out errCode, out errMsg);
       this.ErrorCode = errCode;
       this.ApplicationErrorMessage = errMsg;
     }

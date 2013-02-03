@@ -25,7 +25,7 @@
       this.FSess = pSess;
       this.FRptCode = pRptCode;
       this.FRptFile = this.FSess.Cfg.IniPath + this.FRptCode.Replace(".", "\\") + ".rpt";
-      this.FRptFullPath_ws = this.FSess.Cfg.RptLogsPath + Utl.genBioLocalPath(this.FRptCode);
+      this.FRptFullPath_ws = this.FSess.Cfg.RptLogsPath + Utl.GenBioLocalPath(this.FRptCode);
       this.FRptDonePath = Path.GetDirectoryName(this.FRptFullPath_ws) + "\\done\\"; Directory.CreateDirectory(this.FRptDonePath);
       this.FRptTmpPath = Path.GetDirectoryName(this.FRptFullPath_ws) + "\\tmp\\";
       this.FRptLogPath = Path.GetDirectoryName(this.FRptFullPath_ws) + "\\log\\";

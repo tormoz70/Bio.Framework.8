@@ -96,9 +96,9 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       scanPhisicalPath(rootPath, rptFolderCode, new Action<DirectoryInfo>((di) => {
         CXLFolderNode fldAttr = getFolderAttrs(di.FullName, userRoles);
         if (fldAttr != null) {
-          Utl.appendStr(ref vFullTitle, fldAttr.title, "/");
+          Utl.AppendStr(ref vFullTitle, fldAttr.title, "/");
           String thrCode = extractThrowCode(di.Name);
-          Utl.appendStr(ref vFullThrowCode, thrCode, ".");
+          Utl.AppendStr(ref vFullThrowCode, thrCode, ".");
         }
       }));
       fullTitle = vFullTitle;

@@ -55,7 +55,7 @@ namespace Bio.Helpers.Common.Types {
 
       if (v_x_val.GetType() == typeof(String))
         return String.Compare((String)v_x_val, (String)v_y_val);
-      if (Utl.typeIsNumeric(v_x_val.GetType())) {
+      if (Utl.TypeIsNumeric(v_x_val.GetType())) {
         var v_x_num = Utl.Convert2Type<Decimal>(v_x_val);
         var v_y_num = Utl.Convert2Type<Decimal>(v_y_val);
         if (v_x_num == v_y_num)

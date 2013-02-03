@@ -300,7 +300,7 @@ namespace Bio.Framework.Packets {
         }
         String v_lsql = null;
         this.Items[i].buildSQLCondition(ref v_lsql, prms);
-        Utl.appendStr(ref sql, v_lsql, vDelimeter);
+        Utl.AppendStr(ref sql, v_lsql, vDelimeter);
         i++; i++;
       }
       if (!String.IsNullOrEmpty(sql))

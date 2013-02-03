@@ -45,7 +45,7 @@ namespace Bio.Framework.Server {
       this._conn = conn;
       this._rptLogsPath = rptLogsPath;
       this._headerIsOn = headerIsOn;
-      String vRptFullPath_ws = this._rptLogsPath + Utl.genBioLocalPath(this._bioCode);
+      String vRptFullPath_ws = this._rptLogsPath + Utl.GenBioLocalPath(this._bioCode);
       String vRptDonePath = Path.GetDirectoryName(vRptFullPath_ws) + "\\done\\";
       if(!Directory.Exists(vRptDonePath))
         Directory.CreateDirectory(vRptDonePath);
@@ -91,7 +91,7 @@ namespace Bio.Framework.Server {
             //String vColHeader = (String)CParams.FindParamValue(pColHeaders, pTbl.GetCoulumnName(j));
             String vColHeader = colHeaders[j].ValueAsString();
             if (!String.IsNullOrEmpty(vColHeader))
-              Utl.appendStr(ref vLine, vColHeader, vCSVDelimiter);
+              Utl.AppendStr(ref vLine, vColHeader, vCSVDelimiter);
           }
           Utl.AppendStringToFile(fileName, vLine, vEnc);
         }
@@ -112,7 +112,7 @@ namespace Bio.Framework.Server {
               if ((vValueObj is String) && !String.IsNullOrEmpty(vValue) && (vValue.IndexOf(vCSVDelimiter) >= 0)) {
                 vValue = "\"" + vValue.Replace("\"", "\"\"") + "\"";
               }
-              Utl.appendStr(ref vLine, vValue, vCSVDelimiter);
+              Utl.AppendStr(ref vLine, vValue, vCSVDelimiter);
             }
           }
           Utl.AppendStringToFile(fileName, vLine, vEnc);

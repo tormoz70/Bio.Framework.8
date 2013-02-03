@@ -49,7 +49,7 @@ namespace Bio.Framework.Server {
       this._ownerSession = ownerSession;
       this.bioCode = bioCode;
       this._ownerSession.IObj_set(this.bioCode, this);
-      this._locPath = Utl.genBioLocalPath(this.bioCode);
+      this._locPath = Utl.GenBioLocalPath(this.bioCode);
       if(this._locPath.Length > 0)
         this._locPath = this.OwnerSession.Cfg.IniPath + this._locPath;
     }
@@ -63,7 +63,7 @@ namespace Bio.Framework.Server {
           if(vTextNode != null) {
             String vText = vTextNode.InnerText;
             String vCurrentIOPath = Path.GetDirectoryName(this._iniDoc.FileName);
-            Utl.tryLoadMappedFiles(vCurrentIOPath, ref vText);
+            Utl.TryLoadMappedFiles(vCurrentIOPath, ref vText);
             vTextNode.RemoveAll();
             vTextNode.AppendChild(vTextNode.OwnerDocument.CreateCDataSection(vText));
           }

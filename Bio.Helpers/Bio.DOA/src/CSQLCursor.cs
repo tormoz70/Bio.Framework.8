@@ -127,7 +127,7 @@ namespace Bio.Helpers.DOA {
             for (int i = 0; i < this.FPKFields.Count; i++) {
               String vKey = (i + 1).ToString();
               CField cfld = this.FPKFields[vKey];
-              Utl.appendStr(ref rslt, "(" + cfld.AsString + ")", "-");
+              Utl.AppendStr(ref rslt, "(" + cfld.AsString + ")", "-");
             }
           }
         }

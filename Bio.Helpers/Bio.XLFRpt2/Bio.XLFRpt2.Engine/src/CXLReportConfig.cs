@@ -71,7 +71,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         rslt.sql = vSQLElem.InnerText;
       }
       String vSQL = rslt.sql;
-      Utl.tryLoadMappedFiles(rptLocalPath, ref vSQL);
+      Utl.TryLoadMappedFiles(rptLocalPath, ref vSQL);
       rslt.sql = vSQL;
 
       return rslt;
@@ -94,7 +94,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         rslt.sql = vSQLElem.InnerText;
       }
       String vSQL = rslt.sql;
-      Utl.tryLoadMappedFiles(rptLocalPath, ref vSQL);
+      Utl.TryLoadMappedFiles(rptLocalPath, ref vSQL);
       rslt.sql = vSQL;
       rslt.commandType = Utl.detectCommandType(rslt.sql);
 
@@ -336,7 +336,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
             descFilePath = dir.FullName;
             String vCdStr = extractThrowCodeOfNode(dir.Name);
             if (!String.IsNullOrEmpty(vCdStr))
-              Utl.appendStr(ref throwCode, vCdStr, ".");
+              Utl.AppendStr(ref throwCode, vCdStr, ".");
             _findRptPath(nodes, level + 1, ref descFilePath, ref shrtCode, ref throwCode);
           }
         }
@@ -350,7 +350,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
             Utl.regexReplace(ref shrtCode, csRptThrowCodeDetector, "", true);
             String vCdStr = extractThrowCodeOfNode(fl.Name);
             if (!String.IsNullOrEmpty(vCdStr))
-              Utl.appendStr(ref throwCode, vCdStr, ".");
+              Utl.AppendStr(ref throwCode, vCdStr, ".");
             shrtCode = Path.GetFileNameWithoutExtension(shrtCode).Replace("(rpt)", "");
           }
         }
@@ -376,37 +376,44 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       return vRptFullPath;
     }
 
+    /// <summary>
+    /// Восстанавливает CXLReportConfig из xml-строки
+    /// </summary>
+    /// <param name="xml"></param>
+    /// <returns></returns>
     public static CXLReportConfig Decode(String xml) {
-      CXLReportConfig rslt = new CXLReportConfig();
-      XmlDocument doc = new XmlDocument();
+      var rslt = new CXLReportConfig();
+      var doc = new XmlDocument();
       doc.InnerXml = xml;
       String vUID = null;
-      if (doc.DocumentElement.HasAttribute("uid"))
+      if (doc.DocumentElement != null && doc.DocumentElement.HasAttribute("uid"))
         vUID = doc.DocumentElement.GetAttribute("uid");
       rslt.uid = (String.IsNullOrEmpty(vUID)) ? Guid.NewGuid().ToString().Replace("-", null).ToUpper() : vUID;
 
-      if (doc.DocumentElement.HasAttribute("defaultTableFactory"))
+      if (doc.DocumentElement != null && doc.DocumentElement.HasAttribute("defaultTableFactory"))
         rslt.dataFactoryTypeName = doc.DocumentElement.GetAttribute("defaultTableFactory");
       else
         rslt.dataFactoryTypeName = "Bio.Helpers.XLFRpt2.DataFactory.CDataFactory, Bio.Helpers.XLFRpt2.DefaultDataFactory";
 
-      if (doc.DocumentElement.SelectSingleNode("adv_template") != null)
-        rslt.templateAdv = doc.DocumentElement.SelectSingleNode("adv_template").InnerText;
-      rslt.filenameFmt = Xml.getInnerText(doc.DocumentElement.SelectSingleNode("filename_fmt"));
+      if (doc.DocumentElement != null) {
+        var selectSingleNode = doc.DocumentElement.SelectSingleNode("adv_template");
+        if (selectSingleNode != null) rslt.templateAdv = selectSingleNode.InnerText;
+        rslt.filenameFmt = Xml.getInnerText(doc.DocumentElement.SelectSingleNode("filename_fmt"));
 
-      if (doc.DocumentElement.SelectSingleNode("passwords/pwd_open") != null)
-        rslt.extAttrs.pwdOpen = doc.DocumentElement.SelectSingleNode("passwords/pwd_open").InnerText;
-      if (doc.DocumentElement.SelectSingleNode("passwords/pwd_write") != null)
-        rslt.extAttrs.pwdWrite = doc.DocumentElement.SelectSingleNode("passwords/pwd_write").InnerText;
+        var singleNode = doc.DocumentElement.SelectSingleNode("passwords/pwd_open");
+        if (singleNode != null) rslt.extAttrs.pwdOpen = singleNode.InnerText;
+        var xmlNode = doc.DocumentElement.SelectSingleNode("passwords/pwd_write");
+        if (xmlNode != null) rslt.extAttrs.pwdWrite = xmlNode.InnerText;
+      }
 
       if (String.IsNullOrEmpty(rslt.extAttrs.pwdOpen))
         rslt.extAttrs.pwdOpen = null;
       if (String.IsNullOrEmpty(rslt.extAttrs.pwdWrite))
         rslt.extAttrs.pwdWrite = null;
       
-      if (doc.DocumentElement.SelectSingleNode("append") != null) {
+      if (doc.DocumentElement != null && doc.DocumentElement.SelectSingleNode("append") != null) {
         rslt.extAttrs.rootTreePath = Xml.getInnerText(doc.DocumentElement.SelectSingleNode("append/rptRootTree"));
-        rslt.extAttrs.workPath = Utl.resolvePath(Xml.getInnerText(doc.DocumentElement.SelectSingleNode("append/rptWorkPath")));
+        rslt.extAttrs.workPath = Utl.ResolvePath(Xml.getInnerText(doc.DocumentElement.SelectSingleNode("append/rptWorkPath")));
         
         if (String.IsNullOrEmpty(rslt.extAttrs.rootTreePath))
           rslt.extAttrs.rootTreePath = rslt.extAttrs.workPath;
@@ -432,7 +439,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       rslt.subject = Xml.getInnerText(doc.DocumentElement.SelectSingleNode("subject"));
       rslt.autor = Xml.getInnerText(doc.DocumentElement.SelectSingleNode("autor"));
 
-      XmlElement vDBConn = (XmlElement)doc.DocumentElement.SelectSingleNode("connstr");
+      var vDBConn = (XmlElement)doc.DocumentElement.SelectSingleNode("connstr");
       if (vDBConn != null) 
         rslt.connStr = vDBConn.InnerText;
 
@@ -445,23 +452,25 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         rslt.debug = true;
       }
 
-      XmlNodeList vDSDefs = doc.DocumentElement.SelectNodes("dss/ds[not(@enabled) or @enabled='true']");
-      for (int i = 0; i < vDSDefs.Count; i++) {
-        CXLReportDSConfig dsCfg = CXLReportDSConfig.Decode((XmlElement)vDSDefs[i], rslt.extAttrs.localPath);
-        rslt.dss.Add(dsCfg);
+      var vDSDefs = doc.DocumentElement.SelectNodes("dss/ds[not(@enabled) or @enabled='true']");
+      if (vDSDefs != null) {
+        for (var i = 0; i < vDSDefs.Count; i++) {
+          CXLReportDSConfig dsCfg = CXLReportDSConfig.Decode((XmlElement) vDSDefs[i], rslt.extAttrs.localPath);
+          rslt.dss.Add(dsCfg);
+        }
       }
 
 
-      XmlNodeList inParams = doc.DocumentElement.SelectNodes("append/inParams/param");
+      var inParams = doc.DocumentElement.SelectNodes("append/inParams/param");
       rslt.inPrms = new CParams();
       for (int i = 0; i < inParams.Count; i++)
         rslt.inPrms.Add(((XmlElement)inParams[i]).GetAttribute("name"), ((XmlElement)inParams[i]).InnerText);
 
 
-      XmlNodeList rptParams = doc.DocumentElement.SelectNodes("params/param");
+      var rptParams = doc.DocumentElement.SelectNodes("params/param");
       rslt.rptPrms = new CParams();
-      for (int i = 0; i < rptParams.Count; i++) {
-        String vType = "sql";
+      for (var i = 0; i < rptParams.Count; i++) {
+        var vType = "sql";
         if (((XmlElement)rptParams[i]).HasAttribute("type"))
           vType = ((XmlElement)rptParams[i]).GetAttribute("type");
         rslt.rptPrms.Add(((XmlElement)rptParams[i]).GetAttribute("name"), ((XmlElement)rptParams[i]).InnerText, vType);
@@ -475,7 +484,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       if ((vSQLScriptBeforeNode != null) && Xml.getAttribute<Boolean>(vSQLScriptBeforeNode, "enabled", true)) {
         rslt.extAttrs.sqlScriptBefore = vSQLScriptBeforeNode.InnerText;
         String vSQL = rslt.extAttrs.sqlScriptBefore;
-        Utl.tryLoadMappedFiles(rslt.extAttrs.localPath, ref vSQL);
+        Utl.TryLoadMappedFiles(rslt.extAttrs.localPath, ref vSQL);
         rslt.extAttrs.sqlScriptBefore = vSQL;
       }
       rslt.extAttrs.sqlScriptAfter = null;
@@ -483,7 +492,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       if ((vSQLScriptAfterNode != null) && Xml.getAttribute<Boolean>(vSQLScriptAfterNode, "enabled", true)) {
         rslt.extAttrs.sqlScriptAfter = vSQLScriptAfterNode.InnerText;
         String vSQL = rslt.extAttrs.sqlScriptAfter;
-        Utl.tryLoadMappedFiles(rslt.extAttrs.localPath, ref vSQL);
+        Utl.TryLoadMappedFiles(rslt.extAttrs.localPath, ref vSQL);
         rslt.extAttrs.sqlScriptAfter = vSQL;
       }
 
@@ -504,7 +513,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       get {
         //return this._rptCfg.logPath;
         String vRslt = this.extAttrs.workPath +
-          (!String.IsNullOrEmpty(this.fullCode) ? Utl.genBioLocalPath(this.fullCode) : null) +
+          (!String.IsNullOrEmpty(this.fullCode) ? Utl.GenBioLocalPath(this.fullCode) : null) +
           "log\\" + DateTime.Now.ToString("yyyyMMdd") + "\\" +
           (!String.IsNullOrEmpty(this.extAttrs.remoteIP) ? this.extAttrs.remoteIP + "_" : null) +
           (!String.IsNullOrEmpty(this.extAttrs.userUID) ? this.extAttrs.userUID : null);
@@ -518,7 +527,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     public String tmpPath {
       get {
         return this.extAttrs.workPath +
-          (!String.IsNullOrEmpty(this.fullCode) ? Utl.genBioLocalPath(this.fullCode) : null) +
+          (!String.IsNullOrEmpty(this.fullCode) ? Utl.GenBioLocalPath(this.fullCode) : null) +
           "tmp\\" +
           (!String.IsNullOrEmpty(this.extAttrs.userUID) ? this.extAttrs.sessionID + "\\" : null);
       }
@@ -527,7 +536,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     public String donePath {
       get {
         return this.extAttrs.workPath +
-          (!String.IsNullOrEmpty(this.fullCode) ? Utl.genBioLocalPath(this.fullCode) : null) +
+          (!String.IsNullOrEmpty(this.fullCode) ? Utl.GenBioLocalPath(this.fullCode) : null) +
           "done\\" +
           (!String.IsNullOrEmpty(this.extAttrs.userUID) ? this.extAttrs.userUID + "\\" : null);
 

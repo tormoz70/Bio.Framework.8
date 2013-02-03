@@ -215,7 +215,7 @@ namespace Bio.Helpers.Common.Types {
         foreach (var n in roles) {
           var fi = enumHelper.GetFieldInfo(n);
           String v_role = n.GetType().IsEnum ? "" + fi.GetRawConstantValue() : "" + n;
-          Utl.appendStr(ref v_roles, v_role, ";");
+          Utl.AppendStr(ref v_roles, v_role, ";");
         }
       }
       return this.CheckRoles(v_roles);
