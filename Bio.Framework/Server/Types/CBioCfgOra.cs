@@ -48,7 +48,7 @@
       vPrms.Add("pStatus", this.decConStat(status));
       String vSQL = String.Format("begin {0}.reg_connection(:pUser, :pSessionID," +
                               ":pSessionRemoteIP, :pSessionRemoteHost, :pSessionRemoteClient, :pStatus); end;", csBIO_LOGIN_PKG);
-      CSQLCmd.ExecuteScript(this.dbSession, vSQL, vPrms, ciDefaultSQLTimeout);
+      SQLCmd.ExecuteScript(this.dbSession, vSQL, vPrms, ciDefaultSQLTimeout);
     }
 
     public void regUser(CBioUser pUser) {
@@ -63,20 +63,20 @@
       if (this.CurUser != null) {
         vSQLParams.SetValue("par_name", csSYS_CurUserUID_PARAM_NAME);
         vSQLParams.SetValue("par_value", this.CurUser.USR_UID);
-        CSQLCmd.ExecuteScript(args.Connection, vSQL, vSQLParams, ciDefaultSQLTimeout);
+        SQLCmd.ExecuteScript(args.Connection, vSQL, vSQLParams, ciDefaultSQLTimeout);
         vSQLParams.SetValue("par_name", csSYS_CurUserIP_PARAM_NAME);
         vSQLParams.SetValue("par_value", this.CurUser.USR_IP);
-        CSQLCmd.ExecuteScript(args.Connection, vSQL, vSQLParams, ciDefaultSQLTimeout);
+        SQLCmd.ExecuteScript(args.Connection, vSQL, vSQLParams, ciDefaultSQLTimeout);
         vSQLParams.SetValue("par_name", csSYS_CurUserRoles_PARAM_NAME);
         vSQLParams.SetValue("par_value", this.CurUser.Role);
-        CSQLCmd.ExecuteScript(args.Connection, vSQL, vSQLParams, ciDefaultSQLTimeout);
+        SQLCmd.ExecuteScript(args.Connection, vSQL, vSQLParams, ciDefaultSQLTimeout);
         vSQLParams.SetValue("par_name", csSYS_CurODepUID_PARAM_NAME);
         vSQLParams.SetValue("par_value", this.CurUser.ODEP_UID);
-        CSQLCmd.ExecuteScript(args.Connection, vSQL, vSQLParams, ciDefaultSQLTimeout);
+        SQLCmd.ExecuteScript(args.Connection, vSQL, vSQLParams, ciDefaultSQLTimeout);
       }
       vSQLParams.SetValue("par_name", csSYS_TITLE_PARAM_NAME);
       vSQLParams.SetValue("par_value", this.BioSysTitle);
-      CSQLCmd.ExecuteScript(args.Connection, vSQL, vSQLParams, ciDefaultSQLTimeout);
+      SQLCmd.ExecuteScript(args.Connection, vSQL, vSQLParams, ciDefaultSQLTimeout);
     }
 
     public override void Login(String login) {
@@ -88,12 +88,12 @@
       v_prms.Add("login", login);
       v_prms.Add(new CParam("usr_uid", (String)null, typeof(String), ParamDirection.Output));
       v_prms.Add(new CParam("role_uid", (String)null, typeof(String), ParamDirection.Output));
-      CSQLCmd.ExecuteScript(this.dbSession, vSQL, v_prms, ciDefaultSQLTimeout);
+      SQLCmd.ExecuteScript(this.dbSession, vSQL, v_prms, ciDefaultSQLTimeout);
       String v_usr_uid = CParams.FindParamValue(v_prms, "usr_uid") as String;
       String v_role_uid = CParams.FindParamValue(v_prms, "role_uid") as String;
 
       vSQL = String.Format("select * from table({0}.get_usr(:usr_uid))", csBIO_LOGIN_PKG);
-      CSQLCursor vCur = CSQLCursor.creAndOpenCursor(this.dbSession, vSQL, new CParams(new CParam("usr_uid", v_usr_uid)), ciDefaultSQLTimeout);
+      SQLCursor vCur = SQLCursor.creAndOpenCursor(this.dbSession, vSQL, new CParams(new CParam("usr_uid", v_usr_uid)), ciDefaultSQLTimeout);
       try {
         if (vCur.IsActive && vCur.Next()) {
           this.CurUser = new CBioUser();

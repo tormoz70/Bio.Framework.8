@@ -96,7 +96,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       String vSQL = rslt.sql;
       Utl.TryLoadMappedFiles(rptLocalPath, ref vSQL);
       rslt.sql = vSQL;
-      rslt.commandType = Utl.detectCommandType(rslt.sql);
+      rslt.commandType = Utl.DetectCommandType(rslt.sql);
 
       rslt.maxExpRows = Xml.getAttribute<Int64>(definition, "maxExpRows", 0);
 
@@ -291,7 +291,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 
     private static String csRptThrowCodeDetector = "^\\d+[_]";
     private static String extractThrowCodeOfNode(String nodeName) {
-      String vCdStr = Utl.regexFind(nodeName, csRptThrowCodeDetector, true);
+      String vCdStr = Utl.RegexFind(nodeName, csRptThrowCodeDetector, true);
       if (!String.IsNullOrEmpty(vCdStr)) {
         return vCdStr.Substring(0, vCdStr.IndexOf('_'));
       }
@@ -321,7 +321,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 
     private static String _fileName2ShortCode(String rptFileName) {
       String shrtCode = Path.GetFileNameWithoutExtension(rptFileName);
-      Utl.regexReplace(ref shrtCode, csRptThrowCodeDetector, "", true);
+      Utl.RegexReplace(ref shrtCode, csRptThrowCodeDetector, "", true);
       shrtCode = Path.GetFileNameWithoutExtension(shrtCode).Replace("(rpt)", "");
       return shrtCode;
     }
@@ -332,7 +332,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         DirectoryInfo[] dirs = dirInfo.GetDirectories();
         foreach (DirectoryInfo dir in dirs) {
           String vStr = csRptThrowCodeDetector + nodes[level];
-          if (Utl.regexMatch(dir.Name, vStr, true)) {
+          if (Utl.RegexMatch(dir.Name, vStr, true).Success) {
             descFilePath = dir.FullName;
             String vCdStr = extractThrowCodeOfNode(dir.Name);
             if (!String.IsNullOrEmpty(vCdStr))
@@ -344,10 +344,10 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         FileInfo[] fls = dirInfo.GetFiles();
         foreach (FileInfo fl in fls) {
           String vStr = csRptThrowCodeDetector + nodes[level] + "[(]rpt[)].xml";
-          if (Utl.regexMatch(fl.Name, vStr, true)) {
+          if (Utl.RegexMatch(fl.Name, vStr, true).Success) {
             descFilePath = fl.FullName;
             shrtCode = fl.Name;
-            Utl.regexReplace(ref shrtCode, csRptThrowCodeDetector, "", true);
+            Utl.RegexReplace(ref shrtCode, csRptThrowCodeDetector, "", true);
             String vCdStr = extractThrowCodeOfNode(fl.Name);
             if (!String.IsNullOrEmpty(vCdStr))
               Utl.AppendStr(ref throwCode, vCdStr, ".");

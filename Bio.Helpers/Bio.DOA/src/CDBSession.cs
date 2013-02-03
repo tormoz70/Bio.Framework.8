@@ -47,7 +47,7 @@ namespace Bio.Helpers.DOA {
     }
 
     private void parsConnectionStr(String vConnStr) {
-      IDictionary<String, String> vCSItems = Utl.parsConnectionStr(vConnStr);
+      IDictionary<String, String> vCSItems = Utl.ParsConnectionStr(vConnStr);
       if(vCSItems != null) {
         foreach(KeyValuePair<String, String> vItem in vCSItems)
           this.FConnStrItems.Add(vItem.Key, vItem.Value);
@@ -73,7 +73,7 @@ namespace Bio.Helpers.DOA {
     }
 
     public static String GetSessionID(IDbConnection conn) {
-      return Utl.Convert2Type<String>(CSQLCmd.ExecuteScalarSQL(conn, "SELECT SID as f_result FROM V$SESSION WHERE audsid = SYS_CONTEXT('userenv','sessionid')", null, 120));
+      return Utl.Convert2Type<String>(SQLCmd.ExecuteScalarSQL(conn, "SELECT SID as f_result FROM V$SESSION WHERE audsid = SYS_CONTEXT('userenv','sessionid')", null, 120));
     }
 
 

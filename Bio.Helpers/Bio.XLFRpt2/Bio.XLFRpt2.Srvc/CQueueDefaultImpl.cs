@@ -41,7 +41,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
       var v_prms = new CParams();
       v_prms.SetValue("p_rpt_uid", rptUID);
       var v_sql = "begin xlr.clear_rparams(:p_rpt_uid); end;";
-      CSQLCmd.ExecuteScript(conn, v_sql, v_prms, 120);
+      SQLCmd.ExecuteScript(conn, v_sql, v_prms, 120);
       v_sql = "begin xlr.add_rparam(:p_rpt_uid, :p_prm_name, :p_prm_type, :p_prm_val, :p_usr_uid, :p_remote_ip); end;";
       foreach (var v_prm in prms) {
         v_prms.SetValue("p_prm_name", v_prm.Name);
@@ -64,7 +64,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
         v_prms.SetValue("p_prm_val", v_prmValue);
         v_prms.SetValue("p_usr_uid", userUID);
         v_prms.SetValue("p_remote_ip", remoteIP);
-        CSQLCmd.ExecuteScript(conn, v_sql, v_prms, 120);
+        SQLCmd.ExecuteScript(conn, v_sql, v_prms, 120);
       }
     }
 
@@ -89,7 +89,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
         v_prms.Add("p_rpt_desc", null);
         v_prms.Add("p_usr_uid", userUID);
         v_prms.Add("p_remote_ip", remoteIP);
-        CSQLCmd.ExecuteScript(v_conn, sql, v_prms, 120);
+        SQLCmd.ExecuteScript(v_conn, sql, v_prms, 120);
         v_rptUID = v_prms.ValAsStrByName("p_rpt_uid", true);
         _addRptParams(v_conn, v_rptUID, prms, userUID, remoteIP);
       } finally {
@@ -112,7 +112,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
                          " WHERE a.rpt_uid = :rpt_uid";
       var v_prms = new CParams();
       v_prms.Add("rpt_uid", rptUID);
-      var v_cur = new CSQLCmd(this.cfg.dbSession);
+      var v_cur = new SQLCmd(this.cfg.dbSession);
       v_cur.Init(sql, v_prms);
       v_cur.Open(120);
       try {
@@ -141,7 +141,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
       byte[] v_buffer = null;
       Utl.ReadBinFileInBuffer(fileName, ref v_buffer);
       v_prms.Add("p_file", v_buffer);
-      CSQLCmd.ExecuteScript(this.cfg.dbSession, sql, v_prms, 120);
+      SQLCmd.ExecuteScript(this.cfg.dbSession, sql, v_prms, 120);
     }
 
     /// <summary>
@@ -156,7 +156,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
       v_prms.Add("p_rpt_uid", rptUID);
       v_prms.Add("p_usr_uid", userUID);
       v_prms.Add("p_remote_ip", remoteIP);
-      CSQLCmd.ExecuteScript(this.cfg.dbSession, sql, v_prms, 120);
+      SQLCmd.ExecuteScript(this.cfg.dbSession, sql, v_prms, 120);
     }
 
     /// <summary>
@@ -171,7 +171,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
       v_prms.Add("p_rpt_uid", rptUID);
       v_prms.Add("p_usr_uid", userUID);
       v_prms.Add("p_remote_ip", remoteIP);
-      CSQLCmd.ExecuteScript(this.cfg.dbSession, sql, v_prms, 120);
+      SQLCmd.ExecuteScript(this.cfg.dbSession, sql, v_prms, 120);
     }
 
     /// <summary>
@@ -190,7 +190,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
       const string sql = "select * from table(xlr.rqueue_xml(null,:p_usr_uid))";
       var v_prms = new CParams();
       v_prms.Add("p_usr_uid", userUID);
-      var v_cur = new CSQLCmd(this.cfg.dbSession);
+      var v_cur = new SQLCmd(this.cfg.dbSession);
       v_cur.Init(sql, v_prms);
       v_cur.Open(120);
       var v_sb = new StringBuilder();
@@ -228,7 +228,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
       v_prms.Add("p_state_desc", newStateDesc);
       v_prms.Add("p_usr_uid", userUID);
       v_prms.Add("p_remote_ip", remoteIP);
-      CSQLCmd.ExecuteScript(this.cfg.dbSession, sql, v_prms, 120);
+      SQLCmd.ExecuteScript(this.cfg.dbSession, sql, v_prms, 120);
     }
 
     /// <summary>
@@ -243,7 +243,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
 
     private CParams _getRptParams(String uid) {
       var v_rslt = new CParams();
-      var v_cur = new CSQLCmd(this.cfg.dbSession);
+      var v_cur = new SQLCmd(this.cfg.dbSession);
       var v_prms = new CParams(new CParam("rpt_uid", uid));
       v_cur.Init("select prm_name, prm_type, prm_val from rpt$rparams where rpt_uid = :rpt_uid", v_prms);
       v_cur.Open(120);
@@ -266,7 +266,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
 
     private Queue<CXLRptItem> _getReportsList(String viewName) {
       var v_rslt = new Queue<CXLRptItem>();
-      var v_cur = new CSQLCmd(this.cfg.dbSession);
+      var v_cur = new SQLCmd(this.cfg.dbSession);
       var v_sql = String.Format("SELECT a.rpt_uid, a.rpt_code, a.usr_uid FROM {0} a", viewName);
       v_cur.Init(v_sql, null);
       v_cur.Open(120);
@@ -330,7 +330,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
       var v_prms = new CParams();
       v_prms.Add("p_usr_uid", userUID);
       v_prms.Add(new CParam("rslt", null, typeof(String), 1000, ParamDirection.InputOutput));
-      CSQLCmd.ExecuteScript(this.cfg.dbSession, sql, v_prms, 120);
+      SQLCmd.ExecuteScript(this.cfg.dbSession, sql, v_prms, 120);
       return v_prms.ValAsStrByName("rslt", true);
     }
 
@@ -346,7 +346,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
       v_prms.Add("p_usr", usr);
       v_prms.Add("p_pwd", pwd);
       v_prms.Add(new CParam("rslt", null, typeof(String), 1000, ParamDirection.InputOutput));
-      CSQLCmd.ExecuteScript(this.cfg.dbSession, sql, v_prms, 120);
+      SQLCmd.ExecuteScript(this.cfg.dbSession, sql, v_prms, 120);
       return v_prms.ValAsStrByName("rslt", true);
     }
 
@@ -361,7 +361,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
       var v_prms = new CParams();
       v_prms.Add("p_rpt_uid", rptUID);
       v_prms.Add("p_cmd", (int)cmd);
-      CSQLCmd.ExecuteScript(this.cfg.dbSession, sql, v_prms, 120);
+      SQLCmd.ExecuteScript(this.cfg.dbSession, sql, v_prms, 120);
     }
 
   }

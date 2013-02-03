@@ -14,7 +14,7 @@ namespace Bio.Framework.Server {
   /// <summary>
   /// Реализация Курсора в контексте ИО.
   /// </summary>
-  public class CJSCursor : CSQLCursor {
+  public class CJSCursor : SQLCursor {
     /// <summary>
     /// Типы действий, совершаемых запросами.
     /// </summary>
@@ -134,8 +134,8 @@ namespace Bio.Framework.Server {
         if (vPgStart == Int64.MaxValue) {
           vPgnSQLTemplate = csPgnSQLTemplateGoToLast;
           String vSQLStr = String.Format(csTotalCountSQLTemplate, vPreparedSQLLevel0);
-          //string vSQLStr = String.Format(C_TotalCountSQLTemplate, this.FPreparedSQL);
-          pckt.totalCount = Convert.ToInt32(CSQLCmd.ExecuteScalarSQL(this.Connection, vSQLStr, bioParams, timeout));
+          //string vSQLStr = String.Format(C_TotalCountSQLTemplate, this.preparedSQL);
+          pckt.totalCount = Convert.ToInt32(SQLCmd.ExecuteScalarSQL(this.Connection, vSQLStr, bioParams, timeout));
           vPgStart = ((pckt.totalCount - 1L) / pckt.limit) * pckt.limit;
           pckt.start = vPgStart;
         }
@@ -148,8 +148,8 @@ namespace Bio.Framework.Server {
         } else
           vSQL = vPreparedSQLLevel0;
 
-        //this.FPreparedSQL = String.Format(C_PgnSQLTemplate, vPgEnd - vPgStart + 1, this.FPreparedSQL);
-        //this.FPreparedSQL = String.Format(C_PgnSQLTemplate, this.FPreparedSQL);
+        //this.preparedSQL = String.Format(C_PgnSQLTemplate, vPgEnd - vPgStart + 1, this.preparedSQL);
+        //this.preparedSQL = String.Format(C_PgnSQLTemplate, this.preparedSQL);
 
         bioParams.Add("rnumto$", vPgEnd + 1);
         bioParams.Add("rnumfrom$", vPgStart);
@@ -268,7 +268,7 @@ namespace Bio.Framework.Server {
       if (this.rqBioParams == null)
         this._rq_bioParams = new CParams();
       base.Init(SQLtext.InnerText, this.rqBioParams);
-      String vSQL = this.FPreparedSQL;
+      String vSQL = this.preparedSQL;
       Boolean v_filterIsDefined = this._applyFilter(this._rq_filter, ref this._rq_bioParams, ref vSQL);
       Boolean v_sorterIsDefined = this._applySorter(this._rq_sorter, ref vSQL);
 
@@ -285,7 +285,7 @@ namespace Bio.Framework.Server {
           v_lprms = v_lprms.Merge(this.rqBioParams, true);
           v_lprms.SetValue("loc_start_from", v_min_start);
           vSQLStr = String.Format(csLocateNextSQLTemplate, vSQL, vSQLStr);
-          int rnum = Convert.ToInt32(CSQLCmd.ExecuteScalarSQL(this.Connection, vSQLStr, v_lprms, timeout));
+          int rnum = Convert.ToInt32(SQLCmd.ExecuteScalarSQL(this.Connection, vSQLStr, v_lprms, timeout));
           if (this.rqPacket.limit > 0)
             this.rqPacket.start = Math.Max(((rnum - 1) / this.rqPacket.limit) * this.rqPacket.limit, 0);
         }
@@ -293,7 +293,7 @@ namespace Bio.Framework.Server {
       } else {
         this._buildSelectSelectionSQL(this._rq_selection, this.rqBioParams, ref vSQL);
       }
-      this.FPreparedSQL = vSQL;
+      this.preparedSQL = vSQL;
     }
 
     /// <summary>
@@ -355,8 +355,8 @@ namespace Bio.Framework.Server {
           ////  vParamType = typeof(OracleBlob);
           //else
           Type vParamType = ftypeHelper.ConvertStrToType(vParamTypeName);
-          ParamDirection vDir = SQLUtils.encodeParamDirection(this.detectDir(SQLParam));
-          CParam param = SQLUtils.findParam(prms, vParamName);
+          ParamDirection vDir = SQLUtils.EncodeParamDirection(this.detectDir(SQLParam));
+          CParam param = SQLUtils.FindParam(prms, vParamName);
           if (vDir == ParamDirection.Input) {
             if (param != null) {
               param.ParamType = vParamType;
@@ -378,13 +378,13 @@ namespace Bio.Framework.Server {
           /*if((param != null) && ((vDir == ParamDirection.Input) || (vDir == ParamDirection.InputOutput))) {
             if (!String.IsNullOrEmpty(param.ValueAsString())) {
               if(param.ParamType.Equals(typeof(System.Decimal)))
-                param.Value = SQLUtils.StrAsOraValue(param.ValueAsString(), CSQLDataType.Varchar2);
+                param.Value = SQLUtils.StrAsOraValue(param.ValueAsString(), OracleDataType.Varchar2);
               else if(param.ParamType.Equals(typeof(System.DateTime)))
-                param.Value = SQLUtils.StrAsOraValue(param.ValueAsString(), CSQLDataType.Date);
+                param.Value = SQLUtils.StrAsOraValue(param.ValueAsString(), OracleDataType.Date);
               //else if (param.ParamType.Equals(typeof(System.Char[])))
               //  param.Value = SQLUtils.StrAsOraValue(param.Value, OracleDbType.Clob);
               else if (param.ParamType.Equals(typeof(System.Byte[])))
-                param.Value = SQLUtils.StrAsOraValue(param.ValueAsString(), CSQLDataType.Blob);
+                param.Value = SQLUtils.StrAsOraValue(param.ValueAsString(), OracleDataType.Blob);
             }
           }*/
 
@@ -400,8 +400,8 @@ namespace Bio.Framework.Server {
           SQLtext.InnerText = SQLtext.InnerText.Trim();
           try {
             this.ApplyParamsTypes(SQLelem, prms);
-            var cmd = CSQLCmd.PrepareCommand(this.Connection, SQLtext.InnerText, prms, timeout);
-            CSQLCmd.ExecuteScript(cmd, SQLtext.InnerText, prms);
+            var cmd = SQLCmd.PrepareCommand(this.Connection, SQLtext.InnerText, prms, timeout);
+            SQLCmd.ExecuteScript(cmd, SQLtext.InnerText, prms);
           } catch (EBioException be) {
             throw new EBioException("При выполнении PL/SQL блока " + this.bioCode + "[" + actionName + "] произошла ошибка.\nСообщение: " + be.Message, be);
           }
@@ -425,7 +425,7 @@ namespace Bio.Framework.Server {
           sql = SQLtext.InnerText.Trim();
           try {
             this.ApplyParamsTypes(SQLelem, prms);
-            stmt = CSQLCmd.PrepareCommand(this.Connection, sql, prms, timeout);
+            stmt = SQLCmd.PrepareCommand(this.Connection, sql, prms, timeout);
           } catch (EBioException be) {
             throw new EBioException("При подготовке PL/SQL блока " + this.bioCode + "[" + csActionName + "] произошла ошибка.\nСообщение: " + be.Message, be);
           }

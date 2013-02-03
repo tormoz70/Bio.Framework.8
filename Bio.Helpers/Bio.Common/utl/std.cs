@@ -28,6 +28,21 @@ namespace Bio.Helpers.Common {
   using System.Text;
 
   /// <summary>
+  /// Структура описывающая пару - "Имя пользователя"/"Пароль"
+  /// </summary>
+  public struct Login {
+    /// <summary>
+    /// Имя пользователя
+    /// </summary>
+    public String user;
+
+    /// <summary>
+    /// Пароль
+    /// </summary>
+    public String password;
+  }
+
+  /// <summary>
   /// Утилиты общего назначения
   /// </summary>
   public class Utl {
@@ -63,7 +78,7 @@ namespace Bio.Helpers.Common {
     /// <summary>
     /// Кодировка по умолчанию
     /// </summary>
-    public static Encoding DefaultEncoding = Encoding.Default;
+    public static readonly Encoding DefaultEncoding = Encoding.Default;
 #endif
 
     /// <summary>
@@ -108,9 +123,7 @@ namespace Bio.Helpers.Common {
             var v_name = prm + "=";
             if (t.StartsWith(v_name)) {
               var v_rslt = t.Substring(v_name.Length);
-              if (v_rslt.Trim().Equals(""))
-                return null;
-              return v_rslt;
+              return v_rslt.Trim().Equals("") ? null : v_rslt;
             }
           }
         }
@@ -127,13 +140,10 @@ namespace Bio.Helpers.Common {
     public static String EncodeANSII2UTF(String msg) {
 #if !SILVERLIGHT
       if (msg != null) {
-        String v_result;
         var v_enc = new UTF8Encoding();
         var v_bfr = v_enc.GetBytes(msg);
         v_bfr = Encoding.Convert(Encoding.GetEncoding(EncWindows1251), Encoding.GetEncoding(SYS_ENCODING), v_bfr);
-        var v_tmps = v_enc.GetString(v_bfr);
-        v_result = v_tmps;
-        return v_result;
+        return v_enc.GetString(v_bfr);
       }
       return null;
 #else
@@ -388,8 +398,9 @@ namespace Bio.Helpers.Common {
     public static void AppendStringToFile(String fileName, String line, Encoding encoding, Boolean createPath) {
       FMutexOfLogFile.WaitOne();
       try {
-        if (!Directory.Exists(Path.GetDirectoryName(fileName)) && createPath)
-          Directory.CreateDirectory(Path.GetDirectoryName(fileName));
+        var v_dir = Path.GetDirectoryName(fileName);
+        if (v_dir != null && (!Directory.Exists(v_dir) && createPath))
+          Directory.CreateDirectory(v_dir);
         var v_fs = new FileStream(fileName, FileMode.Append, FileAccess.Write, FileShare.Read);
         var v_encoding = encoding ?? DefaultEncoding;
         using (var sw = new StreamWriter(v_fs, v_encoding)) {
@@ -437,7 +448,7 @@ namespace Bio.Helpers.Common {
         AppendStr(ref line, String.Empty, delimiter);
     }
 
-    private const int CHUNKSIZE = 40000;
+    private const int _CHUNKSIZE = 40000;
     /// <summary>
     /// Читает поток в массив байтов
     /// </summary>
@@ -448,8 +459,8 @@ namespace Bio.Helpers.Common {
       var v_chunkPos = 0;
       while (stream.Position > -1 && stream.Position < stream.Length) {
         int v_chunkSize;
-        if (stream.Length - stream.Position >= CHUNKSIZE)
-          v_chunkSize = CHUNKSIZE;
+        if (stream.Length - stream.Position >= _CHUNKSIZE)
+          v_chunkSize = _CHUNKSIZE;
         else
           v_chunkSize = (int)(stream.Length - stream.Position);
         stream.Read(buffer, v_chunkPos, v_chunkSize);
@@ -747,19 +758,21 @@ namespace Bio.Helpers.Common {
     }
 
     /// <summary>
-    /// Разбирает логин вида [имя пользователя]/[пароль]
+    /// Разбирает логин
     /// </summary>
-    /// <param name="login"></param>
-    /// <param name="user"></param>
-    /// <param name="password"></param>
-    public static void ParsLogin(String login, ref String user, ref String password) {
-      user = null;
-      password = null;
-      var v_lst = Utl.SplitString(login, '/');
+    /// <param name="login">логин вида [имя пользователя]/[пароль]</param>
+    /// <returns><see cref="Login"/></returns>
+    public static Login ParsLogin(String login) {
+      var v_result = new Login {
+        user = null,
+        password = null
+      };
+      var v_lst = SplitString(login, '/');
       if (v_lst.Length > 0)
-        user = v_lst[0];
+        v_result.user = v_lst[0];
       if (v_lst.Length > 1)
-        password = v_lst[1];
+        v_result.password = v_lst[1];
+      return v_result;
     }
 
     /// <summary>
@@ -769,10 +782,9 @@ namespace Bio.Helpers.Common {
     /// <param name="regex"></param>
     /// <param name="ignoreCase"></param>
     /// <returns></returns>
-    public static Boolean RegexMatch(String line, String regex, Boolean ignoreCase) {
+    public static Match RegexMatch(String line, String regex, Boolean ignoreCase) {
       var v_regex = new Regex(regex, ((ignoreCase) ? RegexOptions.IgnoreCase : RegexOptions.None));
-      var v_match = v_regex.Match(line);
-      return v_match.Success;
+      return v_regex.Match(line);
     }
 
     /// <summary>
@@ -821,7 +833,7 @@ namespace Bio.Helpers.Common {
     public static IDictionary<String, String> ParsConnectionStr(String connStr) {
       IDictionary<String, String> v_rslt = new Dictionary<String, String>();
       if (connStr != null) {
-        var v_spr = new Char[] { ';' };
+        var v_spr = new[] { ';' };
         var v_lst = connStr.Split(v_spr);
         foreach (var fpar in v_lst) {
           v_spr[0] = '=';
@@ -847,7 +859,7 @@ namespace Bio.Helpers.Common {
       String v_rslt = null;
       if (connStr != null) {
         foreach (var v_item in connStr) {
-          Utl.AppendStr(ref v_rslt, v_item.Key + "=" + v_item.Value, ";");
+          AppendStr(ref v_rslt, v_item.Key + "=" + v_item.Value, ";");
         }
       }
       return v_rslt;
@@ -912,9 +924,7 @@ namespace Bio.Helpers.Common {
     /// <param name="login"></param>
     /// <returns></returns>
     public static String ExtractUsrNameFromLogin(String login) {
-      String v_user = null; String v_psswrd = null;
-      ParsLogin(login, ref v_user, ref v_psswrd);
-      return v_user;
+      return ParsLogin(login).user;
     }
 
     /// <summary>
@@ -933,9 +943,7 @@ namespace Bio.Helpers.Common {
     /// <param name="login"></param>
     /// <returns></returns>
     public static String ExtractUsrPwdFromLogin(String login) {
-      String v_usrName = null; String v_psswrd = null;
-      ParsLogin(login, ref v_usrName, ref v_psswrd);
-      return v_psswrd;
+      return ParsLogin(login).password;
     }
 
 #if !SILVERLIGHT 
@@ -947,8 +955,8 @@ namespace Bio.Helpers.Common {
     /// <returns></returns>
     public static Boolean ColumnExists(DataColumnCollection cols, String fieldName) {
       if (!String.IsNullOrEmpty(fieldName)) {
-        foreach (DataColumn vCol in cols) {
-          if (String.Equals(vCol.ColumnName, fieldName, StringComparison.CurrentCultureIgnoreCase)) {
+        foreach (DataColumn col in cols) {
+          if (String.Equals(col.ColumnName, fieldName, StringComparison.CurrentCultureIgnoreCase)) {
             return true;
           }
         }
@@ -963,9 +971,9 @@ namespace Bio.Helpers.Common {
     /// <param name="fieldName"></param>
     /// <param name="value"></param>
     public static void DataRowSetValue(DataRow row, String fieldName, Object value) {
-      foreach (DataColumn vCol in row.Table.Columns) {
-        if (vCol.ColumnName.ToUpper().Equals(fieldName.ToUpper())) {
-          row[vCol.ColumnName] = Convert2Type(value, vCol.DataType);
+      foreach (DataColumn col in row.Table.Columns) {
+        if (col.ColumnName.ToUpper().Equals(fieldName.ToUpper())) {
+          row[col.ColumnName] = Convert2Type(value, col.DataType);
         }
       }
     }
@@ -978,15 +986,15 @@ namespace Bio.Helpers.Common {
     /// <param name="ifNull"></param>
     /// <returns></returns>
     public static Object DataRowGetValue(DataRow row, String fieldName, Object ifNull) {
-      Object vResult = null;
+      Object v_result = null;
       if (row != null && row.RowState != DataRowState.Detached) {
-        foreach (DataColumn vCol in row.Table.Columns)
-          if (vCol.ColumnName.ToUpper().Equals(fieldName.ToUpper())) {
-            vResult = row[vCol.ColumnName];
+        foreach (DataColumn col in row.Table.Columns)
+          if (col.ColumnName.ToUpper().Equals(fieldName.ToUpper())) {
+            v_result = row[col.ColumnName];
             break;
           }
       }
-      return vResult ?? ifNull;
+      return v_result ?? ifNull;
     }
 #endif
 
@@ -1020,26 +1028,20 @@ namespace Bio.Helpers.Common {
       String v_rslt = null;
       if (@object != null) {
         var v_tp = @object.GetType();
-        if (v_tp == typeof(System.DBNull))
-          v_rslt = null;
-        else if (v_tp == typeof(System.String))
+        if (v_tp == typeof(String))
           v_rslt = @object.ToString();
         else {
 #if !SILVERLIGHT
           var v_culture = new CultureInfo(CultureInfo.CurrentCulture.Name, true);
+          v_culture.DateTimeFormat.DateSeparator = "-";
 #else
           var v_culture = new CultureInfo(CultureInfo.CurrentCulture.Name);
 #endif
           v_culture.NumberFormat.NumberDecimalSeparator = ".";
-#if !SILVERLIGHT
-          v_culture.DateTimeFormat.DateSeparator = "-";
-#else
-          //
-#endif
           v_culture.DateTimeFormat.ShortDatePattern = "dd.MM.yyyy H:mm:ss";
           v_culture.DateTimeFormat.LongTimePattern = "";
           v_rslt = Convert.ToString(@object, v_culture);
-          if (v_tp == typeof(System.DateTime))
+          if (v_tp == typeof(DateTime))
             v_rslt = v_rslt.Trim();
         }
       }
@@ -1104,19 +1106,17 @@ namespace Bio.Helpers.Common {
         if (v_tp == null) {
           if (v_outIsNullable || v_outIsClass)
             return null;
-          else {
-            if (v_outType == typeof(String) || v_outType == typeof(Object))
-              return null;
-            else if (v_outType == typeof(DateTime))
-              return DateTime.MinValue;
-            else if (v_outType == typeof(Boolean))
-              return false;
-            else if (TypeIsNumeric(v_outType)) {
-              IFormatProvider v_format = CultureInfo.CurrentCulture.NumberFormat;
-              return Convert.ChangeType(0, v_outType, v_format);
-            } else
-              throw new Exception("Значение null не может быть представлено как " + v_outType.Name + "!!! ", null);
+          if (v_outType == typeof(String) || v_outType == typeof(Object))
+            return null;
+          if (v_outType == typeof(DateTime))
+            return DateTime.MinValue;
+          if (v_outType == typeof(Boolean))
+            return false;
+          if (TypeIsNumeric(v_outType)) {
+            IFormatProvider v_format = CultureInfo.CurrentCulture.NumberFormat;
+            return Convert.ChangeType(0, v_outType, v_format);
           }
+          throw new Exception("Значение null не может быть представлено как " + v_outType.Name + "!!! ", null);
         }
 
         var v_inType = Nullable.GetUnderlyingType(v_tp);
@@ -1156,23 +1156,25 @@ namespace Bio.Helpers.Common {
           IFormatProvider v_numberFormat = CultureInfo.CurrentCulture.NumberFormat;//new NumberFormatInfo();
           if (inValue == null)
             v_rslt = Convert.ChangeType(0, v_outType, v_numberFormat);
-          if (TypeIsNumeric(v_inType)) {
-            v_rslt = Convert.ChangeType(inValue, v_outType, v_numberFormat);
-          } else if (v_inType == typeof(Boolean)) {
-            v_rslt = (inValue != null) && ((Boolean)inValue) ? 1 : 0;
-          } else if (v_inType == typeof(String)) {
-            var v_valStr = (String)inValue;
-            v_valStr = String.IsNullOrEmpty(v_valStr) ? "0" : v_valStr;
-            var v_decSep = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
-            v_valStr = v_valStr.Replace(",", v_decSep);
-            v_valStr = v_valStr.Replace(".", v_decSep);
-            try {
-              v_rslt = Convert.ChangeType(v_valStr, v_outType, v_numberFormat);
-            } catch (Exception ex) {
-              throw new Exception("Значение [" + v_valStr + "] типа " + v_inType.Name + " не может быть представлено как Numeric!!! ", null);
+          else {
+            if (TypeIsNumeric(v_inType)) {
+              v_rslt = Convert.ChangeType(inValue, v_outType, v_numberFormat);
+            } else if (v_inType == typeof (Boolean)) {
+              v_rslt = ((Boolean) inValue) ? 1 : 0;
+            } else if (v_inType == typeof (String)) {
+              var v_valStr = (String) inValue;
+              v_valStr = String.IsNullOrEmpty(v_valStr) ? "0" : v_valStr;
+              var v_decSep = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+              v_valStr = v_valStr.Replace(",", v_decSep);
+              v_valStr = v_valStr.Replace(".", v_decSep);
+              try {
+                v_rslt = Convert.ChangeType(v_valStr, v_outType, v_numberFormat);
+              } catch (Exception ex) {
+                throw new Exception("Значение [" + v_valStr + "] типа " + v_inType.Name + " не может быть представлено как Numeric!!! Сообщение: " + ex.Message, null);
+              }
+            } else {
+              throw new Exception("Значение [" + inValue + "] типа " + v_tp + " не может быть представлено как Numeric!!! ", null);
             }
-          } else {
-            throw new Exception("Значение типа " + v_tp + " не может быть представлено как Numeric!!! ", null);
           }
           if (v_outIsNullable)
             v_rslt = _convertToNullable(v_rslt);
@@ -1212,8 +1214,8 @@ namespace Bio.Helpers.Common {
           v_month = 12;
         }
         return String.Format("{0:0000}{1:00}", v_year, v_month);
-      } else
-        return null;
+      }
+      return null;
     }
 
     /// <summary>
@@ -1279,7 +1281,7 @@ namespace Bio.Helpers.Common {
       if (File.Exists(fileName)) {
         var v_fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
         var v_file = new StreamReader(v_fs, encoding);
-        String v_line = null;
+        String v_line;
         var v_bfr = new StringWriter();
         while ((v_line = v_file.ReadLine()) != null)
           v_bfr.WriteLine(v_line);
@@ -1290,7 +1292,7 @@ namespace Bio.Helpers.Common {
     }
 
     /// <summary>
-    /// Загружает текстовый файл в List<String>
+    /// Загружает текстовый файл в List
     /// </summary>
     /// <param name="fileName"></param>
     /// <param name="encoding"></param>
@@ -1301,7 +1303,7 @@ namespace Bio.Helpers.Common {
         var v_fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
         try {
           var v_file = new StreamReader(v_fs, encoding);
-          String v_line = null;
+          String v_line;
           while ((v_line = v_file.ReadLine()) != null)
             v_result.Add(v_line);
         } finally {
@@ -1339,11 +1341,9 @@ namespace Bio.Helpers.Common {
     /// <param name="caseSensetive">С учето регистра</param>
     /// <returns></returns>
     public static PropertyInfo GetPropertyInfo(Type type, String propertyName, Boolean caseSensetive) {
-      if (type != null) {
-        var prop = type.GetProperties().Where((p) => { return p.Name.Equals(propertyName, (caseSensetive ? StringComparison.CurrentCulture : StringComparison.CurrentCultureIgnoreCase)); }).FirstOrDefault();
-        return prop;
-      } else
-        return null;
+      return type != null ? type.GetProperties().FirstOrDefault(
+          p => p.Name.Equals(propertyName, (caseSensetive ? StringComparison.CurrentCulture : StringComparison.CurrentCultureIgnoreCase))
+        ) : null;
     }
 
     /// <summary>
@@ -1367,10 +1367,10 @@ namespace Bio.Helpers.Common {
         var attrs = prop.GetCustomAttributes(typeof(T), true);
         if (attrs.Length > 0) {
           return attrs[0] as T;
-        } else
-          return null;
-      } else
+        }
         return null;
+      }
+      return null;
     }
 
     /// <summary>
@@ -1397,7 +1397,7 @@ namespace Bio.Helpers.Common {
       var prop = GetPropertyInfo(type, propertyName);
       var attr = GetPropertyAttr<T>(prop);
       if (attr != null)
-        Utl.SetPropertyValue(attr, attrPropertyName, attrPropValue);
+        SetPropertyValue(attr, attrPropertyName, attrPropValue);
     }
 
 #if !SILVERLIGHT
@@ -1405,14 +1405,14 @@ namespace Bio.Helpers.Common {
     /// Возвращает значение атрибута типа A свойства propName для типа T
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    /// <typeparam name="A"></typeparam>
+    /// <typeparam name="TA"></typeparam>
     /// <param name="propName"></param>
     /// <returns></returns>
-    public static A GetAttributeOfProp<T, A>(String propName) where A:Attribute {
+    public static TA GetAttributeOfProp<T, TA>(String propName) where TA:Attribute {
       PropertyDescriptorCollection pdc = TypeDescriptor.GetProperties(typeof(T));
       foreach (PropertyDescriptor pd in pdc) {
         if (String.Equals(pd.Name, propName, StringComparison.CurrentCulture)) {
-          A attr = (A)pd.Attributes[typeof(A)];
+          var attr = (TA)pd.Attributes[typeof(TA)];
           if (attr != null)
             return attr;
         }
@@ -1429,19 +1429,19 @@ namespace Bio.Helpers.Common {
     /// <param name="fileName"></param>
     /// <returns></returns>
     public static String IncFileNameIndexIfExists(String fileName) {
-      var vResult = fileName;
+      var v_result = fileName;
       if(File.Exists(fileName)) {
-        var vExt = Path.GetExtension(vResult);
+        var v_ext = Path.GetExtension(v_result);
         var vr = new Regex("[(]\\d+[)][\\.]", RegexOptions.IgnoreCase);
-        var vMatch = vr.Match(vResult);
-        if(vMatch.Success) {
-          var vNumStr = vMatch.Value.Substring(1, vMatch.Value.Length - 3);
-          var vNum = Int16.Parse(vNumStr); vNum++;
-          vResult = vr.Replace(vResult, "(" + vNum + ").");
+        var v_match = vr.Match(v_result);
+        if(v_match.Success) {
+          var v_numStr = v_match.Value.Substring(1, v_match.Value.Length - 3);
+          var v_num = Int16.Parse(v_numStr); v_num++;
+          v_result = vr.Replace(v_result, "(" + v_num + ").");
         } else
-          vResult = Utl.NormalizeDir(Path.GetDirectoryName(vResult)) + Path.GetFileNameWithoutExtension(vResult) + "(1)" + vExt;
+          v_result = NormalizeDir(Path.GetDirectoryName(v_result)) + Path.GetFileNameWithoutExtension(v_result) + "(1)" + v_ext;
       }
-      return vResult;
+      return v_result;
     }
 
     /// <summary>
@@ -1451,20 +1451,20 @@ namespace Bio.Helpers.Common {
     /// <param name="pCurrentPath"></param>
     /// <param name="vText"></param>
     public static void TryLoadTextAsFile(String pCurrentPath, ref String vText) {
-      var vCurrentDirectory = Directory.GetCurrentDirectory();
-      var vCurrentPath = Path.GetFullPath(pCurrentPath);
-      Directory.SetCurrentDirectory(vCurrentPath);
+      var v_currentDirectory = Directory.GetCurrentDirectory();
+      var v_currentPath = Path.GetFullPath(pCurrentPath);
+      Directory.SetCurrentDirectory(v_currentPath);
       try {
-        var vSQLFileFN = vText;
-        if(File.Exists(vSQLFileFN)) {
+        var v_sqlFileFN = vText;
+        if(File.Exists(v_sqlFileFN)) {
           try {
-            Bio.Helpers.Common.Utl.LoadWINFile(vSQLFileFN, ref vText);
+            LoadWINFile(v_sqlFileFN, ref vText);
           } catch(Exception ex) {
-            throw new Exception("Ошибка при загрузке файла [" + vSQLFileFN + "]. Сообщение: " + ex.Message);
+            throw new Exception("Ошибка при загрузке файла [" + v_sqlFileFN + "]. Сообщение: " + ex.Message);
           }
         }
       } finally {
-        Directory.SetCurrentDirectory(vCurrentDirectory);
+        Directory.SetCurrentDirectory(v_currentDirectory);
       }
     }
 
@@ -1475,9 +1475,9 @@ namespace Bio.Helpers.Common {
     /// <param name="currentPath"></param>
     /// <param name="text"></param>
     public static void TryLoadMappedFiles(String currentPath, ref String text) {
-      var fileContent = RegexFind(text, "(?<={text-file:).+(?=})", true);
-      TryLoadTextAsFile(currentPath, ref fileContent);
-      RegexReplace(ref text, "{text-file:.+}", fileContent, true);
+      var v_fileContent = RegexFind(text, "(?<={text-file:).+(?=})", true);
+      TryLoadTextAsFile(currentPath, ref v_fileContent);
+      RegexReplace(ref text, "{text-file:.+}", v_fileContent, true);
     }
 
     /// <summary>
@@ -1495,26 +1495,26 @@ namespace Bio.Helpers.Common {
         col2 = Color.Gray;
       }
 
-      Pen vPen = null;
+      Pen v_pen;
       //left  
       if ((borders & AnchorStyles.Left) == AnchorStyles.Left) {
-        vPen = new Pen(col1, 2);
-        gra.DrawLine(vPen, new Point(cellBounds.X, cellBounds.Y), new Point(cellBounds.X, cellBounds.Y + cellBounds.Height));
+        v_pen = new Pen(col1, 2);
+        gra.DrawLine(v_pen, new Point(cellBounds.X, cellBounds.Y), new Point(cellBounds.X, cellBounds.Y + cellBounds.Height));
       }
       //right
       if ((borders & AnchorStyles.Right) == AnchorStyles.Right) {
-        vPen = new Pen(col2, 2);
-        gra.DrawLine(vPen, new Point(cellBounds.X + cellBounds.Width, cellBounds.Y), new Point(cellBounds.X + cellBounds.Width, cellBounds.Y + cellBounds.Height));
+        v_pen = new Pen(col2, 2);
+        gra.DrawLine(v_pen, new Point(cellBounds.X + cellBounds.Width, cellBounds.Y), new Point(cellBounds.X + cellBounds.Width, cellBounds.Y + cellBounds.Height));
       }
       //top
       if ((borders & AnchorStyles.Top) == AnchorStyles.Top) {
-        vPen = new Pen(col1, 2);
-        gra.DrawLine(vPen, new Point(cellBounds.X, cellBounds.Y), new Point(cellBounds.X + cellBounds.Width, cellBounds.Y));
+        v_pen = new Pen(col1, 2);
+        gra.DrawLine(v_pen, new Point(cellBounds.X, cellBounds.Y), new Point(cellBounds.X + cellBounds.Width, cellBounds.Y));
       }
       //bottom
       if ((borders & AnchorStyles.Bottom) == AnchorStyles.Bottom) {
-        vPen = new Pen(col2, 2);
-        gra.DrawLine(vPen, new Point(cellBounds.X, cellBounds.Y + cellBounds.Height), new Point(cellBounds.X + cellBounds.Width, cellBounds.Y + cellBounds.Height));
+        v_pen = new Pen(col2, 2);
+        gra.DrawLine(v_pen, new Point(cellBounds.X, cellBounds.Y + cellBounds.Height), new Point(cellBounds.X + cellBounds.Width, cellBounds.Y + cellBounds.Height));
       }
     }
 #endif
@@ -1523,22 +1523,22 @@ namespace Bio.Helpers.Common {
     private static void drawSeldCell(DataGridView grid, DataGridViewCellPaintingEventArgs a, Boolean focused) {
       if((a.State & DataGridViewElementStates.Selected) ==
                 DataGridViewElementStates.Selected) {
-        Boolean vCellSelection = (grid.SelectionMode == DataGridViewSelectionMode.CellSelect) ||
+        var v_cellSelection = (grid.SelectionMode == DataGridViewSelectionMode.CellSelect) ||
                                   (grid.SelectionMode == DataGridViewSelectionMode.RowHeaderSelect) ||
                                    (grid.SelectionMode == DataGridViewSelectionMode.ColumnHeaderSelect);
-        Rectangle rct = new Rectangle(a.CellBounds.Location, a.CellBounds.Size);
-        rct.X = vCellSelection || (a.ColumnIndex == 0) ? rct.X + 1 : rct.X;
+        var rct = new Rectangle(a.CellBounds.Location, a.CellBounds.Size);
+        rct.X = v_cellSelection || (a.ColumnIndex == 0) ? rct.X + 1 : rct.X;
         rct.Y = rct.Y + 1;
-        rct.Width = vCellSelection || (a.ColumnIndex == grid.Columns.Count - 1) ? rct.Width - 3 : rct.Width;
+        rct.Width = v_cellSelection || (a.ColumnIndex == grid.Columns.Count - 1) ? rct.Width - 3 : rct.Width;
         rct.Height = rct.Height - 3;
 
-        AnchorStyles vBorders = AnchorStyles.Bottom | AnchorStyles.Top;
-        if (vCellSelection || (a.ColumnIndex == 0))
-          vBorders = vBorders | AnchorStyles.Left;
-        if (vCellSelection || (a.ColumnIndex == grid.Columns.Count - 1))
-          vBorders = vBorders | AnchorStyles.Right;
+        var v_borders = AnchorStyles.Bottom | AnchorStyles.Top;
+        if (v_cellSelection || (a.ColumnIndex == 0))
+          v_borders = v_borders | AnchorStyles.Left;
+        if (v_cellSelection || (a.ColumnIndex == grid.Columns.Count - 1))
+          v_borders = v_borders | AnchorStyles.Right;
 
-        DrawAnSelctedCell(rct, focused, a.Graphics, vBorders);
+        DrawAnSelctedCell(rct, focused, a.Graphics, v_borders);
 
       }
     }
@@ -1552,10 +1552,10 @@ namespace Bio.Helpers.Common {
     /// <param name="a"></param>
     /// <param name="focused"></param>
     public static void DrawGridSelectionAlt(DataGridView grid, DataGridViewCellPaintingEventArgs a, Boolean focused) {
-      DataGridViewPaintParts vPrts = DataGridViewPaintParts.All;
-      vPrts &= ~DataGridViewPaintParts.SelectionBackground;
-      vPrts &= ~DataGridViewPaintParts.Focus;
-      a.Paint(a.CellBounds, vPrts);
+      var v_parts = DataGridViewPaintParts.All;
+      v_parts &= ~DataGridViewPaintParts.SelectionBackground;
+      v_parts &= ~DataGridViewPaintParts.Focus;
+      a.Paint(a.CellBounds, v_parts);
       drawSeldCell(grid, a, focused);
       a.Handled = true;
     }
@@ -1570,14 +1570,14 @@ namespace Bio.Helpers.Common {
     /// <param name="focused"></param>
     public static void DrawTreeSelectionAlt(TreeView tree, DrawTreeNodeEventArgs a, Boolean focused) {
 
-      Rectangle nodeBounds = a.Node.Bounds;
-      nodeBounds.Width += 10;
-      a.Graphics.FillRectangle(Brushes.White, nodeBounds);
-      DrawAnSelctedCell(nodeBounds, focused, a.Graphics, AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom);
+      var v_nodeBounds = a.Node.Bounds;
+      v_nodeBounds.Width += 10;
+      a.Graphics.FillRectangle(Brushes.White, v_nodeBounds);
+      DrawAnSelctedCell(v_nodeBounds, focused, a.Graphics, AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom);
 
-      Font nodeFont = a.Node.TreeView.Font;
-      RectangleF nodeBoundsF = Rectangle.Inflate(nodeBounds, 0, 0);
-      a.Graphics.DrawString(a.Node.Text, nodeFont, Brushes.Black, nodeBoundsF);
+      var v_nodeFont = a.Node.TreeView.Font;
+      RectangleF v_nodeBoundsF = Rectangle.Inflate(v_nodeBounds, 0, 0);
+      a.Graphics.DrawString(a.Node.Text, v_nodeFont, Brushes.Black, v_nodeBoundsF);
       a.DrawDefault = false;
     }
 #endif
@@ -1585,11 +1585,11 @@ namespace Bio.Helpers.Common {
 #if !SILVERLIGHT
     private static RegistryValueKind getRegistryType(Type type) {
       if (type != null) {
-        if (type.Equals(typeof(Int16)) || type.Equals(typeof(Int32)) || type.Equals(typeof(Double)) || type.Equals(typeof(Decimal)))
+        if (type == typeof(Int16) || type == typeof(Int32) || type == typeof(Double) || type == typeof(Decimal))
           return RegistryValueKind.DWord;
-        if (type.Equals(typeof(Int64)))
+        if (type == typeof(Int64))
           return RegistryValueKind.QWord;
-        if (type.Equals(typeof(String)))
+        if (type == typeof(String))
           return RegistryValueKind.String;
       }
       return RegistryValueKind.Unknown;
@@ -1601,20 +1601,22 @@ namespace Bio.Helpers.Common {
     /// <summary>
     /// Записывает значение реестр
     /// </summary>
-    /// <param name="pRegKeyName">Путь в реестре.</param>
+    /// <param name="regKeyName"></param>
     /// <param name="valName">Имя параметра.</param>
     /// <param name="value"></param>
+    /// <param name="type"></param>
     public static void RegistryCUSetValue(String regKeyName, String valName, Object value, Type type) {
+      if (regKeyName == null) throw new ArgumentNullException("regKeyName");
       if(type == null)
         type = (value != null) ? value.GetType() : null;
-      Object val = value;
-      RegistryValueKind knd = getRegistryType(type);
+      var val = value;
+      var knd = getRegistryType(type);
       if (knd == RegistryValueKind.Unknown) {
         if (type != null) {
-          TypeConverter tc = TypeDescriptor.GetConverter(type);
-          if (tc != null && tc.CanConvertTo(typeof(System.String))) {
+          var tc = TypeDescriptor.GetConverter(type);
+          if (tc.CanConvertTo(typeof(String))) {
             val = tc.ConvertToString(val);
-            knd = getRegistryType(typeof(System.String));
+            knd = getRegistryType(typeof(String));
           } else
             return;
         } else
@@ -1623,8 +1625,8 @@ namespace Bio.Helpers.Common {
 
       if (val == null)
         val = (knd == RegistryValueKind.String) ? (Object)String.Empty : 0;
-      RegistryKey key = Registry.CurrentUser.CreateSubKey(regKeyName);
-      key.SetValue(valName, val, knd);
+      var key = Registry.CurrentUser.CreateSubKey(regKeyName);
+      if (key != null) key.SetValue(valName, val, knd);
     }
 #endif
 
@@ -1637,9 +1639,10 @@ namespace Bio.Helpers.Common {
     /// <param name="defVal">Значение по умолчанию.</param>
     /// <returns>Значение параметра.</returns>
     public static Object RegistryCUGetValue(String regKeyName, String valName, object defVal) {
-      RegistryKey key = Registry.CurrentUser.CreateSubKey(regKeyName);
-      Object vResult = key.GetValue(valName, defVal) ?? defVal;
-      return vResult;
+      var key = Registry.CurrentUser.CreateSubKey(regKeyName);
+      if (key != null) 
+        return key.GetValue(valName, defVal) ?? defVal;
+      return null;
     }
 #endif
 
@@ -1662,9 +1665,9 @@ namespace Bio.Helpers.Common {
     /// <returns></returns>
     public static String BuidQueryStrParams(Dictionary<String, String> prms) {
       String rslt = null;
-      foreach (String k in prms.Keys) {
-        String vParamStr = k + "=" + HttpUtility.UrlEncode(prms[k] as String);
-        Utl.AppendStr(ref rslt, vParamStr, "&");
+      foreach (var k in prms.Keys) {
+        var v_paramStr = k + "=" + HttpUtility.UrlEncode(prms[k]);
+        AppendStr(ref rslt, v_paramStr, "&");
       }
       return rslt;
     }
@@ -1673,9 +1676,10 @@ namespace Bio.Helpers.Common {
     /// Создает строку, которую можно подставить в URL
     /// </summary>
     /// <param name="baseURL"></param>
+    /// <param name="prms"></param>
     /// <returns></returns>
     public static String BuidQueryStrParams(String baseURL, Dictionary<String, String> prms) {
-      String rslt = BuidQueryStrParams(prms);
+      var rslt = BuidQueryStrParams(prms);
       return (baseURL.IndexOf('?') >= 0) ? baseURL + "&" + rslt : baseURL + "?" + rslt;
     }
 
@@ -1687,10 +1691,8 @@ namespace Bio.Helpers.Common {
     public static Boolean ParsBoolean(String val) {
       if (String.IsNullOrEmpty(val))
         return false;
-      else {
-        val = val.ToUpper();
-        return val.Equals("TRUE") || val.Equals("T") || val.Equals("1") || val.Equals("Y");
-      }
+      val = val.ToUpper();
+      return val.Equals("TRUE") || val.Equals("T") || val.Equals("1") || val.Equals("Y");
     }
 
     /// <summary>
@@ -1702,17 +1704,17 @@ namespace Bio.Helpers.Common {
       errCode = 0;
       errMsg = null;
       if (exMessage != null) {
-        var vStrtIndx = exMessage.IndexOf("ORA-2", System.StringComparison.Ordinal);
-        if (vStrtIndx >= 0) {
-          var vEndIndx = exMessage.IndexOf("ORA-", vStrtIndx + 5, System.StringComparison.Ordinal);
-          var vLen = vEndIndx - vStrtIndx;
-          if (vLen < 0)
-            vLen = exMessage.Length - vStrtIndx;
-          var vMsg = exMessage;
-          if (vLen > 0)
-            vMsg = exMessage.Substring(vStrtIndx, vLen);
-          errCode = Int32.Parse(vMsg.Substring(4, 5));
-          errMsg = vMsg.Substring(11);
+        var v_strtIndx = exMessage.IndexOf("ORA-2", StringComparison.Ordinal);
+        if (v_strtIndx >= 0) {
+          var v_endIndx = exMessage.IndexOf("ORA-", v_strtIndx + 5, StringComparison.Ordinal);
+          var v_len = v_endIndx - v_strtIndx;
+          if (v_len < 0)
+            v_len = exMessage.Length - v_strtIndx;
+          var v_msg = exMessage;
+          if (v_len > 0)
+            v_msg = exMessage.Substring(v_strtIndx, v_len);
+          errCode = Int32.Parse(v_msg.Substring(4, 5));
+          errMsg = v_msg.Substring(11);
         }
       }
     }
@@ -1727,16 +1729,20 @@ namespace Bio.Helpers.Common {
     }
 
 #if !SILVERLIGHT
+    /// <summary>
+    /// Записывает сообщение в лог-файл
+    /// </summary>
+    /// <param name="logFileName"></param>
+    /// <param name="msg"></param>
+    /// <returns></returns>
     public static Boolean WriteMessageLog(String logFileName, String msg) {
       try {
-        FileStream fs = new FileStream(logFileName, FileMode.Append, FileAccess.Write, FileShare.Read);
-        Encoding vEncode = Encoding.Default;
-        if (vEncode == null)
-          vEncode = Encoding.Default;
-        DateTime v_point = DateTime.Now;
-        using (StreamWriter sw = new StreamWriter(fs, vEncode)) {
-          String vLine = String.Format("[{0} {1}] - {2}", v_point.ToShortDateString(), v_point.ToLongTimeString(), msg);
-          sw.WriteLine(vLine);
+        var fs = new FileStream(logFileName, FileMode.Append, FileAccess.Write, FileShare.Read);
+        var v_encode = DefaultEncoding;
+        var v_point = DateTime.Now;
+        using (var sw = new StreamWriter(fs, v_encode)) {
+          var v_line = String.Format("[{0} {1}] - {2}", v_point.ToShortDateString(), v_point.ToLongTimeString(), msg);
+          sw.WriteLine(v_line);
           sw.Flush();
           sw.Close();
         }
@@ -1748,31 +1754,41 @@ namespace Bio.Helpers.Common {
     }
 
 
-    public static String buildErrorLogMsg(Exception ex, DateTime v_point) {
-      StringBuilder sb = new StringBuilder();
+    /// <summary>
+    /// Строит сообщение об ошибке
+    /// </summary>
+    /// <param name="ex"></param>
+    /// <param name="dateTimePoint"></param>
+    /// <returns></returns>
+    public static String BuildErrorLogMsg(Exception ex, DateTime dateTimePoint) {
+      var sb = new StringBuilder();
       sb.AppendLine("^^-ERROR-BEGIN---------------------------------------------------------------------------^^");
-      sb.AppendLine("Source        : " + ex.Source.ToString().Trim());
-      sb.AppendLine("Method        : " + ex.TargetSite.Name.ToString());
-      sb.AppendLine("Date          : " + v_point.ToShortDateString());
-      sb.AppendLine("Time          : " + v_point.ToLongTimeString());
-      sb.AppendLine("Computer      : " + Dns.GetHostName().ToString());
-      sb.AppendLine("Error         : " + ex.Message.ToString().Trim());
-      sb.AppendLine("Stack Trace   : " + ex.StackTrace.ToString().Trim());
+      sb.AppendLine("Source        : " + ex.Source.Trim());
+      sb.AppendLine("Method        : " + ex.TargetSite.Name);
+      sb.AppendLine("Date          : " + dateTimePoint.ToShortDateString());
+      sb.AppendLine("Time          : " + dateTimePoint.ToLongTimeString());
+      sb.AppendLine("Computer      : " + Dns.GetHostName());
+      sb.AppendLine("Error         : " + ex.Message.Trim());
+      sb.AppendLine("Stack Trace   : " + ex.StackTrace.Trim());
       sb.AppendLine("^^-ERROR-END-----------------------------------------------------------------------------^^");
       return sb.ToString();
     }
 
+    /// <summary>
+    /// Записывает в лог-файл ошибку
+    /// </summary>
+    /// <param name="logFileName"></param>
+    /// <param name="ex"></param>
+    /// <returns></returns>
     public static Boolean WriteErrorLog(String logFileName, Exception ex) {
       try {
-        FileStream fs = new FileStream(logFileName, FileMode.Append, FileAccess.Write, FileShare.Read);
-        Encoding vEncode = Encoding.Default;
-        if (vEncode == null)
-          vEncode = Encoding.Default;
-        DateTime v_point = DateTime.Now;
-        using (StreamWriter sw = new StreamWriter(fs, vEncode)) {
-          String vLine = String.Format("[{0} {1}] - {2}", v_point.ToShortDateString(), v_point.ToLongTimeString(), "Ошибка!!!");
-          sw.WriteLine(vLine);
-          sw.WriteLine(buildErrorLogMsg(ex, v_point));
+        var fs = new FileStream(logFileName, FileMode.Append, FileAccess.Write, FileShare.Read);
+        var v_encoding = DefaultEncoding;
+        var v_point = DateTime.Now;
+        using (var sw = new StreamWriter(fs, v_encoding)) {
+          var v_line = String.Format("[{0} {1}] - {2}", v_point.ToShortDateString(), v_point.ToLongTimeString(), "Ошибка!!!");
+          sw.WriteLine(v_line);
+          sw.WriteLine(BuildErrorLogMsg(ex, v_point));
           sw.Flush();
           sw.Close();
         }
@@ -1783,33 +1799,39 @@ namespace Bio.Helpers.Common {
       }
     }
 
-    public static String getLocalHost(){
+    /// <summary>
+    /// Возвращает имя компьютера, на котором запущена программа
+    /// </summary>
+    /// <returns></returns>
+    public static String GetLocalHost(){
       return Dns.GetHostName();
     }
-    public static String getLocalIP() {
-      String localHost = Dns.GetHostName();
-      IPAddress[] addrss = Dns.GetHostAddresses(Dns.GetHostName());
-      String localeIP = null;
-      foreach (IPAddress a in addrss) {
+
+    /// <summary>
+    /// Возвращает ip компьютера, на котором запущена программа
+    /// </summary>
+    /// <returns></returns>
+    public static String GetLocalIP() {
+      var addrss = Dns.GetHostAddresses(Dns.GetHostName());
+      String v_localeIP = null;
+      foreach (var a in addrss) {
         if (a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork) {
-          localeIP = a.ToString();
+          v_localeIP = a.ToString();
           break;
         }
       }
-      return localeIP;
-    }
-    public static void initDirectory(String path) {
-      if (!Directory.Exists(path))
-        Directory.CreateDirectory(path);
+      return v_localeIP;
     }
 
-    public static CommandType detectCommandType(String sqlText) {
-      Boolean hasSelect = Utl.RegexMatch(sqlText, @"\bSELECT\b", true);
-      hasSelect = hasSelect && Utl.RegexMatch(sqlText, @"\bFROM\b", true);
-      if (hasSelect)
-        return CommandType.Text;
-      else
-        return CommandType.StoredProcedure;
+    /// <summary>
+    /// Определяет тип SQL-команды
+    /// </summary>
+    /// <param name="sqlText"></param>
+    /// <returns></returns>
+    public static CommandType DetectCommandType(String sqlText) {
+      var v_hasSelect = RegexMatch(sqlText, @"\bSELECT\b", true).Success;
+      v_hasSelect = v_hasSelect && RegexMatch(sqlText, @"\bFROM\b", true).Success;
+      return v_hasSelect ? CommandType.Text : CommandType.StoredProcedure;
     }
 
 #endif
@@ -1936,34 +1958,63 @@ namespace Bio.Helpers.Common {
 
 #endif
 
+    /// <summary>
+    /// Возвращает значение свойства объекта
+    /// </summary>
+    /// <param name="obj">Экземпляр объекта</param>
+    /// <param name="propertyName">Имя запрашиваемого свойства</param>
+    /// <returns></returns>
     public static Object GetPropertyValue(Object obj, String propertyName) {
       return GetPropertyValue<Object>(obj, propertyName);
     }
+
+    /// <summary>
+    /// Возвращает значение свойства объекта
+    /// </summary>
+    /// <param name="obj">Экземпляр объекта</param>
+    /// <param name="propertyName">Имя запрашиваемого свойства</param>
+    /// <typeparam name="T">Тип значения, которой ожидается получить на выходе</typeparam>
+    /// <returns></returns>
     public static T GetPropertyValue<T>(Object obj, String propertyName) {
       if (obj != null) {
-        PropertyInfo propertyRnum = GetPropertyInfo(obj.GetType(), propertyName, false);
-        if (propertyRnum != null) {
-          var v_val = propertyRnum.GetValue(obj, null);
+        var v_propertyRnum = GetPropertyInfo(obj.GetType(), propertyName, false);
+        if (v_propertyRnum != null) {
+          var v_val = v_propertyRnum.GetValue(obj, null);
           return Convert2Type<T>(v_val);
-        } else
-          return default(T);
-      } else
+        }
         return default(T);
+      }
+      return default(T);
     }
+
+    /// <summary>
+    /// Устанавливает свойство для объекта
+    /// </summary>
+    /// <param name="obj">Экземпляр объекта</param>
+    /// <param name="propertyName">Имя свойства</param>
+    /// <param name="value">Значение</param>
     public static void SetPropertyValue(Object obj, String propertyName, Object value) {
       if (obj != null) {
-        PropertyInfo propertyRnum = GetPropertyInfo(obj.GetType(), propertyName, false);
-        if (propertyRnum != null)
-          propertyRnum.SetValue(obj, value, null);
+        var v_propertyRnum = GetPropertyInfo(obj.GetType(), propertyName, false);
+        if (v_propertyRnum != null)
+          v_propertyRnum.SetValue(obj, value, null);
       }
     }
 
+    /// <summary>
+    /// Вычисляет интервал, до текущего момента
+    /// </summary>
+    /// <param name="from"></param>
+    /// <returns></returns>
     public static TimeSpan Duration(DateTime from) {
-      if (from < (DateTime.Now.AddDays(-7)))
-        return TimeSpan.MinValue;
-      else
-        return DateTime.Now.Subtract(from);
+      return @from < (DateTime.Now.AddDays(-7)) ? TimeSpan.MinValue : DateTime.Now.Subtract(@from);
     }
+
+    /// <summary>
+    /// Возвращает интервал в формате HH:MM:SS
+    /// </summary>
+    /// <param name="duration"></param>
+    /// <returns></returns>
     public static String FormatDuration(TimeSpan duration) {
       return String.Format("{0:00}:{1:00}:{2:00}", duration.Hours + (duration.Days * 24), duration.Minutes, duration.Seconds);
     }
@@ -1974,10 +2025,10 @@ namespace Bio.Helpers.Common {
     /// <param name="date"></param>
     /// <returns></returns>
     public static Int32 DayOfWeekRu(DateTime date) {
-      String[] v_days = new String[] { "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс" };
-      String v_day_str = date.ToString("ddd", new CultureInfo("ru-RU"));
-      int v_day_int = Array.IndexOf<String>(v_days, v_day_str);
-      return v_day_int + 1;
+      var v_days = new[] { "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс" };
+      var v_dayStr = date.ToString("ddd", new CultureInfo("ru-RU"));
+      var v_dayInt = Array.IndexOf(v_days, v_dayStr);
+      return v_dayInt + 1;
     }
 
 #if SILVERLIGHT
@@ -2044,36 +2095,55 @@ namespace Bio.Helpers.Common {
     }
 #endif
 
+    /// <summary>
+    /// Вытаскивает из списка первый элемент
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="delimeter"></param>
+    /// <returns></returns>
     public static String PopFirstItemFromList(ref String path, String delimeter) {
       if (!String.IsNullOrEmpty(path)) {
-        String[] v_nodes = Utl.SplitString(path, delimeter);
+        var v_nodes = SplitString(path, delimeter);
         if (v_nodes.Length > 0) {
-          var v_nodes_new = v_nodes.Where((v, i) => i > 0).ToArray();
-          path = Utl.CombineString(v_nodes_new, delimeter);
+          var v_nodesNew = v_nodes.Where((v, i) => i > 0).ToArray();
+          path = CombineString(v_nodesNew, delimeter);
         } else
           path = null;
         return (v_nodes.Length > 0) ? v_nodes[0] : null;
-      } else
-        return null;
+      }
+      return null;
     }
 
+    /// <summary>
+    /// Вытаскивает из списка последний элемент
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="delimeter"></param>
+    /// <returns></returns>
     public static String PopLastItemFromList(ref String path, String delimeter) {
       if (!String.IsNullOrEmpty(path)) {
-        String[] v_nodes = Utl.SplitString(path, delimeter);
+        var v_nodes = SplitString(path, delimeter);
         if (v_nodes.Length > 0) {
-          var v_nodes_new = v_nodes.Where((v, i) => i < v_nodes.Length - 1).ToArray();
-          path = Utl.CombineString(v_nodes_new, delimeter);
+          var v_nodesNew = v_nodes.Where((v, i) => i < v_nodes.Length - 1).ToArray();
+          path = CombineString(v_nodesNew, delimeter);
         } else
           path = null;
         return (v_nodes.Length > 0) ? v_nodes[v_nodes.Length - 1] : null;
-      } else
-        return null;
+      }
+      return null;
     }
 
+    /// <summary>
+    /// Объединяет два массива
+    /// </summary>
+    /// <param name="array1">Массив 1</param>
+    /// <param name="array2">Массив 2</param>
+    /// <typeparam name="T">Тип элементов в массиве</typeparam>
+    /// <returns></returns>
     public static T[] combineArrays<T>(T[] array1, T[] array2) {
-      int array1OriginalLength = array1.Length;
-      Array.Resize<T>(ref array1, array1OriginalLength + array2.Length);
-      Array.Copy(array2, 0, array1, array1OriginalLength, array2.Length);
+      var v_array1OriginalLength = array1.Length;
+      Array.Resize(ref array1, v_array1OriginalLength + array2.Length);
+      Array.Copy(array2, 0, array1, v_array1OriginalLength, array2.Length);
       return array1;
     }
 

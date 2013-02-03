@@ -78,8 +78,8 @@
     <Compile Include="src\dbFactory.cs" />
     <Compile Include="src\CDBSession.cs" />
     <Compile Include="src\CField.cs" />
-    <Compile Include="src\CSQLCmd.cs" />
-    <Compile Include="src\CSQLCursor.cs" />
+    <Compile Include="src\SQLCmd.cs" />
+    <Compile Include="src\SQLCursor.cs" />
     <Compile Include="src\CSQLGarbageMonitor.cs" />
     <Compile Include="src\SQLUtils.cs" />
   </ItemGroup>

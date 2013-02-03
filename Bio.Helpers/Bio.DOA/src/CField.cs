@@ -24,9 +24,9 @@ namespace Bio.Helpers.DOA {
 		private Int32 FResultSetIndex;
     private String FPkIndex;
     private String FHeader;
-		private CSQLCursor FOwner;
+		private SQLCursor FOwner;
 
-    public CField(CSQLCursor owner, Int32 id, String name, CFieldType type, String header, String pkIndex) {
+    public CField(SQLCursor owner, Int32 id, String name, CFieldType type, String header, String pkIndex) {
 			this.FID = id;
       this.FResultSetIndex = FID + 1;
       this.FOwner = owner;
@@ -36,7 +36,7 @@ namespace Bio.Helpers.DOA {
       this.FPkIndex = pkIndex;
 		}
 
-    public CField(CSQLCursor owner, Int32 id, String name, Type type, String header, String pkIndex) {
+    public CField(SQLCursor owner, Int32 id, String name, Type type, String header, String pkIndex) {
       this.FID = id;
       this.FResultSetIndex = FID + 1;
       this.FOwner = owner;

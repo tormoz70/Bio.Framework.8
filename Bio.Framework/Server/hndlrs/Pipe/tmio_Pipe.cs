@@ -33,7 +33,7 @@ namespace Bio.Framework.Server {
         //String vSQL = "select dralpha.ai_pipe.receive(:pPipeName) as F_RSLT from dual";
         String vConnStr = this.BioSession.Cfg.ConnectionString;
         /*using(OracleConnection vConn = this.BioSession.DBSess.GetConnection(vConnStr)) {
-          Object vResObj = bioDOA.CSQLCmd.ExecuteScalarSQL(vSQL, vConn, new CParams(new CParam("pPipeName", vPipeName)));
+          Object vResObj = bioDOA.SQLCmd.ExecuteScalarSQL(vSQL, vConn, new CParams(new CParam("pPipeName", vPipeName)));
           String vLinesData = bioDOA.utlDOA.ObjectAsString(vResObj);
           CParams vResult = new CParams();
           vResult.Add("lines", vLinesData);
@@ -85,7 +85,7 @@ namespace Bio.Framework.Server {
           //if(!String.IsNullOrEmpty(connStr)) {
           //using(IDbConnection vConn = CDBFactory.CreateConnection(connStr, )) {
           //vConn.Open();
-          Object vResObj = CSQLCmd.ExecuteScalarSQL(dbSess, vSQL, new CParams(new CParam("pipeName", v_sp.pipe)), 120);
+          Object vResObj = SQLCmd.ExecuteScalarSQL(dbSess, vSQL, new CParams(new CParam("pipeName", v_sp.pipe)), 120);
           String vLinesData = SQLUtils.ObjectAsString(vResObj);
           if (vLinesData != null) {
             v_sp.sessionUID = exctractSessionID(ref vLinesData);

@@ -177,8 +177,8 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
             v_rptBuilder.OnError += rptBuilder_OnError;
             this._runningReports.Add(v_rptBuilder.UID, v_rptBuilder);
           } catch (Exception v_ex) {
-            var v_errMsg = String.Format("При инициализации отчета \"{0}\":\"{1}\".\n{2}", rptCode, rptUID, Utl.buildErrorLogMsg(v_ex, DateTime.Now));
-            this.doOnAddQueueState(rptUID, RemoteProcState.Error, v_errMsg, csInternalUserName, Utl.getLocalIP());
+            var v_errMsg = String.Format("При инициализации отчета \"{0}\":\"{1}\".\n{2}", rptCode, rptUID, Utl.BuildErrorLogMsg(v_ex, DateTime.Now));
+            this.doOnAddQueueState(rptUID, RemoteProcState.Error, v_errMsg, csInternalUserName, Utl.GetLocalIP());
             throw;
           }
         }
@@ -212,7 +212,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
     }
 
     private void rptBuilder_OnChangeState(Object opener, CXLReport report, string text) {
-      this.doOnAddQueueState(report.UID, report.State, text, csInternalUserName, Utl.getLocalIP());
+      this.doOnAddQueueState(report.UID, report.State, text, csInternalUserName, Utl.GetLocalIP());
     }
 
     private void markBadReports() {
@@ -220,7 +220,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
         var v_rpts = this.doOnGetReportsRunning();
         foreach (var v_itm in v_rpts) {
           if (!this._runningReports.ContainsKey(v_itm.uid))
-            this.doOnAddQueueState(v_itm.uid, RemoteProcState.Error, "Неизвестная ошибка! Выполнение отчета было прервано по неизвестным причинам!", csInternalUserName, Utl.getLocalIP());
+            this.doOnAddQueueState(v_itm.uid, RemoteProcState.Error, "Неизвестная ошибка! Выполнение отчета было прервано по неизвестным причинам!", csInternalUserName, Utl.GetLocalIP());
         }
       }
     }
@@ -244,11 +244,11 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
           if (this._runningReports.ContainsKey(v_itm.uid)) {
             var v_itm1 = v_itm;
             this._runningReports[v_itm.uid].Abort(() => {
-              this.doOnAddQueueState(v_itm1.uid, RemoteProcState.Redy, null, csInternalUserName, Utl.getLocalIP());
+              this.doOnAddQueueState(v_itm1.uid, RemoteProcState.Redy, null, csInternalUserName, Utl.GetLocalIP());
               this.doOnMarkRQCmdState(v_itm1.uid, QueueCmd.Restart);
             });
           } else {
-            this.doOnAddQueueState(v_itm.uid, RemoteProcState.Redy, null, csInternalUserName, Utl.getLocalIP());
+            this.doOnAddQueueState(v_itm.uid, RemoteProcState.Redy, null, csInternalUserName, Utl.GetLocalIP());
             this.doOnMarkRQCmdState(v_itm.uid, QueueCmd.Restart);
           }
         }

@@ -42,7 +42,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         vName = Path.GetFileNameWithoutExtension(folderOrRptName);
       else if (Directory.Exists(folderOrRptName))
         vName = new DirectoryInfo(folderOrRptName).Name;
-      String vNameOK = Utl.regexFind(vName, "\\d+[_]\\w+", true);
+      String vNameOK = Utl.RegexFind(vName, "\\d+[_]\\w+", true);
       if (!String.IsNullOrEmpty(vNameOK)) {
         String vSCode = vNameOK.Substring(vNameOK.IndexOf("_") + 1);
         vSCode = vSCode.Replace("(rpt).xml", "");

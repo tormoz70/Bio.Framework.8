@@ -1,69 +1,62 @@
 namespace Bio.Helpers.DOA {
   using System;
-
   using System.Data;
-  using System.Data.Common;
-  using Oracle.DataAccess.Client;
-  using Oracle.DataAccess.Types;
-  
   using System.Text.RegularExpressions;
   using System.Collections;
-  using System.Globalization;
   using System.Threading;
-  using Bio.Helpers.Common.Types;
   using System.Text;
-  using Bio.Helpers.Common;
-  using System.Collections.Specialized;
   using System.Collections.Generic;
-  using System.Linq;
-  using System.IO;
+
+  using Oracle.DataAccess.Client;
+  using Oracle.DataAccess.Types;
+
+  using Common;
+  using Common.Types;
 
   /// <summary>
   /// Базовый и самый примитивный тип для создания курсора
   /// Реализует основные методы для работы с UniDir курсором
   /// </summary>
-	public class CSQLCmd:CDisposableObject{
-    private CParams FParams = null;
+	public class SQLCmd:CDisposableObject{
+    private CParams _params;
 
-    protected const Int32 ciORAERRCODE_APP_ERR_START = 20000; //начало диапазона кодов ошибок приложения в Oracle
-    protected const Int32 ciORAERRCODE_USER_BREAKED = 1013; //{"ORA-01013: пользователем запрошена отмена текущей операции"}
-    protected const Int32 ciFetchedRowLimit = 10000000; // Максимальное кол-во записей, которое может вернуть запрос к БД
-    private OracleDataReader FResult = null;
-		private OracleCommand FStatement = null;
-		protected String FSQL = null;
-		protected String FPreparedSQL = null;
-    protected Hashtable FRowValues = null;
-    protected Int64 FCurFetchedRowPos = 0;
-    protected Boolean FCloseConnOnClose = false;
+    protected const Int32 ORAERRCODE_APP_ERR_START = 20000; //начало диапазона кодов ошибок приложения в Oracle
+    protected const Int32 ORAERRCODE_USER_BREAKED = 1013; //{"ORA-01013: пользователем запрошена отмена текущей операции"}
+    protected const Int32 FetchedRowLimit = 10000000; // Максимальное кол-во записей, которое может вернуть запрос к БД
+    private OracleDataReader _dataReader;
+		private readonly OracleCommand _statement;
+		protected String originSQL = null;
+		protected String preparedSQL = null;
+    protected Hashtable rowValues = null;
+    protected Int64 curFetchedRowPos = 0;
+    protected Boolean closeConnOnClose = false;
 
     /// <summary>
     /// Конструктор
     /// </summary>
-    public CSQLCmd() {
-      this.FStatement = new OracleCommand();
+    public SQLCmd() {
+      this._statement = new OracleCommand();
     }
 
     /// <summary>
     /// Конструктор
     /// </summary>
     /// <param name="pConn"></param>
-    public CSQLCmd(IDbConnection pConn):this() {
-      this.FStatement.Connection = (OracleConnection)pConn;
+    public SQLCmd(IDbConnection pConn):this() {
+      this._statement.Connection = (OracleConnection)pConn;
     }
 
     /// <summary>
     /// Конструктор
     /// </summary>
     /// <param name="sess"></param>
-    public CSQLCmd(IDBSession sess):this() {
-      this.FStatement.Connection = (OracleConnection)sess.GetConnection();
-      this.FCloseConnOnClose = true;
-      //if (sess is IDBSession)
-      //  this.FCloseConnOnClose = !(sess as IDBSession).ConnectionIsShared;
+    public SQLCmd(IDBSession sess):this() {
+      this._statement.Connection = (OracleConnection)sess.GetConnection();
+      this.closeConnOnClose = true;
     }
 
     protected virtual void prepareSQL() {
-      this.FPreparedSQL = this.FSQL;
+      this.preparedSQL = this.originSQL;
     }
 
     /// <summary>
@@ -72,8 +65,8 @@ namespace Bio.Helpers.DOA {
     /// <param name="pSQL"></param>
     /// <param name="pParams"></param>
     public virtual void Init(String pSQL, CParams pParams) {
-      this.FSQL = pSQL;
-      this.FParams = pParams;
+      this.originSQL = pSQL;
+      this._params = pParams;
       this.prepareSQL();
     }
 
@@ -82,7 +75,7 @@ namespace Bio.Helpers.DOA {
     /// </summary>
     public CParams Params {
       get {
-        return this.FParams;
+        return this._params;
       }
     }
 
@@ -91,17 +84,17 @@ namespace Bio.Helpers.DOA {
     /// </summary>
     public IDbConnection Connection {
       get {
-        return this.FStatement.Connection;
+        return this._statement.Connection;
       }
     }
 
-		protected override void OnDispose(){
-			try{
-				this.Close();
-			}catch{}
-		}
+    protected override void OnDispose() {
+      try {
+        this.Close();
+      } catch {}
+    }
 
-		protected virtual void onBeforeOpen(){
+    protected virtual void onBeforeOpen(){
 		}
 
 		protected virtual void onAfterOpen(){
@@ -123,11 +116,11 @@ namespace Bio.Helpers.DOA {
     /// Открывает курсор
     /// </summary>
     public void Open(Int32 timeout) {
-      this.Open(this.FStatement.Connection, timeout);
+      this.Open(this._statement.Connection, timeout);
     }
 
-    private static void setParamsToStatment(OracleCommand vOraCmd, CParams pParams) {
-      setParamsToStatment(vOraCmd, pParams, true);
+    private static void setParamsToStatment(OracleCommand oraCmd, CParams prms) {
+      setParamsToStatment(oraCmd, prms, true);
     }
 
 
@@ -138,177 +131,163 @@ namespace Bio.Helpers.DOA {
     /// <returns></returns>
     private static String[] detectExecsOfStoredPrcs(String pSQL) {
       const String csDelimiter = "+|+";
-      String vResultStr = null;
-      Regex vr = new Regex(@"\b[\w$]+\b[.]\b[\w$]+\b\s*[(]\s*[$]PRMLIST\s*[)]", RegexOptions.IgnoreCase);
-      Match m = vr.Match(pSQL);
+      String v_resultStr = null;
+      var vr = new Regex(@"\b[\w$]+\b[.]\b[\w$]+\b\s*[(]\s*[$]PRMLIST\s*[)]", RegexOptions.IgnoreCase);
+      var m = vr.Match(pSQL);
       while(m.Success) {
-        //Console.WriteLine("fnd :" + m.Value);
-        Utl.AppendStr(ref vResultStr, m.Value, csDelimiter);
+        Utl.AppendStr(ref v_resultStr, m.Value, csDelimiter);
         m = m.NextMatch();
       }
-      if(!String.IsNullOrEmpty(vResultStr))
-        return Utl.SplitString(vResultStr, csDelimiter);
-      else
-        return new String[0];
+      return !String.IsNullOrEmpty(v_resultStr) ? Utl.SplitString(v_resultStr, csDelimiter) : new String[0];
     }
 
     /// <summary>
     /// Вытаскивает из вызова хранимой процедуры пару pPkgName-{имя пакета}, pObjName-{имя проц}
     /// </summary>
-    /// <param name="pSQL"></param>
+    /// <param name="sql"></param>
+    /// <param name="pkgName"></param>
+    /// <param name="objName"></param>
     /// <returns></returns>
-    private static void detectAutoDBMSParamsParts(String pSQL, ref String vPkgName, ref String vObjName) {
-      vPkgName = null;
-      vObjName = null;
-      Regex vr = new Regex(@"\b[\w$]+\b[.]", RegexOptions.IgnoreCase);
-      Match m = vr.Match(pSQL);
-      if(m.Success) 
-        vPkgName = m.Value.Substring(0, m.Value.Length-1);
-      
-      vr = new Regex(@"[.]\b[\w$]+\b", RegexOptions.IgnoreCase);
-      m = vr.Match(pSQL);
-      if(m.Success) 
-        vObjName = m.Value.Substring(1);
+    private static void DetectAutoDBMSParamsParts(String sql, out String pkgName, out String objName) {
+      pkgName = Utl.RegexFind(sql, @"\b[\w$]+\b(?=[.])", true);
+      objName = Utl.RegexFind(sql, @"(?<=[.])\b[\w$]+\b(?=\s*[(;])", true);
     }
 
-    private static void detectSQLParams1(OracleCommand vOraCmd) {
-      String vSQL = vOraCmd.CommandText;
-      Regex vr = new Regex("(['])(.*?)\\1", RegexOptions.IgnoreCase);
-      vSQL = vr.Replace(vSQL, "");
-      vr = new Regex(@":[\w#$]+", RegexOptions.IgnoreCase);
-      Match m = vr.Match(vSQL);
+    private static void detectSQLParams1(OracleCommand oraCommand) {
+      var v_sql = oraCommand.CommandText;
+      // Удаляем все строковый константы
+      Utl.RegexReplace(ref v_sql, @"(['])(.*?)\1", "", true);
+
+      // Находим все параметры вида :qwe_ad
+      var m = Utl.RegexMatch(v_sql, @"(?<=:)\b[\w\#\$]+\b", true);
       while(m.Success) {
-        //Console.WriteLine("fnd :" + m.Value);
-        String vParName = m.Value.Substring(1);
-        if(SQLUtils.findOraParam(vOraCmd.Parameters, vParName) == null) {
-          OracleDbType vParType = SQLUtils.DetectOraTypeByFldName(vParName);
-          //OracleParameter op = vOraCmd.Parameters.Add(vParName, (vSQLPrm.ParamType == null) ? SQLUtils.DetectOraTypeByFldName(vSQLPrm.Name) : SQLUtils.DetectOraTypeByType(vSQLPrm.ParamType));
-          OracleParameter op = vOraCmd.Parameters.Add(vParName, vParType);
+        var v_parName = m.Value;
+        if(SQLUtils.FindOraParam(oraCommand.Parameters, v_parName) == null) {
+          var v_parType = SQLUtils.DetectOraTypeByFldName(v_parName);
+          oraCommand.Parameters.Add(v_parName, v_parType);
         }
         m = m.NextMatch();
       }
     }
 
-    private const String csGetParamsFromDBMS = "select "+
+    private const String _SQL_GET_PARAMS_FROM_DBMS = "select "+
             " argument_name, position, sequence, data_type, in_out, data_length" +
             " from user_arguments" +
             " where package_name = upper(:package_name)" +
             " and object_name = upper(:object_name)" +
             " order by position";
-    private const String csArgPrefix = "P_";
-    private static void detectSQLParams2(OracleCommand vOraCmd, ref Boolean vIsPRMLIST_AUTO) {
+    private const String _DEFAULT_ARGPREFIX = "P_";
 
-      String vSQL = vOraCmd.CommandText;
-      Regex vr = new Regex(@"[(]\s*[$]PRMLIST\s*[)]", RegexOptions.IgnoreCase);
-      Match m = vr.Match(vSQL);
-      vIsPRMLIST_AUTO = m.Success;
+    private static void _detectSQLParams2(OracleCommand oracleCommand, out Boolean isParamListAuto) {
 
-      if(vIsPRMLIST_AUTO) {
-        String[] vExecs = detectExecsOfStoredPrcs(vSQL);
-        for(int i = 0; i < vExecs.Length; i++) {
-          String vArgs = null; String vPkgName = null; String vObjName = null;
-          detectAutoDBMSParamsParts(vExecs[i], ref vPkgName, ref vObjName);
-          OracleCommand vStatement = new OracleCommand(SQLUtils.PrepareSQLForOlacleExecute(csGetParamsFromDBMS));
-          vStatement.Connection = vOraCmd.Connection; 
+      var v_sql = oracleCommand.CommandText;
+
+      isParamListAuto = Utl.RegexMatch(v_sql, @"[(]\s*[$]PRMLIST\s*[)]", true).Success;
+
+      if(isParamListAuto) {
+        var v_execs = detectExecsOfStoredPrcs(v_sql);
+        foreach (var t in v_execs) {
+          String v_args = null; String v_pkgName; String v_objName;
+          DetectAutoDBMSParamsParts(t, out v_pkgName, out v_objName);
+          var v_statement = new OracleCommand(SQLUtils.PrepareSQLForOlacleExecute(_SQL_GET_PARAMS_FROM_DBMS));
+          v_statement.Connection = oracleCommand.Connection; 
           try {
-            vStatement.Parameters.Add("package_name", OracleDbType.Varchar2).Value = vPkgName;
-            vStatement.Parameters.Add("object_name", OracleDbType.Varchar2).Value = vObjName;
-            OracleDataReader vReader = vStatement.ExecuteReader();
+            v_statement.Parameters.Add("package_name", OracleDbType.Varchar2).Value = v_pkgName;
+            v_statement.Parameters.Add("object_name", OracleDbType.Varchar2).Value = v_objName;
+            var v_reader = v_statement.ExecuteReader();
             try {
-              while(vReader.Read()) {
-                Int32 vFldIndx = vReader.GetOrdinal("argument_name");
-                if(!vReader.IsDBNull(vFldIndx)) {
-                  String vParName = vReader.GetString(vFldIndx);
-                  if(!vParName.Substring(0, 2).ToUpper().Equals(csArgPrefix))
+              while(v_reader.Read()) {
+                var v_fldIndx = v_reader.GetOrdinal("argument_name");
+                if(!v_reader.IsDBNull(v_fldIndx)) {
+                  var v_parName = v_reader.GetString(v_fldIndx);
+                  if(!v_parName.Substring(0, 2).ToUpper().Equals(_DEFAULT_ARGPREFIX))
                     throw new EBioDOA("Не верный формат наименования аргументов хранимой процедуры.\n" +
-                                                "Для использования автогенерации аргументов с помощью переменной $PRMLIST\n" +
-                                                "необходимо, чтобы все имена аргументов начинались с префикса " + csArgPrefix + " !");
-                  vParName = vParName.Substring(2);
-                  Utl.AppendStr(ref vArgs, ":" + vParName, ",");
-                  String vParTypeName = vReader.GetString(vReader.GetOrdinal("data_type"));
-                  String vParDirName = vReader.GetString(vReader.GetOrdinal("in_out"));
-                  Object vLenObj = vReader.GetValue(vReader.GetOrdinal("data_length"));
-                  Int32 vParLength = ((vLenObj == DBNull.Value) ? 0 : Utl.Convert2Type<Int32>(vLenObj));
-                  if (SQLUtils.findOraParam(vOraCmd.Parameters, vParName) == null) {
-                    OracleDbType vParType = SQLUtils.DetectOraTypeByOraTypeName(vParTypeName);
-                    OracleParameter op = vOraCmd.Parameters.Add(vParName, vParType);
-                    op.Direction = SQLUtils.DetectParamDirByName(vParDirName);
+                                      "Для использования автогенерации аргументов с помощью переменной $PRMLIST\n" +
+                                      "необходимо, чтобы все имена аргументов начинались с префикса " + _DEFAULT_ARGPREFIX + " !");
+                  v_parName = v_parName.Substring(2);
+                  Utl.AppendStr(ref v_args, ":" + v_parName, ",");
+                  var v_parTypeName = v_reader.GetString(v_reader.GetOrdinal("data_type"));
+                  var v_parDirName = v_reader.GetString(v_reader.GetOrdinal("in_out"));
+                  var v_lenObj = v_reader.GetValue(v_reader.GetOrdinal("data_length"));
+                  var v_parLength = ((v_lenObj == DBNull.Value) ? 0 : Utl.Convert2Type<Int32>(v_lenObj));
+                  if (SQLUtils.FindOraParam(oracleCommand.Parameters, v_parName) == null) {
+                    var v_parType = SQLUtils.DetectOraTypeByOraTypeName(v_parTypeName);
+                    var op = oracleCommand.Parameters.Add(v_parName, v_parType);
+                    op.Direction = SQLUtils.DetectParamDirByName(v_parDirName);
                     if(op.Direction == ParameterDirection.Output)
-                      op.Size = vParLength;
+                      op.Size = v_parLength;
                   }
                 }
               }
             } finally {
-              vReader.Close();
-              vReader.Dispose();
+              v_reader.Close();
+              v_reader.Dispose();
             }
           } finally {
-            //vStatement.Cancel();
-            vStatement.Dispose();
+            v_statement.Dispose();
           }
-          String vNewExec = vExecs[i];
-          Utl.regexReplace(ref vNewExec, @"[(]\s*[$]PRMLIST\s*[)]", "(" + vArgs + ")", true);
-          vSQL = vSQL.Replace(vExecs[i], vNewExec);
+          var v_newExec = t;
+          Utl.RegexReplace(ref v_newExec, @"[(]\s*[$]PRMLIST\s*[)]", "(" + v_args + ")", true);
+          v_sql = v_sql.Replace(t, v_newExec);
         }
-        vOraCmd.CommandText = vSQL;
+        oracleCommand.CommandText = v_sql;
       }
     }
 
-    private static void detectSQLParamOutCursor(OracleCommand vOraCmd, ref OracleParameter refCursor) {
+    private static void _detectSQLParamOutCursor(OracleCommand vOraCmd, ref OracleParameter refCursor) {
 
       if (vOraCmd.CommandType == CommandType.StoredProcedure) {
-        String vArgs = null; String vPkgName = null; String vObjName = null;
-        detectAutoDBMSParamsParts(vOraCmd.CommandText, ref vPkgName, ref vObjName);
-        OracleCommand vStatement = new OracleCommand(SQLUtils.PrepareSQLForOlacleExecute(csGetParamsFromDBMS));
-        vStatement.Connection = vOraCmd.Connection;
+        String v_pkgName; String v_objName;
+        DetectAutoDBMSParamsParts(vOraCmd.CommandText, out v_pkgName, out v_objName);
+        var v_statement = new OracleCommand(SQLUtils.PrepareSQLForOlacleExecute(_SQL_GET_PARAMS_FROM_DBMS));
+        v_statement.Connection = vOraCmd.Connection;
         try {
-          vStatement.Parameters.Add("package_name", OracleDbType.Varchar2).Value = vPkgName;
-          vStatement.Parameters.Add("object_name", OracleDbType.Varchar2).Value = vObjName;
-          OracleDataReader vReader = vStatement.ExecuteReader();
+          v_statement.Parameters.Add("package_name", OracleDbType.Varchar2).Value = v_pkgName;
+          v_statement.Parameters.Add("object_name", OracleDbType.Varchar2).Value = v_objName;
+          var v_reader = v_statement.ExecuteReader();
           try {
-            while (vReader.Read()) {
-              Int32 vFldIndx = vReader.GetOrdinal("argument_name");
-              if (!vReader.IsDBNull(vFldIndx)) {
-                String vParName = vReader.GetString(vFldIndx);
-                String vParTypeName = vReader.GetString(vReader.GetOrdinal("data_type"));
-                String vParDirName = vReader.GetString(vReader.GetOrdinal("in_out"));
-                if (vParTypeName.Equals("REF CURSOR") && (vParDirName.Equals("IN/OUT") || vParDirName.Equals("OUT"))) {
-                  if (SQLUtils.findOraParam(vOraCmd.Parameters, vParName) == null) {
-                    refCursor = vOraCmd.Parameters.Add(vParName, OracleDbType.RefCursor);
-                    refCursor.Direction = SQLUtils.DetectParamDirByName(vParDirName);
+            while (v_reader.Read()) {
+              var v_fldIndx = v_reader.GetOrdinal("argument_name");
+              if (!v_reader.IsDBNull(v_fldIndx)) {
+                var v_parName = v_reader.GetString(v_fldIndx);
+                var v_parTypeName = v_reader.GetString(v_reader.GetOrdinal("data_type"));
+                var v_parDirName = v_reader.GetString(v_reader.GetOrdinal("in_out"));
+                if (v_parTypeName.Equals("REF CURSOR") && (v_parDirName.Equals("IN/OUT") || v_parDirName.Equals("OUT"))) {
+                  if (SQLUtils.FindOraParam(vOraCmd.Parameters, v_parName) == null) {
+                    refCursor = vOraCmd.Parameters.Add(v_parName, OracleDbType.RefCursor);
+                    refCursor.Direction = SQLUtils.DetectParamDirByName(v_parDirName);
                   }
                 } else {
-                  if (SQLUtils.findOraParam(vOraCmd.Parameters, vParName) == null) {
-                    OracleDbType vParType = SQLUtils.DetectOraTypeByOraTypeName(vParTypeName);
-                    OracleParameter op = vOraCmd.Parameters.Add(vParName, vParType);
-                    op.Direction = SQLUtils.DetectParamDirByName(vParDirName);
+                  if (SQLUtils.FindOraParam(vOraCmd.Parameters, v_parName) == null) {
+                    var v_parType = SQLUtils.DetectOraTypeByOraTypeName(v_parTypeName);
+                    var op = vOraCmd.Parameters.Add(v_parName, v_parType);
+                    op.Direction = SQLUtils.DetectParamDirByName(v_parDirName);
                     if (op.Direction == ParameterDirection.Output) {
-                      Object vLenObj = vReader.GetValue(vReader.GetOrdinal("data_length"));
-                      Int32 vParLength = ((vLenObj == DBNull.Value) ? 0 : Utl.Convert2Type<Int32>(vLenObj));
-                      op.Size = vParLength;
+                      var v_lenObj = v_reader.GetValue(v_reader.GetOrdinal("data_length"));
+                      var v_parLength = ((v_lenObj == DBNull.Value) ? 0 : Utl.Convert2Type<Int32>(v_lenObj));
+                      op.Size = v_parLength;
                     }
                   }
                 }
               }
             }
           } finally {
-            vReader.Close();
-            vReader.Dispose();
+            v_reader.Close();
+            v_reader.Dispose();
           }
         } finally {
-          //vStatement.Cancel();
-          vStatement.Dispose();
+          v_statement.Dispose();
         }
       }
     }
 
-    private static void setParamsToStatment(OracleCommand vOraCmd, CParams pParams, Boolean pOverwrite) {
-      OracleParameter refCursor = null;
-      setParamsToStatment(vOraCmd, pParams, pOverwrite, ref refCursor);
+    private static void setParamsToStatment(OracleCommand oraCmd, CParams prms, Boolean overwrite) {
+      OracleParameter v_refCursor = null;
+      setParamsToStatment(oraCmd, prms, overwrite, ref v_refCursor);
     }
 
-    private static void setParamsToStatment(OracleCommand vOraCmd, CParams pParams, ref OracleParameter refCursor) {
-      setParamsToStatment(vOraCmd, pParams, true, ref refCursor);
+    private static void setParamsToStatment(OracleCommand oraCmd, CParams prms, ref OracleParameter refCursor) {
+      setParamsToStatment(oraCmd, prms, true, ref refCursor);
     }
 
     /// <summary>
@@ -320,70 +299,68 @@ namespace Bio.Helpers.DOA {
     /// <exception cref="ArgumentNullException"></exception>
     private static void setParamsToStatment(OracleCommand oraCmd, CParams prms, Boolean overwrite, ref OracleParameter refCursor) {
       oraCmd.BindByName = true;
-      //foreach(CParam pram in pParams) {
-      //  ExecuteScript("begin utils.setContextParam(:p_name, :p_value); end;", vOraCmd.Connection, new CParams(new CParam("p_name", pram.Name), new CParam("p_value", pram.Value)));
-      //}
       if (oraCmd == null)
         throw new ArgumentNullException("oraCmd");
 
 
       detectSQLParams1(oraCmd);
-      Boolean vIsPRMLIST_AUTO = false;
-      detectSQLParams2(oraCmd, ref vIsPRMLIST_AUTO);
-      detectSQLParamOutCursor(oraCmd, ref refCursor);
-      foreach (OracleParameter vPrm in oraCmd.Parameters) {
-        CParam vInPrm = SQLUtils.findParam(prms, vPrm.ParameterName);
-        if(vInPrm != null) {
+      var v_isParamListAuto = false;
+      _detectSQLParams2(oraCmd, out v_isParamListAuto);
+      _detectSQLParamOutCursor(oraCmd, ref refCursor);
+      foreach (OracleParameter v_prm in oraCmd.Parameters) {
+        var v_inPrm = SQLUtils.FindParam(prms, v_prm.ParameterName);
+        if(v_inPrm != null) {
 
-          if(vIsPRMLIST_AUTO) {
-            vInPrm.ParamType = SQLUtils.DetectTypeByOraType(vPrm.OracleDbType);
-            vInPrm.ParamDir = SQLUtils.encodeParamDirection(vPrm.Direction);
+          if(v_isParamListAuto) {
+            v_inPrm.ParamType = SQLUtils.DetectTypeByOraType(v_prm.OracleDbType);
+            v_inPrm.ParamDir = SQLUtils.EncodeParamDirection(v_prm.Direction);
           } else {
-            vPrm.Direction = SQLUtils.decodeParamDirection(vInPrm.ParamDir);
-            if((vInPrm.ParamType == null) && (vInPrm.Value != null))
-              vInPrm.ParamType = vInPrm.Value.GetType();
-            if(vInPrm.ParamType != null)
-              vPrm.OracleDbType = SQLUtils.DetectOraTypeByType(
-                vInPrm.ParamType, (!String.IsNullOrEmpty(vInPrm.ValueAsString()) ? vInPrm.ValueAsString().Length : vInPrm.ParamSize));
+            v_prm.Direction = SQLUtils.DecodeParamDirection(v_inPrm.ParamDir);
+            if((v_inPrm.ParamType == null) && (v_inPrm.Value != null))
+              v_inPrm.ParamType = v_inPrm.Value.GetType();
+            if(v_inPrm.ParamType != null)
+              v_prm.OracleDbType = SQLUtils.DetectOraTypeByType(
+                v_inPrm.ParamType, (!String.IsNullOrEmpty(v_inPrm.ValueAsString()) ? v_inPrm.ValueAsString().Length : v_inPrm.ParamSize));
           }
 
 
-          Object vParamValue = SQLUtils.findParamValue(prms, vPrm);
-          Object vParamValueDest = null;
-          Type vTargetType = SQLUtils.DetectTypeByOraType(vPrm.OracleDbType);
+          var v_paramValue = SQLUtils.FindParamValue(prms, v_prm);
+          Object v_paramValueDest = null;
+          var v_targetType = SQLUtils.DetectTypeByOraType(v_prm.OracleDbType);
           try {
-            if(vParamValue != null) {
-              if (vParamValue.GetType().Equals(typeof(String))) {
-                if (vTargetType.Equals(typeof(System.Decimal))) {
-                  vParamValueDest = SQLUtils.StrAsOraValue((String)vParamValue, OracleDbType.Decimal);
-                } else if (vTargetType.Equals(typeof(System.DateTime)))
-                  vParamValueDest = SQLUtils.StrAsOraValue((String)vParamValue, OracleDbType.Date);
+            if(v_paramValue != null) {
+              var v_s = v_paramValue as string;
+              if (v_s != null) {
+                if (v_targetType == typeof(Decimal)) {
+                  v_paramValueDest = SQLUtils.StrAsOraValue(v_s, OracleDbType.Decimal);
+                } else if (v_targetType == typeof(DateTime))
+                  v_paramValueDest = SQLUtils.StrAsOraValue(v_s, OracleDbType.Date);
                 else
-                  vParamValueDest = vParamValue;
+                  v_paramValueDest = v_paramValue;
               } else {
-                vParamValueDest = Utl.Convert2Type(vParamValue, vTargetType);
+                v_paramValueDest = Utl.Convert2Type(v_paramValue, v_targetType);
               }
             }
           } catch(ThreadAbortException) {
             throw;
           } catch(Exception ex) {
-            throw new EBioException("Ошибка при присвоении значения параметру [{" + vPrm.ParameterName + "(" + vTargetType + ")" + "}=" + vParamValue + "], Сообщение: " + ex.Message, ex);
+            throw new EBioException("Ошибка при присвоении значения параметру [{" + v_prm.ParameterName + "(" + v_targetType + ")" + "}=" + v_paramValue + "], Сообщение: " + ex.Message, ex);
           }
           if(overwrite) {
-            vPrm.Value = (vParamValueDest == null) ? DBNull.Value : vParamValueDest;
+            v_prm.Value = v_paramValueDest ?? DBNull.Value;
           } else {
-            if(vPrm.Value == null)
-              vPrm.Value = (vParamValueDest == null) ? DBNull.Value : vParamValueDest;
+            if(v_prm.Value == null)
+              v_prm.Value = v_paramValueDest ?? DBNull.Value;
           }
 
-          if (vPrm.Direction == ParameterDirection.Output || vPrm.Direction == ParameterDirection.InputOutput) {
-            if(vPrm.OracleDbType == OracleDbType.Varchar2) {
-              vPrm.Size = (vInPrm.ParamSize > 0) ? vInPrm.ParamSize : 32000;
+          if (v_prm.Direction == ParameterDirection.Output || v_prm.Direction == ParameterDirection.InputOutput) {
+            if(v_prm.OracleDbType == OracleDbType.Varchar2) {
+              v_prm.Size = (v_inPrm.ParamSize > 0) ? v_inPrm.ParamSize : 32000;
             }
           }
         } else {
-          if(vPrm.Value == null)
-            vPrm.Value = DBNull.Value;
+          if(v_prm.Value == null)
+            v_prm.Value = DBNull.Value;
         }
       }
     }
@@ -394,7 +371,7 @@ namespace Bio.Helpers.DOA {
           if((vPrm.Direction == ParameterDirection.Output) ||
               (vPrm.Direction == ParameterDirection.InputOutput) ||
                 (vPrm.Direction == ParameterDirection.ReturnValue)) {
-            CParam vInPrm = SQLUtils.findParam(prms, vPrm.ParameterName);
+            CParam vInPrm = SQLUtils.FindParam(prms, vPrm.ParameterName);
             if(vInPrm != null) {
               vInPrm.Value = SQLUtils.OraDbValueAsObject(vPrm.Value);
               //vInPrm.Value = vPrm.Value;
@@ -406,7 +383,7 @@ namespace Bio.Helpers.DOA {
 
     protected static String detectDBName(String connStr) {
       String vResult = null;
-      IDictionary<String, String> vConnStrs = Utl.parsConnectionStr(connStr);
+      IDictionary<String, String> vConnStrs = Utl.ParsConnectionStr(connStr);
       if (vConnStrs.ContainsKey("Data Source"))
         vResult = vConnStrs["Data Source"];
       if (vConnStrs.ContainsKey("User ID"))
@@ -420,7 +397,7 @@ namespace Bio.Helpers.DOA {
     }
 
     protected virtual void processOpenError(IDbConnection conn, Exception ex, String pParams) {
-      throw new EBioException("[" + detectDBName(conn.ConnectionString) + "] Ошибка при открытии курсора.\r\nСообщение: " + ex.Message + "\r\nSQL: " + this.FStatement.CommandText + "\r\n" + "Параметры запроса:{" + pParams + "}", ex);
+      throw new EBioException("[" + detectDBName(conn.ConnectionString) + "] Ошибка при открытии курсора.\r\nСообщение: " + ex.Message + "\r\nSQL: " + this._statement.CommandText + "\r\n" + "Параметры запроса:{" + pParams + "}", ex);
     }
     private static void processExecError(IDbConnection conn, Exception ex, String pSQL, String pParams) {
       throw new EBioException("[" + detectDBName(conn.ConnectionString) + "] Ошибка выполнения запроса к БД.\r\nСообщение: " + ex.Message + "\r\nSQL: " + pSQL + "\r\n" + "Параметры запроса:{" + pParams + "}", ex);
@@ -444,37 +421,37 @@ namespace Bio.Helpers.DOA {
 
     private OracleDataReader _openReaderAsSelect(IDbConnection pConn, Int32 timeout) {
       OracleDataReader rslt = null;
-      this.FStatement.Connection = (OracleConnection)pConn;
-      this.FStatement.CommandText = SQLUtils.PrepareSQLForOlacleExecute(this.FPreparedSQL);
-      this.FStatement.CommandTimeout = timeout;
+      this._statement.Connection = (OracleConnection)pConn;
+      this._statement.CommandText = SQLUtils.PrepareSQLForOlacleExecute(this.preparedSQL);
+      this._statement.CommandTimeout = timeout;
       try {
         this.onBeforeOpen();
-        this.FStatement.Parameters.Clear();
-        setParamsToStatment(this.FStatement, this.FParams);
-        this.LastOpenParamsDebugText = bldDbgParamsStr(this.FStatement);
-        rslt = this.FStatement.ExecuteReader();
+        this._statement.Parameters.Clear();
+        setParamsToStatment(this._statement, this._params);
+        this.LastOpenParamsDebugText = bldDbgParamsStr(this._statement);
+        rslt = this._statement.ExecuteReader();
         return rslt;
       } catch (ThreadAbortException ex) {
         throw new EBioSQLBreaked(ex);
       } catch (Exception ex) {
-        this._processOpenError(this.FStatement.Connection, ex, this.LastOpenParamsDebugText);
+        this._processOpenError(this._statement.Connection, ex, this.LastOpenParamsDebugText);
         return null;
       }
     }
 
     private OracleDataReader _openReaderAsProcedure(IDbConnection pConn, Int32 timeout) {
       OracleDataReader rslt = null;
-      this.FStatement.Connection = (OracleConnection)pConn;
-      this.FStatement.CommandText = SQLUtils.PrepareSQLForOlacleExecute(this.FPreparedSQL);
-      this.FStatement.CommandType = CommandType.StoredProcedure;
-      this.FStatement.CommandTimeout = timeout;
+      this._statement.Connection = (OracleConnection)pConn;
+      this._statement.CommandText = SQLUtils.PrepareSQLForOlacleExecute(this.preparedSQL);
+      this._statement.CommandType = CommandType.StoredProcedure;
+      this._statement.CommandTimeout = timeout;
       try {
         this.onBeforeOpen();
-        this.FStatement.Parameters.Clear();
+        this._statement.Parameters.Clear();
         OracleParameter refCursor = null;
-        setParamsToStatment(this.FStatement, this.FParams, ref refCursor);
-        this.LastOpenParamsDebugText = bldDbgParamsStr(this.FStatement);
-        this.FStatement.ExecuteNonQuery();
+        setParamsToStatment(this._statement, this._params, ref refCursor);
+        this.LastOpenParamsDebugText = bldDbgParamsStr(this._statement);
+        this._statement.ExecuteNonQuery();
         if (refCursor != null) {
           rslt = ((OracleRefCursor)refCursor.Value).GetDataReader();
           return rslt;
@@ -483,7 +460,7 @@ namespace Bio.Helpers.DOA {
       } catch (ThreadAbortException ex) {
         throw new EBioSQLBreaked(ex);
       } catch (Exception ex) {
-        this._processOpenError(this.FStatement.Connection, ex, this.LastOpenParamsDebugText);
+        this._processOpenError(this._statement.Connection, ex, this.LastOpenParamsDebugText);
         return null;
       }
     }
@@ -495,12 +472,12 @@ namespace Bio.Helpers.DOA {
     /// <param name="pTrn"></param>
     public void Open(IDbConnection pConn, Int32 timeout) {
       checkOraConn(pConn);
-      var cmdType = Utl.detectCommandType(this.FPreparedSQL);
+      var cmdType = Utl.DetectCommandType(this.preparedSQL);
       if (cmdType == CommandType.Text)
-        this.FResult = this._openReaderAsSelect(pConn, timeout);
+        this._dataReader = this._openReaderAsSelect(pConn, timeout);
       else
-        this.FResult = this._openReaderAsProcedure(pConn, timeout);
-      this.FCurFetchedRowPos = 0;
+        this._dataReader = this._openReaderAsProcedure(pConn, timeout);
+      this.curFetchedRowPos = 0;
       this.onAfterOpen();
     }
 
@@ -527,7 +504,7 @@ namespace Bio.Helpers.DOA {
       stmt.Connection = (OracleConnection)conn;
       stmt.CommandTimeout = timeout;
       try {
-        CSQLCmd.setParamsToStatment(stmt, prms);
+        SQLCmd.setParamsToStatment(stmt, prms);
       } catch (ThreadAbortException ex) {
         throw new EBioSQLBreaked(ex);
       } catch (Exception ex) {
@@ -543,7 +520,7 @@ namespace Bio.Helpers.DOA {
     //    stmt.Connection = (OracleConnection)sess.GetConnection();
     //    stmt.CommandTimeout = timeout;
     //    //stmt.Connection.Open();
-    //    CSQLCmd.setParamsToStatment(stmt, prms);
+    //    SQLCmd.setParamsToStatment(stmt, prms);
     //  } catch(ThreadAbortException) {
     //    throw;
     //  } catch(Exception ex) {
@@ -560,10 +537,10 @@ namespace Bio.Helpers.DOA {
         setStatmentToParams((OracleCommand)stmt, pParams);
       } catch(OracleException oe) {
         String msg = String.Empty;
-        if((oe.Errors.Count > 0) && (oe.Errors[0].Number == ciORAERRCODE_USER_BREAKED))
+        if((oe.Errors.Count > 0) && (oe.Errors[0].Number == ORAERRCODE_USER_BREAKED))
           throw new EBioSQLBreaked(oe);
         for(int i = 0; String.IsNullOrEmpty(msg) && i < oe.Errors.Count; i++)
-          if(oe.Errors[i].Number >= ciORAERRCODE_APP_ERR_START)
+          if(oe.Errors[i].Number >= ORAERRCODE_APP_ERR_START)
             msg = oe.Errors[i].Message;
         throw new EBioException((String.IsNullOrEmpty(msg)) ? "Ошибка выполнения запроса к БД.\r\nСообщение: " + oe.Message + "\r\n" +
                               "SQL: " + stmt.CommandText + "\r\n" + "Параметры запроса:{" + (String.IsNullOrEmpty(vDbgPrmsStr) ? ((pParams != null) ? pParams.ToString() : null) : vDbgPrmsStr) + "}" : msg);
@@ -619,7 +596,7 @@ namespace Bio.Helpers.DOA {
     /// <param name="conn"></param>
     /// <returns></returns>
     public Object ExecuteScalarSQL(IDbConnection conn, Int32 timeout) {
-      return ExecuteScalarSQL(conn, this.PreparedSQL, this.FParams, timeout);
+      return ExecuteScalarSQL(conn, this.PreparedSQL, this._params, timeout);
     }
 
     /// <summary>
@@ -673,7 +650,7 @@ namespace Bio.Helpers.DOA {
     /// </summary>
 		public String PreparedSQL{
       get{
-        return this.FPreparedSQL;
+        return this.preparedSQL;
       }
 		}
 		
@@ -682,7 +659,7 @@ namespace Bio.Helpers.DOA {
     /// </summary>
 		public String SQL{
       get{
-        return this.FSQL;
+        return this.originSQL;
       }
 		}
 
@@ -690,7 +667,7 @@ namespace Bio.Helpers.DOA {
     /// Переоткрывает текущий курсор
     /// </summary>
     public void Refresh(Int32 timeout) {
-      this.Refresh(this.FStatement.Connection, timeout);
+      this.Refresh(this._statement.Connection, timeout);
     }
 
     /// <summary>
@@ -700,14 +677,14 @@ namespace Bio.Helpers.DOA {
     public void Refresh(IDbConnection conn, Int32 timeout) {
       checkOraConn(conn);
       this.Close();
-      this.FStatement.Connection = (OracleConnection)conn;
-      this.FStatement.CommandText = SQLUtils.PrepareSQLForOlacleExecute(this.FPreparedSQL);
-      this.FStatement.CommandTimeout = timeout;
+      this._statement.Connection = (OracleConnection)conn;
+      this._statement.CommandText = SQLUtils.PrepareSQLForOlacleExecute(this.preparedSQL);
+      this._statement.CommandTimeout = timeout;
 			try{
-        this.FResult = this.FStatement.ExecuteReader();
-        this.FCurFetchedRowPos = 0;
+        this._dataReader = this._statement.ExecuteReader();
+        this.curFetchedRowPos = 0;
 			}catch (Exception ex){
-        throw new EBioException("Ошибка при обновлении курсора. Сообщение: " + ex.Message + " SQL: " + this.FPreparedSQL);
+        throw new EBioException("Ошибка при обновлении курсора. Сообщение: " + ex.Message + " SQL: " + this.preparedSQL);
 			}
 		}
 
@@ -715,9 +692,9 @@ namespace Bio.Helpers.DOA {
     /// Прервать открытие текущего курсора
     /// </summary>
     public void Cancel() {
-      if(this.FStatement != null) {
-        this.FStatement.Cancel();
-        this.FResult = null;
+      if(this._statement != null) {
+        this._statement.Cancel();
+        this._dataReader = null;
       }
     }
 
@@ -725,12 +702,12 @@ namespace Bio.Helpers.DOA {
     /// Закрывает текущий курсор
     /// </summary>
 		public void  Close(){
-      if((this.FStatement != null) && (this.IsActive)) {
-        this.FResult.Close();
-        this.FStatement.Cancel();
-        this.FResult = null;
-        if(this.FCloseConnOnClose)
-          this.FStatement.Connection.Close();
+      if((this._statement != null) && (this.IsActive)) {
+        this._dataReader.Close();
+        this._statement.Cancel();
+        this._dataReader = null;
+        if(this.closeConnOnClose)
+          this._statement.Connection.Close();
 			}
 		}
 		
@@ -740,23 +717,23 @@ namespace Bio.Helpers.DOA {
     /// <returns></returns>
 		public bool Next(){
       try{
-        if(this.FRowValues == null)
-          this.FRowValues = new Hashtable();
-        this.FRowValues.Clear();
-        if(this.FResult.Read()) {
-          this.FCurFetchedRowPos++;
-          if((ciFetchedRowLimit > 0) && (this.FCurFetchedRowPos > ciFetchedRowLimit)) {
+        if(this.rowValues == null)
+          this.rowValues = new Hashtable();
+        this.rowValues.Clear();
+        if(this._dataReader.Read()) {
+          this.curFetchedRowPos++;
+          if((FetchedRowLimit > 0) && (this.curFetchedRowPos > FetchedRowLimit)) {
             String vIOCode = null;// (this is CSQLCursorBio) ? "{" + (this as CSQLCursorBio).IOCode + "} " : null;
-            String vMsg = "Запрос " + vIOCode + "вернул более " + ciFetchedRowLimit + " записей. Проверьте параметры запроса.";
+            String vMsg = "Запрос " + vIOCode + "вернул более " + FetchedRowLimit + " записей. Проверьте параметры запроса.";
             throw new EBioDOATooMuchRows(vMsg);
           }
-          for (int i = 0; i < this.FResult.FieldCount; i++) {
+          for (int i = 0; i < this._dataReader.FieldCount; i++) {
             Object vObj;
-            if (!this.FResult.IsDBNull(i)) {
-              vObj = SQLUtils.OraDbValueAsObject(this.FResult.GetOracleValue(i));
+            if (!this._dataReader.IsDBNull(i)) {
+              vObj = SQLUtils.OraDbValueAsObject(this._dataReader.GetOracleValue(i));
             } else
               vObj = null;
-            this.FRowValues[this.FResult.GetName(i).ToUpper()] = vObj;
+            this.rowValues[this._dataReader.GetName(i).ToUpper()] = vObj;
           }
           return true;
         } else
@@ -774,10 +751,10 @@ namespace Bio.Helpers.DOA {
     /// </summary>
 		public bool IsActive{
       get{
-        if(this.FResult == null)
+        if(this._dataReader == null)
 			    return false;
         else
-          return !this.FResult.IsClosed;
+          return !this._dataReader.IsClosed;
       }
 		}
 		
@@ -786,8 +763,8 @@ namespace Bio.Helpers.DOA {
     /// </summary>
     public IDataReader DataReader{
       get{
-        if((this.FResult != null) && (!this.FResult.IsClosed))
-          return this.FResult;
+        if((this._dataReader != null) && (!this._dataReader.IsClosed))
+          return this._dataReader;
         else
           return null;
       }
@@ -795,7 +772,7 @@ namespace Bio.Helpers.DOA {
 
     public IDbCommand DbCommand {
       get {
-        return this.FStatement;
+        return this._statement;
       }
     }
 
@@ -804,7 +781,7 @@ namespace Bio.Helpers.DOA {
     /// </summary>
     public Hashtable RowValues {
       get {
-        return this.FRowValues;
+        return this.rowValues;
       }
     }
 
@@ -813,7 +790,7 @@ namespace Bio.Helpers.DOA {
     /// </summary>
     public Int64 CurFetchedRowPos {
       get {
-        return this.FCurFetchedRowPos;
+        return this.curFetchedRowPos;
       }
     }
 

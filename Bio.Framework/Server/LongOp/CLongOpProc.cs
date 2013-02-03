@@ -57,7 +57,7 @@
             String vCurrentSQL = null;
             CParams vCurrentParams = null;
             this._currentCmd = this._prepareCmdProc(this._conn, ref vCurrentSQL, ref vCurrentParams);
-            CSQLCmd.ExecuteScript(this._currentCmd, vCurrentSQL, vCurrentParams);
+            SQLCmd.ExecuteScript(this._currentCmd, vCurrentSQL, vCurrentParams);
           }
           Thread.Sleep(100);
         } catch (ThreadAbortException) {
@@ -118,7 +118,7 @@
       String v_rslt = null;
       if (this._conn != null) {
         if (!String.IsNullOrEmpty(this.Pipe))
-          v_rslt = (String)CSQLCmd.ExecuteScalarSQL(this._conn, "select AI_PIPE.init(:pipeName) as f_result from dual", new CParams(new CParam("pipeName", this.Pipe)), 120);
+          v_rslt = (String)SQLCmd.ExecuteScalarSQL(this._conn, "select AI_PIPE.init(:pipeName) as f_result from dual", new CParams(new CParam("pipeName", this.Pipe)), 120);
         else
           v_rslt = "ORA-SESSION-ID:" + CDBSession.GetSessionID(this._conn);
       }

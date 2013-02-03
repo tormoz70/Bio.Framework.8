@@ -10,10 +10,10 @@ using System.ComponentModel;
   using System.Runtime.Remoting.Contexts;
   using Bio.Helpers.Common;
 
-  public delegate void DlgSQLGarbageMonitorCheckItem(CSQLCmd vSQLCmd, ref Boolean killQuery, ref Boolean killSession, Boolean ajaxTimeoutExceeded);
+  public delegate void DlgSQLGarbageMonitorCheckItem(SQLCmd vSQLCmd, ref Boolean killQuery, ref Boolean killSession, Boolean ajaxTimeoutExceeded);
   public class CSQLGarbageMonitorItem {
     public DateTime RegTime = DateTime.Now;
-    public CSQLCmd SQLCmd = null;
+    public SQLCmd SQLCmd = null;
     public DlgSQLGarbageMonitorCheckItem CheckItemProc = null;
     public int AjaxRequestTimeout = 0;
   }
@@ -56,7 +56,7 @@ using System.ComponentModel;
 
 
 
-    private CSQLGarbageMonitorItem findItem(CSQLCmd pSQLCmd) {
+    private CSQLGarbageMonitorItem findItem(SQLCmd pSQLCmd) {
       CSQLGarbageMonitorItem[] vList = null;
       lock (this.FList) {
         vList = this.FList.ToArray<CSQLGarbageMonitorItem>();
@@ -68,7 +68,7 @@ using System.ComponentModel;
       return null;
     }
 
-    private Boolean isSQLCmdRegistred(CSQLCmd pSQLCmd) {
+    private Boolean isSQLCmdRegistred(SQLCmd pSQLCmd) {
       CSQLGarbageMonitorItem[] vList = null;
       lock (this.FList) {
         vList = this.FList.ToArray<CSQLGarbageMonitorItem>();
@@ -80,7 +80,7 @@ using System.ComponentModel;
       return false;
     }
 
-    public void RegisterSQLCmd(CSQLCmd pSQLCmd, DlgSQLGarbageMonitorCheckItem pCheckItemProc, int pAjaxRequestTimeout) {
+    public void RegisterSQLCmd(SQLCmd pSQLCmd, DlgSQLGarbageMonitorCheckItem pCheckItemProc, int pAjaxRequestTimeout) {
       if(!this.isSQLCmdRegistred(pSQLCmd)) {
         lock(this.FList) {
           this.FList.Add(new CSQLGarbageMonitorItem() { SQLCmd = pSQLCmd, CheckItemProc = pCheckItemProc, AjaxRequestTimeout = pAjaxRequestTimeout });
@@ -98,7 +98,7 @@ using System.ComponentModel;
         }
     }
 
-    public void RemoveItem(CSQLCmd pSQLCmd) {
+    public void RemoveItem(SQLCmd pSQLCmd) {
       CSQLGarbageMonitorItem vItem = this.findItem(pSQLCmd);
       this.RemoveItem(vItem);
     }

@@ -16,7 +16,7 @@ namespace Bio.Helpers.DOA {
   /// <summary>
   /// Курсор с запоминанием текущего рекорда
   /// </summary>
-  public class CSQLCursor : CSQLCmd {
+  public class SQLCursor : SQLCmd {
 
     private List<CField> FFields;
     private SortedList<string, CField> FPKFields;
@@ -45,12 +45,12 @@ namespace Bio.Helpers.DOA {
       this.FPKFields = new SortedList<string, CField>();
     }
 
-    public CSQLCursor()
+    public SQLCursor()
       : base() {
       this._init();
     }
 
-    public CSQLCursor(IDbConnection pConn)
+    public SQLCursor(IDbConnection pConn)
       : base(pConn) {
       this._init();
     }
@@ -58,7 +58,7 @@ namespace Bio.Helpers.DOA {
     /// Конструктор
     /// </summary>
     /// <param name="pConnStr"></param>
-    public CSQLCursor(IDBSession sess)
+    public SQLCursor(IDBSession sess)
       : base(sess) {
       this._init();
     }
@@ -140,10 +140,10 @@ namespace Bio.Helpers.DOA {
       this.FPKFieldsInit.AddRange(pkFields.ToUpper().Split(';'));
     }
 
-    public static CSQLCursor creAndOpenCursor(IDBSession sess, String sql, CParams prms, Int32 timeout) {
-      CSQLCursor vRslt = null;
+    public static SQLCursor creAndOpenCursor(IDBSession sess, String sql, CParams prms, Int32 timeout) {
+      SQLCursor vRslt = null;
       try {
-        vRslt = new CSQLCursor(sess);
+        vRslt = new SQLCursor(sess);
         vRslt.Init(sql, prms);
         vRslt.Open(timeout);
       } catch (ThreadAbortException) {
@@ -154,10 +154,10 @@ namespace Bio.Helpers.DOA {
       return vRslt;
     }
 
-    public static CSQLCursor creAndOpenCursor(IDbConnection conn, String sql, CParams prms, Int32 timeout) {
-      CSQLCursor vRslt = null;
+    public static SQLCursor creAndOpenCursor(IDbConnection conn, String sql, CParams prms, Int32 timeout) {
+      SQLCursor vRslt = null;
       try {
-        vRslt = new CSQLCursor(conn);
+        vRslt = new SQLCursor(conn);
         vRslt.Init(sql, prms);
         vRslt.Open(timeout);
       } catch (ThreadAbortException) {
