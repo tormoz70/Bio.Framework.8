@@ -64,7 +64,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       }
     }
 
-    protected override void OnDispose() {
+    protected override void onDispose() {
       foreach (var fmt in this._headerFormats)
         CExcelSrv.nar(ref fmt.Range);
       foreach (var fmt in this._footerFormats)

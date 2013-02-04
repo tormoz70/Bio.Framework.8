@@ -120,7 +120,7 @@
         if (!String.IsNullOrEmpty(this.Pipe))
           v_rslt = (String)SQLCmd.ExecuteScalarSQL(this._conn, "select AI_PIPE.init(:pipeName) as f_result from dual", new CParams(new CParam("pipeName", this.Pipe)), 120);
         else
-          v_rslt = "ORA-SESSION-ID:" + CDBSession.GetSessionID(this._conn);
+          v_rslt = "ORA-SESSION-ID:" + DBSession.GetSessionID(this._conn);
       }
       return v_rslt;
     }

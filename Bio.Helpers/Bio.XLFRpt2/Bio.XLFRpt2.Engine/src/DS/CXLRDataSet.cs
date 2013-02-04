@@ -32,7 +32,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 			this.FOwner = pOwner;
     }
 
-    protected override void OnDispose() {
+    protected override void onDispose() {
       if(this.FRootGroup != null) {
         this.FRootGroup.Dispose();
         this.FRootGroup = null;

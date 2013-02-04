@@ -29,7 +29,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 			this.FGroups = new List<CXLRGroup>();
 		}
 
-		protected override void OnDispose(){
+		protected override void onDispose(){
 			foreach(var vGrp in this.FGroups)
 				vGrp.Dispose();
 			this.FGroups.Clear();

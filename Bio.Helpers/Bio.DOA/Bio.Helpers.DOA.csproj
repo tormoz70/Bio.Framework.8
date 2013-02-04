@@ -74,9 +74,8 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="src\CDBSessionFactory.cs" />
-    <Compile Include="src\CDBSessionOldShared.cs" />
     <Compile Include="src\dbFactory.cs" />
-    <Compile Include="src\CDBSession.cs" />
+    <Compile Include="src\DBSession.cs" />
     <Compile Include="src\CField.cs" />
     <Compile Include="src\SQLCmd.cs" />
     <Compile Include="src\SQLCursor.cs" />

@@ -48,7 +48,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         this.InParams.Add("SYS_TITLE", this._rptCfg.title);
     }
 
-    protected override void OnDispose() {
+    protected override void onDispose() {
       this._owner = null;
       this._rptCfg = null;
     }

@@ -16,7 +16,7 @@ namespace Bio.Helpers.Common.Types {
 			this.FEncode = pEncode;
 		}
 
-		protected override void OnDispose(){
+		protected override void onDispose(){
 			try{
 				this.Close();
 			}catch{}

@@ -133,8 +133,8 @@ namespace Bio.Framework.Server {
 
     }
 
-    protected override void OnDispose() {
-      base.OnDispose();
+    protected override void onDispose() {
+      base.onDispose();
       this.Cfg.dbSession.KillTransactions();
     }
   }

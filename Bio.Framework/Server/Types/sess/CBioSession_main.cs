@@ -24,13 +24,13 @@ namespace Bio.Framework.Server {
     //private ABioHandler FCurBioMsg = null;
 
     private Hashtable FIOS = null;
-    //private CDBSession FDBSession = null;
+    //private DBSession FDBSession = null;
 
     public CBioSession(String localPath, String appURL) {
 			this.CreationDT = DateTime.Now;
       this.FIOS = new Hashtable();
       this.Cfg = new CBioCfgOra(localPath, appURL);
-      //this.FDBSession = new CDBSession(this.Cfg.ConnectionString, null, this.Cfg.doOnAfterDBConnect);
+      //this.FDBSession = new DBSession(this.Cfg.ConnectionString, null, this.Cfg.doOnAfterDBConnect);
 
     }
 
@@ -91,7 +91,7 @@ namespace Bio.Framework.Server {
       }
     }
 
-    //public CDBSession DBSess {
+    //public DBSession DBSess {
     //  get {
     //    return this.FDBSession;
     //  }

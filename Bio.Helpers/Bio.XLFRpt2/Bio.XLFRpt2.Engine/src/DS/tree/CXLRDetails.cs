@@ -26,7 +26,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 			}
 		}
 
-		protected override void OnDispose(){
+		protected override void onDispose(){
 			this.FDetailRows.Clear();
 		}
 

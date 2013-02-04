@@ -2,64 +2,55 @@ namespace Bio.Helpers.DOA {
   using System;
 
   using System.Data;
-  using System.Data.Common;
-  using Oracle.DataAccess.Client;
-
   using System.Collections.Generic;
   using System.Collections.Specialized;
-  using Bio.Helpers.Common.Types;
-  using Bio.Helpers.Common;
-  //using Bio.Packets.Ex;
+  using Common.Types;
+  using Common;
   using System.Threading;
-  //using Bio.Packets;
 
   /// <summary>
   /// Курсор с запоминанием текущего рекорда
   /// </summary>
   public class SQLCursor : SQLCmd {
-
-    private List<CField> FFields;
-    private SortedList<string, CField> FPKFields;
-    private StringCollection FPKFieldsInit;
+    private StringCollection _pkFieldsInit;
 
     /// <summary>
     /// Коллекция определений полей в курсоре.
     /// </summary>
-    public List<CField> Fields {
-      get {
-        return this.FFields;
-      }
-    }
+    public List<CField> Fields { get; private set; }
 
     /// <summary>
     /// Коллекция определений полей первичного ключа в курсоре.
     /// </summary>
-    public SortedList<String, CField> PKFields {
-      get {
-        return this.FPKFields;
-      }
-    }
+    public SortedList<string, CField> PKFields { get; private set; }
 
     private void _init() {
-      this.FFields = new List<CField>();
-      this.FPKFields = new SortedList<string, CField>();
+      this.Fields = new List<CField>();
+      this.PKFields = new SortedList<String, CField>();
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public SQLCursor()
       : base() {
       this._init();
     }
 
-    public SQLCursor(IDbConnection pConn)
-      : base(pConn) {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="connection"></param>
+    public SQLCursor(IDbConnection connection)
+      : base(connection) {
       this._init();
     }
+
     /// <summary>
     /// Конструктор
     /// </summary>
-    /// <param name="pConnStr"></param>
-    public SQLCursor(IDBSession sess)
-      : base(sess) {
+    public SQLCursor(IDBSession session)
+      : base(session) {
       this._init();
     }
 
@@ -77,10 +68,10 @@ namespace Bio.Helpers.DOA {
               Type ftype = this.DataReader.GetFieldType(i);
               string pkIndex = null;
               int p;
-              if ((this.FPKFieldsInit != null) && ((p = this.FPKFieldsInit.IndexOf(fname.ToUpper())) >= 0))
+              if ((this._pkFieldsInit != null) && ((p = this._pkFieldsInit.IndexOf(fname.ToUpper())) >= 0))
                 pkIndex = (p + 1).ToString();
               CField newFld = new CField(this, vCurFldId, fname, ftype, fname, pkIndex);
-              this.FFields.Add(newFld);
+              this.Fields.Add(newFld);
               if (pkIndex != null)
                 this.PKFields.Add(pkIndex, newFld);
               vCurFldId++;
@@ -96,37 +87,37 @@ namespace Bio.Helpers.DOA {
 
     public virtual int FieldsCount {
       get {
-        return this.FFields.Count;
+        return this.Fields.Count;
       }
     }
 
     public virtual CField FieldByName(String FieldName) {
-      for (int i = 0; i < this.FFields.Count; i++) {
-        String fldname = ((CField)this.FFields[i]).FieldName;
+      for (int i = 0; i < this.Fields.Count; i++) {
+        String fldname = ((CField)this.Fields[i]).FieldName;
         if (fldname.ToUpper().Equals(FieldName.ToUpper())) {
-          return (CField)this.FFields[i];
+          return (CField)this.Fields[i];
         }
       }
       return null;
     }
 
     public CField FieldByNum(int Index) {
-      if ((Index >= 0) && (Index < FFields.Count))
-        return (CField)this.FFields[Index];
+      if ((Index >= 0) && (Index < Fields.Count))
+        return (CField)this.Fields[Index];
       return null;
     }
 
     public String PKValue {
       get {
         String rslt = null;
-        if (this.FPKFields.Count > 0) {
-          if (this.FPKFields.Count == 1) {
-            CField cfld = this.FPKFields["1"];
+        if (this.PKFields.Count > 0) {
+          if (this.PKFields.Count == 1) {
+            CField cfld = this.PKFields["1"];
             rslt = cfld.AsString;
           } else {
-            for (int i = 0; i < this.FPKFields.Count; i++) {
+            for (int i = 0; i < this.PKFields.Count; i++) {
               String vKey = (i + 1).ToString();
-              CField cfld = this.FPKFields[vKey];
+              CField cfld = this.PKFields[vKey];
               Utl.AppendStr(ref rslt, "(" + cfld.AsString + ")", "-");
             }
           }
@@ -136,8 +127,8 @@ namespace Bio.Helpers.DOA {
     }
 
     public void PKFieldsInit(String pkFields) {
-      this.FPKFieldsInit = new StringCollection();
-      this.FPKFieldsInit.AddRange(pkFields.ToUpper().Split(';'));
+      this._pkFieldsInit = new StringCollection();
+      this._pkFieldsInit.AddRange(pkFields.ToUpper().Split(';'));
     }
 
     public static SQLCursor creAndOpenCursor(IDBSession sess, String sql, CParams prms, Int32 timeout) {

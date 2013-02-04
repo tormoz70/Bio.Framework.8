@@ -133,7 +133,7 @@ retry_save:
       this.FWorkbook = null;
 		}
 		//destructor
-		protected override void OnDispose(){
+		protected override void onDispose(){
       this.FOutterExcel = null;
       this.FExcel = null;
 		}

@@ -16,14 +16,14 @@ namespace Bio.Helpers.XLFRpt2.DataFactory {
   /// </summary>
   public class CDataFactory:CXLRDataFactory {
     private SQLCursor FCmd = null;
-    private CDBSession _dbSess = null;
+    private DBSession _dbSess = null;
 
     public override IDbConnection openDbConnection(CXLReportConfig cfg) {
       if (cfg.dbSession != null)
         return cfg.dbSession.GetConnection();
       else { 
         if((this._dbSess == null) && !String.IsNullOrEmpty(cfg.connStr))
-          this._dbSess = new CDBSession(cfg.connStr);
+          this._dbSess = new DBSession(cfg.connStr);
         if (this._dbSess != null)
           return this._dbSess.GetConnection();
         else

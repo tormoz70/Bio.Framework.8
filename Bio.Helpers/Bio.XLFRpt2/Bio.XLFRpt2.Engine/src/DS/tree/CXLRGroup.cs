@@ -79,7 +79,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 			}
 		}
 
-		protected override void OnDispose(){
+		protected override void onDispose(){
 			if(this.ChildGroups(false) != null)
 				this.ChildGroups(false).Dispose();
 			if(this.GroupDetails(false) != null)

@@ -441,16 +441,16 @@ namespace Bio.Framework.Server {
     /// Удаляет запись по признаку первичного ключа.
     /// </summary>
     /// <exception cref="EBioException">Возбуждается, когда операция завершилась с ошибкой.</exception>
-    public void DoDelete(CParams pParams) {
-      this.doExecute(pParams, "delete");
+    public void DoDelete(CParams @params) {
+      this.doExecute(@params, "delete");
     }
 
     /// <summary>
     /// Добавляет/Изменяет запись по признаку первичного ключа.
     /// </summary>
     /// <exception cref="EBioException">Возбуждается, когда операция завершилась с ошибкой.</exception>
-    public void DoInsertUpdate(CParams pParams) {
-      this.doExecute(pParams, "insertupdate");
+    public void DoInsertUpdate(CParams @params) {
+      this.doExecute(@params, "insertupdate");
     }
     */
 
@@ -560,8 +560,8 @@ namespace Bio.Framework.Server {
       base.prepareSQL();
     }
 
-    protected override void processOpenError(IDbConnection conn, Exception ex, String pParams) {
-      throw new EBioException("[" + detectDBName(conn.ConnectionString) + "] Ошибка при открытии курсора [" + this.bioCode + "].\r\nСообщение: " + ex.Message + "\r\nSQL: " + this.DbCommand.CommandText + "\r\n" + "Параметры запроса:{" + pParams + "}", ex);
+    protected override void throwOpenError(IDbConnection connection, Exception ex, String sql, String @params) {
+      throw new EBioException("[" + detectDBName(connection.ConnectionString) + "] Ошибка при открытии курсора [" + this.bioCode + "].\r\nСообщение: " + ex.Message + "\r\nSQL: " + this.DbCommand.CommandText + "\r\n" + "Параметры запроса:{" + @params + "}", ex);
     }
 
   }

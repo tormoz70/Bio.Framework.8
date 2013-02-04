@@ -32,7 +32,7 @@ using System.Collections.Generic;
 			}
 		}
 
-		protected override void OnDispose(){
+		protected override void onDispose(){
 			foreach(var ds in this.FDSs)
 				ds.Dispose();
 		}

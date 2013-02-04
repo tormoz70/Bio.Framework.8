@@ -93,7 +93,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     public CXLReport(CXLReportConfig cfg) : this(null, cfg, null, null) { }
 
     //destructor
-    protected override void OnDispose() {
+    protected override void onDispose() {
       if (this.OnBeforeDispose != null)
         this.OnBeforeDispose(this);
       if (this.FRptDefinition != null) {

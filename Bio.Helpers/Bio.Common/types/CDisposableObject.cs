@@ -4,11 +4,11 @@ namespace Bio.Helpers.Common.Types {
 	public class CDisposableObject: IDisposable{
 		private bool FIsDisposed = false;
 
-		protected virtual void OnDispose(){}
+		protected virtual void onDispose(){}
 		private void Dispose(bool disposing){
 			if(!FIsDisposed){
 				if(disposing){
-					OnDispose();
+					onDispose();
 				}
 			}
 			FIsDisposed = true;

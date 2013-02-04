@@ -48,8 +48,8 @@ using System.ComponentModel;
       return vMonitor;
     }
 
-    protected override void OnDispose() {
-      base.OnDispose();
+    protected override void onDispose() {
+      base.onDispose();
       this.FThread.Abort();
       //this.FBackgroundWorker.CancelAsync();
     }

@@ -17,7 +17,7 @@ namespace Bio.Helpers.DOA {
 
   public class CDBSessionFactory : ADBSessionFactory {
     public override IDBSession CreateDBSession(string connStr) {
-      return new CDBSession(connStr);
+      return new DBSession(connStr);
     }
   }
 }

@@ -41,7 +41,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       this._ds.OnProgress += new DlgOnProgressDataSet(this.doOnProgressDataSet);
     }
 
-    protected override void OnDispose() {
+    protected override void onDispose() {
       this._ds.Dispose();
       this._ds = null;
       this._charts.Dispose();

@@ -57,7 +57,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
 
       //initPath(rslt.rootPath);
       //initPath(rslt.workPath);
-      //rslt.dbSession = new CDBSession(rslt.connStr);
+      //rslt.dbSession = new DBSession(rslt.connStr);
       T rslt = CConfigBase._load<T>(physicalApplicationPath, logFileName, new CDBSessionFactory());
       rslt.rootRptPath = normPath(rslt.physicalApplicationPath, Xml.getInnerText((XmlElement)rslt.CfgDoc.DocumentElement.SelectSingleNode("root_path")));
       rslt.queueImplementationType = rslt.CfgDoc.DocumentElement.GetAttribute("queueImplementationType");

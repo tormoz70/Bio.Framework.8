@@ -22,7 +22,7 @@ namespace Bio.Helpers.DOA {
 
     protected const Int32 ORAERRCODE_APP_ERR_START = 20000; //начало диапазона кодов ошибок приложения в Oracle
     protected const Int32 ORAERRCODE_USER_BREAKED = 1013; //{"ORA-01013: пользователем запрошена отмена текущей операции"}
-    protected const Int32 FetchedRowLimit = 10000000; // Максимальное кол-во записей, которое может вернуть запрос к БД
+    protected const Int32 FETCHED_ROW_LIMIT = 10000000; // Максимальное кол-во записей, которое может вернуть запрос к БД
     private OracleDataReader _dataReader;
 		private readonly OracleCommand _statement;
 		protected String originSQL = null;
@@ -41,17 +41,17 @@ namespace Bio.Helpers.DOA {
     /// <summary>
     /// Конструктор
     /// </summary>
-    /// <param name="pConn"></param>
-    public SQLCmd(IDbConnection pConn):this() {
-      this._statement.Connection = (OracleConnection)pConn;
+    /// <param name="connection"></param>
+    public SQLCmd(IDbConnection connection):this() {
+      this._statement.Connection = (OracleConnection)connection;
     }
 
     /// <summary>
     /// Конструктор
     /// </summary>
-    /// <param name="sess"></param>
-    public SQLCmd(IDBSession sess):this() {
-      this._statement.Connection = (OracleConnection)sess.GetConnection();
+    /// <param name="session"></param>
+    public SQLCmd(IDBSession session):this() {
+      this._statement.Connection = (OracleConnection)session.GetConnection();
       this.closeConnOnClose = true;
     }
 
@@ -88,7 +88,7 @@ namespace Bio.Helpers.DOA {
       }
     }
 
-    protected override void OnDispose() {
+    protected override void onDispose() {
       try {
         this.Close();
       } catch {}
@@ -100,7 +100,7 @@ namespace Bio.Helpers.DOA {
 		protected virtual void onAfterOpen(){
 		}
 
-    private static void checkOraConn(IDbConnection pConn) {
+    private static void _checkOraConn(IDbConnection pConn) {
       if(pConn == null)
         throw new EBioException("Не определена сессия!");
       switch(pConn.State) {
@@ -119,17 +119,13 @@ namespace Bio.Helpers.DOA {
       this.Open(this._statement.Connection, timeout);
     }
 
-    private static void setParamsToStatment(OracleCommand oraCmd, CParams prms) {
-      setParamsToStatment(oraCmd, prms, true);
-    }
-
 
     /// <summary>
     /// Вытаскивает из SQL все вызовы хранимых процедур
     /// </summary>
     /// <param name="pSQL"></param>
     /// <returns></returns>
-    private static String[] detectExecsOfStoredPrcs(String pSQL) {
+    private static IEnumerable<string> _detectExecsOfStoredPrcs(String pSQL) {
       const String csDelimiter = "+|+";
       String v_resultStr = null;
       var vr = new Regex(@"\b[\w$]+\b[.]\b[\w$]+\b\s*[(]\s*[$]PRMLIST\s*[)]", RegexOptions.IgnoreCase);
@@ -148,12 +144,12 @@ namespace Bio.Helpers.DOA {
     /// <param name="pkgName"></param>
     /// <param name="objName"></param>
     /// <returns></returns>
-    private static void DetectAutoDBMSParamsParts(String sql, out String pkgName, out String objName) {
+    private static void _detectAutoDBMSParamsParts(String sql, out String pkgName, out String objName) {
       pkgName = Utl.RegexFind(sql, @"\b[\w$]+\b(?=[.])", true);
       objName = Utl.RegexFind(sql, @"(?<=[.])\b[\w$]+\b(?=\s*[(;])", true);
     }
 
-    private static void detectSQLParams1(OracleCommand oraCommand) {
+    private static void _detectSQLParams1(OracleCommand oraCommand) {
       var v_sql = oraCommand.CommandText;
       // Удаляем все строковый константы
       Utl.RegexReplace(ref v_sql, @"(['])(.*?)\1", "", true);
@@ -185,10 +181,10 @@ namespace Bio.Helpers.DOA {
       isParamListAuto = Utl.RegexMatch(v_sql, @"[(]\s*[$]PRMLIST\s*[)]", true).Success;
 
       if(isParamListAuto) {
-        var v_execs = detectExecsOfStoredPrcs(v_sql);
+        var v_execs = _detectExecsOfStoredPrcs(v_sql);
         foreach (var t in v_execs) {
           String v_args = null; String v_pkgName; String v_objName;
-          DetectAutoDBMSParamsParts(t, out v_pkgName, out v_objName);
+          _detectAutoDBMSParamsParts(t, out v_pkgName, out v_objName);
           var v_statement = new OracleCommand(SQLUtils.PrepareSQLForOlacleExecute(_SQL_GET_PARAMS_FROM_DBMS));
           v_statement.Connection = oracleCommand.Connection; 
           try {
@@ -238,7 +234,7 @@ namespace Bio.Helpers.DOA {
 
       if (vOraCmd.CommandType == CommandType.StoredProcedure) {
         String v_pkgName; String v_objName;
-        DetectAutoDBMSParamsParts(vOraCmd.CommandText, out v_pkgName, out v_objName);
+        _detectAutoDBMSParamsParts(vOraCmd.CommandText, out v_pkgName, out v_objName);
         var v_statement = new OracleCommand(SQLUtils.PrepareSQLForOlacleExecute(_SQL_GET_PARAMS_FROM_DBMS));
         v_statement.Connection = vOraCmd.Connection;
         try {
@@ -281,13 +277,13 @@ namespace Bio.Helpers.DOA {
       }
     }
 
-    private static void setParamsToStatment(OracleCommand oraCmd, CParams prms, Boolean overwrite) {
+    private static void _setParamsToStatment(OracleCommand oraCmd, CParams prms, Boolean overwrite = true) {
       OracleParameter v_refCursor = null;
-      setParamsToStatment(oraCmd, prms, overwrite, ref v_refCursor);
+      _setParamsToStatment(oraCmd, prms, overwrite, ref v_refCursor);
     }
 
-    private static void setParamsToStatment(OracleCommand oraCmd, CParams prms, ref OracleParameter refCursor) {
-      setParamsToStatment(oraCmd, prms, true, ref refCursor);
+    private static void _setParamsToStatment(OracleCommand oraCmd, CParams prms, ref OracleParameter refCursor) {
+      _setParamsToStatment(oraCmd, prms, true, ref refCursor);
     }
 
     /// <summary>
@@ -296,15 +292,16 @@ namespace Bio.Helpers.DOA {
     /// <param name="oraCmd"></param>
     /// <param name="prms"></param>
     /// <param name="overwrite"></param>
+    /// <param name="refCursor"></param>
     /// <exception cref="ArgumentNullException"></exception>
-    private static void setParamsToStatment(OracleCommand oraCmd, CParams prms, Boolean overwrite, ref OracleParameter refCursor) {
+    private static void _setParamsToStatment(OracleCommand oraCmd, CParams prms, Boolean overwrite, ref OracleParameter refCursor) {
       oraCmd.BindByName = true;
       if (oraCmd == null)
         throw new ArgumentNullException("oraCmd");
 
 
-      detectSQLParams1(oraCmd);
-      var v_isParamListAuto = false;
+      _detectSQLParams1(oraCmd);
+      Boolean v_isParamListAuto;
       _detectSQLParams2(oraCmd, out v_isParamListAuto);
       _detectSQLParamOutCursor(oraCmd, ref refCursor);
       foreach (OracleParameter v_prm in oraCmd.Parameters) {
@@ -365,15 +362,15 @@ namespace Bio.Helpers.DOA {
       }
     }
 
-    private static void setStatmentToParams(OracleCommand oraCmd, CParams prms) {
+    private static void _setStatmentToParams(OracleCommand oraCmd, CParams prms) {
       if(prms != null) {
-        foreach(OracleParameter vPrm in oraCmd.Parameters) {
-          if((vPrm.Direction == ParameterDirection.Output) ||
-              (vPrm.Direction == ParameterDirection.InputOutput) ||
-                (vPrm.Direction == ParameterDirection.ReturnValue)) {
-            CParam vInPrm = SQLUtils.FindParam(prms, vPrm.ParameterName);
-            if(vInPrm != null) {
-              vInPrm.Value = SQLUtils.OraDbValueAsObject(vPrm.Value);
+        foreach(OracleParameter v_prm in oraCmd.Parameters) {
+          if((v_prm.Direction == ParameterDirection.Output) ||
+              (v_prm.Direction == ParameterDirection.InputOutput) ||
+                (v_prm.Direction == ParameterDirection.ReturnValue)) {
+            var v_inPrm = SQLUtils.FindParam(prms, v_prm.ParameterName);
+            if(v_inPrm != null) {
+              v_inPrm.Value = SQLUtils.OraDbValueAsObject(v_prm.Value);
               //vInPrm.Value = vPrm.Value;
             }
           }
@@ -382,36 +379,36 @@ namespace Bio.Helpers.DOA {
     }
 
     protected static String detectDBName(String connStr) {
-      String vResult = null;
-      IDictionary<String, String> vConnStrs = Utl.ParsConnectionStr(connStr);
-      if (vConnStrs.ContainsKey("Data Source"))
-        vResult = vConnStrs["Data Source"];
-      if (vConnStrs.ContainsKey("User ID"))
-        vResult = (vResult != null) ? vConnStrs["User ID"] + "@" + vResult : vConnStrs["User ID"];
-      return vResult;
+      String v_result = null;
+      var v_connStrs = Utl.ParsConnectionStr(connStr);
+      if (v_connStrs.ContainsKey("Data Source"))
+        v_result = v_connStrs["Data Source"];
+      if (v_connStrs.ContainsKey("User ID"))
+        v_result = (v_result != null) ? v_connStrs["User ID"] + "@" + v_result : v_connStrs["User ID"];
+      return v_result;
     }
 
-    private static void processTimeoutError(IDbConnection conn, Exception ex, String pParams) {
+    private static void processTimeoutError(Exception ex) {
       if ((ex is OracleException) && (((OracleException)ex).Number == 1013))
         throw new EBioSQLTimeout(ex);
     }
 
-    protected virtual void processOpenError(IDbConnection conn, Exception ex, String pParams) {
-      throw new EBioException("[" + detectDBName(conn.ConnectionString) + "] Ошибка при открытии курсора.\r\nСообщение: " + ex.Message + "\r\nSQL: " + this._statement.CommandText + "\r\n" + "Параметры запроса:{" + pParams + "}", ex);
+    protected virtual void throwOpenError(IDbConnection connection, Exception ex, String sql, String @params) {
+      throw new EBioException("[" + detectDBName(connection.ConnectionString) + "] Ошибка при открытии курсора.\r\nСообщение: " + ex.Message + "\r\nSQL: " + sql + "\r\n" + "Параметры запроса:{" + @params + "}", ex);
     }
-    private static void processExecError(IDbConnection conn, Exception ex, String pSQL, String pParams) {
-      throw new EBioException("[" + detectDBName(conn.ConnectionString) + "] Ошибка выполнения запроса к БД.\r\nСообщение: " + ex.Message + "\r\nSQL: " + pSQL + "\r\n" + "Параметры запроса:{" + pParams + "}", ex);
-    }
-
-
-    private void _processOpenError(IDbConnection conn, Exception ex, String pParams) {
-      processTimeoutError(conn, ex, pParams);
-      this.processOpenError(conn, ex, pParams);
+    private static void _throwExecError(IDbConnection connection, Exception ex, String sql, String @params) {
+      throw new EBioException("[" + detectDBName(connection.ConnectionString) + "] Ошибка выполнения запроса к БД.\r\nСообщение: " + ex.Message + "\r\nSQL: " + sql + "\r\n" + "Параметры запроса:{" + @params + "}", ex);
     }
 
-    private static void _processExecError(IDbConnection conn, Exception ex, String pSQL, String pParams) {
-      processTimeoutError(conn, ex, pParams);
-      processExecError(conn, ex, pSQL, pParams);
+
+    private void _processOpenError(IDbConnection connection, Exception ex, String sql, String @params) {
+      processTimeoutError(ex);
+      this.throwOpenError(connection, ex, sql, @params);
+    }
+
+    private static void _processExecError(IDbConnection connection, Exception ex, String sql, String @params) {
+      processTimeoutError(ex);
+      _throwExecError(connection, ex, sql, @params);
     }
 
     /// <summary>
@@ -419,48 +416,42 @@ namespace Bio.Helpers.DOA {
     /// </summary>
     public String LastOpenParamsDebugText { get; private set; }
 
-    private OracleDataReader _openReaderAsSelect(IDbConnection pConn, Int32 timeout) {
-      OracleDataReader rslt = null;
-      this._statement.Connection = (OracleConnection)pConn;
+    private OracleDataReader _openReaderAsSelect(IDbConnection connection, Int32 timeout) {
+      this._statement.Connection = (OracleConnection)connection;
       this._statement.CommandText = SQLUtils.PrepareSQLForOlacleExecute(this.preparedSQL);
       this._statement.CommandTimeout = timeout;
       try {
         this.onBeforeOpen();
         this._statement.Parameters.Clear();
-        setParamsToStatment(this._statement, this._params);
-        this.LastOpenParamsDebugText = bldDbgParamsStr(this._statement);
-        rslt = this._statement.ExecuteReader();
+        _setParamsToStatment(this._statement, this._params);
+        this.LastOpenParamsDebugText = BuildDebugParamsStr(this._statement);
+        var rslt = this._statement.ExecuteReader();
         return rslt;
       } catch (ThreadAbortException ex) {
         throw new EBioSQLBreaked(ex);
       } catch (Exception ex) {
-        this._processOpenError(this._statement.Connection, ex, this.LastOpenParamsDebugText);
+        this._processOpenError(this._statement.Connection, ex, this.preparedSQL, this.LastOpenParamsDebugText);
         return null;
       }
     }
 
-    private OracleDataReader _openReaderAsProcedure(IDbConnection pConn, Int32 timeout) {
-      OracleDataReader rslt = null;
-      this._statement.Connection = (OracleConnection)pConn;
+    private OracleDataReader _openReaderAsProcedure(IDbConnection connection, Int32 timeout) {
+      this._statement.Connection = (OracleConnection)connection;
       this._statement.CommandText = SQLUtils.PrepareSQLForOlacleExecute(this.preparedSQL);
       this._statement.CommandType = CommandType.StoredProcedure;
       this._statement.CommandTimeout = timeout;
       try {
         this.onBeforeOpen();
         this._statement.Parameters.Clear();
-        OracleParameter refCursor = null;
-        setParamsToStatment(this._statement, this._params, ref refCursor);
-        this.LastOpenParamsDebugText = bldDbgParamsStr(this._statement);
+        OracleParameter v_refCursor = null;
+        _setParamsToStatment(this._statement, this._params, ref v_refCursor);
+        this.LastOpenParamsDebugText = BuildDebugParamsStr(this._statement);
         this._statement.ExecuteNonQuery();
-        if (refCursor != null) {
-          rslt = ((OracleRefCursor)refCursor.Value).GetDataReader();
-          return rslt;
-        } else
-          return null;
+        return v_refCursor != null ? ((OracleRefCursor)v_refCursor.Value).GetDataReader() : null;
       } catch (ThreadAbortException ex) {
         throw new EBioSQLBreaked(ex);
       } catch (Exception ex) {
-        this._processOpenError(this._statement.Connection, ex, this.LastOpenParamsDebugText);
+        this._processOpenError(this._statement.Connection, ex, this.preparedSQL, this.LastOpenParamsDebugText);
         return null;
       }
     }
@@ -468,43 +459,60 @@ namespace Bio.Helpers.DOA {
     /// <summary>
     /// Открывает курсор
     /// </summary>
-    /// <param name="pConn"></param>
-    /// <param name="pTrn"></param>
-    public void Open(IDbConnection pConn, Int32 timeout) {
-      checkOraConn(pConn);
-      var cmdType = Utl.DetectCommandType(this.preparedSQL);
-      if (cmdType == CommandType.Text)
-        this._dataReader = this._openReaderAsSelect(pConn, timeout);
-      else
-        this._dataReader = this._openReaderAsProcedure(pConn, timeout);
+    /// <param name="connection"></param>
+    /// <param name="timeout"></param>
+    public void Open(IDbConnection connection, Int32 timeout) {
+      _checkOraConn(connection);
+      var v_cmdType = Utl.DetectCommandType(this.preparedSQL);
+      this._dataReader = v_cmdType == CommandType.Text ? this._openReaderAsSelect(connection, timeout) : this._openReaderAsProcedure(connection, timeout);
       this.curFetchedRowPos = 0;
       this.onAfterOpen();
     }
 
-    public static String bldDbgParamsStr(IDbCommand stmt) {
-      StringBuilder vReslt = new StringBuilder();
-      foreach(OracleParameter vPrm in ((OracleCommand)stmt).Parameters) {
-        String vDir = "(in)";
-        if(vPrm.Direction == ParameterDirection.InputOutput)
-          vDir = "(in out)";
-        else if(vPrm.Direction == ParameterDirection.Output)
-          vDir = "(out)";
-        else if(vPrm.Direction == ParameterDirection.ReturnValue)
-          vDir = "(ret)";
-        vReslt.AppendLine(vPrm.ParameterName + vDir + "[" + vPrm.Value + "]:("+vPrm.DbType+");");
+    /// <summary>
+    /// Строит описание параметров джля отладочой
+    /// </summary>
+    /// <param name="statment"></param>
+    /// <returns></returns>
+    public static String BuildDebugParamsStr(IDbCommand statment) {
+      var v_reslt = new StringBuilder();
+      foreach(OracleParameter v_prm in ((OracleCommand)statment).Parameters) {
+        var v_dir = "(in)";
+        switch (v_prm.Direction) {
+          case ParameterDirection.InputOutput:
+            v_dir = "(in out)";
+            break;
+          case ParameterDirection.Output:
+            v_dir = "(out)";
+            break;
+          case ParameterDirection.ReturnValue:
+            v_dir = "(ret)";
+            break;
+        }
+        v_reslt.AppendLine(v_prm.ParameterName + v_dir + "[" + v_prm.Value + "]:("+v_prm.DbType+");");
       }
         
-      return vReslt.ToString();
+      return v_reslt.ToString();
     }
 
-    public static IDbCommand PrepareCommand(IDbConnection conn, String sql, CParams prms, Int32 timeout) {
-      checkOraConn(conn);
+    /// <summary>
+    /// Создает и подготавливает Command для запуска
+    /// </summary>
+    /// <param name="connection"></param>
+    /// <param name="sql"></param>
+    /// <param name="prms"></param>
+    /// <param name="timeout"></param>
+    /// <returns></returns>
+    /// <exception cref="EBioSQLBreaked"></exception>
+    /// <exception cref="EBioException"></exception>
+    public static IDbCommand PrepareCommand(IDbConnection connection, String sql, CParams prms, Int32 timeout) {
+      _checkOraConn(connection);
       var stmt = new OracleCommand();
       stmt.CommandText = SQLUtils.PrepareSQLForOlacleExecute(sql);
-      stmt.Connection = (OracleConnection)conn;
+      stmt.Connection = (OracleConnection)connection;
       stmt.CommandTimeout = timeout;
       try {
-        SQLCmd.setParamsToStatment(stmt, prms);
+        _setParamsToStatment(stmt, prms);
       } catch (ThreadAbortException ex) {
         throw new EBioSQLBreaked(ex);
       } catch (Exception ex) {
@@ -513,28 +521,20 @@ namespace Bio.Helpers.DOA {
       return stmt;
     }
 
-    //public static IDbCommand PrepareCommand(IDBSession sess, String sql, CParams prms, Int32 timeout) {
-    //  var stmt = new OracleCommand();
-    //  stmt.CommandText = SQLUtils.PrepareSQLForOlacleExecute(sql);
-    //  try {
-    //    stmt.Connection = (OracleConnection)sess.GetConnection();
-    //    stmt.CommandTimeout = timeout;
-    //    //stmt.Connection.Open();
-    //    SQLCmd.setParamsToStatment(stmt, prms);
-    //  } catch(ThreadAbortException) {
-    //    throw;
-    //  } catch(Exception ex) {
-    //    throw new EBioException("Ошибка подготовки запроса к БД.\r\nСообщение: " + ex.Message, ex);
-    //  }
-    //  return stmt;
-    //}
-
-    public static void ExecuteScript(IDbCommand stmt, String pSQL, CParams pParams) {
-      String vDbgPrmsStr = null;
+    /// <summary>
+    /// Запускает скрипт
+    /// </summary>
+    /// <param name="stmt"></param>
+    /// <param name="sql"></param>
+    /// <param name="params"></param>
+    /// <exception cref="EBioSQLBreaked"></exception>
+    /// <exception cref="EBioException"></exception>
+    public static void ExecuteScript(IDbCommand stmt, String sql, CParams @params) {
+      String v_dbgPrmsStr = null;
       try {
-        vDbgPrmsStr = bldDbgParamsStr(stmt);
+        v_dbgPrmsStr = BuildDebugParamsStr(stmt);
         stmt.ExecuteNonQuery();
-        setStatmentToParams((OracleCommand)stmt, pParams);
+        _setStatmentToParams((OracleCommand)stmt, @params);
       } catch(OracleException oe) {
         String msg = String.Empty;
         if((oe.Errors.Count > 0) && (oe.Errors[0].Number == ORAERRCODE_USER_BREAKED))
@@ -543,16 +543,16 @@ namespace Bio.Helpers.DOA {
           if(oe.Errors[i].Number >= ORAERRCODE_APP_ERR_START)
             msg = oe.Errors[i].Message;
         throw new EBioException((String.IsNullOrEmpty(msg)) ? "Ошибка выполнения запроса к БД.\r\nСообщение: " + oe.Message + "\r\n" +
-                              "SQL: " + stmt.CommandText + "\r\n" + "Параметры запроса:{" + (String.IsNullOrEmpty(vDbgPrmsStr) ? ((pParams != null) ? pParams.ToString() : null) : vDbgPrmsStr) + "}" : msg);
+                              "SQL: " + stmt.CommandText + "\r\n" + "Параметры запроса:{" + (String.IsNullOrEmpty(v_dbgPrmsStr) ? ((@params != null) ? @params.ToString() : null) : v_dbgPrmsStr) + "}" : msg);
       } catch(ThreadAbortException ex) {
         throw new EBioSQLBreaked(ex);
       } catch(Exception ex) {
-        _processExecError(stmt.Connection, ex, pSQL, vDbgPrmsStr);
+        _processExecError(stmt.Connection, ex, sql, v_dbgPrmsStr);
       }
     }
 
     /// <summary>
-    /// Выполняет команду к БД
+    /// Запускает скрипт
     /// </summary>
     /// <param name="conn"></param>
     /// <param name="sql"></param>
@@ -563,6 +563,13 @@ namespace Bio.Helpers.DOA {
       ExecuteScript(stmt, sql, prms);
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="sess"></param>
+    /// <param name="sql"></param>
+    /// <param name="prms"></param>
+    /// <param name="timeout"></param>
     public static void ExecuteScript(IDBSession sess, String sql, CParams prms, Int32 timeout) {
       IDbConnection conn = sess.GetConnection();
       try {
@@ -575,74 +582,71 @@ namespace Bio.Helpers.DOA {
     /// <summary>
     /// Вытаскивает ошибку приложения
     /// </summary>
-    /// <param name="pMessage"></param>
+    /// <param name="message"></param>
     /// <returns></returns>
-    public String ExtractOracleApplicationError(String pMessage) {
-      if (pMessage != null) {
-        int vStrtIndx = pMessage.IndexOf("ORA-2");
-        if (vStrtIndx >= 0) {
-          int vEndIndx = pMessage.IndexOf("ORA-", vStrtIndx + 5);
-          String vMsg = pMessage.Substring(vStrtIndx, vEndIndx - vStrtIndx);
-          return "[" + vMsg.Substring(4, 5) + "] " + vMsg.Substring(11);
-        } else
-          return null;
-      } else
-        return null;
+    public String ExtractOracleApplicationError(String message) {
+      if (message != null) {
+        var v_errorCode = Utl.RegexFind(message, @"(?<=ORA-)2\d{4}(?=:.*[^$]*ORA-06512)", true);
+        var v_message = Utl.RegexFind(message, @"(?<=ORA-2\d{4}:).*[^$]*(?=ORA-06512)", true);
+        return String.Format("[{0}] - {1}", v_errorCode, v_message);
+      }
+      return null;
     }
 
     /// <summary>
     /// Выполняет запрос к БД, который возвращает одно значение
     /// </summary>
-    /// <param name="conn"></param>
+    /// <param name="connection"></param>
+    /// <param name="timeout"></param>
     /// <returns></returns>
-    public Object ExecuteScalarSQL(IDbConnection conn, Int32 timeout) {
-      return ExecuteScalarSQL(conn, this.PreparedSQL, this._params, timeout);
+    public Object ExecuteScalarSQL(IDbConnection connection, Int32 timeout) {
+      return ExecuteScalarSQL(connection, this.PreparedSQL, this._params, timeout);
     }
 
     /// <summary>
     /// Выполняет запрос к БД, который возвращает одно значение
     /// </summary>
     /// <param name="sql"></param>
-    /// <param name="conn"></param>
+    /// <param name="connection"></param>
     /// <param name="prms"></param>
+    /// <param name="timeout"></param>
     /// <returns></returns>
-    public static Object ExecuteScalarSQL(IDbConnection conn, String sql, CParams prms, Int32 timeout) {
-      checkOraConn(conn);
+    public static Object ExecuteScalarSQL(IDbConnection connection, String sql, CParams prms, Int32 timeout) {
+      _checkOraConn(connection);
       var stmt = new OracleCommand();
       stmt.CommandText = SQLUtils.PrepareSQLForOlacleExecute(sql);
-			stmt.Connection = (OracleConnection)conn;
+			stmt.Connection = (OracleConnection)connection;
       stmt.CommandTimeout = timeout;
-      String vParamsToDebug = null;
-      Object oR = null;
+      String v_paramsToDebug = null;
+      Object o = null;
 			try{
         stmt.Parameters.Clear();
-        setParamsToStatment(stmt, prms);
-        vParamsToDebug = bldDbgParamsStr(stmt);
-				oR = stmt.ExecuteScalar();
+        _setParamsToStatment(stmt, prms);
+        v_paramsToDebug = BuildDebugParamsStr(stmt);
+				o = stmt.ExecuteScalar();
       } catch(ThreadAbortException ex) {
         throw new EBioSQLBreaked(ex);
       } catch(Exception ex) {
-        _processExecError(stmt.Connection, ex, sql, vParamsToDebug);
+        _processExecError(stmt.Connection, ex, sql, v_paramsToDebug);
 			}
-			return oR;
+			return o;
 		}
 
     /// <summary>
     /// Выполняет запрос к БД, который возвращает одно значение
     /// </summary>
+    /// <param name="sess"></param>
     /// <param name="sql"></param>
-    /// <param name="pConnStr"></param>
-    /// <param name="pParams"></param>
+    /// <param name="prms"></param>
+    /// <param name="timeout"></param>
     /// <returns></returns>
     public static Object ExecuteScalarSQL(IDBSession sess, String sql, CParams prms, Int32 timeout) {
-      Object oR = null;
       var conn = sess.GetConnection();
       try {
-        oR = ExecuteScalarSQL(conn, sql, prms, timeout);
+        return ExecuteScalarSQL(conn, sql, prms, timeout);
       } finally {
         conn.Close();
       }
-      return oR;
     }
 
     /// <summary>
@@ -674,8 +678,9 @@ namespace Bio.Helpers.DOA {
     /// Переоткрывает текущий курсор
     /// </summary>
     /// <param name="conn"></param>
+    /// <param name="timeout"></param>
     public void Refresh(IDbConnection conn, Int32 timeout) {
-      checkOraConn(conn);
+      _checkOraConn(conn);
       this.Close();
       this._statement.Connection = (OracleConnection)conn;
       this._statement.CommandText = SQLUtils.PrepareSQLForOlacleExecute(this.preparedSQL);
@@ -710,7 +715,7 @@ namespace Bio.Helpers.DOA {
           this._statement.Connection.Close();
 			}
 		}
-		
+
     /// <summary>
     /// Переход к следующей записи в текущем курсоре
     /// </summary>
@@ -722,22 +727,18 @@ namespace Bio.Helpers.DOA {
         this.rowValues.Clear();
         if(this._dataReader.Read()) {
           this.curFetchedRowPos++;
-          if((FetchedRowLimit > 0) && (this.curFetchedRowPos > FetchedRowLimit)) {
-            String vIOCode = null;// (this is CSQLCursorBio) ? "{" + (this as CSQLCursorBio).IOCode + "} " : null;
-            String vMsg = "Запрос " + vIOCode + "вернул более " + FetchedRowLimit + " записей. Проверьте параметры запроса.";
-            throw new EBioDOATooMuchRows(vMsg);
+          if((this.curFetchedRowPos > FETCHED_ROW_LIMIT)) {
+            String v_ioCode = null;
+            var v_msg = "Запрос " + v_ioCode + "вернул более " + FETCHED_ROW_LIMIT + " записей. Проверьте параметры запроса.";
+            throw new EBioDOATooMuchRows(v_msg);
           }
-          for (int i = 0; i < this._dataReader.FieldCount; i++) {
-            Object vObj;
-            if (!this._dataReader.IsDBNull(i)) {
-              vObj = SQLUtils.OraDbValueAsObject(this._dataReader.GetOracleValue(i));
-            } else
-              vObj = null;
-            this.rowValues[this._dataReader.GetName(i).ToUpper()] = vObj;
+          for (var i = 0; i < this._dataReader.FieldCount; i++) {
+            Object v_obj = !this._dataReader.IsDBNull(i) ? SQLUtils.OraDbValueAsObject(this._dataReader.GetOracleValue(i)) : null;
+            this.rowValues[this._dataReader.GetName(i).ToUpper()] = v_obj;
           }
           return true;
-        } else
-          return false;
+        }
+        return false;
       } catch(ThreadAbortException) {
         throw;
       } catch(Exception ex) {
@@ -750,26 +751,27 @@ namespace Bio.Helpers.DOA {
     /// IsActive
     /// </summary>
 		public bool IsActive{
-      get{
+      get {
         if(this._dataReader == null)
 			    return false;
-        else
-          return !this._dataReader.IsClosed;
+        return !this._dataReader.IsClosed;
       }
-		}
+    }
 		
     /// <summary>
     /// Ссылка на OracleDataReader курсора
     /// </summary>
     public IDataReader DataReader{
-      get{
+      get {
         if((this._dataReader != null) && (!this._dataReader.IsClosed))
           return this._dataReader;
-        else
-          return null;
+        return null;
       }
     }
 
+    /// <summary>
+    /// ссылка на IDbCommand
+    /// </summary>
     public IDbCommand DbCommand {
       get {
         return this._statement;
@@ -795,30 +797,5 @@ namespace Bio.Helpers.DOA {
     }
 
     internal CSQLGarbageMonitor garbageMonitor = null;
-
-    private void _test() {
-      OracleConnection conn = null;
-      if (conn.State != System.Data.ConnectionState.Open)
-      conn.Open();
-      OracleTransaction transaction = conn.BeginTransaction();
-      OracleCommand cmd = new OracleCommand();
-      //cmd.CommandText = "UDO_P_LOAD_FILES";
-      cmd.CommandType = CommandType.StoredProcedure;
-      cmd.Parameters.Clear();
-      //cmd.Parameters.Add(setParam("dfile_date", file.LastAccessTime));
-      //cmd.Parameters.Add(setParam("nfile_size", file.Length));
-      //cmd.Parameters.Add(setParam("sfile_name", file.Name));
-      //cmd.Parameters.Add(setParam("sfile_path", Path.GetDirectoryName(file.FullName)));
-      //cmd.Parameters.Add(setParam("sLoad_comment", "Загрузка данных службой"));
-      //var v_paramOut = new OracleParameter("ofile_body", OracleDbType.Clob, ParameterDirection.InputOutput);
-      //cmd.Parameters.Add(v_paramOut);
-      //cmd.ExecuteNonQuery();
-      //var v_result = ((OracleClob)v_paramOut.Value);
-      //StreamReader streamreader = new StreamReader(v_result, Encoding.Unicode);
-      //char[] cbuffer = new char[100];
-      //while((actual = streamreader.Read(cbuffer, 0, cbuffer.Length)) >0){
-      //  // тут пишешь cbuffer куда тебе надо : в файл или поток....
-      //}
-    }
-	}
+  }
 }
