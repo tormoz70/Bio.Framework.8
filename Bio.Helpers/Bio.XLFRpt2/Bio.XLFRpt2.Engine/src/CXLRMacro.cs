@@ -9,7 +9,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 	/// <summary>
 	/// 
 	/// </summary>
-	public class CXLRMacro:CDisposableObject{
+	public class CXLRMacro:DisposableObject{
 //private
 		private String FName = null;
     private CParams FParams = null;

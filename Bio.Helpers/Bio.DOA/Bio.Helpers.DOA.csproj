@@ -74,12 +74,12 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="src\CDBSessionFactory.cs" />
-    <Compile Include="src\dbFactory.cs" />
+    <Compile Include="src\DBConnectionFactory.cs" />
     <Compile Include="src\DBSession.cs" />
-    <Compile Include="src\CField.cs" />
+    <Compile Include="src\Field.cs" />
     <Compile Include="src\SQLCmd.cs" />
     <Compile Include="src\SQLCursor.cs" />
-    <Compile Include="src\CSQLGarbageMonitor.cs" />
+    <Compile Include="src\SQLGarbageMonitor.cs" />
     <Compile Include="src\SQLUtils.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -17,7 +17,7 @@ namespace Bio.Helpers.DOA {
   /// Ѕазовый и самый примитивный тип дл€ создани€ курсора
   /// –еализует основные методы дл€ работы с UniDir курсором
   /// </summary>
-	public class SQLCmd:CDisposableObject{
+	public class SQLCmd:DisposableObject{
     private CParams _params;
 
     protected const Int32 ORAERRCODE_APP_ERR_START = 20000; //начало диапазона кодов ошибок приложени€ в Oracle
@@ -88,7 +88,7 @@ namespace Bio.Helpers.DOA {
       }
     }
 
-    protected override void onDispose() {
+    protected override void doOnDispose() {
       try {
         this.Close();
       } catch {}
@@ -796,6 +796,6 @@ namespace Bio.Helpers.DOA {
       }
     }
 
-    internal CSQLGarbageMonitor garbageMonitor = null;
+    internal SQLGarbageMonitor garbageMonitor = null;
   }
 }

@@ -13,7 +13,7 @@ namespace Bio.Framework.Server {
 
 
   public enum TBioLoginState { ssNew, ssLogginIn, ssLoggedOn, ssLoggedOff, ssLoginCanceled, ssLoginError };
-  public partial class CBioSession :CDisposableObject {
+  public partial class BioSession :DisposableObject {
 
     public IBioCfg Cfg { get; private set; }
 
@@ -133,8 +133,8 @@ namespace Bio.Framework.Server {
 
     }
 
-    protected override void onDispose() {
-      base.onDispose();
+    protected override void doOnDispose() {
+      base.doOnDispose();
       this.Cfg.dbSession.KillTransactions();
     }
   }

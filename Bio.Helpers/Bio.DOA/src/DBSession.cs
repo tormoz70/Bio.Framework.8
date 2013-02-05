@@ -99,7 +99,7 @@ namespace Bio.Helpers.DOA {
     /// </summary>
     /// <returns></returns>
     public IDbConnection GetConnection() {
-      return dbFactory.CreateConnection(this._connStr, this._beforeDBConnectCallback, this._afterDBConnectCallback);
+      return DBConnectionFactory.Instance.CreateConnection(this._connStr, this._beforeDBConnectCallback, this._afterDBConnectCallback);
     }
 
     /// <summary>

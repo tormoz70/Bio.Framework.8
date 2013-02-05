@@ -16,7 +16,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 	/// </summary>
   public delegate void DlgOnProgressDataSource(CXLRDataSource pSender, Decimal pPrgPrc);
   
-  public class CXLRDataSource:CDisposableObject{
+  public class CXLRDataSource:DisposableObject{
 //private
 		private CXLReport _owner = null;
     private CXLReportDSConfig _cfg = null;
@@ -41,7 +41,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       this._ds.OnProgress += new DlgOnProgressDataSet(this.doOnProgressDataSet);
     }
 
-    protected override void onDispose() {
+    protected override void doOnDispose() {
       this._ds.Dispose();
       this._ds = null;
       this._charts.Dispose();
@@ -110,19 +110,19 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     }
 
     public void Init(ref Excel.Workbook wb) {
-      Excel.Range vDSRange = CExcelSrv.GetRangeByName(ref wb, this.Cfg.rangeName);
+      Excel.Range vDSRange = ExcelSrv.GetRangeByName(ref wb, this.Cfg.rangeName);
       try {
         if (vDSRange == null)
           throw new Exception(String.Format("Именованный регион \"{0}\" не найден в шаблоне отчета!", this.Cfg.rangeName));
         this._ds.Init(vDSRange);
       } finally {
-        CExcelSrv.nar(ref vDSRange);
+        ExcelSrv.nar(ref vDSRange);
       }
     }
 
     public void BuildReport(ref Excel.Workbook wb, Int32 timeout) {
       this.Owner.writeLogLine("\tbldr:ds:(" + this.Cfg.alias + ") : Старт...");
-      var vDSRange = CExcelSrv.GetRangeByName(ref wb, this.Cfg.rangeName);
+      var vDSRange = ExcelSrv.GetRangeByName(ref wb, this.Cfg.rangeName);
       if(!this.Cfg.rangeName.Equals("none")) {
         this.Owner.writeLogLine("\tbldr:ds:(" + this.Cfg.alias + ") : this.FDS.RootGroup.BuildReport(" + vDSRange + ")...");
         this._ds.RootGroup.BuildReport(vDSRange);

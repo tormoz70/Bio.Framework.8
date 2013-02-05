@@ -160,7 +160,7 @@ using System.Xml;
             break;
           var newRow = vCursor.rqPacket.metaData.CreateNewRow();
           // перебираем все поля одной записи
-          foreach (CField vCur in vCursor.Fields) {
+          foreach (Field vCur in vCursor.Fields) {
             String vFName = vCur.FieldName;
             var vFVal = vCur;
             newRow.Values[vCursor.rqPacket.metaData.indexOf(vFName)] = vCur.AsObject;

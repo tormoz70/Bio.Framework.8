@@ -17,16 +17,16 @@ namespace Bio.Helpers.DOA {
     /// <summary>
     /// Коллекция определений полей в курсоре.
     /// </summary>
-    public List<CField> Fields { get; private set; }
+    public List<Field> Fields { get; private set; }
 
     /// <summary>
     /// Коллекция определений полей первичного ключа в курсоре.
     /// </summary>
-    public SortedList<string, CField> PKFields { get; private set; }
+    public SortedList<string, Field> PKFields { get; private set; }
 
     private void _init() {
-      this.Fields = new List<CField>();
-      this.PKFields = new SortedList<String, CField>();
+      this.Fields = new List<Field>();
+      this.PKFields = new SortedList<String, Field>();
     }
 
     /// <summary>
@@ -63,14 +63,14 @@ namespace Bio.Helpers.DOA {
         int vCurFldId = 1;
         for (int i = 0; i < this.DataReader.FieldCount; i++) {
           String fname = this.DataReader.GetName(i);
-          if (!fname.ToUpper().Equals(CField.FIELD_RNUM)) {
+          if (!fname.ToUpper().Equals(Field.FIELD_RNUM)) {
             if (this.FieldByName(fname) == null) {
               Type ftype = this.DataReader.GetFieldType(i);
               string pkIndex = null;
               int p;
               if ((this._pkFieldsInit != null) && ((p = this._pkFieldsInit.IndexOf(fname.ToUpper())) >= 0))
                 pkIndex = (p + 1).ToString();
-              CField newFld = new CField(this, vCurFldId, fname, ftype, fname, pkIndex);
+              Field newFld = new Field(this, vCurFldId, fname, ftype, fname, pkIndex);
               this.Fields.Add(newFld);
               if (pkIndex != null)
                 this.PKFields.Add(pkIndex, newFld);
@@ -91,19 +91,19 @@ namespace Bio.Helpers.DOA {
       }
     }
 
-    public virtual CField FieldByName(String FieldName) {
+    public virtual Field FieldByName(String FieldName) {
       for (int i = 0; i < this.Fields.Count; i++) {
-        String fldname = ((CField)this.Fields[i]).FieldName;
+        String fldname = ((Field)this.Fields[i]).FieldName;
         if (fldname.ToUpper().Equals(FieldName.ToUpper())) {
-          return (CField)this.Fields[i];
+          return (Field)this.Fields[i];
         }
       }
       return null;
     }
 
-    public CField FieldByNum(int Index) {
+    public Field FieldByNum(int Index) {
       if ((Index >= 0) && (Index < Fields.Count))
-        return (CField)this.Fields[Index];
+        return (Field)this.Fields[Index];
       return null;
     }
 
@@ -112,12 +112,12 @@ namespace Bio.Helpers.DOA {
         String rslt = null;
         if (this.PKFields.Count > 0) {
           if (this.PKFields.Count == 1) {
-            CField cfld = this.PKFields["1"];
+            Field cfld = this.PKFields["1"];
             rslt = cfld.AsString;
           } else {
             for (int i = 0; i < this.PKFields.Count; i++) {
               String vKey = (i + 1).ToString();
-              CField cfld = this.PKFields[vKey];
+              Field cfld = this.PKFields[vKey];
               Utl.AppendStr(ref rslt, "(" + cfld.AsString + ")", "-");
             }
           }
@@ -160,7 +160,7 @@ namespace Bio.Helpers.DOA {
     }
 
     public Object getOraValue(String pFldName) {
-      CField vFld = this.FieldByName(pFldName.ToUpper());
+      Field vFld = this.FieldByName(pFldName.ToUpper());
       if (vFld != null)
         return vFld.AsObject;
       else
@@ -168,7 +168,7 @@ namespace Bio.Helpers.DOA {
     }
 
     public String getOraValueAsString(String pFldName) {
-      CField vFld = this.FieldByName(pFldName.ToUpper());
+      Field vFld = this.FieldByName(pFldName.ToUpper());
       if (vFld != null)
         return vFld.AsString;
       else
@@ -176,7 +176,7 @@ namespace Bio.Helpers.DOA {
     }
 
     public Int64 getOraValueAsInt64(String pFldName) {
-      CField vFld = this.FieldByName(pFldName.ToUpper());
+      Field vFld = this.FieldByName(pFldName.ToUpper());
       if (vFld != null) {
         Decimal vVal = vFld.AsDecimal;
         return (Int64)vVal;
@@ -185,7 +185,7 @@ namespace Bio.Helpers.DOA {
     }
 
     public Double getOraValueAsDouble(String pFldName) {
-      CField vFld = this.FieldByName(pFldName.ToUpper());
+      Field vFld = this.FieldByName(pFldName.ToUpper());
       if (vFld != null) {
         Decimal vVal = vFld.AsDecimal;
         return (Double)vVal;
@@ -194,7 +194,7 @@ namespace Bio.Helpers.DOA {
     }
 
     public DateTime getOraValueAsDateTime(String pFldName) {
-      CField vFld = this.FieldByName(pFldName.ToUpper());
+      Field vFld = this.FieldByName(pFldName.ToUpper());
       if (vFld != null)
         return vFld.AsDateTime;
       else

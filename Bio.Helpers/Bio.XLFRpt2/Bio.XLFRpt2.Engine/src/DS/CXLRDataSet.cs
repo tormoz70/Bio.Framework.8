@@ -18,7 +18,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 	/// </summary>
   public delegate void DlgOnProgressDataSet(CXLRDataSet pSender, Decimal pPrgPrc);
 
-  public class CXLRDataSet:CDisposableObject{
+  public class CXLRDataSet:DisposableObject{
 //private
     private CXLRDataSource FOwner = null;
     //private CXLRDTblFactory FDSTable = null;
@@ -32,7 +32,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 			this.FOwner = pOwner;
     }
 
-    protected override void onDispose() {
+    protected override void doOnDispose() {
       if(this.FRootGroup != null) {
         this.FRootGroup.Dispose();
         this.FRootGroup = null;

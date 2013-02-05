@@ -22,7 +22,7 @@ namespace Bio.Framework.Packets {
     public Boolean hidden { get; set; }
     public Boolean readOnly { get; set; }
     public Int32 pk { get; set; }
-    public CFieldType type { get; set; }
+    public FieldType type { get; set; }
     public Int32 width { get; set; }
     //public String dateFormat { get; set; }
     public String boolVals { get; set; }
@@ -187,11 +187,11 @@ namespace Bio.Framework.Packets {
         fldDef.width = Xml.getAttribute<Int32>(xmlEl, "width", 0);
         fldDef.format = Xml.getAttribute<String>(xmlEl, "format", null);
         if (String.IsNullOrEmpty(fldDef.format)) {
-          if ((fldDef.type == CFieldType.Date) || (fldDef.type == CFieldType.DateUTC))
+          if ((fldDef.type == FieldType.Date) || (fldDef.type == FieldType.DateUTC))
             fldDef.format = "dd.MM.yyyy HH:mm:ss";
-          if (fldDef.type == CFieldType.Int)
+          if (fldDef.type == FieldType.Int)
             fldDef.format = "0";
-          if (fldDef.type == CFieldType.Currency)
+          if (fldDef.type == FieldType.Currency)
             fldDef.format = "#,##0.00 р";
         }
         fldDef.align = jsonUtl.detectAlignment(fldDef.type, xmlEl.GetAttribute("align"));
@@ -205,12 +205,12 @@ namespace Bio.Framework.Packets {
           fldDef.pk = pkIndx;
         //if (fldDef.type == CJsonStoreMetadataFieldType.ftDate)
         //  fldDef.dateFormat = "Y-m-d\\TH:i:s";
-        else if (fldDef.type == CFieldType.Boolean && !String.IsNullOrEmpty(boolVals))
+        else if (fldDef.type == FieldType.Boolean && !String.IsNullOrEmpty(boolVals))
           fldDef.boolVals = boolVals;
-        if (!String.IsNullOrEmpty(defaultVal) && fldDef.type != CFieldType.Date)
-          if (fldDef.type == CFieldType.Boolean)
+        if (!String.IsNullOrEmpty(defaultVal) && fldDef.type != FieldType.Date)
+          if (fldDef.type == FieldType.Boolean)
             fldDef.defaultVal = Utl.Convert2Type<Boolean>(defaultVal);
-          else if (fldDef.type == CFieldType.String)
+          else if (fldDef.type == FieldType.String)
             fldDef.defaultVal = defaultVal;
           else
             fldDef.defaultVal = Utl.Convert2Type<Double>(defaultVal);
@@ -298,11 +298,11 @@ namespace Bio.Framework.Packets {
         fldDef.name = col.ColumnName.ToUpper();
         fldDef.type = jsonUtl.detectFieldType(ftypeHelper.ConvertTypeToStr(col.DataType).ToLower());
         String boolVals = (col.ExtendedProperties.ContainsKey("boolVals")) ? (String)col.ExtendedProperties["boolVals"] : null;
-        if (fldDef.type == CFieldType.Date)
+        if (fldDef.type == FieldType.Date)
           fldDef.format = "Y-m-d\\TH:i:s";
-        else if (fldDef.type == CFieldType.Boolean && !String.IsNullOrEmpty(fldDef.boolVals))
+        else if (fldDef.type == FieldType.Boolean && !String.IsNullOrEmpty(fldDef.boolVals))
           fldDef.boolVals = boolVals;
-        if (col.DefaultValue != DBNull.Value && fldDef.type != CFieldType.Date)
+        if (col.DefaultValue != DBNull.Value && fldDef.type != FieldType.Date)
           fldDef.defaultVal = col.DefaultValue;
         vResult.fields.Add(fldDef);
       }

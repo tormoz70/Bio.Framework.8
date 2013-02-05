@@ -53,15 +53,15 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 
     private Excel.Range getCurColValuesRange(Excel.Worksheet ws, CXLRColDef colDef, String rRng) {
       //if((rRng != null) && (!rRng.Equals(""))) {
-      //  String[] vRngsX = CExcelSrv.ParsColRowRanges(colDef.ColIndex, colDef.ColIndex, rRng);
+      //  String[] vRngsX = ExcelSrv.ParsColRowRanges(colDef.ColIndex, colDef.ColIndex, rRng);
       //  String vRngX = vRngsX[0];
-      //  return CExcelSrv.getRange(ws, vRngX, Type.Missing);
+      //  return ExcelSrv.getRange(ws, vRngX, Type.Missing);
       //} else
         return null;
     }
 
     private void dropGrDataWS(Excel.Workbook wb) {
-      //Excel.Worksheet vCurGrDataWS = CExcelSrv.FindWS(this.DataName, wb);
+      //Excel.Worksheet vCurGrDataWS = ExcelSrv.FindWS(this.DataName, wb);
       //if(vCurGrDataWS != null) {
       //  vCurGrDataWS.Delete();
       //}
@@ -77,7 +77,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 
     private Excel.Worksheet addGrDataWS(Excel.Workbook wb) {
       Excel.Worksheet vCurGrDataWS = null;
-      //vCurGrDataWS = CExcelSrv.FindWS(this.DataName, wb);
+      //vCurGrDataWS = ExcelSrv.FindWS(this.DataName, wb);
       //if(vCurGrDataWS != null)
       //  vCurGrDataWS.Cells.ClearContents();
       //else
@@ -122,7 +122,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     }
 
     private void addXRngToGrData(Excel.Worksheet grWS, Excel.Worksheet dsWS, Excel.Range xRng, CXLRootGroup rootGrp, CXLRColDef xColDef, CXLRColDef yColDef, CXLRColDef zColDef) {
-      //Excel.Range vXRng = CExcelSrv.getRange(grWS, grWS.Cells[1, 2], grWS.Cells[1, xRng.Areas.Count + 1]);
+      //Excel.Range vXRng = ExcelSrv.getRange(grWS, grWS.Cells[1, 2], grWS.Cells[1, xRng.Areas.Count + 1]);
       //for (int i = 1; i <= xRng.Areas.Count; i++) {
       //  Excel.Range vCur = (Excel.Range)xRng.Areas.get_Item(i);
       //  String vLocAddr = ((Excel.Range)vCur.Cells[1, 1]).get_Address(Type.Missing, Type.Missing, Excel.XlReferenceStyle.xlA1, Type.Missing, Type.Missing);
@@ -130,17 +130,17 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       //}
       //String vVal = ((Excel.Range)vXRng.Cells[1, 1]).Value2.ToString();
       //CXLRGroup vCurGroup = rootGrp.FindGroup(xColDef.FieldName, vVal);
-      //Excel.Range[] vDetails = CExcelSrv.ParsColRowRanges(dsWS, yColDef.ColIndex, zColDef.ColIndex, vCurGroup.GetDetailsRangesList());
+      //Excel.Range[] vDetails = ExcelSrv.ParsColRowRanges(dsWS, yColDef.ColIndex, zColDef.ColIndex, vCurGroup.GetDetailsRangesList());
       //vDetails[0].Copy(grWS.Cells[2, 1]);
     }
 
     private void prepareData(CXLRootGroup pRoot) {
       //Excel.Worksheet vDSWS = pRoot.GRTTmplDef.DetailsRng.Worksheet;
       //Excel.Workbook vWB = pRoot.GRTTmplDef.DetailsRng.Application.ActiveWorkbook;
-      //Excel.Chart vActChrt = CExcelSrv.FindChartTempl(this.TemplName, vWB);
-      //Excel.Range vX = CExcelSrv.GetRangeByName(vWB, this.FRngX);
-      //Excel.Range vY = CExcelSrv.GetRangeByName(vWB, this.FRngY);
-      //Excel.Range vZ = CExcelSrv.GetRangeByName(vWB, this.FRngZ);
+      //Excel.Chart vActChrt = ExcelSrv.FindChartTempl(this.TemplName, vWB);
+      //Excel.Range vX = ExcelSrv.GetRangeByName(vWB, this.FRngX);
+      //Excel.Range vY = ExcelSrv.GetRangeByName(vWB, this.FRngY);
+      //Excel.Range vZ = ExcelSrv.GetRangeByName(vWB, this.FRngZ);
       //if(vActChrt != null) {
       //  if(vX == null)
       //    throw new EBioException("ќшибка. " + this.TemplName + " - ќбъ€влена область данных " + this.FRngX + ", котора€ не существует в шаблоне.");
@@ -170,13 +170,13 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       //    if(this.FRngZ != null)
       //      vZDataRng = getCurColValuesRange(vDSWS, vZColDef, vRRng);
       //    if((vXDataRng != null) && (vYDataRng != null)) {
-      //      vXDataRng = CExcelSrv.UnionRanges(vXDataRng, (Excel.Range)vX.Cells[1, 1]);
-      //      vYDataRng = CExcelSrv.UnionRanges(vYDataRng, (Excel.Range)vY.Cells[1, 1]);
+      //      vXDataRng = ExcelSrv.UnionRanges(vXDataRng, (Excel.Range)vX.Cells[1, 1]);
+      //      vYDataRng = ExcelSrv.UnionRanges(vYDataRng, (Excel.Range)vY.Cells[1, 1]);
       //      if(vZDataRng != null)
-      //        vZDataRng = CExcelSrv.UnionRanges(vZDataRng, (Excel.Range)vZ.Cells[1, 1]);
-      //      Excel.Range vDt = CExcelSrv.UnionRanges(vXDataRng, vYDataRng);
+      //        vZDataRng = ExcelSrv.UnionRanges(vZDataRng, (Excel.Range)vZ.Cells[1, 1]);
+      //      Excel.Range vDt = ExcelSrv.UnionRanges(vXDataRng, vYDataRng);
       //      if(vZDataRng != null)
-      //        vDt = CExcelSrv.UnionRanges(vDt, vZDataRng);
+      //        vDt = ExcelSrv.UnionRanges(vDt, vZDataRng);
 
       //      vActChrt.SetSourceData(vDt, Excel.XlRowCol.xlColumns);
       //    }

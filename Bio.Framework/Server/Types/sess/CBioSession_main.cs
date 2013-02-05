@@ -12,7 +12,7 @@ namespace Bio.Framework.Server {
   using Bio.Helpers.Common.Types;
   using Bio.Helpers.Common;
 
-  public partial class CBioSession {
+  public partial class BioSession {
 
     public DateTime CreationDT { get; private set; }
 
@@ -26,7 +26,7 @@ namespace Bio.Framework.Server {
     private Hashtable FIOS = null;
     //private DBSession FDBSession = null;
 
-    public CBioSession(String localPath, String appURL) {
+    public BioSession(String localPath, String appURL) {
 			this.CreationDT = DateTime.Now;
       this.FIOS = new Hashtable();
       this.Cfg = new CBioCfgOra(localPath, appURL);

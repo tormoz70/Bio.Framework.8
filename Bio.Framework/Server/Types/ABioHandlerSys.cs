@@ -61,9 +61,9 @@ namespace Bio.Framework.Server {
     //  //  }
     //  //}
     //  //if(this.BioSession.CurUser != null) {
-    //  //  vResult.Add(CBioSession.csSYS_CURUSERUID_PARAM_NAME, this.BioSession.CurUser.USR_UID);
-    //  //  vResult.Add(CBioSession.csSYS_CURORGUID_PARAM_NAME, this.BioSession.CurUser.ORG_UID);
-    //  //  vResult.Add(CBioSession.csSYS_TITLE_PARAM_NAME, this.BioSession.BioSysTitle);
+    //  //  vResult.Add(BioSession.csSYS_CURUSERUID_PARAM_NAME, this.BioSession.CurUser.USR_UID);
+    //  //  vResult.Add(BioSession.csSYS_CURORGUID_PARAM_NAME, this.BioSession.CurUser.ORG_UID);
+    //  //  vResult.Add(BioSession.csSYS_TITLE_PARAM_NAME, this.BioSession.BioSysTitle);
     //  //}
     //  return vResult;
     //}

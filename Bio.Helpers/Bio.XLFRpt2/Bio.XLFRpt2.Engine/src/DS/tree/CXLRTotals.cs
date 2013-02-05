@@ -62,7 +62,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     private void fillTotalRowData(Excel.Range rngSrc, Object[] buffer) {
       if (rngSrc != null) {
         for (int i = 0; i < buffer.Length; i++)
-          buffer[i] = CExcelSrv.ExtractCellValue(rngSrc.Cells[1, i + 1]);
+          buffer[i] = ExcelSrv.ExtractCellValue(rngSrc.Cells[1, i + 1]);
       }
     }
 		public void FillBuffer(Excel.Worksheet ws, Object[,] buffer){
@@ -88,7 +88,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 			if(vRngSrc != null){
 				int vTtlRowNum = this.Owner.BottomRow;
         Excel.Range vDetailsRng = this.Owner.RootGroup.GRTTmplDef.DetailsRng;
-        Excel.Range vRngDst = CExcelSrv.getRange(vDetailsRng.Worksheet, vDetailsRng.Cells[vTtlRowNum, 1], vDetailsRng.Cells[vTtlRowNum, vDetailsRng.Columns.Count]);
+        Excel.Range vRngDst = ExcelSrv.getRange(vDetailsRng.Worksheet, vDetailsRng.Cells[vTtlRowNum, 1], vDetailsRng.Cells[vTtlRowNum, vDetailsRng.Columns.Count]);
 				vRngSrc.Copy(Type.Missing);
 				vRngDst.PasteSpecial(Excel.XlPasteType.xlPasteFormats, Excel.XlPasteSpecialOperation.xlPasteSpecialOperationNone, false, false);
 				// Копируем значения из формата totals для колонок, которые не являются тоталами.
@@ -106,7 +106,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       if (vRngSrc != null) {
         var vTtlRowNum = this.Owner.BottomRow;
         var vDetailsRng = this.Owner.RootGroup.GRTTmplDef.DetailsRng;
-        var vRngDst = CExcelSrv.getRange(vDetailsRng.Worksheet, vDetailsRng.Cells[vTtlRowNum, 1], vDetailsRng.Cells[vTtlRowNum, vDetailsRng.Columns.Count]);
+        var vRngDst = ExcelSrv.getRange(vDetailsRng.Worksheet, vDetailsRng.Cells[vTtlRowNum, 1], vDetailsRng.Cells[vTtlRowNum, vDetailsRng.Columns.Count]);
         for (int i = 2; i <= vRngDst.Columns.Count; i++) {
           if (this.Owner.RootGroup.ColDefs[i - 1] != null) {
             if ((this.Owner.RootGroup.ColDefs[i - 1].TTLType == XLRTTLType.xttFormula) &&

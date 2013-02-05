@@ -15,7 +15,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 	/// 
 	/// </summary>
 	
-	public class CXLRGroups:CDisposableObject{
+	public class CXLRGroups:DisposableObject{
 //private
 		private CXLRDataSet FOwner = null;
 		private CXLRGroup FParentGroup = null;
@@ -29,7 +29,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 			this.FGroups = new List<CXLRGroup>();
 		}
 
-		protected override void onDispose(){
+		protected override void doOnDispose(){
 			foreach(var vGrp in this.FGroups)
 				vGrp.Dispose();
 			this.FGroups.Clear();

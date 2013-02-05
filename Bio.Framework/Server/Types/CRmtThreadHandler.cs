@@ -19,7 +19,7 @@ namespace Bio.Framework.Server {
   /// </summary>
   public class CRmtThreadHandler {
 
-    public CBioSession bioSess { get; private set; }
+    public BioSession bioSess { get; private set; }
     public HttpContext context { get; private set; }
     public String contentType { get; private set; }
     public String appURL { get; private set; }
@@ -28,7 +28,7 @@ namespace Bio.Framework.Server {
     public CParams bioParams { get; private set; }
     public String instanceUID { get; protected set; }
 
-    public CRmtThreadHandler(CBioSession bioSess, String contentType, String instanceUID) {
+    public CRmtThreadHandler(BioSession bioSess, String contentType, String instanceUID) {
       this.bioSess = bioSess;
       this.context = this.bioSess.CurBioHandler.Context;
       this.contentType = contentType;

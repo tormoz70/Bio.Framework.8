@@ -1,12 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.ComponentModel;
-using Bio.Helpers.Common.Types;
-using System.Collections;
-using System.Collections.ObjectModel;
-
 
 namespace Bio.Helpers.Common {
 
@@ -22,7 +15,10 @@ namespace Bio.Helpers.Common {
     public Type[] FromNetTypes { get; private set; }
   }
 
-  public enum CFieldType {
+  /// <summary>
+  /// Тип поля данных
+  /// </summary>
+  public enum FieldType {
 
     [Mapping("string", typeof(String), null)]
     String      = 0x0000,
@@ -65,7 +61,7 @@ namespace Bio.Helpers.Common {
     /// <exception cref="ArgumentException">Возбуждается, если тип не может быть преобразован.</exception>
     public static Type ConvertStrToType(String xmlName) {
       if (!String.IsNullOrEmpty(xmlName)) {
-        foreach(var fi in typeof(CFieldType).GetFields()) {
+        foreach(var fi in typeof(FieldType).GetFields()) {
           var attr = enumHelper.GetAttributeByField<MappingAttribute>(fi);
           if((attr != null) && (attr.XmlName.Equals(xmlName)))
             return attr.ToNetType;
@@ -83,7 +79,7 @@ namespace Bio.Helpers.Common {
     public static String ConvertTypeToStr(Type type) {
 
       if (type != null) {
-        foreach (var fi in typeof(CFieldType).GetFields()) {
+        foreach (var fi in typeof(FieldType).GetFields()) {
           var attr = enumHelper.GetAttributeByField<MappingAttribute>(fi);
           if (attr != null) {
             if (((attr.FromNetTypes != null) && attr.FromNetTypes.Any(t => t.Equals(type))) ||
@@ -95,13 +91,13 @@ namespace Bio.Helpers.Common {
       throw new ArgumentException("Невозможно преобразовать тип \"" + type + "\".", "type");
     }
 
-    public static CFieldType ConvertStrToFType(String xmlName) {
+    public static FieldType ConvertStrToFType(String xmlName) {
       //return enumHelper.GetFieldValueByDescAttr<FTypeMap>(type, StringComparison.CurrentCultureIgnoreCase);
       if (!String.IsNullOrEmpty(xmlName)) {
-        foreach (var fi in typeof(CFieldType).GetFields()) {
+        foreach (var fi in typeof(FieldType).GetFields()) {
           var attr = enumHelper.GetAttributeByField<MappingAttribute>(fi);
           if ((attr != null) && (attr.XmlName.Equals(xmlName)))
-            return (CFieldType)fi.GetValue(null);
+            return (FieldType)fi.GetValue(null);
         }
       }
       throw new ArgumentException("Невозможно преобразовать тип \"" + xmlName + "\".", "xmlName");
@@ -114,7 +110,7 @@ namespace Bio.Helpers.Common {
     /// <param name="type">Имя типа.</param>
     /// <returns>Объект, соответствующий входному имени типа.</returns>
     /// <exception cref="ArgumentException">Возбуждается, если тип не может быть преобразован.</exception>
-    public static Type ConvertFTypeToType(CFieldType type) {
+    public static Type ConvertFTypeToType(FieldType type) {
       return enumHelper.GetAttributeByValue<MappingAttribute>(type).ToNetType;
     }
 
@@ -123,7 +119,7 @@ namespace Bio.Helpers.Common {
     /// </summary>
     /// <param name="xmlName"></param>
     /// <returns></returns>
-    public static CFieldType ConvertTypeToFType(Type type) {
+    public static FieldType ConvertTypeToFType(Type type) {
       return ConvertStrToFType(ConvertTypeToStr(type));
     }
 

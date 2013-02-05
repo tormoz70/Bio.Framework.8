@@ -1,3 +1,5 @@
+using Bio.Helpers.Common;
+
 namespace Bio.Helpers.XLFRpt2.Engine {
 
   using System;
@@ -35,10 +37,10 @@ namespace Bio.Helpers.XLFRpt2.Engine {
   /// <summary>
   /// 
   /// </summary>
-  public delegate void CXLRDTblFactoryOnOpenEveHandler(CXLRDataFactory sender, IDictionary<String, CFieldType> cols);
+  public delegate void CXLRDTblFactoryOnOpenEveHandler(CXLRDataFactory sender, IDictionary<String, FieldType> cols);
   public delegate void CXLRDTblFactoryOnFetchEveHandler(CXLRDataFactory sender, IList row);
   public delegate void CXLRDTblFactoryOnEOFEveHandler(CXLRDataFactory sender);
-  public abstract class CXLRDataFactory : CDisposableObject {
+  public abstract class CXLRDataFactory : DisposableObject {
     /// <summary>
     /// Происходит сразу после открытия
     /// </summary>
@@ -61,7 +63,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     /// Реализует инициализацию курсора
     /// </summary>
     /// <returns>Метаданные курсора</returns>
-    protected abstract IDictionary<String, CFieldType> open(IDbConnection conn, CXLReportDSConfig dsCfg, Int32 timeout);
+    protected abstract IDictionary<String, FieldType> open(IDbConnection conn, CXLReportDSConfig dsCfg, Int32 timeout);
     /// <summary>
     /// Реализует передвижение на следующую запись курсора
     /// </summary>
@@ -75,7 +77,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     public abstract IDbCommand PrepareCmd(IDbConnection conn, String cmd, CParams prms, Int32 timeout);
     public abstract void ExecCmd(IDbCommand cmd);
 
-    private IDictionary<String, CFieldType> FColDefs = null;
+    private IDictionary<String, FieldType> FColDefs = null;
     private IList FCurRow = null;
     /// <summary>
     /// Открывает курсор, инициализирует и переходит в начало.

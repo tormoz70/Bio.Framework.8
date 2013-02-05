@@ -13,7 +13,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
   using System.Security.AccessControl;
 #endif
 
-  public partial class CExcelSrv:CDisposableObject {
+  public partial class ExcelSrv:DisposableObject {
 
     //public static Mutex MutexExcelApp = new Mutex();
 

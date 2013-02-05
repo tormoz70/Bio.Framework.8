@@ -38,7 +38,7 @@ namespace Bio.Framework.Server {
       for(int i = 0; i < vBioSelItemVals.Length; i++) {
         String vKey = "" + (i + 1);
         if(pCur.PKFields.ContainsKey(vKey)) {
-          CField vPKFld = (CField)pCur.PKFields[vKey];
+          Field vPKFld = (Field)pCur.PKFields[vKey];
           vRslt.Add(vPKFld.FieldName, vBioSelItemVals[i], vPKFld);
         }
       }
@@ -93,7 +93,7 @@ namespace Bio.Framework.Server {
       foreach(var pk in this.PKs) {
         String oneCond = null;
         foreach(var fldItem in ((CParams)pk.InnerObject)) {
-          var fld = (CField)fldItem.InnerObject;
+          var fld = (Field)fldItem.InnerObject;
           Utl.AppendStr(ref oneCond, fld.FieldName + " = " + ":" + fld.FieldName + "", " and ");
           cursor.Params.Add(fld.FieldName, fldItem.Value);
         }

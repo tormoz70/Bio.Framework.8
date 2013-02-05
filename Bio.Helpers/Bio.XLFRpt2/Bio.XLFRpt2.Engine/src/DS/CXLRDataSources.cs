@@ -15,7 +15,7 @@ using System.Collections.Generic;
 	/// 
 	/// </summary>
 
-	public class CXLRDataSources:CDisposableObject{
+	public class CXLRDataSources:DisposableObject{
 //private
 		private XmlElement FXMLDoc = null;
 		private CXLReport FOwner = null;
@@ -32,7 +32,7 @@ using System.Collections.Generic;
 			}
 		}
 
-		protected override void onDispose(){
+		protected override void doOnDispose(){
 			foreach(var ds in this.FDSs)
 				ds.Dispose();
 		}

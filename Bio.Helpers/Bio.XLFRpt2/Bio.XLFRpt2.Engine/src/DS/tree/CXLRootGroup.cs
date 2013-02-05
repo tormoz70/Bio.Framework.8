@@ -90,9 +90,9 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       if(this.GRTTmplDef.DetailsRng == null)
         throw new EBioException("Для построения отчета небходимо пометить строку \"details\".");
       for(int i = 1; i <= this.GRTTmplDef.DetailsRng.Columns.Count; i++) {
-        String vCurColDefVal = CExcelSrv.ExtractCellValue(this.GRTTmplDef.DetailsRng.Cells[1, i]);
+        String vCurColDefVal = ExcelSrv.ExtractCellValue(this.GRTTmplDef.DetailsRng.Cells[1, i]);
         bool vIsSysCol = ((vCurColDefVal != null) && (vCurColDefVal.Length > 3) && vCurColDefVal.Substring(1, 3).Equals("sys"));
-        String vCurColFldName = CExcelSrv.ExtractFieldName(vCurColDefVal);
+        String vCurColFldName = ExcelSrv.ExtractFieldName(vCurColDefVal);
         if(vCurColFldName == null) {
           if(i == 1)
             vCurColFldName = CXLRootGroup.csFirstColID;
@@ -104,7 +104,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         var vTTLCalcType = XLRTTLCalcType.xctFormula;
         if(this.GRTTmplDef.TotalsRng != null) {
           var v_cellVal = this.GRTTmplDef.TotalsRng.Cells[1, i];
-          vCurColTTLDefVal = CExcelSrv.ExtractCellValue(v_cellVal);
+          vCurColTTLDefVal = ExcelSrv.ExtractCellValue(v_cellVal);
           if(!String.IsNullOrEmpty(vCurColTTLDefVal)) {
             if (vCurColTTLDefVal.Equals("sum") || 
                 vCurColTTLDefVal.Equals("cnt") || 
@@ -117,7 +117,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
             else if (vCurColTTLDefVal[0] == '=') {
               vTTLType = XLRTTLType.xttFormula;
               var fkey = "ttlsFolmula-" + i; // this._ttlsFolmulas.Count;
-              //CExcelSrv.SetCellValue(v_cellVal, fkey);
+              //ExcelSrv.SetCellValue(v_cellVal, fkey);
               //this._ttlsFolmulas.Add(fkey, vCurColTTLDefVal);
               vCurColTTLDefVal = fkey;
             }
@@ -290,7 +290,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         vNewRow.EntireRow.Insert(Type.Missing, Type.Missing);
         vNewRow = (Excel.Range)this.GRTTmplDef.DetailsRng.Rows[2, Type.Missing];
         this.GRTTmplDef.DetailsRng.Copy(vNewRow);
-        this.GRTTmplDef.DetailsRng = CExcelSrv.UnionRanges(this.GRTTmplDef.DetailsRng, vNewRow);
+        this.GRTTmplDef.DetailsRng = ExcelSrv.UnionRanges(this.GRTTmplDef.DetailsRng, vNewRow);
         return vNewRow;
       } else
         return null;
@@ -305,7 +305,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       for (int i = 1; i <= rng.Rows.Count; i++) {
         String footerDef = ((Excel.Range)rng.Rows[i].Cells[1, 1]).Value2.ToString();
         if (String.Equals(footerDef, CXLRTemplateDef.csGrpFooterDef + "=" + this.Owner.Owner.Cfg.alias + "_" + name, StringComparison.CurrentCultureIgnoreCase)) {
-          return CExcelSrv.getRange(rng.Worksheet, rng.Rows[i].Cells[1, 1], rng.Rows[i].Cells[1, rng.Columns.Count]);
+          return ExcelSrv.getRange(rng.Worksheet, rng.Rows[i].Cells[1, 1], rng.Rows[i].Cells[1, rng.Columns.Count]);
         }
       }
       return null;
@@ -325,7 +325,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
             this.OwnerReport.RptDefinition.TemplateFileName, this.Owner.Owner.Cfg.maxRowsLimit, rowCount));
         var vRow = this.addFirstRow();
         if (vRow != null)
-          CExcelSrv.getRange(vRow.Worksheet, "IV" + vRow.Row, "IV" + (rowCount + vRow.Row - 2)).EntireRow.Insert(Excel.XlInsertShiftDirection.xlShiftDown, Type.Missing);
+          ExcelSrv.getRange(vRow.Worksheet, "IV" + vRow.Row, "IV" + (rowCount + vRow.Row - 2)).EntireRow.Insert(Excel.XlInsertShiftDirection.xlShiftDown, Type.Missing);
       }
 		}
 
@@ -347,7 +347,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 			for(int i=1; i<this.ColDefs.Count; i++){
 				if(this.ColDefs[i].FieldName.Equals(CXLRootGroup.csFolmulaFieldID)){
           var v_dtrl = this.GetDetailsRangesList();
-          var vInsRange = CExcelSrv.ParsColRowRanges(lastRow.Worksheet, this.ColDefs[i].ColIndex, this.ColDefs[i].ColIndex, v_dtrl);
+          var vInsRange = ExcelSrv.ParsColRowRanges(lastRow.Worksheet, this.ColDefs[i].ColIndex, this.ColDefs[i].ColIndex, v_dtrl);
           //var vFrmla = (Excel.Range)pLastRow.Cells[1, this.ColDefs[i].ColIndex];
           if (vInsRange.Length > 0) {
             var vFrmla = (Excel.Range)vInsRange[0].Cells[1, 1];
@@ -392,7 +392,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         this.FillBuffer(dsRange.Worksheet, vBuffer);
         this.Owner.Owner.Owner.writeLogLine("\tbldr:root-grp:(" + this.Owner.Owner.Cfg.alias + ") : FillBuffer - OK.");
         //throw new Exception("Test!!!");
-        Excel.Range vInsRng = CExcelSrv.getRange(this.GRTTmplDef.DetailsRng.Worksheet,
+        Excel.Range vInsRng = ExcelSrv.getRange(this.GRTTmplDef.DetailsRng.Worksheet,
                               this.GRTTmplDef.DetailsRng.Cells[1, 1],
                               this.GRTTmplDef.DetailsRng.Cells[this.GRTTmplDef.DetailsRng.Rows.Count, this.GRTTmplDef.DetailsRng.Columns.Count]);
         if (ownerRptDef.DebugIsOn) {
@@ -413,7 +413,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 
           vInsRng.FormulaLocal = vBuffer;
           if (this.Owner.PrepareDataError != null) {
-            Excel.Range vInsErrRng = CExcelSrv.getRange(this.GRTTmplDef.DetailsRng.Worksheet,
+            Excel.Range vInsErrRng = ExcelSrv.getRange(this.GRTTmplDef.DetailsRng.Worksheet,
                                   this.GRTTmplDef.DetailsRng.Cells[this.GRTTmplDef.DetailsRng.Rows.Count+1, 1],
                                   this.GRTTmplDef.DetailsRng.Cells[this.GRTTmplDef.DetailsRng.Rows.Count+1, 1]);
             vInsErrRng.FormulaLocal = this.Owner.PrepareDataError.Message;
@@ -452,7 +452,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     }
 
 		public Excel.Range[] GetGroupKeysRng(Excel.Worksheet pWS, CXLRColDef pGroupFieldDef){
-      return CExcelSrv.ParsColRowRanges(pWS, pGroupFieldDef.ColIndex, pGroupFieldDef.ColIndex, this.GetKeysRangesList(pGroupFieldDef.FieldName));
+      return ExcelSrv.ParsColRowRanges(pWS, pGroupFieldDef.ColIndex, pGroupFieldDef.ColIndex, this.GetKeysRangesList(pGroupFieldDef.FieldName));
 		}
 
 	}

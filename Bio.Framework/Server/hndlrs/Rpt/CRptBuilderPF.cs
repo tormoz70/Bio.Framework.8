@@ -20,7 +20,7 @@
   //}
 
   //class CRptBuilderPF {
-  //  private CBioSession FSess = null;
+  //  private BioSession FSess = null;
   //  private String FRptCode = null;
   //  private String FRptFile = null;
   //  private String FTmpFileName = null;
@@ -30,7 +30,7 @@
   //  private String FRptLogPath = null;
   //  //private ExportFormatType FExpType = ExportFormatType.PortableDocFormat;
 
-  //  public CRptBuilderPF(CBioSession pSess, String pRptCode) {
+  //  public CRptBuilderPF(BioSession pSess, String pRptCode) {
   //    this.FSess = pSess;
   //    this.FRptCode = pRptCode;
   //    this.FRptFile = this.FSess.IniPath + this.FRptCode.Replace(".", "\\") + ".xml";

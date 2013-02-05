@@ -14,7 +14,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 	/// <summary>
 	/// 
 	/// </summary>
-	public class CXLRSQLScript:CDisposableObject{
+	public class CXLRSQLScript:DisposableObject{
 //private
 		private CXLReport FOwner = null;
     private IDbCommand FCurrentCmd = null;
@@ -58,7 +58,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         if(this.FOwner.RptDefinition.DebugIsOn){
           if(prdFileNameDebug != null){
             Directory.CreateDirectory(Path.GetDirectoryName(prdFileNameDebug));
-            CStrFile.SaveStringToFile(prdFileNameDebug, sql, null); 
+            StrFile.SaveStringToFile(prdFileNameDebug, sql, null); 
           }
         }
         this.FCurrentCmd = this.FOwner.DataFactory.PrepareCmd(this.FOwner.currentDbConnection, sql, this.Owner.RptDefinition.InParams, 60 * 15);

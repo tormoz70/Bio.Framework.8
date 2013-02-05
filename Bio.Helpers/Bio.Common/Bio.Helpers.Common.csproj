@@ -104,9 +104,9 @@
       <DependentUpon>msgBx.cs</DependentUpon>
     </Compile>
     <Compile Include="types\OraDTParser.cs" />
-    <Compile Include="types\CDisposableObject.cs" />
+    <Compile Include="types\DisposableObject.cs" />
     <Compile Include="types\CEventLog.cs" />
-    <Compile Include="types\CStrFile.cs" />
+    <Compile Include="types\StrFile.cs" />
     <Compile Include="types\SmtpCfg.cs" />
     <Compile Include="utl\ajaxUTL.cs" />
     <Compile Include="utl\ftypeHelper.cs" />

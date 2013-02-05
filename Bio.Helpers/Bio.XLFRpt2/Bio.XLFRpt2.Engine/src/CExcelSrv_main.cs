@@ -15,7 +15,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 #endif
   using Bio.Helpers.XLFRpt2.Engine.XLRptParams;
 
-  public partial class CExcelSrv:CDisposableObject {
+  public partial class ExcelSrv:DisposableObject {
 
     //private
 		private	Excel.Application FExcel;
@@ -127,13 +127,13 @@ retry_save:
 		//constructor
 
     
-    public CExcelSrv(Excel.Application pExcelInst) {
+    public ExcelSrv(Excel.Application pExcelInst) {
       this.FOutterExcel = pExcelInst;
       this.FExcel = null;
       this.FWorkbook = null;
 		}
 		//destructor
-		protected override void onDispose(){
+		protected override void doOnDispose(){
       this.FOutterExcel = null;
       this.FExcel = null;
 		}
@@ -150,7 +150,7 @@ retry_save:
         if (vModule == null)
           this.FWorkbook.VBProject.VBComponents.Remove(vModule);
       } catch (Exception ex) {
-        String vWarningFile = pLogPath + "CExcelSrv.dropModule.wrn";
+        String vWarningFile = pLogPath + "ExcelSrv.dropModule.wrn";
         Utl.SaveStringToFile(vWarningFile, ex.ToString(), null);
       }
     }
@@ -168,7 +168,7 @@ retry_save:
             i++;
         }
       } catch (Exception ex) {
-        String vWarningFile = pLogPath + "CExcelSrv.dropAllModules.wrn";
+        String vWarningFile = pLogPath + "ExcelSrv.dropAllModules.wrn";
         Utl.SaveStringToFile(vWarningFile, ex.ToString(), null);
       }
     }

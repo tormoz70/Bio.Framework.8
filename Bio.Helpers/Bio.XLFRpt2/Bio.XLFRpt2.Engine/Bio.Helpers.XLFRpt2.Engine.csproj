@@ -155,7 +155,7 @@
     <Compile Include="src\DS\tree\CXLRCols.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\DS\tree\CXLRDetails.cs">
+    <Compile Include="src\DS\tree\XLRDetails.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\DS\tree\CXLRGroup.cs">

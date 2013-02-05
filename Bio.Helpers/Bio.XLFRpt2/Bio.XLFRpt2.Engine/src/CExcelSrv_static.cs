@@ -12,7 +12,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 using Bio.Helpers.Common;
 #endif
 
-  public partial class CExcelSrv:CDisposableObject {
+  public partial class ExcelSrv:DisposableObject {
 
 		public const String xlrModuleName = "XLRTmpModule";
     public const char csRowRangesListDelimeter = ';';
@@ -38,17 +38,17 @@ using Bio.Helpers.Common;
     public static String[] ParsColRowRanges(int colBegin, int colEnd, String rowRangesList) {
       String[] vRslt = new String[0];
       if((rowRangesList != null) && (!rowRangesList.Equals(""))) {
-        String[] vRowRanges = Bio.Helpers.Common.Utl.SplitString(rowRangesList, CExcelSrv.csRowRangesListDelimeter);
-        int vRangsCount = CExcelSrv.CalcRangesGroupCount(vRowRanges.Length);
+        String[] vRowRanges = Bio.Helpers.Common.Utl.SplitString(rowRangesList, ExcelSrv.csRowRangesListDelimeter);
+        int vRangsCount = ExcelSrv.CalcRangesGroupCount(vRowRanges.Length);
         vRslt = new String[vRangsCount];
         int vCurResultIndex = 0;
         for(int i = 0; i < vRowRanges.Length; i++) {
-          if(i >= (CExcelSrv.ciMaxUnionRangesCount * (vCurResultIndex + 1))) vCurResultIndex++;
-          String vRng = CExcelSrv.BuldRngFromCoord(colBegin, colEnd, vRowRanges[i]);
+          if(i >= (ExcelSrv.ciMaxUnionRangesCount * (vCurResultIndex + 1))) vCurResultIndex++;
+          String vRng = ExcelSrv.BuldRngFromCoord(colBegin, colEnd, vRowRanges[i]);
           if(vRslt[vCurResultIndex] == null)
             vRslt[vCurResultIndex] = vRng;
           else
-            vRslt[vCurResultIndex] += new String(CExcelSrv.csRowRangesListDelimeter, 1) + vRng;
+            vRslt[vCurResultIndex] += new String(ExcelSrv.csRowRangesListDelimeter, 1) + vRng;
         }
       }
       return vRslt;
@@ -65,11 +65,11 @@ using Bio.Helpers.Common;
     public static Excel.Range[] ParsColRowRanges(Excel.Worksheet ws, int colBegin, int colEnd, String rowRangesList) {
       if((rowRangesList != null) && (!rowRangesList.Equals(""))) {
         String[] vRowRanges = Bio.Helpers.Common.Utl.SplitString(rowRangesList, ';');
-        int vRangsCount = CExcelSrv.CalcRangesGroupCount(vRowRanges.Length);
+        int vRangsCount = ExcelSrv.CalcRangesGroupCount(vRowRanges.Length);
         Excel.Range[] vRslt = new Excel.Range[vRangsCount];
         int vCurResultIndex = 0;
         for(int i = 0; i < vRowRanges.Length; i++) {
-          if(i >= (CExcelSrv.ciMaxUnionRangesCount * (vCurResultIndex + 1))) vCurResultIndex++;
+          if(i >= (ExcelSrv.ciMaxUnionRangesCount * (vCurResultIndex + 1))) vCurResultIndex++;
           String[] vCurRangeArr = Bio.Helpers.Common.Utl.SplitString(vRowRanges[i], ':');
           int vStrtRow = Int32.Parse(vCurRangeArr[0]);
           int vEndRow = Int32.Parse(vCurRangeArr[1]);
@@ -83,7 +83,7 @@ using Bio.Helpers.Common;
           if (vRslt[vCurResultIndex] == null)
             vRslt[vCurResultIndex] = vCurRng;
           else
-            vRslt[vCurResultIndex] = CExcelSrv.UnionRanges(vRslt[vCurResultIndex], vCurRng);
+            vRslt[vCurResultIndex] = ExcelSrv.UnionRanges(vRslt[vCurResultIndex], vCurRng);
         }
         //vRslt[vCurResultIndex].Formula = "FTW:"+vRslt[vCurResultIndex].Count;
         return vRslt;
@@ -92,26 +92,26 @@ using Bio.Helpers.Common;
     }
 
     public static int CalcRangesGroupCount(int rangLength) {
-      int vRangsCount = Decimal.ToInt32((new Decimal(rangLength) / new Decimal(CExcelSrv.ciMaxUnionRangesCount)));
-      if(CExcelSrv.ciMaxUnionRangesCount * vRangsCount < rangLength)
+      int vRangsCount = Decimal.ToInt32((new Decimal(rangLength) / new Decimal(ExcelSrv.ciMaxUnionRangesCount)));
+      if(ExcelSrv.ciMaxUnionRangesCount * vRangsCount < rangLength)
         vRangsCount++;
       return vRangsCount;
     }
     public static String[] ParsColRowRanges4Root(int colBegin, int colEnd, String rowRangesList) {
       if((rowRangesList != null) && (!rowRangesList.Equals(""))) {
-        String[] vRowRanges = Bio.Helpers.Common.Utl.SplitString(rowRangesList, CExcelSrv.csRowRangesListDelimeter);
+        String[] vRowRanges = Bio.Helpers.Common.Utl.SplitString(rowRangesList, ExcelSrv.csRowRangesListDelimeter);
         String vRngFirst = vRowRanges[0];
         String vRngLast = vRowRanges[vRowRanges.Length - 1];
-        String[] vRngFirstArr = Bio.Helpers.Common.Utl.SplitString(vRngFirst, CExcelSrv.csRowRangetDelimeter);
-        String[] vRngLastArr = Bio.Helpers.Common.Utl.SplitString(vRngLast, CExcelSrv.csRowRangetDelimeter);
+        String[] vRngFirstArr = Bio.Helpers.Common.Utl.SplitString(vRngFirst, ExcelSrv.csRowRangetDelimeter);
+        String[] vRngLastArr = Bio.Helpers.Common.Utl.SplitString(vRngLast, ExcelSrv.csRowRangetDelimeter);
         String vRngCommon = null;
         if((vRngFirstArr.Length == 2) && (vRngLastArr.Length == 2)) {
-          vRngCommon = vRngFirstArr[0] + CExcelSrv.csRowRangetDelimeter + vRngLastArr[1];
+          vRngCommon = vRngFirstArr[0] + ExcelSrv.csRowRangetDelimeter + vRngLastArr[1];
         }
         if(vRngCommon != null) {
           String[] vRslt = new String[2];
-          vRslt[0] = CExcelSrv.BuldRngFromCoord(1, 1, vRngCommon);
-          vRslt[1] = CExcelSrv.BuldRngFromCoord(colBegin, colEnd, vRngCommon);
+          vRslt[0] = ExcelSrv.BuldRngFromCoord(1, 1, vRngCommon);
+          vRslt[1] = ExcelSrv.BuldRngFromCoord(colBegin, colEnd, vRngCommon);
           return vRslt;
         }
       }
@@ -119,20 +119,20 @@ using Bio.Helpers.Common;
     }
     public static String BuldRngFromCoord(int colBegin, int colEnd, String rng) {
       String vRslt = null;
-      String[] vCurRangeArr = Bio.Helpers.Common.Utl.SplitString(rng, CExcelSrv.csRowRangetDelimeter);
+      String[] vCurRangeArr = Bio.Helpers.Common.Utl.SplitString(rng, ExcelSrv.csRowRangetDelimeter);
       String vLTCel = null;
       String vRBCel = null;
       try {
         int vStrtRow = Int32.Parse(vCurRangeArr[0]);
         int vEndRow = Int32.Parse(vCurRangeArr[1]);
-        vLTCel = CExcelSrv.CellA1Str(vStrtRow, colBegin);
-        vRBCel = CExcelSrv.CellA1Str(vEndRow, colEnd);
+        vLTCel = ExcelSrv.CellA1Str(vStrtRow, colBegin);
+        vRBCel = ExcelSrv.CellA1Str(vEndRow, colEnd);
       } catch(Exception ex) {
         vLTCel = "err:" + ex.ToString();
         vRBCel = "err:" + ex.ToString();
       }
       if(!vLTCel.Equals(vRBCel))
-        vRslt = vLTCel + new String(CExcelSrv.csRowRangetDelimeter, 1) + vRBCel;
+        vRslt = vLTCel + new String(ExcelSrv.csRowRangetDelimeter, 1) + vRBCel;
       else
         vRslt = vLTCel;
       return vRslt;
@@ -158,14 +158,14 @@ using Bio.Helpers.Common;
       String vLTCel = null;
       String vRBCel = null;
       try {
-        vLTCel = CExcelSrv.CellA1Str(rng.Row, rng.Column);
-        vRBCel = CExcelSrv.CellA1Str(rng.Row + rng.Rows.Count - 1, rng.Column + rng.Columns.Count - 1);
+        vLTCel = ExcelSrv.CellA1Str(rng.Row, rng.Column);
+        vRBCel = ExcelSrv.CellA1Str(rng.Row + rng.Rows.Count - 1, rng.Column + rng.Columns.Count - 1);
       } catch(Exception ex) {
         vLTCel = "err:" + ex.ToString();
         vRBCel = "err:" + ex.ToString();
       }
       if(!vLTCel.Equals(vRBCel))
-        vRslt = vLTCel + new String(CExcelSrv.csRowRangetDelimeter, 1) + vRBCel;
+        vRslt = vLTCel + new String(ExcelSrv.csRowRangetDelimeter, 1) + vRBCel;
       else
         vRslt = vLTCel;
       return vRslt;
@@ -176,14 +176,14 @@ using Bio.Helpers.Common;
     }
 
     public static void DeleteRange(String pRng, Excel.Worksheet pWS) {
-      Excel.Range vRnd = CExcelSrv.StrToRange(pRng, pWS);
+      Excel.Range vRnd = ExcelSrv.StrToRange(pRng, pWS);
       vRnd.Delete(Type.Missing);
     }
 
     //public static void FreeNames(ref Excel.Workbook wb) {
     //  for (int i = 1; i <= wb.Names.Count; i++) {
     //    var vXName = wb.Names.Item(i, Type.Missing, Type.Missing);
-    //    CExcelSrv.nar(ref vXName);
+    //    ExcelSrv.nar(ref vXName);
     //  }
     //}
 
@@ -198,7 +198,7 @@ using Bio.Helpers.Common;
             //break;
           }
         } finally {
-          CExcelSrv.nar(ref vXName);
+          ExcelSrv.nar(ref vXName);
         }
       }
       return null;

@@ -11,7 +11,7 @@
   //using CrystalDecisions.Shared;
 
   class CRptBuilderCR {
-    private CBioSession FSess = null;
+    private BioSession FSess = null;
     private String FRptCode = null;
     private String FRptFile = null;
     private String FTmpFileName = null;
@@ -21,7 +21,7 @@
     private String FRptLogPath = null;
     //private ExportFormatType FExpType = ExportFormatType.PortableDocFormat;
 
-    public CRptBuilderCR(CBioSession pSess, String pRptCode) {
+    public CRptBuilderCR(BioSession pSess, String pRptCode) {
       this.FSess = pSess;
       this.FRptCode = pRptCode;
       this.FRptFile = this.FSess.Cfg.IniPath + this.FRptCode.Replace(".", "\\") + ".rpt";

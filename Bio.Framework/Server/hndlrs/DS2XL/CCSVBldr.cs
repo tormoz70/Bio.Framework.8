@@ -17,7 +17,7 @@ namespace Bio.Framework.Server {
   /// <summary>
   /// Генератор CSV файлов
   /// </summary>
-  public class CCSVReport:CDisposableObject, IRemoteProcInst {
+  public class CCSVReport:DisposableObject, IRemoteProcInst {
 
     private String _bioCode;
     private HttpContext _context;
@@ -279,7 +279,7 @@ namespace Bio.Framework.Server {
         EBioException ebioex = null;
         if (File.Exists(this._lastErrorFile)) {
           String vErrText = null;
-          CStrFile.LoadStringFromFile(this._lastErrorFile, ref vErrText, null);
+          StrFile.LoadStringFromFile(this._lastErrorFile, ref vErrText, null);
           ebioex = new EBioException(vErrText);
         }
 

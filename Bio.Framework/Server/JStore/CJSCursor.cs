@@ -188,7 +188,7 @@ namespace Bio.Framework.Server {
       Boolean vSorterIsDefined = !String.IsNullOrEmpty(vSort);
       if (vSorterIsDefined) {
         String pks = String.Empty;
-        foreach (CField fld in this.PKFields.Values)
+        foreach (Field fld in this.PKFields.Values)
           pks += ", " + fld.FieldName;
         //vSQL = String.Format(csSortSQLTemplate, vSQL, vSortField + " " + vSortDir, pks);
         vSQL = String.Format(csSortSQLTemplate, vSQL, vSort, pks);
@@ -515,12 +515,12 @@ namespace Bio.Framework.Server {
         this.PKFields.Clear();
         foreach (XmlElement celem in flds) {
           String fname = celem.GetAttribute("name");
-          if (!fname.Equals(CField.FIELD_RNUM)) {
+          if (!fname.Equals(Field.FIELD_RNUM)) {
             //String ftype = TField.ConvertToCompatible(celem.GetAttribute("type"));
-            CFieldType ftype = ftypeHelper.ConvertStrToFType(celem.GetAttribute("type"));
+            FieldType ftype = ftypeHelper.ConvertStrToFType(celem.GetAttribute("type"));
             String fpkindx = celem.GetAttribute("pk");
             String fcaption = celem.InnerText;
-            CField newFld = new CField(this, fIndx, fname, ftype, fcaption, fpkindx);
+            Field newFld = new Field(this, fIndx, fname, ftype, fcaption, fpkindx);
             if (!celem.HasAttribute("generate") || celem.GetAttribute("generate") == "true")
               this.Fields.Add(newFld);
             if (!fpkindx.Equals(""))

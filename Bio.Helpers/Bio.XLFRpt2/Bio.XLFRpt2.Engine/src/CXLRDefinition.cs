@@ -23,7 +23,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
   /// <summary>
   /// 
   /// </summary>
-  public class CXLRDefinition : CDisposableObject {
+  public class CXLRDefinition : DisposableObject {
     //private
     private const string csEcoding = "UTF-8";
     private CXLReport _owner = null;
@@ -48,7 +48,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         this.InParams.Add("SYS_TITLE", this._rptCfg.title);
     }
 
-    protected override void onDispose() {
+    protected override void doOnDispose() {
       this._owner = null;
       this._rptCfg = null;
     }

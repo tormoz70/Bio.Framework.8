@@ -1,3 +1,5 @@
+using Bio.Helpers.Common;
+
 namespace Bio.Helpers.XLFRpt2.Engine {
 
   using System;
@@ -498,12 +500,12 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 
       if (File.Exists(rslt.extAttrs.localPath + rslt.extAttrs.sqlScriptBefore)){
         String vLine = null;
-        CStrFile.LoadStringFromFile(rslt.extAttrs.localPath + rslt.extAttrs.sqlScriptBefore, ref vLine, null);
+        StrFile.LoadStringFromFile(rslt.extAttrs.localPath + rslt.extAttrs.sqlScriptBefore, ref vLine, null);
         rslt.extAttrs.sqlScriptBefore = vLine;
       }
       if (File.Exists(rslt.extAttrs.localPath + rslt.extAttrs.sqlScriptAfter)) {
         String vLine = null;
-        CStrFile.LoadStringFromFile(rslt.extAttrs.localPath + rslt.extAttrs.sqlScriptAfter, ref vLine, null);
+        StrFile.LoadStringFromFile(rslt.extAttrs.localPath + rslt.extAttrs.sqlScriptAfter, ref vLine, null);
         rslt.extAttrs.sqlScriptAfter = vLine;
       }
       return rslt;
@@ -657,6 +659,6 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     public String format { get; set; }
     public CJSAlignment align { get; set; }
     public Int32 width { get; set; }
-    public CFieldType type { get; set; }
+    public FieldType type { get; set; }
   }
 }

@@ -71,7 +71,7 @@ namespace Bio.Framework.Server {
           try {
             CJSCursor vCursor = new CJSCursor(vConn, vDS, this.bioCode);
             int vAjaxRequestTimeOut = Utl.Convert2Type<int>(CParams.FindParamValue(this.QParams, "ajaxrqtimeout"));
-            CSQLGarbageMonitor vMon = CSQLGarbageMonitor.GetSQLGarbageMonitor(this.Context);
+            SQLGarbageMonitor vMon = SQLGarbageMonitor.GetSQLGarbageMonitor(this.Context);
             vMon.RegisterSQLCmd(vCursor, (SQLCmd vSQLCmd, ref Boolean killQuery, ref Boolean killSession, Boolean vAjaxTimeoutExceeded) => {
               if (Object.Equals(vCursor, vSQLCmd)) {
                 killQuery = !this.Context.Response.IsClientConnected || vAjaxTimeoutExceeded;

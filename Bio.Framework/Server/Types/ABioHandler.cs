@@ -22,7 +22,7 @@ namespace Bio.Framework.Server {
 
     private HttpContext FContext = null;
     private CQueryParams FQParams = null;
-    private CBioSession FBioSession = null;
+    private BioSession FBioSession = null;
     protected XmlDocument FBioDesc = null;
     protected CAjaxRequest FBioRequest = null;
     public String RemoteIP { get; private set; }
@@ -33,9 +33,9 @@ namespace Bio.Framework.Server {
       this.FContext = context;
       this.FBioRequest = request;
       if(this.FContext != null) {
-        this.FBioSession = (CBioSession)this.FContext.Session["BioSessIni"];
+        this.FBioSession = (BioSession)this.FContext.Session["BioSessIni"];
         if(this.FBioSession == null) {
-          this.FBioSession = new CBioSession(this.FContext.Request.PhysicalApplicationPath, this.FContext.Request.ApplicationPath);
+          this.FBioSession = new BioSession(this.FContext.Request.PhysicalApplicationPath, this.FContext.Request.ApplicationPath);
           this.FContext.Session["BioSessIni"] = this.FBioSession;
         }
       }
@@ -93,7 +93,7 @@ namespace Bio.Framework.Server {
       return vResult;
     }
 
-    public CBioSession BioSession {
+    public BioSession BioSession {
       get {
         return this.FBioSession;
       }
