@@ -780,7 +780,7 @@ namespace Bio.Framework.Client.SL {
     }
 
     private LoadParams<EventHandler<OnSelectEventArgs>> _suspendLocateParams = null;
-    public void Locate(CJsonStoreFilter locate, EventHandler<OnSelectEventArgs> callback) {
+    public void Locate(CJsonStoreFilter locate, EventHandler<OnSelectEventArgs> callback, Boolean forceRemote) {
       this._callOnShowDelaied(() => {
         if (this.SuspendFirstLoad && this._isFirstLoading) {
           this._suspendLocateParams = new LoadParams<EventHandler<OnSelectEventArgs>> {
@@ -798,13 +798,21 @@ namespace Bio.Framework.Client.SL {
             locate = (locate != null) ? (CJsonStoreFilter)locate.Clone() : null
           };
           this._suspendLocateParams = null;
-          this._jsClient.Locate(locateParams.locate, locateParams.callback);
+          this._jsClient.Locate(locateParams.locate, locateParams.callback, forceRemote);
         }
       });
     }
 
+    public void Locate(CJsonStoreFilter locate, EventHandler<OnSelectEventArgs> callback) {
+      this.Locate(locate, callback, false);
+    }
+
+    public void Locate(CJsonStoreFilter locate, Boolean forceRemote) {
+      this.Locate(locate, null, forceRemote);
+    }
+
     public void Locate(CJsonStoreFilter locate) {
-      this.Locate(locate, null);
+      this.Locate(locate, null, false);
     }
 
     public void Load(CParams bioParams, AjaxRequestDelegate callback) {

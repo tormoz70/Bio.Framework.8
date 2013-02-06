@@ -864,8 +864,10 @@ namespace Bio.Framework.Client.SL {
       this._goto(null, "Обновление...", callback, null);
     }
 
-    public void Locate(CJsonStoreFilter locate, EventHandler<OnSelectEventArgs> callback) {
-      var v_row = this._locateInternal(locate);
+    public void Locate(CJsonStoreFilter locate, EventHandler<OnSelectEventArgs> callback, Boolean forceRemote = false) {
+      CRTObject v_row = null;
+      if(!forceRemote)
+        v_row = this._locateInternal(locate);
       if (v_row != null)
         this._doOnLocation(v_row, null, callback);
       else {
