@@ -112,13 +112,13 @@ namespace Bio.Framework.Packets {
     /// </summary>
     /// <param name="pkString">Строка со значениями первичного ключа.</param>
     /// <returns></returns>
-    public CParams getPK(CRTObject row) {
-      CParams vParams = new CParams();
+    public Params getPK(CRTObject row) {
+      Params vParams = new Params();
       var v_pkDef = this.getPKFields();
       for (int i = 0; i < v_pkDef.Length; i++) {
         var vType = v_pkDef[i].GetDotNetType();
         var vValue = row.GetValue(v_pkDef[i].name, vType);
-        vParams.Add(new CParam(v_pkDef[i].name, vValue, vType, ParamDirection.Input));
+        vParams.Add(new Param(v_pkDef[i].name, vValue, vType, ParamDirection.Input));
       }
       return vParams;
     }
@@ -128,13 +128,13 @@ namespace Bio.Framework.Packets {
     /// </summary>
     /// <param name="pkString">Строка со значениями первичного ключа.</param>
     /// <returns></returns>
-    public CParams getPK(CJsonStoreData data, CJsonStoreRow row) {
-      CParams vParams = new CParams();
+    public Params getPK(CJsonStoreData data, CJsonStoreRow row) {
+      Params vParams = new Params();
       var v_pkDef = this.getPKFields();
       for (int i = 0; i < v_pkDef.Length; i++) {
         var vType = v_pkDef[i].GetDotNetType();
         var vValue = data.getValue(row, v_pkDef[i].name);
-        vParams.Add(new CParam(v_pkDef[i].name, vValue, vType, ParamDirection.Input));
+        vParams.Add(new Param(v_pkDef[i].name, vValue, vType, ParamDirection.Input));
       }
       return vParams;
     }

@@ -22,7 +22,7 @@ namespace Bio.Helpers.XLFRpt2.Ipc {
     /// <param name="prms">Параметры отчета</param>
     /// <param name="priority">Уроверь приоритетности</param>
     /// <returns>UID просесса</returns>
-    public String Add(String rptCode, String sessionID, String userUID, String remoteIP, CParams prms, ThreadPriority priority) {
+    public String Add(String rptCode, String sessionID, String userUID, String remoteIP, Params prms, ThreadPriority priority) {
       String err_json = null;
       int v_priority = (int)priority;
       String v_prms = prms.Encode();

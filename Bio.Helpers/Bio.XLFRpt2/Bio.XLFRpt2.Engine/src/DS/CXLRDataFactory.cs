@@ -70,11 +70,11 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     /// <returns>Текущая запись. Если EOF, тогда null</returns>
     protected abstract IList next();
 
-    public virtual Object GetScalarValue(IDbConnection conn, String cmd, CParams prms, Int32 timeout) {
+    public virtual Object GetScalarValue(IDbConnection conn, String cmd, Params prms, Int32 timeout) {
       return cmd;
     }
 
-    public abstract IDbCommand PrepareCmd(IDbConnection conn, String cmd, CParams prms, Int32 timeout);
+    public abstract IDbCommand PrepareCmd(IDbConnection conn, String cmd, Params prms, Int32 timeout);
     public abstract void ExecCmd(IDbCommand cmd);
 
     private IDictionary<String, FieldType> FColDefs = null;

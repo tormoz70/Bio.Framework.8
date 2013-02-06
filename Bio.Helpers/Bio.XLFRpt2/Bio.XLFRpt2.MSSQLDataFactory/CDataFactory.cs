@@ -46,7 +46,7 @@ namespace Bio.Helpers.XLFRpt2.DataFactory {
       return v_ot;
     }
 
-    private static void _applayParams(SqlCommand cmd, CParams prms) {
+    private static void _applayParams(SqlCommand cmd, Params prms) {
       cmd.Parameters.Clear();
       foreach (var v_p in prms) {
         var v_type = v_p.Value == null ? typeof(String) : v_p.Value.GetType();
@@ -100,7 +100,7 @@ namespace Bio.Helpers.XLFRpt2.DataFactory {
 
     }
 
-    public override Object GetScalarValue(IDbConnection conn, String cmd, CParams prms, Int32 timeout) {
+    public override Object GetScalarValue(IDbConnection conn, String cmd, Params prms, Int32 timeout) {
       if (!String.IsNullOrEmpty(cmd)) {
         var v_cmd = new SqlCommand(cmd);
         v_cmd.Connection = conn as SqlConnection;
@@ -111,7 +111,7 @@ namespace Bio.Helpers.XLFRpt2.DataFactory {
       return null;
     }
 
-    public override IDbCommand PrepareCmd(IDbConnection conn, String cmd, CParams prms, Int32 timeout) {
+    public override IDbCommand PrepareCmd(IDbConnection conn, String cmd, Params prms, Int32 timeout) {
       //String connStr = dbSession.ConnectionString;
       if (!String.IsNullOrEmpty(cmd)) {
         var v_cmd = new SqlCommand(cmd);

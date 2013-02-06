@@ -27,15 +27,15 @@ namespace Bio.Framework.Server {
       base.doExecute();
 
       
-      String vMode = CParams.FindParamValue(this.QParams, "mod") as String;
+      String vMode = Params.FindParamValue(this.QParams, "mod") as String;
       if(String.Equals(vMode, "read", StringComparison.CurrentCultureIgnoreCase)) {
-        String vPipeName = CParams.FindParamValue(this.QParams, "pipe") as String;
+        String vPipeName = Params.FindParamValue(this.QParams, "pipe") as String;
         //String vSQL = "select dralpha.ai_pipe.receive(:pPipeName) as F_RSLT from dual";
         String vConnStr = this.BioSession.Cfg.ConnectionString;
         /*using(OracleConnection vConn = this.BioSession.DBSess.GetConnection(vConnStr)) {
-          Object vResObj = bioDOA.SQLCmd.ExecuteScalarSQL(vSQL, vConn, new CParams(new CParam("pPipeName", vPipeName)));
+          Object vResObj = bioDOA.SQLCmd.ExecuteScalarSQL(vSQL, vConn, new Params(new Param("pPipeName", vPipeName)));
           String vLinesData = bioDOA.utlDOA.ObjectAsString(vResObj);
-          CParams vResult = new CParams();
+          Params vResult = new Params();
           vResult.Add("lines", vLinesData);
           this.Context.Response.Write(new srvTP.CSimpleResult(true, vResult, null).ToJson());
           vConn.Close();
@@ -44,7 +44,7 @@ namespace Bio.Framework.Server {
         //String vPipeName = this.FPipeName;
         //String vConnStr = this.FOwner.MonitorSessionConnStr;
         CBioResponse vRsp = ReadPipe(vPipeName, null);
-        //CParams vResult = new CParams();
+        //Params vResult = new Params();
         //vResult.Add("lines", vRsp.lines);
         this.Context.Response.Write(vRsp.Encode());
 
@@ -85,7 +85,7 @@ namespace Bio.Framework.Server {
           //if(!String.IsNullOrEmpty(connStr)) {
           //using(IDbConnection vConn = CDBFactory.CreateConnection(connStr, )) {
           //vConn.Open();
-          Object vResObj = SQLCmd.ExecuteScalarSQL(dbSess, vSQL, new CParams(new CParam("pipeName", v_sp.pipe)), 120);
+          Object vResObj = SQLCmd.ExecuteScalarSQL(dbSess, vSQL, new Params(new Param("pipeName", v_sp.pipe)), 120);
           String vLinesData = SQLUtils.ObjectAsString(vResObj);
           if (vLinesData != null) {
             v_sp.sessionUID = exctractSessionID(ref vLinesData);

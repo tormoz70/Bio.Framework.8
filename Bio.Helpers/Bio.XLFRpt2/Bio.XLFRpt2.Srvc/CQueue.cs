@@ -16,7 +16,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
   public class CXLRptItem {
     public String uid { get; set; }
     public String code { get; set; }
-    public CParams prms { get; set; }
+    public Params prms { get; set; }
     public String usr { get; set; }
   }
 
@@ -66,7 +66,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
     }
 
 
-    protected abstract String doOnAdd(String rptCode, String sessionID, String userUID, String remoteIP, CParams prms, ThreadPriority pPriority);
+    protected abstract String doOnAdd(String rptCode, String sessionID, String userUID, String remoteIP, Params prms, ThreadPriority pPriority);
     protected abstract void doOnGetReportResult(String rptUID, String userUID, String remoteIP, ref String fileName, ref Byte[] buff);
     protected abstract void doOnBreakReportInst(String rptUID, String userUID, String remoteIP);
     protected abstract void doOnRestartReportInst(String rptUID, String userUID, String remoteIP);
@@ -91,7 +91,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
     /// <param name="remoteIP">Адрес с которого вошел пользователь</param>
     /// <param name="prms">Параметры отчета</param>
     /// <param name="pPriority"></param>
-    public String Add(String rptCode, String sessionID, String userUID, String remoteIP, CParams prms, ThreadPriority pPriority){
+    public String Add(String rptCode, String sessionID, String userUID, String remoteIP, Params prms, ThreadPriority pPriority){
       this.log_msg(String.Format("Добавление отчета в очередь \"{0}\", sessID:\"{1}\", ip:\"{2}\", usr:\"{3}\"...", rptCode, sessionID, remoteIP, userUID));
       var v_rptUID = this.doOnAdd(rptCode, sessionID, userUID, remoteIP, prms, pPriority);
       this.log_msg(String.Format("Отчет \"{0}\" добавлен в очередь пользователем \"{1}\".", rptCode, userUID));
@@ -153,7 +153,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
       }
     }
 
-    protected void add_to_running(String rptUID, String rptCode, CParams prms, String usrUID, Int32 priority) {
+    protected void add_to_running(String rptUID, String rptCode, Params prms, String usrUID, Int32 priority) {
       if (!this._runningReports.ContainsKey(rptUID)) {
         CXLReport v_rptBuilder;
         lock (this._runningReports) {

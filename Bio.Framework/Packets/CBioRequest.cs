@@ -19,7 +19,7 @@ namespace Bio.Framework.Packets {
     /// <summary>
     /// параметры информационного объекта
     /// </summary>
-    public CParams bioParams { get; set; }
+    public Params bioParams { get; set; }
 
     //public static JsonConverter[] GetConverters() {
     //  return new JsonConverter[] { new EBioExceptionConverter()/*t12, new CJsonStoreRowConverter() */};
@@ -29,7 +29,7 @@ namespace Bio.Framework.Packets {
       base.copyThis(ref destObj);
       CBioRequest dst = destObj as CBioRequest;
       dst.bioCode = this.bioCode;
-      dst.bioParams = (this.bioParams != null) ? (CParams)this.bioParams.Clone() : null;
+      dst.bioParams = (this.bioParams != null) ? (Params)this.bioParams.Clone() : null;
     }
 
 

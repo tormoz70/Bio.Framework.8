@@ -102,7 +102,7 @@ namespace Bio.Framework.Server {
     //  if(pDSNode != null && pDSNode.HasAttribute("connid"))
     //    vConn = pDSNode.GetAttribute("connid");
     //  vConn = (String.IsNullOrEmpty(vConn)) ? this.CurUser.ConnectionString : this.Cfg.getDBConnStr(vConn);
-    //  CParams vCntxEnv = new CParams();
+    //  Params vCntxEnv = new Params();
     //  vCntxEnv.SetValue(csSYS_CURUSERUID_PARAM_NAME, this.CurUser.USR_UID);
     //  vCntxEnv.SetValue(csSYS_CURODEPUID_PARAM_NAME, this.CurUser.ODEP_UID);
     //  vCntxEnv.SetValue(csSYS_TITLE_PARAM_NAME, this.BioSysTitle);

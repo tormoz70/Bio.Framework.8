@@ -22,9 +22,9 @@ namespace Bio.Framework.Server {
     private String _bioCode;
     private HttpContext _context;
     private XmlElement _ds;
-    //private CParams FCols;
+    //private Params FCols;
     private IDbConnection _conn;
-    private CParams _bioParams;
+    private Params _bioParams;
     private String _rptLogsPath;
     private Boolean _headerIsOn;
 
@@ -32,8 +32,8 @@ namespace Bio.Framework.Server {
         String bioCode,
         HttpContext context, 
         XmlElement ds, 
-        //CParams pCols, 
-        CParams bioParams,
+        //Params pCols, 
+        Params bioParams,
         IDbConnection conn,
         String rptLogsPath,
         Boolean headerIsOn) {
@@ -79,7 +79,7 @@ namespace Bio.Framework.Server {
       }
     }
 
-    private void bldCSV(CXLReportDSConfig dsCfg, CXLRDataFactory tbl, String fileName, Boolean addHeader, CParams colHeaders) {
+    private void bldCSV(CXLReportDSConfig dsCfg, CXLRDataFactory tbl, String fileName, Boolean addHeader, Params colHeaders) {
       String vCSVDelimiter = ";";
       Encoding vEnc = Encoding.GetEncoding(1251);
       if (File.Exists(fileName))
@@ -88,7 +88,7 @@ namespace Bio.Framework.Server {
       if (addHeader) {
         if (colHeaders != null) {
           for (int j = 0; j < colHeaders.Count; j++) {
-            //String vColHeader = (String)CParams.FindParamValue(pColHeaders, pTbl.GetCoulumnName(j));
+            //String vColHeader = (String)Params.FindParamValue(pColHeaders, pTbl.GetCoulumnName(j));
             String vColHeader = colHeaders[j].ValueAsString();
             if (!String.IsNullOrEmpty(vColHeader))
               Utl.AppendStr(ref vLine, vColHeader, vCSVDelimiter);
@@ -122,9 +122,9 @@ namespace Bio.Framework.Server {
       }
     }
 
-    private DataTable _prepareDSTable(String bioCode, CParams prms, IDbConnection conn) {
+    private DataTable _prepareDSTable(String bioCode, Params prms, IDbConnection conn) {
       DataTable vTable = new DataTable("DSTable");
-      CJsonStoreRequestGet request = null; // (CExParams)CParams.FindParamValue(vPrms, "ExParams");
+      CJsonStoreRequestGet request = null; // (CExParams)Params.FindParamValue(vPrms, "ExParams");
       CJSCursor vCursor = null;// new CJSCursor(vConn, vDSDefNode, bioCode);
       vCursor.Init(request);
 
@@ -176,12 +176,12 @@ namespace Bio.Framework.Server {
         //CExParams vExParams = new CExParams(this._context.Request.Params);
         this._bioParams.SetValue("hide_deleted1", 1);
         this._bioParams.SetValue("hide_deleted2", 1);
-        CParams vPrms = new CParams(
-          new CParam("IOCode", this._bioCode),
-          new CParam("DSDefNode", this._ds),
-          new CParam("IOParams", this._bioParams),
-          //new CParam("ExParams", vExParams),
-          new CParam("DbConn", this._conn)
+        Params vPrms = new Params(
+          new Param("IOCode", this._bioCode),
+          new Param("DSDefNode", this._ds),
+          new Param("IOParams", this._bioParams),
+          //new Param("ExParams", vExParams),
+          new Param("DbConn", this._conn)
           );
         //CXLRDataFactory vTbl = new CXLRDataFactory(null, vPrms);
         //vTbl.PrepareDSTable();

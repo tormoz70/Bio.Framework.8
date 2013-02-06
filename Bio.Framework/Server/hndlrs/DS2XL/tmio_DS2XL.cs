@@ -79,7 +79,7 @@ namespace Bio.Framework.Server {
           Excel.Worksheet vWS = vRng.Worksheet;
           vRng = ExcelSrv.getRange(vWS, vWS.Cells[vRng.Row - 1, 2], vWS.Cells[vRng.Row + vRng.Rows.Count, 2]);
           var dsCfg = report.RptDefinition.dsCfgByRangeName("mRng");
-          var colHeadersFromCli = CParams.FindParamValue<Dictionary<String, String>>(report.RptDefinition.InParams, "dataGridOnClientHeaders");
+          var colHeadersFromCli = Params.FindParamValue<Dictionary<String, String>>(report.RptDefinition.InParams, "dataGridOnClientHeaders");
           if (colHeadersFromCli != null) {
             foreach (var fd in dsCfg.fieldDefs) {
               String colHeader;
@@ -142,8 +142,8 @@ namespace Bio.Framework.Server {
         rptCfg.extAttrs.remoteIP = this.BioSession.CurSessionRemoteIP;
         rptCfg.extAttrs.workPath = this.BioSession.Cfg.WorkSpacePath; //this.BioSession.Cfg.IniPath; //vIO.LocalPath;
         //rptCfg.extAttrs.
-        foreach (CParam vPrm in this.bioParams)
-          rptCfg.inPrms.Add((CParam)vPrm.Clone());
+        foreach (Param vPrm in this.bioParams)
+          rptCfg.inPrms.Add((Param)vPrm.Clone());
         rptCfg.debug = Xml.getAttribute<Boolean>(vIO.IniDocument.XmlDoc.DocumentElement, "debug", false);
         rptCfg.dss.Add(CXLReportDSConfig.DecodeFromBio(
           vIO.IniDocument.XmlDoc.DocumentElement,

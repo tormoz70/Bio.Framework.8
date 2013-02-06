@@ -1,5 +1,3 @@
-using Bio.Helpers.Common;
-
 namespace Bio.Helpers.DOA {
   using System;
   using Common;
@@ -172,15 +170,15 @@ namespace Bio.Helpers.DOA {
         return null;
       var v_type = this.DataTypeNet;
       var v_value = value;
-      var v_valueType = (v_value != null) ? v_value.GetType() : typeof(Object);
-      if (!v_valueType.Equals(v_type)) {
+      var v_valueType = v_value.GetType();
+      if (v_valueType != v_type) {
         try {
           v_value = Utl.Convert2Type(v_value, v_type);
         } catch (Exception ex) {
           throw new Exception(String.Format("InternalValueConvert_Exception! {0}: ({1})[{2}] -> ({3}). {4}", this.FieldName, v_valueType.Name, "" + v_value, v_type.Name, ex.Message), ex);
         }
       }
-      if ((v_type.Equals(typeof(DateTime)) || v_type.Equals(typeof(DateTime?))) && (this.DataType == FieldType.DateUTC))
+      if ((v_type == typeof(DateTime) || v_type == typeof(DateTime?)) && (this.DataType == FieldType.DateUTC))
         v_value = DateTime.SpecifyKind((DateTime)v_value, DateTimeKind.Utc);
       return v_value;
     }

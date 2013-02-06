@@ -13,7 +13,7 @@
   using Bio.Helpers.DOA;
   using Bio.Helpers.Common;
 
-  public delegate IDbCommand LongOpPrepareCmdDelegate(IDbConnection conn, ref String currentSQL, ref CParams currentParams);
+  public delegate IDbCommand LongOpPrepareCmdDelegate(IDbConnection conn, ref String currentSQL, ref Params currentParams);
 
   public class CLongOpProc : IRemoteProcInst {
     private RemoteProcState _state = RemoteProcState.Redy;
@@ -55,7 +55,7 @@
           this.doOnStarted();
           if (this._prepareCmdProc != null) {
             String vCurrentSQL = null;
-            CParams vCurrentParams = null;
+            Params vCurrentParams = null;
             this._currentCmd = this._prepareCmdProc(this._conn, ref vCurrentSQL, ref vCurrentParams);
             SQLCmd.ExecuteScript(this._currentCmd, vCurrentSQL, vCurrentParams);
           }
@@ -118,7 +118,7 @@
       String v_rslt = null;
       if (this._conn != null) {
         if (!String.IsNullOrEmpty(this.Pipe))
-          v_rslt = (String)SQLCmd.ExecuteScalarSQL(this._conn, "select AI_PIPE.init(:pipeName) as f_result from dual", new CParams(new CParam("pipeName", this.Pipe)), 120);
+          v_rslt = (String)SQLCmd.ExecuteScalarSQL(this._conn, "select AI_PIPE.init(:pipeName) as f_result from dual", new Params(new Param("pipeName", this.Pipe)), 120);
         else
           v_rslt = "ORA-SESSION-ID:" + DBSession.GetSessionID(this._conn);
       }

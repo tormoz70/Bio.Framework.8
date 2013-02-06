@@ -81,13 +81,13 @@ namespace Bio.Helpers.XLFRpt2.DataFactory {
 
     }
 
-    public override Object GetScalarValue(IDbConnection conn, String cmd, CParams prms, Int32 timeout) {
+    public override Object GetScalarValue(IDbConnection conn, String cmd, Params prms, Int32 timeout) {
       return SQLCmd.ExecuteScalarSQL(conn, cmd, prms, timeout);
     }
 
     private String _preparedSQL = null;
-    private CParams _preparedParams = null;
-    public override IDbCommand PrepareCmd(IDbConnection conn, String cmd, CParams prms, Int32 timeout) {
+    private Params _preparedParams = null;
+    public override IDbCommand PrepareCmd(IDbConnection conn, String cmd, Params prms, Int32 timeout) {
       this._preparedSQL = cmd;
       this._preparedParams = prms;
       return SQLCmd.PrepareCommand(conn, cmd, prms, timeout);

@@ -186,8 +186,8 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     public CXLRMacro MacroAfter { get { return this._rptCfg.extAttrs.macroAfter; } }
     public String SQLScriptBefore { get { return this._rptCfg.extAttrs.sqlScriptBefore; } }
     public String SQLScriptAfter { get { return this._rptCfg.extAttrs.sqlScriptAfter; } }
-    public CParams InParams { get { return this._rptCfg.inPrms; } }
-    public CParams RptParams { get { return this._rptCfg.rptPrms; } }
+    public Params InParams { get { return this._rptCfg.inPrms; } }
+    public Params RptParams { get { return this._rptCfg.rptPrms; } }
 
     private String buildFileName(String pTempl) {
       String vRslt = pTempl;

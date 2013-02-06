@@ -101,7 +101,7 @@
 
   //    //******************************************************************************************************			
   //    /*if(pParams != null) {
-  //      foreach(CParam vPrm in pParams) {
+  //      foreach(Param vPrm in pParams) {
   //        ParameterFieldDefinition paramField = this.findParamInRpt(rptDoc, vPrm.Name);
   //        if(paramField != null) {
   //          ParameterDiscreteValue paramValue = new ParameterDiscreteValue();
@@ -137,7 +137,7 @@
   //    vConn.Open();
   //    try{
   //      CSQLCmd vCmd = new CSQLCmd(vConn);
-  //      vCmd.Init(vSQLText, new CParams());
+  //      vCmd.Init(vSQLText, new Params());
   //      vCmd.Params.Add("p_selection", vSelectionList);
   //      vCmd.Params.Add("p_invert", vSelAll);
   //        vCmd.Open();

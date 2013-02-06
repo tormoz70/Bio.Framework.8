@@ -5,10 +5,10 @@ namespace Bio.Framework.Packets {
   using System.Collections;
   using Bio.Framework.Packets;
   using Bio.Helpers.Common.Types;
-  public class CQueryParams : CParams {
+  public class QueryParams : Params {
 
-    public static CQueryParams ParsQString(String pRawUrl) {
-      CQueryParams vResult = new CQueryParams();
+    public static QueryParams ParsQString(String pRawUrl) {
+      QueryParams vResult = new QueryParams();
       int vPStrt = pRawUrl.IndexOf("?");
       String vParsString = null;
       if (vPStrt >= 0)
@@ -37,8 +37,8 @@ namespace Bio.Framework.Packets {
       return vResult;
     }
 
-    public static CQueryParams ParsQString(HttpRequest request) {
-      CQueryParams vResult = ParsQString(request.RawUrl);
+    public static QueryParams ParsQString(HttpRequest request) {
+      QueryParams vResult = ParsQString(request.RawUrl);
       foreach (String vPrmName in request.Params.AllKeys) {
         if (vResult.ParamByName(vPrmName) == null) {
           vResult.Add(vPrmName, request.Params[vPrmName]);

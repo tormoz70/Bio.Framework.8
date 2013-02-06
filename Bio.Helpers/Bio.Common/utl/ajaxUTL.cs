@@ -77,7 +77,7 @@
     /// <param name="responseText">Ответ сервера</param>
     /// <param name="requestException">Ошибка, которая произошла при запросе</param>
     /// <param name="pOnLogLine">Метод пишущий лог</param>
-    public static void getDataFromSrv(String url, WebProxy proxy, CParams prms, String userAgentName,
+    public static void getDataFromSrv(String url, WebProxy proxy, Params prms, String userAgentName,
                                       ref String responseText, ref EBioException requestException,
                                       DOnLogLine pOnLogLine, int timeOut) {
       syncObj4WebRequest.WaitOne();
@@ -105,7 +105,7 @@
         FCli.Method = "POST";
         FCli.UserAgent = userAgentName;
         addLogLine("<request>: Method: " + FCli.Method, pOnLogLine);
-        CParams vParams = (prms == null) ? new CParams() : prms;
+        Params vParams = (prms == null) ? new Params() : prms;
         vParams.Add("ajaxrqtimeout", ""+FCli.Timeout);
         String vParamsToPost = vParams.bldUrlParams();
 
@@ -233,7 +233,7 @@
     }
 
     public static String prepareRequestParams(CAjaxRequest request) {
-      CParams vParams = request.BuildQParams(ajaxUTL.getConvertersFromRequestType(request.GetType()));
+      Params vParams = request.BuildQParams(ajaxUTL.getConvertersFromRequestType(request.GetType()));
       //vParams.Add("ajaxrqtimeout", "" + request.timeout);
       return vParams.bldUrlParams();
     }

@@ -73,7 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="src\CDBSessionFactory.cs" />
+    <Compile Include="src\DBSessionFactory.cs" />
     <Compile Include="src\DBConnectionFactory.cs" />
     <Compile Include="src\DBSession.cs" />
     <Compile Include="src\Field.cs" />

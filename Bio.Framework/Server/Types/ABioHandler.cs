@@ -21,7 +21,7 @@ namespace Bio.Framework.Server {
   public abstract class ABioHandler {
 
     private HttpContext FContext = null;
-    private CQueryParams FQParams = null;
+    private QueryParams FQParams = null;
     private BioSession FBioSession = null;
     protected XmlDocument FBioDesc = null;
     protected CAjaxRequest FBioRequest = null;
@@ -41,7 +41,7 @@ namespace Bio.Framework.Server {
       }
       this.FBioSession.Init(this);
       //this.FXMLResponse = new XMLResponse(this);
-      this.FQParams = CQueryParams.ParsQString(this.FContext.Request);
+      this.FQParams = QueryParams.ParsQString(this.FContext.Request);
     }
 
     public T bioRequest<T>() where T : CAjaxRequest {
@@ -49,7 +49,7 @@ namespace Bio.Framework.Server {
     }
 
     protected String getQParamValue(String pName, bool pMandatory) {
-      CParam vParam = this.QParams.ParamByName(pName);
+      Param vParam = this.QParams.ParamByName(pName);
       if(pMandatory && (vParam == null))
         throw new EBioException("Ќе найден об€зательный параметр запроса [" + pName + "]!");
       if(vParam != null)
@@ -105,7 +105,7 @@ namespace Bio.Framework.Server {
       }
     }
 
-    public CQueryParams QParams {
+    public QueryParams QParams {
       get {
         return this.FQParams;
       }

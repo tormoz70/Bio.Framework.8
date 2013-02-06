@@ -38,7 +38,7 @@ namespace Bio.Framework.Server {
     //                String pOrgUid, String pNodeUid,
     //                LitJson_killd.JsonWriter jw) {
     //  CSQLCursorBio vCursor = new CSQLCursorBio(pConn, pDS, this.bioCode);
-    //  CParams vPrms = new CParams(new CParam("org_uid", pOrgUid), new CParam("nodeid", pNodeUid));
+    //  Params vPrms = new Params(new Param("org_uid", pOrgUid), new Param("nodeid", pNodeUid));
     //  vCursor.Init(vPrms);
     //  vCursor.Open();
     //  jw.WriteArrayStart();
@@ -134,7 +134,7 @@ namespace Bio.Framework.Server {
                 vFullLoad = this.bioParams.ParamByName("fullLoad").ValueAsString().ToLower() == "true";
               //this.loadChildren(
               //      vConn, vDS, vFldDefs, vFullLoad,
-              //      (String)CParams.FindParamValue(this.bioParams, "org_uid"), (String)CParams.FindParamValue(this.bioParams, "nodeid"),
+              //      (String)Params.FindParamValue(this.bioParams, "org_uid"), (String)Params.FindParamValue(this.bioParams, "nodeid"),
               //      jw);
               vResult = sw.ToString();
             }

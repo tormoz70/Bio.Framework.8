@@ -39,7 +39,7 @@ namespace Bio.Framework.Packets {
   }
 
   public abstract class CJSFilterItem: ICloneable {
-    public abstract void buildSQLCondition(ref String sql, CParams prms);
+    public abstract void buildSQLCondition(ref String sql, Params prms);
     protected abstract CJSFilterItem clone();
 #if SILVERLIGHT
     public virtual Boolean check(CRTObject row) { throw new NotImplementedException(); }
@@ -55,7 +55,7 @@ namespace Bio.Framework.Packets {
 
   /*public class CJSFilterItemSplitter : CJSFilterItem {
     public CJSFilterItemSplitterType joinCondition { get; set; }
-    public override void buildSQLCondition(ref String sql, CParams prms) {
+    public override void buildSQLCondition(ref String sql, Params prms) {
       sql = String.Format(" {0} ", enumHelper.NameOfValue(this.joinCondition, false).ToUpper());
     }
     protected override CJSFilterItem clone() {
@@ -151,7 +151,7 @@ namespace Bio.Framework.Packets {
       return v_ftype;
     }
 
-    public override void buildSQLCondition(ref String sql, CParams prms) {
+    public override void buildSQLCondition(ref String sql, Params prms) {
       if (prms == null)
         throw new ArgumentNullException("prms");
       String v_val_param_name = this.fieldName + "$afilter";
@@ -165,7 +165,7 @@ namespace Bio.Framework.Packets {
         v_pval = (v_bool) ? 1 : 0;
       }else
         v_pval = this.fieldValue;
-      prms.Add(new CParam { 
+      prms.Add(new Param { 
         Name = v_val_param_name,
         ParamType = v_ptype,
         Value = v_pval
@@ -290,7 +290,7 @@ namespace Bio.Framework.Packets {
     }
 #endif
 
-    public void buildSQLConditions(ref String sql, CParams prms) {
+    public void buildSQLConditions(ref String sql, Params prms) {
       sql = null;
       int i = 0;
       while(i < this.Items.Count) {
@@ -335,8 +335,8 @@ namespace Bio.Framework.Packets {
     /// </summary>
     /// <param name="pJsonString"></param>
     /// <returns></returns>
-    public static CParams Decode(String pJsonString) {
-      return jsonUtl.decode<CParams>(pJsonString, new JsonConverter[] { new EBioExceptionConverter() });
+    public static Params Decode(String pJsonString) {
+      return jsonUtl.decode<Params>(pJsonString, new JsonConverter[] { new EBioExceptionConverter() });
     }
 
     #endregion

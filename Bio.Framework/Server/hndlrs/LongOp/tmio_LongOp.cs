@@ -38,12 +38,12 @@ namespace Bio.Framework.Server {
       instance = new CLongOpProc(this.BioSession.Cfg.dbSession, null, rqst, this._prepareCmdDelegate);
     }
 
-    private IDbCommand _prepareCmdDelegate(IDbConnection conn, ref String currentSQL, ref CParams currentParams) {
+    private IDbCommand _prepareCmdDelegate(IDbConnection conn, ref String currentSQL, ref Params currentParams) {
       IDbCommand stmt = null;
       XmlElement vDS = this.FBioDesc.DocumentElement;
       if (vDS != null) {
         CJSCursor vCursor = new CJSCursor(conn, vDS, this.bioCode);
-        currentParams = (CParams)this.bioParams.Clone();
+        currentParams = (Params)this.bioParams.Clone();
         stmt = vCursor.DoPrepareCommand(currentParams, ref currentSQL, 0);
       }
       return stmt;

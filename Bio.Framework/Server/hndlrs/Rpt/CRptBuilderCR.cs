@@ -101,7 +101,7 @@
     //  return null;
     //}
 
-    public void doBuild(CParams pParams) {
+    public void doBuild(Params pParams) {
       //this.FTmpFileName = null;
       //if(!File.Exists(this.FRptFile))
       //  throw new EBioException("Не найден файл отчета " + this.FRptFile);
@@ -155,7 +155,7 @@
 
       ////******************************************************************************************************			
       //if(pParams != null) {
-      //  foreach(CParam vPrm in pParams) {
+      //  foreach(Param vPrm in pParams) {
       //    ParameterFieldDefinition paramField = this.findParamInRpt(rptDoc, vPrm.Name);
       //    if(paramField != null) {
       //      ParameterDiscreteValue paramValue = new ParameterDiscreteValue();

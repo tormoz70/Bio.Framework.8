@@ -1,13 +1,9 @@
 namespace Bio.Helpers.XLFRpt2.Engine {
-  #region
-
   using System;
 	using System.Xml;
 	using System.Collections;
 #if OFFICE12
   using Excel = Microsoft.Office.Interop.Excel;
-
-  #endregion
 
 #endif
 

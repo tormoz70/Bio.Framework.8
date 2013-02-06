@@ -18,7 +18,7 @@ namespace Bio.Helpers.DOA {
   /// –еализует основные методы дл€ работы с UniDir курсором
   /// </summary>
 	public class SQLCmd:DisposableObject{
-    private CParams _params;
+    private Params _params;
 
     protected const Int32 ORAERRCODE_APP_ERR_START = 20000; //начало диапазона кодов ошибок приложени€ в Oracle
     protected const Int32 ORAERRCODE_USER_BREAKED = 1013; //{"ORA-01013: пользователем запрошена отмена текущей операции"}
@@ -64,7 +64,7 @@ namespace Bio.Helpers.DOA {
     /// </summary>
     /// <param name="pSQL"></param>
     /// <param name="pParams"></param>
-    public virtual void Init(String pSQL, CParams pParams) {
+    public virtual void Init(String pSQL, Params pParams) {
       this.originSQL = pSQL;
       this._params = pParams;
       this.prepareSQL();
@@ -73,7 +73,7 @@ namespace Bio.Helpers.DOA {
     /// <summary>
     /// “екущие параметры запроса
     /// </summary>
-    public CParams Params {
+    public Params Params {
       get {
         return this._params;
       }
@@ -97,7 +97,7 @@ namespace Bio.Helpers.DOA {
     protected virtual void onBeforeOpen(){
 		}
 
-		protected virtual void onAfterOpen(){
+		protected virtual void doOnAfterOpen(){
 		}
 
     private static void _checkOraConn(IDbConnection pConn) {
@@ -277,12 +277,12 @@ namespace Bio.Helpers.DOA {
       }
     }
 
-    private static void _setParamsToStatment(OracleCommand oraCmd, CParams prms, Boolean overwrite = true) {
+    private static void _setParamsToStatment(OracleCommand oraCmd, Params prms, Boolean overwrite = true) {
       OracleParameter v_refCursor = null;
       _setParamsToStatment(oraCmd, prms, overwrite, ref v_refCursor);
     }
 
-    private static void _setParamsToStatment(OracleCommand oraCmd, CParams prms, ref OracleParameter refCursor) {
+    private static void _setParamsToStatment(OracleCommand oraCmd, Params prms, ref OracleParameter refCursor) {
       _setParamsToStatment(oraCmd, prms, true, ref refCursor);
     }
 
@@ -294,7 +294,7 @@ namespace Bio.Helpers.DOA {
     /// <param name="overwrite"></param>
     /// <param name="refCursor"></param>
     /// <exception cref="ArgumentNullException"></exception>
-    private static void _setParamsToStatment(OracleCommand oraCmd, CParams prms, Boolean overwrite, ref OracleParameter refCursor) {
+    private static void _setParamsToStatment(OracleCommand oraCmd, Params prms, Boolean overwrite, ref OracleParameter refCursor) {
       oraCmd.BindByName = true;
       if (oraCmd == null)
         throw new ArgumentNullException("oraCmd");
@@ -362,7 +362,7 @@ namespace Bio.Helpers.DOA {
       }
     }
 
-    private static void _setStatmentToParams(OracleCommand oraCmd, CParams prms) {
+    private static void _setStatmentToParams(OracleCommand oraCmd, Params prms) {
       if(prms != null) {
         foreach(OracleParameter v_prm in oraCmd.Parameters) {
           if((v_prm.Direction == ParameterDirection.Output) ||
@@ -466,7 +466,7 @@ namespace Bio.Helpers.DOA {
       var v_cmdType = Utl.DetectCommandType(this.preparedSQL);
       this._dataReader = v_cmdType == CommandType.Text ? this._openReaderAsSelect(connection, timeout) : this._openReaderAsProcedure(connection, timeout);
       this.curFetchedRowPos = 0;
-      this.onAfterOpen();
+      this.doOnAfterOpen();
     }
 
     /// <summary>
@@ -505,7 +505,7 @@ namespace Bio.Helpers.DOA {
     /// <returns></returns>
     /// <exception cref="EBioSQLBreaked"></exception>
     /// <exception cref="EBioException"></exception>
-    public static IDbCommand PrepareCommand(IDbConnection connection, String sql, CParams prms, Int32 timeout) {
+    public static IDbCommand PrepareCommand(IDbConnection connection, String sql, Params prms, Int32 timeout) {
       _checkOraConn(connection);
       var stmt = new OracleCommand();
       stmt.CommandText = SQLUtils.PrepareSQLForOlacleExecute(sql);
@@ -529,7 +529,7 @@ namespace Bio.Helpers.DOA {
     /// <param name="params"></param>
     /// <exception cref="EBioSQLBreaked"></exception>
     /// <exception cref="EBioException"></exception>
-    public static void ExecuteScript(IDbCommand stmt, String sql, CParams @params) {
+    public static void ExecuteScript(IDbCommand stmt, String sql, Params @params) {
       String v_dbgPrmsStr = null;
       try {
         v_dbgPrmsStr = BuildDebugParamsStr(stmt);
@@ -558,7 +558,7 @@ namespace Bio.Helpers.DOA {
     /// <param name="sql"></param>
     /// <param name="prms"></param>
     /// <param name="timeout"></param>
-    public static void ExecuteScript(IDbConnection conn, String sql, CParams prms, Int32 timeout) {
+    public static void ExecuteScript(IDbConnection conn, String sql, Params prms, Int32 timeout) {
       var stmt = PrepareCommand(conn, sql, prms, timeout);
       ExecuteScript(stmt, sql, prms);
     }
@@ -570,7 +570,7 @@ namespace Bio.Helpers.DOA {
     /// <param name="sql"></param>
     /// <param name="prms"></param>
     /// <param name="timeout"></param>
-    public static void ExecuteScript(IDBSession sess, String sql, CParams prms, Int32 timeout) {
+    public static void ExecuteScript(IDBSession sess, String sql, Params prms, Int32 timeout) {
       IDbConnection conn = sess.GetConnection();
       try {
         ExecuteScript(conn, sql, prms, timeout);
@@ -611,7 +611,7 @@ namespace Bio.Helpers.DOA {
     /// <param name="prms"></param>
     /// <param name="timeout"></param>
     /// <returns></returns>
-    public static Object ExecuteScalarSQL(IDbConnection connection, String sql, CParams prms, Int32 timeout) {
+    public static Object ExecuteScalarSQL(IDbConnection connection, String sql, Params prms, Int32 timeout) {
       _checkOraConn(connection);
       var stmt = new OracleCommand();
       stmt.CommandText = SQLUtils.PrepareSQLForOlacleExecute(sql);
@@ -640,7 +640,7 @@ namespace Bio.Helpers.DOA {
     /// <param name="prms"></param>
     /// <param name="timeout"></param>
     /// <returns></returns>
-    public static Object ExecuteScalarSQL(IDBSession sess, String sql, CParams prms, Int32 timeout) {
+    public static Object ExecuteScalarSQL(IDBSession sess, String sql, Params prms, Int32 timeout) {
       var conn = sess.GetConnection();
       try {
         return ExecuteScalarSQL(conn, sql, prms, timeout);

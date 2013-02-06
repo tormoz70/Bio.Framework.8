@@ -48,7 +48,7 @@ namespace Bio.Helpers.Common.Types {
     //  if (typeof(T) == typeof(CBioResponse)) {
     //    CBioResponse frm = obj as CBioResponse; CBioResponse dst = rslt as CBioResponse;
     //    dst.transactionID = frm.transactionID;
-    //    dst.bioParams = (CParams)frm.bioParams.Clone();
+    //    dst.bioParams = (Params)frm.bioParams.Clone();
     //    dst.rptStatePacket = (CXLRptStatePack)frm.rptStatePacket;
     //  }
 

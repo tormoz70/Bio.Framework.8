@@ -377,7 +377,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         String rpt_title,
         String rpt_desc,
         String rpt_template,
-        CParams rpt_params,
+        Params rpt_params,
         String dataFactoryTypeName,
         String reportResultFileName,
         List<CXLReportDSConfig> dss,
@@ -407,7 +407,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       vApndXML.WriteLine("<macroAfter/>");
       if (rpt_params != null) {
         vApndXML.WriteLine("<params>");
-        foreach (CParam vPrm in rpt_params)
+        foreach (Param vPrm in rpt_params)
           vApndXML.WriteLine("<param name=\"" + vPrm.Name + "\" type=\"notsql\">" + vPrm.Value + "</param>");
         vApndXML.WriteLine("</params>");
       } else
@@ -442,7 +442,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       vApndXML.WriteLine("<rptWorkPath>" + Path.GetDirectoryName(rpt_template) + "</rptWorkPath>");
       if (rpt_params != null) {
         vApndXML.WriteLine("<inParams>");
-        foreach (CParam vPrm in rpt_params)
+        foreach (Param vPrm in rpt_params)
           vApndXML.WriteLine("<param name=\"" + vPrm.Name + "\">" + vPrm.Value + "</param>");
         vApndXML.WriteLine("</inParams>");
       } else {

@@ -133,7 +133,7 @@ namespace Bio.Helpers.DOA {
     /// <param name="sql"></param>
     /// <param name="prms"></param>
     /// <exception cref="EBioException"></exception>
-    public static void ExecSQLCommandNonQuery(IDbConnection conn, ref String sql, CParams prms) {
+    public static void ExecSQLCommandNonQuery(IDbConnection conn, ref String sql, Params prms) {
       if(!String.IsNullOrEmpty(sql)) {
         var v_sql = PrepareSQLForOlacleExecute(sql);
         var v_oraSess = (OracleConnection)conn;
@@ -167,7 +167,7 @@ namespace Bio.Helpers.DOA {
     /// <param name="sess"></param>
     /// <param name="sql"></param>
     /// <param name="prms"></param>
-    public static void ExecSQLCommandNonQuery(IDBSession sess, ref String sql, CParams prms) {
+    public static void ExecSQLCommandNonQuery(IDBSession sess, ref String sql, Params prms) {
       var conn = sess.GetConnection();
       try {
         ExecSQLCommandNonQuery(conn, ref sql, prms);
@@ -419,7 +419,7 @@ namespace Bio.Helpers.DOA {
     /// <param name="prms"></param>
     /// <param name="paramName"></param>
     /// <returns></returns>
-    public static CParam FindParam(CParams prms, String paramName) {
+    public static Param FindParam(Params prms, String paramName) {
       if ((prms != null) && !String.IsNullOrEmpty(paramName)) {
         return prms.FirstOrDefault(p => {
           var pn1 = p.Name;
@@ -438,7 +438,7 @@ namespace Bio.Helpers.DOA {
     /// <param name="prms"></param>
     /// <param name="prm"></param>
     /// <returns></returns>
-    public static Object FindParamValue(CParams prms, OracleParameter prm) {
+    public static Object FindParamValue(Params prms, OracleParameter prm) {
       Object v_rslt = null;
       if ((prms != null) && (prm != null)) {
         var v_prm = FindParam(prms, prm.ParameterName);

@@ -82,14 +82,14 @@
     <Compile Include="types\CAjaxResponse.cs" />
     <Compile Include="types\CBackgroundThreatBase.cs" />
     <Compile Include="types\CConfigBase.cs" />
-    <Compile Include="types\ADBSessionFactory.cs" />
+    <Compile Include="types\IDBSessionFactory.cs" />
     <Compile Include="types\CThreadsQueue.cs" />
     <Compile Include="types\EBioDoa.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="types\CBioUser.cs" />
     <Compile Include="types\CFolderCfg.cs" />
     <Compile Include="types\CLogger.cs" />
-    <Compile Include="types\CParams.cs" />
+    <Compile Include="types\Params.cs" />
     <Compile Include="types\DTParser.cs" />
     <Compile Include="types\dom4cs.cs" />
     <Compile Include="types\EBioException.cs" />

@@ -184,26 +184,26 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         //  this.extAttrs.shortCode = _fileName2ShortCode(this._templateAdv);
       } 
     }
-    private CParams _inPrms = null;
-    public CParams inPrms { 
+    private Params _inPrms = null;
+    public Params inPrms { 
       get {
         if (this._inPrms == null)
-          this._inPrms = new CParams();
+          this._inPrms = new Params();
         return this._inPrms; 
       }
       set {
         this._inPrms = value;
         if (this.rptPrms == null) {
-          this.rptPrms = new CParams();
+          this.rptPrms = new Params();
           this.rptPrms.AddRange(this._inPrms);
         }
       }
     }
-    private CParams _rptPrms = null;
-    public CParams rptPrms { 
+    private Params _rptPrms = null;
+    public Params rptPrms { 
       get {
         if (this._rptPrms == null)
-          this._rptPrms = new CParams();
+          this._rptPrms = new Params();
         return this._rptPrms;
       } 
       set {
@@ -464,13 +464,13 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 
 
       var inParams = doc.DocumentElement.SelectNodes("append/inParams/param");
-      rslt.inPrms = new CParams();
+      rslt.inPrms = new Params();
       for (int i = 0; i < inParams.Count; i++)
         rslt.inPrms.Add(((XmlElement)inParams[i]).GetAttribute("name"), ((XmlElement)inParams[i]).InnerText);
 
 
       var rptParams = doc.DocumentElement.SelectNodes("params/param");
-      rslt.rptPrms = new CParams();
+      rslt.rptPrms = new Params();
       for (var i = 0; i < rptParams.Count; i++) {
         var vType = "sql";
         if (((XmlElement)rptParams[i]).HasAttribute("type"))
@@ -567,7 +567,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       String sessionID,
       String userName,
       String remoteIP,
-      CParams inParams,
+      Params inParams,
       Boolean switchOffDebuging
     ) {
       String v_connStr = null;
@@ -612,7 +612,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       vApndXML.WriteLine("<rptWorkPath>" + rootRptWorkPath + "</rptWorkPath>");
       //if (rptParams != null) {
       //  vApndXML.WriteLine("<inParams>");
-      //  foreach (CParam vPrm in rptParams)
+      //  foreach (Param vPrm in rptParams)
       //    vApndXML.WriteLine("<param name=\"" + vPrm.Name + "\">" + vPrm.Value + "</param>");
       //  vApndXML.WriteLine("</inParams>");
       //}

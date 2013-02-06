@@ -196,7 +196,7 @@ retry_save:
       }
     }
 
-    private void runScript(CXLReport rpt, String pName, CParams pParams) {
+    private void runScript(CXLReport rpt, String pName, Params pParams) {
       if(pName != null) {
         Object vArg1 = Type.Missing;
         if(pParams.Count > 0)

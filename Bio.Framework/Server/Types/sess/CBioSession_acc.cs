@@ -56,7 +56,7 @@ namespace Bio.Framework.Server {
 
     private void _initHttpContext() {
       if (this.FLoginState == TBioLoginState.ssLoggedOn) { 
-        CParams v_prms = null;
+        Params v_prms = null;
         var brq = this.CurBioHandler.bioRequest<CBioRequest>();
         if (brq != null)
           v_prms = brq.bioParams;
@@ -98,7 +98,7 @@ namespace Bio.Framework.Server {
               this.regConn("mrnemo", TRemoteConnectionStatus.rcsTry);
               throw new EBioStart();
             }
-            //CParam vCurLoginPrm = this.CurBioMsg.QParams.ParamByName(Bio.Common.Utl.FLOGIN_PARNAME);
+            //Param vCurLoginPrm = this.CurBioMsg.QParams.ParamByName(Bio.Common.Utl.FLOGIN_PARNAME);
             //String vCurLogin = (vCurLoginPrm != null) ? vCurLoginPrm.ValueAsString() : null;
             CBioLoginRequest rq = this.CurBioHandler.bioRequest<CBioLoginRequest>();
             String vCurLogin = (rq != null) ? rq.login : null;

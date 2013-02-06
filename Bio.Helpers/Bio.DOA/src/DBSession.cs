@@ -13,7 +13,7 @@ namespace Bio.Helpers.DOA {
 
     
     private readonly Dictionary<String, IDbTransaction> _storedTrans;
-    private readonly CParams _connStrItems;
+    private readonly Params _connStrItems;
     private readonly String _connStr;
     /// <summary>
     /// Событие перед соединением
@@ -29,7 +29,7 @@ namespace Bio.Helpers.DOA {
     /// </summary>
     /// <param name="connStr"></param>
     public DBSession(String connStr) {
-      this._connStrItems = new CParams();
+      this._connStrItems = new Params();
       this._storedTrans = new Dictionary<String, IDbTransaction>();
       this._connStr = connStr;
       this._parsConnectionStr(this._connStr);
@@ -57,7 +57,7 @@ namespace Bio.Helpers.DOA {
     /// <summary>
     /// Параметры соединения
     /// </summary>
-    public CParams ConnectionStrItems {
+    public Params ConnectionStrItems {
       get {
         return this._connStrItems;
       }

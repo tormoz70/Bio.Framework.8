@@ -25,7 +25,7 @@ namespace Bio.Framework.Server {
     public String appURL { get; private set; }
     public String bioCode { get; private set; }
     public XmlDocument bioDoc { get; private set; }
-    public CParams bioParams { get; private set; }
+    public Params bioParams { get; private set; }
     public String instanceUID { get; protected set; }
 
     public CRmtThreadHandler(BioSession bioSess, String contentType, String instanceUID) {
@@ -142,12 +142,12 @@ namespace Bio.Framework.Server {
     }
 
 
-    public void doExecute(RmtClientRequestCmd cmd, CParams bioParams) {
+    public void doExecute(RmtClientRequestCmd cmd, Params bioParams) {
       //String vOper = pCmd;
       if (bioParams != null)
         this.bioParams = bioParams;
       if (this.bioParams == null)
-        this.bioParams = new CParams();
+        this.bioParams = new Params();
       try {
         switch (cmd) {
           case RmtClientRequestCmd.Run: {

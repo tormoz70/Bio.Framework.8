@@ -10,7 +10,7 @@ namespace Bio.Framework.Server {
 
   class CBioSelection {
     private bool FInvert = false;
-    private CParams FPKs = null;
+    private Params FPKs = null;
 
     public bool extractInvert(String pBioSelection) {
       bool vRslt = false;
@@ -30,8 +30,8 @@ namespace Bio.Framework.Server {
     }
 
 
-    private CParams extractPKItem(String pBioSelItem, CJSCursor pCur) {
-      CParams vRslt = new CParams();
+    private Params extractPKItem(String pBioSelItem, CJSCursor pCur) {
+      Params vRslt = new Params();
       String vBioSelItem = pBioSelItem;
       this.killTrailerChars(ref vBioSelItem, '(', ')');
       String[] vBioSelItemVals = Utl.SplitString(vBioSelItem, ")-(");
@@ -46,8 +46,8 @@ namespace Bio.Framework.Server {
 
     }
 
-    private CParams extractPKS(String pBioSelection, CJSCursor pCur) {
-      CParams vRslt = new CParams();
+    private Params extractPKS(String pBioSelection, CJSCursor pCur) {
+      Params vRslt = new Params();
       String vRsltStr = null;
       Regex vr = new Regex("\"pks\" *: *.+}", RegexOptions.IgnoreCase);
       Match m = vr.Match(pBioSelection);
@@ -63,7 +63,7 @@ namespace Bio.Framework.Server {
           String vStrItem = vRows[i];
           vStrItem = vStrItem.Trim();
           this.killTrailerChars(ref vStrItem, '"', '"');
-          CParams vPKRow = this.extractPKItem(vStrItem, pCur);
+          Params vPKRow = this.extractPKItem(vStrItem, pCur);
           vRslt.Add("ROW_ID", vStrItem, vPKRow);
         }
       }
@@ -76,7 +76,7 @@ namespace Bio.Framework.Server {
       }
     }
 
-    public CParams PKs {
+    public Params PKs {
       get {
         return this.FPKs;
       }
@@ -92,7 +92,7 @@ namespace Bio.Framework.Server {
         vInvertStr = "not ";
       foreach(var pk in this.PKs) {
         String oneCond = null;
-        foreach(var fldItem in ((CParams)pk.InnerObject)) {
+        foreach(var fldItem in ((Params)pk.InnerObject)) {
           var fld = (Field)fldItem.InnerObject;
           Utl.AppendStr(ref oneCond, fld.FieldName + " = " + ":" + fld.FieldName + "", " and ");
           cursor.Params.Add(fld.FieldName, fldItem.Value);

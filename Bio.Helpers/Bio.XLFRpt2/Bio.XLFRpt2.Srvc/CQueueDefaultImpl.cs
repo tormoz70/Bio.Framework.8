@@ -37,8 +37,8 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
       return v_prmValue;
     }
 
-    private static void _addRptParams(IDbConnection conn, String rptUID, CParams prms, String userUID, String remoteIP) {
-      var v_prms = new CParams();
+    private static void _addRptParams(IDbConnection conn, String rptUID, Params prms, String userUID, String remoteIP) {
+      var v_prms = new Params();
       v_prms.SetValue("p_rpt_uid", rptUID);
       var v_sql = "begin xlr.clear_rparams(:p_rpt_uid); end;";
       SQLCmd.ExecuteScript(conn, v_sql, v_prms, 120);
@@ -78,19 +78,19 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
     /// <param name="prms"></param>
     /// <param name="pPriority"></param>
     /// <returns></returns>
-    protected override String doOnAdd(String rptCode, String sessionID, String userUID, String remoteIP, CParams prms, ThreadPriority pPriority) {
+    protected override String doOnAdd(String rptCode, String sessionID, String userUID, String remoteIP, Params prms, ThreadPriority pPriority) {
       String v_rptUID;
       var v_conn = this.cfg.dbSession.GetConnection();
       try {
         const string sql = "begin xlr.add_rpt(:p_rpt_uid, :p_rpt_code, :p_rpt_prms, :p_rpt_desc, :p_usr_uid, :p_remote_ip); end;";
-        var v_prms = new CParams();
-        v_prms.Add(new CParam("p_rpt_uid", null, typeof(String), ParamDirection.InputOutput));
+        var v_prms = new Params();
+        v_prms.Add(new Param("p_rpt_uid", null, typeof(String), ParamDirection.InputOutput));
         v_prms.Add("p_rpt_code", rptCode);
         v_prms.Add("p_rpt_desc", null);
         v_prms.Add("p_usr_uid", userUID);
         v_prms.Add("p_remote_ip", remoteIP);
         SQLCmd.ExecuteScript(v_conn, sql, v_prms, 120);
-        v_rptUID = v_prms.ValAsStrByName("p_rpt_uid", true);
+        v_rptUID = v_prms.ValueAsStringByName("p_rpt_uid", true);
         _addRptParams(v_conn, v_rptUID, prms, userUID, remoteIP);
       } finally {
         v_conn.Close();
@@ -110,7 +110,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
       const string sql = "SELECT a.rpt_result_fn, a.rpt_result_len, a.rpt_result" +
                          " FROM rpt$queue_rslts a"+
                          " WHERE a.rpt_uid = :rpt_uid";
-      var v_prms = new CParams();
+      var v_prms = new Params();
       v_prms.Add("rpt_uid", rptUID);
       var v_cur = new SQLCmd(this.cfg.dbSession);
       v_cur.Init(sql, v_prms);
@@ -135,7 +135,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
     /// <param name="fileName"></param>
     protected override void doOnAddReportResult2DB(String rptUID, String fileName) {
       const string sql = "begin xlr.save_rpt_file(:p_rpt_uid, :p_file_name, :p_file); end;";
-      var v_prms = new CParams();
+      var v_prms = new Params();
       v_prms.Add("p_rpt_uid", rptUID);
       v_prms.Add("p_file_name", Path.GetFileName(fileName));
       byte[] v_buffer = null;
@@ -152,7 +152,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
     /// <param name="remoteIP"></param>
     protected override void doOnBreakReportInst(String rptUID, String userUID, String remoteIP) {
       const string sql = "begin xlr.break_rpt(:p_rpt_uid, :p_usr_uid, :p_remote_ip); end;";
-      var v_prms = new CParams();
+      var v_prms = new Params();
       v_prms.Add("p_rpt_uid", rptUID);
       v_prms.Add("p_usr_uid", userUID);
       v_prms.Add("p_remote_ip", remoteIP);
@@ -167,7 +167,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
     /// <param name="remoteIP"></param>
     protected override void doOnRestartReportInst(String rptUID, String userUID, String remoteIP) {
       const string sql = "begin xlr.restart_rpt(:p_rpt_uid, :p_usr_uid, :p_remote_ip); end;";
-      var v_prms = new CParams();
+      var v_prms = new Params();
       v_prms.Add("p_rpt_uid", rptUID);
       v_prms.Add("p_usr_uid", userUID);
       v_prms.Add("p_remote_ip", remoteIP);
@@ -188,7 +188,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
         v_rslt.DocumentElement.SetAttribute("count", "0");
       }
       const string sql = "select * from table(xlr.rqueue_xml(null,:p_usr_uid))";
-      var v_prms = new CParams();
+      var v_prms = new Params();
       v_prms.Add("p_usr_uid", userUID);
       var v_cur = new SQLCmd(this.cfg.dbSession);
       v_cur.Init(sql, v_prms);
@@ -222,7 +222,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
     /// <param name="remoteIP"></param>
     protected override void doOnAddQueueState(String rptUID, RemoteProcState newState, String newStateDesc, String userUID, String remoteIP) {
       const string sql = "begin xlr.set_rpt_state(:p_rpt_uid, :p_rpt_state, :p_state_desc, :p_usr_uid, :p_remote_ip); end;";
-      var v_prms = new CParams();
+      var v_prms = new Params();
       v_prms.Add("p_rpt_uid", rptUID);
       v_prms.Add("p_rpt_state", (int)newState);
       v_prms.Add("p_state_desc", newStateDesc);
@@ -241,10 +241,10 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
       throw new NotImplementedException();
     }
 
-    private CParams _getRptParams(String uid) {
-      var v_rslt = new CParams();
+    private Params _getRptParams(String uid) {
+      var v_rslt = new Params();
       var v_cur = new SQLCmd(this.cfg.dbSession);
-      var v_prms = new CParams(new CParam("rpt_uid", uid));
+      var v_prms = new Params(new Param("rpt_uid", uid));
       v_cur.Init("select prm_name, prm_type, prm_val from rpt$rparams where rpt_uid = :rpt_uid", v_prms);
       v_cur.Open(120);
       try {
@@ -252,7 +252,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
           var v_prmName = v_cur.DataReader.GetValue(0) as String;
           var v_prmType = v_cur.DataReader.GetValue(1) as String;
           var v_prmVal = v_cur.DataReader.GetValue(2) as String;
-          var v_prm = new CParam();
+          var v_prm = new Param();
           v_prm.Name = v_prmName;
           v_prm.Value = _paramDecode(v_prmType, v_prmVal);
           v_rslt.Add(v_prm);
@@ -327,11 +327,11 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
     /// <returns></returns>
     protected override String doOnGetUsrRoles(String userUID) {
       const string sql = "begin :rslt := xlr.usr_roles(:p_usr_uid); end;";
-      var v_prms = new CParams();
+      var v_prms = new Params();
       v_prms.Add("p_usr_uid", userUID);
-      v_prms.Add(new CParam("rslt", null, typeof(String), 1000, ParamDirection.InputOutput));
+      v_prms.Add(new Param("rslt", null, typeof(String), 1000, ParamDirection.InputOutput));
       SQLCmd.ExecuteScript(this.cfg.dbSession, sql, v_prms, 120);
-      return v_prms.ValAsStrByName("rslt", true);
+      return v_prms.ValueAsStringByName("rslt", true);
     }
 
     /// <summary>
@@ -342,12 +342,12 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
     /// <returns></returns>
     protected override String doOnCheckUsrLogin(String usr, String pwd) {
       const string sql = "begin :rslt := xlr.check_usr_login(:p_usr, :p_pwd); end;";
-      var v_prms = new CParams();
+      var v_prms = new Params();
       v_prms.Add("p_usr", usr);
       v_prms.Add("p_pwd", pwd);
-      v_prms.Add(new CParam("rslt", null, typeof(String), 1000, ParamDirection.InputOutput));
+      v_prms.Add(new Param("rslt", null, typeof(String), 1000, ParamDirection.InputOutput));
       SQLCmd.ExecuteScript(this.cfg.dbSession, sql, v_prms, 120);
-      return v_prms.ValAsStrByName("rslt", true);
+      return v_prms.ValueAsStringByName("rslt", true);
     }
 
     /// <summary>
@@ -358,7 +358,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
     protected override void doOnMarkRQCmdState(String rptUID, QueueCmd cmd) {
       //throw new NotImplementedException();
       const string sql = "begin xlr.mark_cmd_done(:p_rpt_uid, :p_cmd); end;";
-      var v_prms = new CParams();
+      var v_prms = new Params();
       v_prms.Add("p_rpt_uid", rptUID);
       v_prms.Add("p_cmd", (int)cmd);
       SQLCmd.ExecuteScript(this.cfg.dbSession, sql, v_prms, 120);
