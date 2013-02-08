@@ -68,7 +68,7 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    public static void LoadItems(IAjaxMng ajaxMng, ComboBox cbx, String bioCode, CParams bioParams, Action<ComboBox> callback, Boolean addNullItem, Boolean useCache) {
+    public static void LoadItems(IAjaxMng ajaxMng, ComboBox cbx, String bioCode, Params bioParams, Action<ComboBox> callback, Boolean addNullItem, Boolean useCache) {
       var v_cli = new CJsonStoreClient {
         ajaxMng = ajaxMng,
         bioCode = bioCode
@@ -93,11 +93,11 @@ namespace Bio.Framework.Client.SL {
         });
       }
     }
-    public static void LoadItems(IAjaxMng ajaxMng, ComboBox cbx, String bioCode, CParams bioParams, Action<ComboBox> callback, Boolean addNullItem) {
+    public static void LoadItems(IAjaxMng ajaxMng, ComboBox cbx, String bioCode, Params bioParams, Action<ComboBox> callback, Boolean addNullItem) {
       LoadItems(ajaxMng, cbx, bioCode, bioParams, callback, addNullItem, false);
     }
 
-    public static void LoadItems(IAjaxMng ajaxMng, ComboBox cbx, String bioCode, CParams bioParams, Action<ComboBox> callback) {
+    public static void LoadItems(IAjaxMng ajaxMng, ComboBox cbx, String bioCode, Params bioParams, Action<ComboBox> callback) {
       LoadItems(ajaxMng, cbx, bioCode, bioParams, callback, false, false);
     }
 

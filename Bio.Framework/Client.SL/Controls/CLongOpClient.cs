@@ -30,7 +30,7 @@
       : this(null, null, null) {
     }
 
-    internal override CRmtClientRequest createRequest(RmtClientRequestCmd cmd, CParams bioParams, Boolean silent, AjaxRequestDelegate callback) {
+    internal override CRmtClientRequest createRequest(RmtClientRequestCmd cmd, Params bioParams, Boolean silent, AjaxRequestDelegate callback) {
       var rslt = this.creRequestOfClient<CLongOpClientRequest>(cmd, bioParams, silent, callback);
       rslt.pipe = this.PipeName;
       rslt.sessionUID = this.SessionUID;

@@ -95,11 +95,11 @@ namespace Bio.Framework.Client.SL {
 
     public IAjaxMng ajaxMng { get; set; }
     public String bioCode { get; set; }
-    private CParams _bioParams = null;
-    public CParams bioParams {
+    private Params _bioParams = null;
+    public Params bioParams {
       get {
         if (this._bioParams == null)
-          this._bioParams = new CParams();
+          this._bioParams = new Params();
         return this._bioParams;
       }
       set {
@@ -505,11 +505,11 @@ namespace Bio.Framework.Client.SL {
     }
 
     private String _lastRequestedBioCode = null;
-    private CParams _lastRequestedParams = null;
-    private CParams _lastReturnedParams = null;
+    private Params _lastRequestedParams = null;
+    private Params _lastReturnedParams = null;
     private CRTObject _lastLocatedRow = null;
 
-    private Boolean _paramsChanged(CParams bioPrms) {
+    private Boolean _paramsChanged(Params bioPrms) {
 
       Boolean vInParamsChanged = false;
       if (bioPrms != null) {
@@ -544,7 +544,7 @@ namespace Bio.Framework.Client.SL {
       return vInParamsChanged;
     }
 
-    private void _detectIsFirstLoad(String curBioCode, CParams bioPrms, ref Boolean isMetadataObsolete, ref Boolean isFirstLoad) {
+    private void _detectIsFirstLoad(String curBioCode, Params bioPrms, ref Boolean isMetadataObsolete, ref Boolean isFirstLoad) {
       if (!isFirstLoad) {
         if ((this._metadata == null) || !String.Equals(curBioCode, this._lastRequestedBioCode)) {
           isMetadataObsolete = true;
@@ -618,7 +618,7 @@ namespace Bio.Framework.Client.SL {
     }
 
     private Int32 _curColumnIndex = -1;
-    private void _load(CParams bioPrms, AjaxRequestDelegate callback, Int64? startFrom, CJsonStoreFilter locate, CJSRequestGetType getType, String waitMsg) {
+    private void _load(Params bioPrms, AjaxRequestDelegate callback, Int64? startFrom, CJsonStoreFilter locate, CJSRequestGetType getType, String waitMsg) {
       String v_selection = null;
       if (getType == CJSRequestGetType.GetSelectedPks) {
         v_selection = (this._grid != null) ? this._grid.Selection.ToString() : null;
@@ -651,14 +651,14 @@ namespace Bio.Framework.Client.SL {
           this.setPageSize(this.grid.pageSize);
         if (bioPrms != null) {
           if (this.bioParams == null)
-            this.bioParams = bioPrms.Clone() as CParams;
+            this.bioParams = bioPrms.Clone() as Params;
           else {
             this.bioParams.Clear();
             this.bioParams = this.bioParams.Merge(bioPrms, true);
           }
         } else {
           if (this.bioParams == null)
-            this.bioParams = new CParams();
+            this.bioParams = new Params();
         }
 
         Boolean v_isMetadataObsolete = false;
@@ -683,7 +683,7 @@ namespace Bio.Framework.Client.SL {
           }
         }
 
-        this._lastRequestedParams = (CParams)this.bioParams.Clone();
+        this._lastRequestedParams = (Params)this.bioParams.Clone();
         var v_reqst = new CJsonStoreRequestGet {
           bioCode = this.bioCode,
           getType = getType,
@@ -704,7 +704,7 @@ namespace Bio.Framework.Client.SL {
               var v_rq = args.request as CJsonStoreRequest;
               var v_rsp = args.response as CJsonStoreResponse;
               if (v_rsp != null) {
-                this._lastReturnedParams = (v_rsp.bioParams != null) ? v_rsp.bioParams.Clone() as CParams : null;
+                this._lastReturnedParams = (v_rsp.bioParams != null) ? v_rsp.bioParams.Clone() as Params : null;
                 if ((v_rsp.packet != null) && (v_rsp.packet.rows != null)) {
                   if (BioGlobal.Debug) {
                     if (v_rsp.ex != null)
@@ -784,11 +784,11 @@ namespace Bio.Framework.Client.SL {
       });
     }
 
-    public void Load(CParams bioPrms, AjaxRequestDelegate callback, CJsonStoreFilter locate) {
+    public void Load(Params bioPrms, AjaxRequestDelegate callback, CJsonStoreFilter locate) {
       this._load(bioPrms, callback, null, locate, CJSRequestGetType.GetData, "Загрузка данных...");
     }
 
-    public void Load(CParams bioPrms, AjaxRequestDelegate callback) {
+    public void Load(Params bioPrms, AjaxRequestDelegate callback) {
       this.Load(bioPrms, callback, null);
     }
 
@@ -1035,7 +1035,7 @@ namespace Bio.Framework.Client.SL {
       }
 
       if (this.bioParams == null)
-        this.bioParams = new CParams();
+        this.bioParams = new Params();
 
       CJsonStoreRows v_rows = this._getChangesAsJSRows();
       if (v_rows.Count > 0) {
@@ -1055,7 +1055,7 @@ namespace Bio.Framework.Client.SL {
               CJsonStoreRequest rqst = args.request as CJsonStoreRequest;
               CJsonStoreResponse rsp = args.response as CJsonStoreResponse;
               if (rsp != null)
-                this._lastReturnedParams = (rsp.bioParams != null) ? rsp.bioParams.Clone() as CParams : null;
+                this._lastReturnedParams = (rsp.bioParams != null) ? rsp.bioParams.Clone() as Params : null;
               if ((rsp != null) && (rsp.packet != null)) {
                 this._applyPostingResults(rsp.packet);
               }

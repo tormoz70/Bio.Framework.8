@@ -133,8 +133,8 @@ namespace Bio.Framework.Client.SL {
       ajaxUTL.getFileFromSrv(new CBioRequest {
         url = this.ServerUrl,
         requestType = RequestType.asmbVer,
-        bioParams = new CParams(new CParam { Name = "moduleName", Value = moduleName },
-                                new CParam { Name = "getModule", Value = "1" }),
+        bioParams = new Params(new Param { Name = "moduleName", Value = moduleName },
+                                new Param { Name = "getModule", Value = "1" }),
         callback = (s, a) => {
           callback(a);
         }
@@ -170,7 +170,7 @@ namespace Bio.Framework.Client.SL {
     private String _getRmtVer(AjaxResponseEventArgs a) {
       CBioResponse rsp = a.response as CBioResponse;
       if (rsp != null)
-        return CParams.FindParamValue(rsp.bioParams, "moduleVersion") as String;
+        return Params.FindParamValue(rsp.bioParams, "moduleVersion") as String;
       else
         return null;
     }
@@ -179,7 +179,7 @@ namespace Bio.Framework.Client.SL {
       ajaxUTL.getDataFromSrv(new CBioRequest {
         url = this.ServerUrl,
         requestType = RequestType.asmbVer,
-        bioParams = new CParams(new CParam { Name = "moduleName", Value = moduleName }),
+        bioParams = new Params(new Param { Name = "moduleName", Value = moduleName }),
         callback = (s, a) => {
           callback(a);
         }

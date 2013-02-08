@@ -155,7 +155,7 @@ namespace Bio.Helpers.DOA {
       Utl.RegexReplace(ref v_sql, @"(['])(.*?)\1", "", true);
 
       // Находим все параметры вида :qwe_ad
-      var m = Utl.RegexMatch(v_sql, @"(?<=:)\b[\w\#\$]+\b", true);
+      var m = Utl.RegexMatch(v_sql, @"(?<=:)\b[\w\#\$]+", true);
       while(m.Success) {
         var v_parName = m.Value;
         if(SQLUtils.FindOraParam(oraCommand.Parameters, v_parName) == null) {

@@ -19,7 +19,7 @@ namespace Bio.Framework.Client.SL {
   public abstract class CPluginBase {
 
     public CPluginBase(IPlugin owner, IEnvironment env, String module, String name, String id) {
-      this.Params = new CParams();
+      this.Params = new Params();
 
       this.Owner = owner;
       this.Env = env;
@@ -139,13 +139,13 @@ namespace Bio.Framework.Client.SL {
     /// <summary>
     /// Параметры плагина
     /// </summary>
-    public CParams Params { get; private set; }
+    public Params Params { get; private set; }
 
-    public void refreshData(CParams prms, Boolean force) {
+    public void refreshData(Params prms, Boolean force) {
       throw new NotImplementedException();
     }
 
-    public void refreshData(CParams prms) {
+    public void refreshData(Params prms) {
       throw new NotImplementedException();
     }
 

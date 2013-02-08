@@ -30,11 +30,11 @@ namespace Bio.Framework.Client.SL {
 
     public IAjaxMng ajaxMng { get; set; }
     public String bioCode { get; set; }
-    private CParams _bioParams = null;
-    public CParams bioParams { 
+    private Params _bioParams = null;
+    public Params bioParams { 
       get {
         if (this._bioParams == null)
-          this._bioParams = new CParams();
+          this._bioParams = new Params();
         return this._bioParams;
       }
       set {
@@ -47,24 +47,24 @@ namespace Bio.Framework.Client.SL {
     }
 
     private String _lastRequestedBioCode = null;
-    private CParams _lastReturnedParams = null;
+    private Params _lastReturnedParams = null;
 
-    private void _exec(CParams bioPrms, AjaxRequestDelegate callback, CSQLTransactionCmd cmd, Boolean silent) {
+    private void _exec(Params bioPrms, AjaxRequestDelegate callback, CSQLTransactionCmd cmd, Boolean silent) {
       if (this.ajaxMng == null)
         throw new EBioException("Свойство \"ajaxMng\" должно быть определено!");
       if (String.IsNullOrEmpty(this.bioCode))
         throw new EBioException("Свойство \"bioCode\" должно быть определено!");
-      this.bioParams = CParams.PrepareToUse(this.bioParams, bioPrms);
+      this.bioParams = Params.PrepareToUse(this.bioParams, bioPrms);
       //if (bioPrms != null) {
       //  if (this.bioParams == null)
-      //    this.bioParams = bioPrms.Clone() as CParams;
+      //    this.bioParams = bioPrms.Clone() as Params;
       //  else {
       //    this.bioParams.Clear();
       //    this.bioParams = this.bioParams.Merge(bioPrms, true);
       //  }
       //} else {
       //  if (this.bioParams == null)
-      //    this.bioParams = new CParams();
+      //    this.bioParams = new Params();
       //}
 
       this._lastRequestedBioCode = this.bioCode;
@@ -80,7 +80,7 @@ namespace Bio.Framework.Client.SL {
           if (args.response.success) {
             CBioResponse rsp = args.response as CBioResponse;
             if (rsp != null){
-              this._lastReturnedParams = (rsp.bioParams != null) ? rsp.bioParams.Clone() as CParams : null;
+              this._lastReturnedParams = (rsp.bioParams != null) ? rsp.bioParams.Clone() as Params : null;
               this.transactionID = rsp.transactionID;
             }
           }
@@ -90,19 +90,19 @@ namespace Bio.Framework.Client.SL {
 
     }
 
-    public void Exec(CParams bioPrms, AjaxRequestDelegate callback, CSQLTransactionCmd cmd, Boolean silent) {
+    public void Exec(Params bioPrms, AjaxRequestDelegate callback, CSQLTransactionCmd cmd, Boolean silent) {
       this._exec(bioPrms, callback, cmd, silent);
     }
 
-    public void Exec(CParams bioPrms, AjaxRequestDelegate callback, CSQLTransactionCmd cmd) {
+    public void Exec(Params bioPrms, AjaxRequestDelegate callback, CSQLTransactionCmd cmd) {
       this._exec(bioPrms, callback, cmd, false);
     }
 
-    public void Exec(CParams bioPrms, AjaxRequestDelegate callback) {
+    public void Exec(Params bioPrms, AjaxRequestDelegate callback) {
       this._exec(bioPrms, callback, CSQLTransactionCmd.Nop, false);
     }
 
-    public void Exec(CParams bioPrms, AjaxRequestDelegate callback, Boolean silent) {
+    public void Exec(Params bioPrms, AjaxRequestDelegate callback, Boolean silent) {
       this._exec(bioPrms, callback, CSQLTransactionCmd.Nop, silent);
     }
 

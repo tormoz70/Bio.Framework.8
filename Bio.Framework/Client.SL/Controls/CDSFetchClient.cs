@@ -11,7 +11,7 @@
   /// </summary>
   public class CDSFetchClient:CRmtClientBase {
     public String Selection { get; set; }
-    public CParams ExecBioParams { get; set; }
+    public Params ExecBioParams { get; set; }
     public String ExecBioCode { get; set; }
 
     /// <summary>
@@ -31,7 +31,7 @@
       : this(null, null, null, null) {
     }
 
-    internal override CRmtClientRequest createRequest(RmtClientRequestCmd cmd, CParams bioParams, Boolean silent, AjaxRequestDelegate callback) {
+    internal override CRmtClientRequest createRequest(RmtClientRequestCmd cmd, Params bioParams, Boolean silent, AjaxRequestDelegate callback) {
       var rslt = this.creRequestOfClient<CDSFetchClientRequest>(cmd, bioParams, silent, callback);
       rslt.execBioCode = this.ExecBioCode;
       return rslt;
@@ -48,7 +48,7 @@
       //v_request.execBioParams = this.ExecBioParams;
     }
 
-    public void runProc(CParams bioParams, String selection, AjaxRequestDelegate callback) {
+    public void runProc(Params bioParams, String selection, AjaxRequestDelegate callback) {
       this.Selection = selection;
       //this.ExecBioParams = execBioParams;
       this.runProc(bioParams, callback);

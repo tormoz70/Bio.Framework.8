@@ -122,7 +122,7 @@ namespace Bio.Framework.Client.SL.Old {
       return item;
     }
 
-    protected virtual void doOnBeforeLoadItem(ref CParams prms) { 
+    protected virtual void doOnBeforeLoadItem(ref Params prms) { 
     }
 
     public void Load(Action<T> actOnItem, AjaxRequestDelegate callback) {
@@ -130,9 +130,9 @@ namespace Bio.Framework.Client.SL.Old {
         throw new Exception("Не определен атрибут OwnerTreeView в корневом элементе!");
       this._cli.ajaxMng = this.AjaxMng;
       this._cli.bioCode = this.BioCode;
-      CParams prms = null;
+      Params prms = null;
       if (!this.Equals(this.RootItem)) {
-        prms = new CParams();
+        prms = new Params();
         prms.Add("parent_id", this.ID);
       }
 

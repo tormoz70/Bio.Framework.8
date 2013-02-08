@@ -31,11 +31,11 @@ namespace Bio.Framework.Client.SL {
 
     public IAjaxMng ajaxMng { get; set; }
     public String bioCode { get; set; }
-    private CParams _bioParams = null;
-    public CParams bioParams { 
+    private Params _bioParams = null;
+    public Params bioParams { 
       get {
         if (this._bioParams == null)
-          this._bioParams = new CParams();
+          this._bioParams = new Params();
         return this._bioParams;
       }
       set {
@@ -48,12 +48,12 @@ namespace Bio.Framework.Client.SL {
 
     private String _lastRequestedBioCode = null;
 
-    public void Open(CParams bioPrms, HtmlPopupWindowOptions opts) {
+    public void Open(Params bioPrms, HtmlPopupWindowOptions opts) {
       //HtmlPage.Window.
       var v_url_body = this._bldBodyUrl();
       var v_url = "sys/HTMLShowPage.htm";
 
-      this.bioParams = CParams.PrepareToUse(this.bioParams, bioPrms);
+      this.bioParams = Params.PrepareToUse(this.bioParams, bioPrms);
       var v_cli = new CSQLRClient();
       v_cli.ajaxMng = this.ajaxMng;
       v_cli.bioCode = "iod.ping_webdb";
@@ -67,13 +67,13 @@ namespace Bio.Framework.Client.SL {
 
 
 
-    public void OpenModal(CParams bioPrms, HtmlPopupWindowOptions opts) {
+    public void OpenModal(Params bioPrms, HtmlPopupWindowOptions opts) {
       if (this.ajaxMng == null)
         throw new EBioException("Свойство \"ajaxMng\" должно быть определено!");
       if (String.IsNullOrEmpty(this.bioCode))
         throw new EBioException("Свойство \"bioCode\" должно быть определено!");
 
-      this.bioParams = CParams.PrepareToUse(this.bioParams, bioPrms);
+      this.bioParams = Params.PrepareToUse(this.bioParams, bioPrms);
       var v_cli = new CSQLRClient();
       v_cli.ajaxMng = this.ajaxMng;
       v_cli.bioCode = "iod.ping_webdb";

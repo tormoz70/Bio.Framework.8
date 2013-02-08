@@ -509,7 +509,7 @@ namespace Bio.Framework.Client.SL {
         this._jsClient.ajaxMng = value;
       }
     }
-    public CParams bioParams {
+    public Params bioParams {
       get {
         return this._jsClient.bioParams;
       }
@@ -729,16 +729,16 @@ namespace Bio.Framework.Client.SL {
     }
 
     private class LoadParams<T> {
-      public CParams bioParams { get; set; }
+      public Params bioParams { get; set; }
       public T callback { get; set; }
       public CJsonStoreFilter locate { get; set; }
     };
     private LoadParams<AjaxRequestDelegate> _suspendLoadParams = null;
     private Boolean _isFirstLoading = true;
-    public void Load(CParams bioParams, AjaxRequestDelegate callback, CJsonStoreFilter locate) {
+    public void Load(Params bioParams, AjaxRequestDelegate callback, CJsonStoreFilter locate) {
       if (this.SuspendFirstLoad && this._isFirstLoading) {
         this._suspendLoadParams = new LoadParams<AjaxRequestDelegate> {
-          bioParams = (bioParams != null) ? (CParams)bioParams.Clone() : null,
+          bioParams = (bioParams != null) ? (Params)bioParams.Clone() : null,
           callback = callback,
           locate = (locate != null) ? (CJsonStoreFilter)locate.Clone() : null
         };
@@ -747,7 +747,7 @@ namespace Bio.Framework.Client.SL {
       } else {
         this._setBtnVisibility("btnRefreshFirst", Visibility.Collapsed);
         var loadParams = this._suspendLoadParams ?? new LoadParams<AjaxRequestDelegate> {
-          bioParams = (bioParams != null) ? (CParams)bioParams.Clone() : null,
+          bioParams = (bioParams != null) ? (Params)bioParams.Clone() : null,
           callback = callback,
           locate = (locate != null) ? (CJsonStoreFilter)locate.Clone() : null
         };
@@ -807,11 +807,11 @@ namespace Bio.Framework.Client.SL {
       this.Locate(locate, null);
     }
 
-    public void Load(CParams bioParams, AjaxRequestDelegate callback) {
+    public void Load(Params bioParams, AjaxRequestDelegate callback) {
       this.Load(bioParams, callback, null);
     }
 
-    public void Load(CParams bioParams) {
+    public void Load(Params bioParams) {
       this.Load(bioParams, null, null);
     }
 

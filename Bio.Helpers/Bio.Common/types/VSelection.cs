@@ -27,6 +27,6 @@ namespace Bio.Helpers.Common.Types {
       return this is VMultiSelection;
     }
 
-    public CParams filterParams { get; set; }
+    public Params filterParams { get; set; }
   }
 }

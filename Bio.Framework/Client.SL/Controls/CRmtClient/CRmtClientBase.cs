@@ -187,7 +187,7 @@
     }
 
 
-    protected T creRequestOfClient<T>(RmtClientRequestCmd cmd, CParams bioParams, Boolean silent, AjaxRequestDelegate callback) where T : CRmtClientRequest, new() {
+    protected T creRequestOfClient<T>(RmtClientRequestCmd cmd, Params bioParams, Boolean silent, AjaxRequestDelegate callback) where T : CRmtClientRequest, new() {
       var rqst = new T {
         requestType = this._requestType,
         title = this.title,
@@ -200,7 +200,7 @@
       return rqst;
     }
 
-    internal virtual CRmtClientRequest createRequest(RmtClientRequestCmd cmd, CParams bioParams, Boolean silent, AjaxRequestDelegate callback) {
+    internal virtual CRmtClientRequest createRequest(RmtClientRequestCmd cmd, Params bioParams, Boolean silent, AjaxRequestDelegate callback) {
       return this.creRequestOfClient<CRmtClientRequest>(cmd, bioParams, silent, callback);
     }
 
@@ -213,7 +213,7 @@
     /// <summary>
     /// Посылает команду на сервер
     /// </summary>
-    internal void _sendCommand(RmtClientRequestCmd cmd, CParams bioParams, AjaxRequestDelegate callback) {
+    internal void _sendCommand(RmtClientRequestCmd cmd, Params bioParams, AjaxRequestDelegate callback) {
       try {
         if (this.ajaxMng == null)
           throw new ArgumentNullException("AjaxMng", "Свойство должно быть задано.");
@@ -268,13 +268,13 @@
     }
 
 
-    private CParams _lastBioParams = null;
+    private Params _lastBioParams = null;
     /// <summary>
     /// Запуск
     /// </summary>
     /// <param name="bioParams">Параметры запуска</param>
     /// <param name="callback">Вызывается по выполнении запуска</param>
-    public void runProc(CParams bioParams, AjaxRequestDelegate callback) {
+    public void runProc(Params bioParams, AjaxRequestDelegate callback) {
       if (!this.IsRunning) {
         this._lastBioParams = bioParams;
         this._doBeforeRun();
@@ -331,9 +331,9 @@
     /// Загрузить результат выполнения
     /// </summary>
     public void loadResult() {
-      CParams vPrms = new CParams();
+      Params vPrms = new Params();
       //vPrms.Add("cmd", Utl.NameOfEnumValue((Int32)CXLRptRequestCmdType.GetResult, typeof(CXLRptRequestCmdType), false));
-      //CParams vPrms = new CParams(new CParam("getResult", "true"));
+      //Params vPrms = new Params(new Param("getResult", "true"));
       String vUrl = null; // vPrms.bldUrlParams(this._lastRequestedURL);
       //CFileDownloader.loadFileAsync(this.RptFileName, vUrl, this.loadFileAsyncCallback, null);
       //try {

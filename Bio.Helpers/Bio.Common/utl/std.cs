@@ -1475,9 +1475,10 @@ namespace Bio.Helpers.Common {
     /// <param name="currentPath"></param>
     /// <param name="text"></param>
     public static void TryLoadMappedFiles(String currentPath, ref String text) {
-      var v_fileContent = RegexFind(text, "(?<={text-file:).+(?=})", true);
+      var v_fileName = RegexFind(text, "(?<={text-file:).+(?=})", true);
+      var v_fileContent = v_fileName;
       TryLoadTextAsFile(currentPath, ref v_fileContent);
-      RegexReplace(ref text, "{text-file:.+}", v_fileContent, true);
+      text = text.Replace("{text-file:" + v_fileName + "}", v_fileContent);
     }
 
     /// <summary>

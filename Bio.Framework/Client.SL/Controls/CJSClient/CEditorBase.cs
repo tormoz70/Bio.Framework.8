@@ -91,11 +91,11 @@ namespace Bio.Framework.Client.SL {
       return (hdr.Count() > 0) ? hdr.First().Value : null;
     }
     /// <summary>
-    /// Возвращает значения свойств класса в виде CParams
+    /// Возвращает значения свойств класса в виде Params
     /// </summary>
     /// <returns></returns>
-    public CParams getAsParams() {
-      CParams rslt = new CParams();
+    public Params getAsParams() {
+      Params rslt = new Params();
       PropertyInfo[] props = this.GetType().GetProperties();
       foreach (var prop in props) {
         var attrIgnore = Utl.GetPropertyAttr<JsonIgnoreAttribute>(prop);
@@ -104,7 +104,7 @@ namespace Bio.Framework.Client.SL {
           String fieldName = (attr != null) ? attr.DataField : prop.Name;
           //Object value = this._getValue(row, metaData, fieldName);
           Object value = prop.GetValue(this, null);
-          CParams valueAdditionalParams = null;
+          Params valueAdditionalParams = null;
           if (value is VSelection) {
             valueAdditionalParams = ((VSelection)value).filterParams;
             value = ((VSelection)value).Value;
