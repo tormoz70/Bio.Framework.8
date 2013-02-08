@@ -11,6 +11,7 @@ namespace Bio.Framework.Server {
   using Bio.Helpers.XLFRpt2.Engine;
   using System.Threading;
   using Bio.Helpers.Common;
+  using Bio.Helpers.DOA;
 
   /// <summary>
   /// Обработчик запроса внутренностей компонента Rpt
@@ -48,6 +49,25 @@ namespace Bio.Framework.Server {
         !this.BioSession.Cfg.Debug
       );
       instance = new CXLReport(null, rptCfg, this.Context);
+
+      var v_action = String.Format("Запуск отчета \"{1}\". Параметры запуска: {0}", this.bioParams.ToString(), ((CXLReport)instance).RptDefinition.Title);
+
+      CSQLCmd.ExecuteScript(
+        this.BioSession.Cfg.dbSession,
+        "begin givcadmin.utils.reg_usr_activity (" +
+        " :p_usr_id," +
+        " :p_iobj_cd," +
+        " :p_iobj_uid," +
+        " :p_action); end;",
+        new CParams(
+          new CParam("p_usr_id", this.BioSession.Cfg.CurUser.USR_UID),
+          new CParam("p_iobj_cd", "XLR-BUILDER"),
+          new CParam("p_iobj_uid", this.bioCode),
+          new CParam("p_action", v_action)
+        ),
+        60
+      );
+
     }
 
   }

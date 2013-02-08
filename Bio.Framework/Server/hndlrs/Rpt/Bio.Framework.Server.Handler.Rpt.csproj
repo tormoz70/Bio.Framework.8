@@ -113,6 +113,10 @@
       <Name>Bio.Helpers.Common</Name>
       <Private>False</Private>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\..\Bio.Helpers\Bio.DOA\Bio.Helpers.DOA.csproj">
+      <Project>{DF3836D7-B3A7-4C1D-B376-96FE6848F7AD}</Project>
+      <Name>Bio.Helpers.DOA</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\..\Bio.Helpers\Bio.XLFRpt2\Bio.XLFRpt2.DefaultDataFactory\Bio.Helpers.XLFRpt2.DefaultDataFactory.csproj">
       <Project>{C0106AF9-99F8-456B-8694-CE37A42D72A9}</Project>
       <Name>Bio.Helpers.XLFRpt2.DefaultDataFactory</Name>
