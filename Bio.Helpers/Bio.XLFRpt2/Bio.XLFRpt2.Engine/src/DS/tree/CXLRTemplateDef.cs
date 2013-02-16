@@ -15,7 +15,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 	/// </summary>
 	/// 
 
-	public class CXLRTemplateDef:CDisposableObject{
+	public class CXLRTemplateDef:DisposableObject{
     //private
     public const String csGrpHeaderDef = "groupH";
     public const String csGrpFooterDef = "groupF";
@@ -31,13 +31,13 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     public CXLRTemplateDef(Excel.Range dsRange){
       for(int i = 1; i <= dsRange.Rows.Count; i++) {
         Excel.Range vCurRow = (Excel.Range)dsRange.Rows[i, Type.Missing];
-        String vCurDefValue = CExcelSrv.ExtractCellValue(vCurRow.Cells[1, 1]);
+        String vCurDefValue = ExcelSrv.ExtractCellValue(vCurRow.Cells[1, 1]);
         if (!String.IsNullOrEmpty(vCurDefValue) && vCurDefValue.StartsWith(csGrpHeaderDef)) {
-          String vFldName = CExcelSrv.ExtractFieldName(vCurDefValue);
+          String vFldName = ExcelSrv.ExtractFieldName(vCurDefValue);
           this._headerFormats.Add(vFldName, vCurRow);
         } else
           if(!String.IsNullOrEmpty(vCurDefValue) && vCurDefValue.StartsWith(csGrpFooterDef)) {
-            String vFldName = CExcelSrv.ExtractFieldName(vCurDefValue);
+            String vFldName = ExcelSrv.ExtractFieldName(vCurDefValue);
             this._footerFormats.Add(vFldName, vCurRow);
           } else
             if(!String.IsNullOrEmpty(vCurDefValue) && (vCurDefValue.Equals(csDetailsDef))) {
@@ -64,18 +64,18 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       }
     }
 
-    protected override void OnDispose() {
+    protected override void doOnDispose() {
       foreach (var fmt in this._headerFormats)
-        CExcelSrv.nar(ref fmt.Range);
+        ExcelSrv.nar(ref fmt.Range);
       foreach (var fmt in this._footerFormats)
-        CExcelSrv.nar(ref fmt.Range);
+        ExcelSrv.nar(ref fmt.Range);
 
       this._headerFormats.Clear();
       this._headerFormats = null;
       this._footerFormats.Clear();
       this._footerFormats = null;
-      CExcelSrv.nar(ref this._detailsRng);
-      CExcelSrv.nar(ref this._totalsRng);
+      ExcelSrv.nar(ref this._detailsRng);
+      ExcelSrv.nar(ref this._totalsRng);
     }
 
     public CXLRRngList HeaderFormats {

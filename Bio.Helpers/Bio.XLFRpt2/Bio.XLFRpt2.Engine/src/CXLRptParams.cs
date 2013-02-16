@@ -17,23 +17,23 @@ namespace Bio.Helpers.XLFRpt2.Engine.XLRptParams {
 		//	this._owner = owner;
 		//}
 
-		private static String prepareParamValue(this CParams prms, CParams inParams, String pParamText){
+		private static String prepareParamValue(this Params prms, Params inParams, String pParamText){
       String vRslt = pParamText;
       for (int i = 0; i < inParams.Count; i++)
         vRslt = vRslt.Replace("#" + inParams[i].Name + "#", inParams[i].ValueAsString());
 			return vRslt;
 		}
 
-    public static void mergeFromInParams(this CParams prms, CParams inParams) {
+    public static void mergeFromInParams(this Params prms, Params inParams) {
       foreach (var prm in inParams) {
         if (prms.IndexOf(prm.Name) == -1)
           prms.Add(prm.Name, prm.Value);
       }
     }
 
-    public static String getReportParameter(this CParams prms, CXLReport report, String pName) {
+    public static String getReportParameter(this Params prms, CXLReport report, String pName) {
 			String vResult = null;
-      CParam vPrm = prms.ParamByName(pName);
+      Param vPrm = prms.ParamByName(pName);
       if (vPrm != null) {
         String vSQL = vPrm.ValueAsString();
         String vType = (String)vPrm.InnerObject;
@@ -51,10 +51,10 @@ namespace Bio.Helpers.XLFRpt2.Engine.XLRptParams {
 			return vResult;
 		}
 
-    public static String AsXMLText(this CParams prms) {
+    public static String AsXMLText(this Params prms) {
       StringBuilder rslt = new StringBuilder();
       rslt.AppendLine("<params>");
-      foreach (CParam p in prms)
+      foreach (Param p in prms)
         rslt.AppendLine(String.Format("<param name=\"{0}\"><![CDATA[{1}]]></param>", p.Name, p.ValueAsString()));
       rslt.AppendLine("</params>");
       return rslt.ToString();

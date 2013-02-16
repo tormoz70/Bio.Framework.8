@@ -14,7 +14,7 @@ namespace Bio.Framework.Server {
   /// <summary>
   /// Реализация Курсора в контексте ИО.
   /// </summary>
-  public class CJSCursor : CSQLCursor {
+  public class CJSCursor : SQLCursor {
     /// <summary>
     /// Типы действий, совершаемых запросами.
     /// </summary>
@@ -77,7 +77,7 @@ namespace Bio.Framework.Server {
       };
     }
 
-    public virtual void Init(CParams pBioParams) {
+    public virtual void Init(Params pBioParams) {
       this.Init(new CJsonStoreRequestGet {
         bioParams = pBioParams,
         packet = this._creJSData(),
@@ -112,9 +112,9 @@ namespace Bio.Framework.Server {
     /// Шаблон запроса для подсчёта общего числа записей
     /// </summary>
     private const string csTotalCountSQLTemplate = "SELECT COUNT(1) FROM ({0})";
-    private void _applyPagging(CJsonStoreData pckt, Boolean decompositEnabled, ref CParams bioParams, ref String vSQL, Int32 timeout) {
+    private void _applyPagging(CJsonStoreData pckt, Boolean decompositEnabled, ref Params bioParams, ref String vSQL, Int32 timeout) {
       if (bioParams == null)
-        bioParams = new CParams();
+        bioParams = new Params();
       // разбиваем на страницы
       Int64 vPgStart = pckt.start;
       if (pckt.limit > 0 || vPgStart == Int32.MaxValue && pckt.limit > 0) {
@@ -134,8 +134,8 @@ namespace Bio.Framework.Server {
         if (vPgStart == Int64.MaxValue) {
           vPgnSQLTemplate = csPgnSQLTemplateGoToLast;
           String vSQLStr = String.Format(csTotalCountSQLTemplate, vPreparedSQLLevel0);
-          //string vSQLStr = String.Format(C_TotalCountSQLTemplate, this.FPreparedSQL);
-          pckt.totalCount = Convert.ToInt32(CSQLCmd.ExecuteScalarSQL(this.Connection, vSQLStr, bioParams, timeout));
+          //string vSQLStr = String.Format(C_TotalCountSQLTemplate, this.preparedSQL);
+          pckt.totalCount = Convert.ToInt32(SQLCmd.ExecuteScalarSQL(this.Connection, vSQLStr, bioParams, timeout));
           vPgStart = ((pckt.totalCount - 1L) / pckt.limit) * pckt.limit;
           pckt.start = vPgStart;
         }
@@ -148,8 +148,8 @@ namespace Bio.Framework.Server {
         } else
           vSQL = vPreparedSQLLevel0;
 
-        //this.FPreparedSQL = String.Format(C_PgnSQLTemplate, vPgEnd - vPgStart + 1, this.FPreparedSQL);
-        //this.FPreparedSQL = String.Format(C_PgnSQLTemplate, this.FPreparedSQL);
+        //this.preparedSQL = String.Format(C_PgnSQLTemplate, vPgEnd - vPgStart + 1, this.preparedSQL);
+        //this.preparedSQL = String.Format(C_PgnSQLTemplate, this.preparedSQL);
 
         bioParams.Add("rnumto$", vPgEnd + 1);
         bioParams.Add("rnumfrom$", vPgStart);
@@ -160,11 +160,11 @@ namespace Bio.Framework.Server {
     /// Шаблон запроса для наложения фильтра
     /// </summary>
     private const string csFltrSQLTemplate = "SELECT * FROM ({0}) WHERE {1}";
-    private Boolean _applyFilter(CJsonStoreFilter filter, ref CParams bioParams, ref String vSQL) {
+    private Boolean _applyFilter(CJsonStoreFilter filter, ref Params bioParams, ref String vSQL) {
       // фильтруем
       String vCondition = null;
       if (filter != null) {
-        var v_prms = new CParams(); 
+        var v_prms = new Params(); 
         filter.buildSQLConditions(ref vCondition, v_prms);
         bioParams = v_prms.Merge(bioParams, true);
       }
@@ -188,7 +188,7 @@ namespace Bio.Framework.Server {
       Boolean vSorterIsDefined = !String.IsNullOrEmpty(vSort);
       if (vSorterIsDefined) {
         String pks = String.Empty;
-        foreach (CField fld in this.PKFields.Values)
+        foreach (Field fld in this.PKFields.Values)
           pks += ", " + fld.FieldName;
         //vSQL = String.Format(csSortSQLTemplate, vSQL, vSortField + " " + vSortDir, pks);
         vSQL = String.Format(csSortSQLTemplate, vSQL, vSort, pks);
@@ -203,7 +203,7 @@ namespace Bio.Framework.Server {
     /// <param name="selection"></param>
     /// <param name="bioParams"></param>
     /// <param name="vSQL"></param>
-    private void _buildSelectSelectionSQL(String selection, CParams bioParams, ref String vSQL) {
+    private void _buildSelectSelectionSQL(String selection, Params bioParams, ref String vSQL) {
       String v_selection = selection;
       if (!String.IsNullOrEmpty(v_selection) && this.PKFields.Count > 0) {
         Boolean v_inversion = false;
@@ -240,14 +240,14 @@ namespace Bio.Framework.Server {
 
     //private CJsonStoreData _rq_packet = null;
     public CJsonStoreData rqPacket { get; private set; }
-    private CParams _rq_bioParams = null;
-    public CParams rqBioParams { get { return _rq_bioParams; } }
+    private Params _rq_bioParams = null;
+    public Params rqBioParams { get { return _rq_bioParams; } }
     private CJsonStoreFilter _rq_filter = null;
     private CJsonStoreSort _rq_sorter = null;
     private String _rq_selection = null;
     public void Init(
       CJsonStoreData packet,
-      CParams bioParams,
+      Params bioParams,
       CJsonStoreFilter filter,
       CJsonStoreSort sorter,
       String selection,
@@ -266,9 +266,9 @@ namespace Bio.Framework.Server {
       this.ApplyParamsTypes((XmlElement)SQLtext.ParentNode, this.rqBioParams);
       this.InitCursorFields();
       if (this.rqBioParams == null)
-        this._rq_bioParams = new CParams();
+        this._rq_bioParams = new Params();
       base.Init(SQLtext.InnerText, this.rqBioParams);
-      String vSQL = this.FPreparedSQL;
+      String vSQL = this.preparedSQL;
       Boolean v_filterIsDefined = this._applyFilter(this._rq_filter, ref this._rq_bioParams, ref vSQL);
       Boolean v_sorterIsDefined = this._applySorter(this._rq_sorter, ref vSQL);
 
@@ -278,14 +278,14 @@ namespace Bio.Framework.Server {
           // ищем запрошенную запись
           var v_min_start = vLocate.fromPosition;
           String vSQLStr = null;
-          var v_lprms = new CParams();
+          var v_lprms = new Params();
           vLocate.buildSQLConditions(ref vSQLStr, v_lprms);
           if (!String.IsNullOrEmpty(vSQLStr))
             vSQLStr = vSQLStr + " AND";
           v_lprms = v_lprms.Merge(this.rqBioParams, true);
           v_lprms.SetValue("loc_start_from", v_min_start);
           vSQLStr = String.Format(csLocateNextSQLTemplate, vSQL, vSQLStr);
-          int rnum = Convert.ToInt32(CSQLCmd.ExecuteScalarSQL(this.Connection, vSQLStr, v_lprms, timeout));
+          int rnum = Convert.ToInt32(SQLCmd.ExecuteScalarSQL(this.Connection, vSQLStr, v_lprms, timeout));
           if (this.rqPacket.limit > 0)
             this.rqPacket.start = Math.Max(((rnum - 1) / this.rqPacket.limit) * this.rqPacket.limit, 0);
         }
@@ -293,7 +293,7 @@ namespace Bio.Framework.Server {
       } else {
         this._buildSelectSelectionSQL(this._rq_selection, this.rqBioParams, ref vSQL);
       }
-      this.FPreparedSQL = vSQL;
+      this.preparedSQL = vSQL;
     }
 
     /// <summary>
@@ -341,7 +341,7 @@ namespace Bio.Framework.Server {
     /// <param name="sqlElement">XML-описание запроса.</param>
     /// <param name="prms">Набор параметров, в которые пропишутся типы.</param>
     /// <exception cref="ArgumentNullException"></exception>
-    private void ApplyParamsTypes(XmlElement sqlElement, CParams prms) {
+    private void ApplyParamsTypes(XmlElement sqlElement, Params prms) {
       if (sqlElement == null)
         throw new ArgumentNullException("sqlElement");
       if (prms != null) {
@@ -355,19 +355,19 @@ namespace Bio.Framework.Server {
           ////  vParamType = typeof(OracleBlob);
           //else
           Type vParamType = ftypeHelper.ConvertStrToType(vParamTypeName);
-          ParamDirection vDir = SQLUtils.encodeParamDirection(this.detectDir(SQLParam));
-          CParam param = SQLUtils.findParam(prms, vParamName);
+          ParamDirection vDir = SQLUtils.EncodeParamDirection(this.detectDir(SQLParam));
+          Param param = SQLUtils.FindParam(prms, vParamName);
           if (vDir == ParamDirection.Input) {
             if (param != null) {
               param.ParamType = vParamType;
               param.ParamDir = ParamDirection.Input;
             } else {
-              param = new CParam(vParamName, null, vParamType, ParamDirection.Input);
+              param = new Param(vParamName, null, vParamType, ParamDirection.Input);
               prms.Add(param);
             }
           } else if ((vDir == ParamDirection.Output) || (vDir == ParamDirection.InputOutput)) {
             if (param == null) {
-              param = new CParam(vParamName, null);
+              param = new Param(vParamName, null);
               prms.Add(param);
             }
             param.ParamType = vParamType;
@@ -378,13 +378,13 @@ namespace Bio.Framework.Server {
           /*if((param != null) && ((vDir == ParamDirection.Input) || (vDir == ParamDirection.InputOutput))) {
             if (!String.IsNullOrEmpty(param.ValueAsString())) {
               if(param.ParamType.Equals(typeof(System.Decimal)))
-                param.Value = SQLUtils.StrAsOraValue(param.ValueAsString(), CSQLDataType.Varchar2);
+                param.Value = SQLUtils.StrAsOraValue(param.ValueAsString(), OracleDataType.Varchar2);
               else if(param.ParamType.Equals(typeof(System.DateTime)))
-                param.Value = SQLUtils.StrAsOraValue(param.ValueAsString(), CSQLDataType.Date);
+                param.Value = SQLUtils.StrAsOraValue(param.ValueAsString(), OracleDataType.Date);
               //else if (param.ParamType.Equals(typeof(System.Char[])))
               //  param.Value = SQLUtils.StrAsOraValue(param.Value, OracleDbType.Clob);
               else if (param.ParamType.Equals(typeof(System.Byte[])))
-                param.Value = SQLUtils.StrAsOraValue(param.ValueAsString(), CSQLDataType.Blob);
+                param.Value = SQLUtils.StrAsOraValue(param.ValueAsString(), OracleDataType.Blob);
             }
           }*/
 
@@ -392,7 +392,7 @@ namespace Bio.Framework.Server {
       }
     }
 
-    private void _doExecute(CParams prms, String actionName, Int32 timeout) {
+    private void _doExecute(Params prms, String actionName, Int32 timeout) {
       var SQLelem = (XmlElement)this.CursorIniDoc.SelectSingleNode("SQL[@action='" + actionName + "']");
       if (SQLelem != null) {
         var SQLtext = (XmlElement)SQLelem.SelectSingleNode("text");
@@ -400,8 +400,8 @@ namespace Bio.Framework.Server {
           SQLtext.InnerText = SQLtext.InnerText.Trim();
           try {
             this.ApplyParamsTypes(SQLelem, prms);
-            var cmd = CSQLCmd.PrepareCommand(this.Connection, SQLtext.InnerText, prms, timeout);
-            CSQLCmd.ExecuteScript(cmd, SQLtext.InnerText, prms);
+            var cmd = SQLCmd.PrepareCommand(this.Connection, SQLtext.InnerText, prms, timeout);
+            SQLCmd.ExecuteScript(cmd, SQLtext.InnerText, prms);
           } catch (EBioException be) {
             throw new EBioException("При выполнении PL/SQL блока " + this.bioCode + "[" + actionName + "] произошла ошибка.\nСообщение: " + be.Message, be);
           }
@@ -415,7 +415,7 @@ namespace Bio.Framework.Server {
     /// Подготавливает SQL.
     /// </summary>
     /// <exception cref="EBioException">Возбуждается, когда операция завершилась с ошибкой.</exception>
-    public IDbCommand DoPrepareCommand(CParams prms, ref String sql, Int32 timeout) {
+    public IDbCommand DoPrepareCommand(Params prms, ref String sql, Int32 timeout) {
       String csActionName = "execute";
       IDbCommand stmt = null;
       var SQLelem = (XmlElement)this.CursorIniDoc.SelectSingleNode("SQL[@action='" + csActionName + "']");
@@ -425,7 +425,7 @@ namespace Bio.Framework.Server {
           sql = SQLtext.InnerText.Trim();
           try {
             this.ApplyParamsTypes(SQLelem, prms);
-            stmt = CSQLCmd.PrepareCommand(this.Connection, sql, prms, timeout);
+            stmt = SQLCmd.PrepareCommand(this.Connection, sql, prms, timeout);
           } catch (EBioException be) {
             throw new EBioException("При подготовке PL/SQL блока " + this.bioCode + "[" + csActionName + "] произошла ошибка.\nСообщение: " + be.Message, be);
           }
@@ -441,21 +441,21 @@ namespace Bio.Framework.Server {
     /// Удаляет запись по признаку первичного ключа.
     /// </summary>
     /// <exception cref="EBioException">Возбуждается, когда операция завершилась с ошибкой.</exception>
-    public void DoDelete(CParams pParams) {
-      this.doExecute(pParams, "delete");
+    public void DoDelete(Params @params) {
+      this.doExecute(@params, "delete");
     }
 
     /// <summary>
     /// Добавляет/Изменяет запись по признаку первичного ключа.
     /// </summary>
     /// <exception cref="EBioException">Возбуждается, когда операция завершилась с ошибкой.</exception>
-    public void DoInsertUpdate(CParams pParams) {
-      this.doExecute(pParams, "insertupdate");
+    public void DoInsertUpdate(Params @params) {
+      this.doExecute(@params, "insertupdate");
     }
     */
 
-    private CParams _buildPostParams(CJsonStoreMetadata metadata, CJsonStoreRow row, CParams bioParams) {
-      CParams v_rslt = new CParams();
+    private Params _buildPostParams(CJsonStoreMetadata metadata, CJsonStoreRow row, Params bioParams) {
+      Params v_rslt = new Params();
       for (int i = 0; i < metadata.fields.Count; i++)
         v_rslt.Add(metadata.fields[i].name.ToLower(), row.Values[i]);
       v_rslt = v_rslt.Merge(bioParams, false);
@@ -463,7 +463,7 @@ namespace Bio.Framework.Server {
 
     }
 
-    private void _returnParamsToRow(CJsonStoreMetadata metadata, CJsonStoreRow row, CParams bioParams) {
+    private void _returnParamsToRow(CJsonStoreMetadata metadata, CJsonStoreRow row, Params bioParams) {
       var v_out_params = bioParams.Where(p => { return (p.ParamDir != ParamDirection.Input)/* || String.Equals(p.Name, CJsonStoreMetadata.csPKFieldName)*/; });
       foreach (var p in v_out_params)
         row.Values[metadata.indexOf(p.Name)] = p.Value;
@@ -475,7 +475,7 @@ namespace Bio.Framework.Server {
     /// <param name="metadata"></param>
     /// <param name="row"></param>
     /// <param name="bioParams"></param>
-    public void DoProcessRowPost(CJsonStoreMetadata metadata, CJsonStoreRow row, CParams bioParams, Int32 timeout) {
+    public void DoProcessRowPost(CJsonStoreMetadata metadata, CJsonStoreRow row, Params bioParams, Int32 timeout) {
       var v_params = this._buildPostParams(metadata, row, bioParams);
       if ((row.changeType == CJsonStoreRowChangeType.Added) ||
           (row.changeType == CJsonStoreRowChangeType.Modified)) {
@@ -489,7 +489,7 @@ namespace Bio.Framework.Server {
     /// Выполняет SQL.
     /// </summary>
     /// <exception cref="EBioException">Возбуждается, когда операция завершилась с ошибкой.</exception>
-    public void DoExecuteSQL(CParams prms, Int32 timeout) {
+    public void DoExecuteSQL(Params prms, Int32 timeout) {
       this._doExecute(prms, "execute", timeout);
     }
 
@@ -499,7 +499,7 @@ namespace Bio.Framework.Server {
     /// <param name="metadata"></param>
     /// <param name="row"></param>
     /// <param name="bioParams"></param>
-    public void DoExecuteSQL(CJsonStoreMetadata metadata, CJsonStoreRow row, CParams bioParams, Int32 timeout) {
+    public void DoExecuteSQL(CJsonStoreMetadata metadata, CJsonStoreRow row, Params bioParams, Int32 timeout) {
       var v_params = this._buildPostParams(metadata, row, bioParams);
       this._doExecute(v_params, "execute", timeout);
     }
@@ -515,12 +515,12 @@ namespace Bio.Framework.Server {
         this.PKFields.Clear();
         foreach (XmlElement celem in flds) {
           String fname = celem.GetAttribute("name");
-          if (!fname.Equals(CField.FIELD_RNUM)) {
+          if (!fname.Equals(Field.FIELD_RNUM)) {
             //String ftype = TField.ConvertToCompatible(celem.GetAttribute("type"));
-            CFieldType ftype = ftypeHelper.ConvertStrToFType(celem.GetAttribute("type"));
+            FieldType ftype = ftypeHelper.ConvertStrToFType(celem.GetAttribute("type"));
             String fpkindx = celem.GetAttribute("pk");
             String fcaption = celem.InnerText;
-            CField newFld = new CField(this, fIndx, fname, ftype, fcaption, fpkindx);
+            Field newFld = new Field(this, fIndx, fname, ftype, fcaption, fpkindx);
             if (!celem.HasAttribute("generate") || celem.GetAttribute("generate") == "true")
               this.Fields.Add(newFld);
             if (!fpkindx.Equals(""))
@@ -531,18 +531,18 @@ namespace Bio.Framework.Server {
       }
     }
 
-    protected override void onAfterOpen() { }
+    protected override void doOnAfterOpen() { }
 
     ///// <summary>
     ///// Преобразует строку со значениями первичного ключа в параметры.
     ///// </summary>
     ///// <param name="pkString">Строка со значениями первичного ключа.</param>
     ///// <returns></returns>
-    //private CParams PKtoParams(string pkString) {
+    //private Params PKtoParams(string pkString) {
     //  string[] pkValues = null;
     //  if (pkString != null)
     //    pkValues = Utl.SplitString(pkString.Trim('(', ')'), ")-(");
-    //  CParams vParams = new CParams();
+    //  Params vParams = new Params();
     //  /*if ((pkValues != null) || (this.PKFields.Count == pkValues.Length)) {*/
     //  for (int i = 0; i < this.PKFields.Count; i++) {
     //    String vValue = null;
@@ -560,8 +560,8 @@ namespace Bio.Framework.Server {
       base.prepareSQL();
     }
 
-    protected override void processOpenError(IDbConnection conn, Exception ex, String pParams) {
-      throw new EBioException("[" + detectDBName(conn.ConnectionString) + "] Ошибка при открытии курсора [" + this.bioCode + "].\r\nСообщение: " + ex.Message + "\r\nSQL: " + this.DbCommand.CommandText + "\r\n" + "Параметры запроса:{" + pParams + "}", ex);
+    protected override void throwOpenError(IDbConnection connection, Exception ex, String sql, String @params) {
+      throw new EBioException("[" + detectDBName(connection.ConnectionString) + "] Ошибка при открытии курсора [" + this.bioCode + "].\r\nСообщение: " + ex.Message + "\r\nSQL: " + this.DbCommand.CommandText + "\r\n" + "Параметры запроса:{" + @params + "}", ex);
     }
 
   }

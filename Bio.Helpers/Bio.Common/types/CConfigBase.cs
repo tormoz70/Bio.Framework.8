@@ -58,7 +58,7 @@ namespace Bio.Helpers.Common.Types {
         Directory.CreateDirectory(path);
     }
     public XmlDocument CfgDoc { get; private set; }
-    protected static T _load<T>(String physicalApplicationPath, String logFileName, ADBSessionFactory dbsFactory) where T : CConfigBase, new() {
+    protected static T _load<T>(String physicalApplicationPath, String logFileName, IDBSessionFactory dbsFactory) where T : CConfigBase, new() {
       var vphPath = Utl.NormalizeDir(physicalApplicationPath);
       var vcfgDoc = dom4cs.OpenDocument(vphPath + "config.xml").XmlDoc;
       T rslt = new T {
@@ -86,7 +86,7 @@ namespace Bio.Helpers.Common.Types {
         rslt.dbSession = dbsFactory.CreateDBSession(rslt.connStr);
       return rslt;
     }
-    public static CConfigBase load(String physicalApplicationPath, String logFileName, ADBSessionFactory dbsFactory) {
+    public static CConfigBase load(String physicalApplicationPath, String logFileName, IDBSessionFactory dbsFactory) {
       return _load<CConfigBase>(physicalApplicationPath, logFileName, dbsFactory);
     }
 

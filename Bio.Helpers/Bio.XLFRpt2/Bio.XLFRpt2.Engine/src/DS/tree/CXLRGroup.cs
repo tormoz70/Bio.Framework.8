@@ -17,7 +17,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 
 	public delegate void DlgOnParentRowsInsertEvent(int pRowsInserted);
 	
-	public class CXLRGroup: CDisposableObject{
+	public class CXLRGroup: DisposableObject{
 //private
 		protected int FLeftCol = 0;
 		protected int FTopRow = 0;
@@ -28,7 +28,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 		protected Object FGroupKeyValue = null;
 		protected CXLRGroup FParentGroup = null;
 		protected CXLRGroups FChildGroups = null;
-		protected CXLRDetails FDetails = null;
+		protected XLRDetails FDetails = null;
 		protected CXLRTotals FTotals = null;
 		protected int FGrpIndex = -1;
 		protected event DlgOnParentRowsInsertEvent FOnParentRowsInsert;
@@ -79,7 +79,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 			}
 		}
 
-		protected override void OnDispose(){
+		protected override void doOnDispose(){
 			if(this.ChildGroups(false) != null)
 				this.ChildGroups(false).Dispose();
 			if(this.GroupDetails(false) != null)
@@ -203,12 +203,12 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       }
     }
 
-		public CXLRDetails GroupDetails(bool pForce){
+		public XLRDetails GroupDetails(bool pForce){
 			if((this.FDetails == null) && (pForce)){
 				int vTopRow = this.TopRow;
 				if(!this.IsRootGroup)
 					vTopRow++;
-				this.FDetails = new CXLRDetails(this.Owner, this, vTopRow);
+				this.FDetails = new XLRDetails(this.Owner, this, vTopRow);
 			}
 			return this.FDetails;
 		}
@@ -219,11 +219,11 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 			for(int i=0; i<this.ChildGroups(false).Count; i++){
 				if(this.ChildGroups(false)[i].GroupKeyField.Equals(pGroupField)){
 					int vTopRow = this.ChildGroups(false)[i].TopRowOffset;
-          String vCurRng = vTopRow + new String(CExcelSrv.csRowRangetDelimeter, 1) + vTopRow;
+          String vCurRng = vTopRow + new String(ExcelSrv.csRowRangetDelimeter, 1) + vTopRow;
 					if(vRslt.Equals(""))
 						vRslt = vCurRng;
 					else
-						vRslt += new String(CExcelSrv.csRowRangesListDelimeter, 1) + vCurRng;
+						vRslt += new String(ExcelSrv.csRowRangesListDelimeter, 1) + vCurRng;
 				}else
 					this.ChildGroups(false)[i].GetKeysRangesList(pGroupField);
 			}
@@ -233,7 +233,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 		public String GetTotalsRange(){
 			String vRslt = "";
 			if(this.FTotals != null){
-        vRslt = this.BottomRowOffset + new String(CExcelSrv.csRowRangetDelimeter, 1) + this.BottomRowOffset;
+        vRslt = this.BottomRowOffset + new String(ExcelSrv.csRowRangetDelimeter, 1) + this.BottomRowOffset;
 			}
 			return vRslt;
 		}
@@ -246,14 +246,14 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 					if(vRslt.Equals(""))
 						vRslt += this.ChildGroups(false)[i].GetDetailsRangesList();
 					else
-						vRslt += new String(CExcelSrv.csRowRangesListDelimeter, 1) + this.ChildGroups(false)[i].GetDetailsRangesList();
+						vRslt += new String(ExcelSrv.csRowRangesListDelimeter, 1) + this.ChildGroups(false)[i].GetDetailsRangesList();
 				}
 			}else{
 				if(this.GroupDetails(false) != null){
 					int vTopRow = this.GroupDetails(false).TopRowOffset;
 					int vRowCount = this.GroupDetails(false).Count;
 					int vBottomRow = vTopRow + (vRowCount - 1);
-					vRslt = vTopRow + new String(CExcelSrv.csRowRangetDelimeter, 1) + vBottomRow;
+					vRslt = vTopRow + new String(ExcelSrv.csRowRangetDelimeter, 1) + vBottomRow;
 				}
 			}
 			return vRslt;
@@ -266,7 +266,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 			else if(this.ChildGroups(false) != null){
 				String vResult = null;
 				for(int i=0; i<this.ChildGroups(false).Count; i++)
-          Utl.AddObjToLine(ref vResult, new String(CExcelSrv.csRowRangesListDelimeter, 1), this.ChildGroups(false)[i].GetTotalsRange());
+          Utl.AddObjToLine(ref vResult, new String(ExcelSrv.csRowRangesListDelimeter, 1), this.ChildGroups(false)[i].GetTotalsRange());
         return Utl.NullToBlank(vResult);
 			}else
 				return "";
@@ -281,12 +281,12 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 				if(vRslt.Equals(""))
 					vRslt = vPrvGrp.GetDetailsRangesList();
 				else
-					vRslt = vPrvGrp.GetDetailsRangesList()+ new String(CExcelSrv.csRowRangesListDelimeter, 1) + vRslt;
+					vRslt = vPrvGrp.GetDetailsRangesList()+ new String(ExcelSrv.csRowRangesListDelimeter, 1) + vRslt;
 			}
 			if(vRslt.Equals(""))
 				return this.GetDetailsRangesList();
 			else
-				return vRslt + new String(CExcelSrv.csRowRangesListDelimeter, 1) + this.GetDetailsRangesList();
+				return vRslt + new String(ExcelSrv.csRowRangesListDelimeter, 1) + this.GetDetailsRangesList();
 		}
 
 		// выбирает диапазон totals для предшественника на данном уровне
@@ -341,12 +341,12 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 		}
 
     public virtual void GroupChild(Excel.Worksheet ws) {
-      CXLRDetails dtls = this.GroupDetails(false);
+      XLRDetails dtls = this.GroupDetails(false);
       if (dtls != null) {
-        CExcelSrv.getRange(ws, ws.Rows[dtls.TopRowOffset], ws.Rows[dtls.TopRowOffset + dtls.Count - 1]).Group();
+        ExcelSrv.getRange(ws, ws.Rows[dtls.TopRowOffset], ws.Rows[dtls.TopRowOffset + dtls.Count - 1]).Group();
       } else {
         if (!(this is CXLRootGroup)) {
-          CExcelSrv.getRange(ws, ws.Rows[this.TopRowOffset + 1], ws.Rows[this.BottomRowOffset - 1]).Group();
+          ExcelSrv.getRange(ws, ws.Rows[this.TopRowOffset + 1], ws.Rows[this.BottomRowOffset - 1]).Group();
         }
       }
       CXLRGroups grps = this.ChildGroups(false);
@@ -361,7 +361,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 			Object[] vGrpHeader = new Object[this.RootGroup.ColDefs.Count];
 			vGrpHeader[this.FLeftCol-1] = this.FGroupKeyValue;
 			this.RootGroup.AddRowToBuffer(pBuffer, vGrpHeader);
-      CXLRDetails dtls = this.GroupDetails(false);
+      XLRDetails dtls = this.GroupDetails(false);
       if (dtls != null) {
         dtls.FillBuffer(ws, pBuffer);
       } else {
@@ -377,7 +377,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       //throw new bioEx.bioSysError("AppliayFormat!!!");
       Excel.Range vRngSrc = this.RootGroup.GRTTmplDef.HeaderFormats[this.FGroupKeyField];
       Excel.Range vDetRng = this.RootGroup.GRTTmplDef.DetailsRng;
-      Excel.Range vRngDst = CExcelSrv.getRange(dsRange.Worksheet, vDetRng.Cells[this.TopRow, 1], vDetRng.Cells[this.TopRow, vDetRng.Columns.Count]);
+      Excel.Range vRngDst = ExcelSrv.getRange(dsRange.Worksheet, vDetRng.Cells[this.TopRow, 1], vDetRng.Cells[this.TopRow, vDetRng.Columns.Count]);
       vRngSrc.Copy(Type.Missing);
 			vRngDst.PasteSpecial(Excel.XlPasteType.xlPasteFormats, Excel.XlPasteSpecialOperation.xlPasteSpecialOperationNone, false, false);
 			if(this.ChildGroups(false) != null)

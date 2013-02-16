@@ -21,7 +21,7 @@
   /// <summary>
   /// Аналог Ajax - клиента в JavaScript
   /// </summary>
-  public class CAjaxCli : CDisposableObject {
+  public class CAjaxCli : DisposableObject {
 
     private String FVersion = "1.0";
     private String FUserAgentName = "daAjax.CAjaxMng";
@@ -105,9 +105,9 @@
       //ajaxUTL.abortRequest();
     }
 
-    protected override void OnDispose() {
+    protected override void doOnDispose() {
       this.Abort();
-      base.OnDispose();
+      base.doOnDispose();
     }
 
 

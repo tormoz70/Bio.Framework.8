@@ -73,7 +73,7 @@
     /// <param name="pToFileName"></param>
     /// <param name="pURL"></param>
     public static void loadFile(String pToFileName, String pURL) {
-      //String vURL = bioUTL.utlSTD.bldURL(pServerHost, "getCli");
+      //String vURL = bioUTL.utlSTD.BuildURL(pServerHost, "getCli");
       //TParams vURLParams = new TParams();
       //vURLParams.Add(utlSTD.QLOGIN_PARNAME, utlSTD.QLOGIN_PARVALUE);
       //vURLParams.Add(utlSTD.CLINAME_PARNAME, utlSTD.CLINAME_PARVALUE);

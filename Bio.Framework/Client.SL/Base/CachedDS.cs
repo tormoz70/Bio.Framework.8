@@ -16,7 +16,7 @@ namespace Bio.Framework.Client.SL {
   public class CachedDS {
     public IAjaxMng ajaxMng { get; set; }
     public String bioCode { get; set; }
-    public CParams bioParams { get; set; }
+    public Params bioParams { get; set; }
     public Boolean addNullRow { get; set; }
     public DateTime lastLoaded { get; private set; }
     public CJsonStoreMetadata metadata { get; private set; }

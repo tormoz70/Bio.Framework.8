@@ -47,7 +47,7 @@ namespace Bio.Framework.Server {
 
           CRptBuilderCR vBldr = new CRptBuilderCR(this.BioSession, vRptCode);
           //String vCS = this.BioSession.DBSess.ConnectionString;
-          CParams vPrms = this.bioParams;
+          Params vPrms = this.bioParams;
           vBldr.doBuild(vPrms);
 
           //String vFN = xlReportInst.LastReportResultFile;

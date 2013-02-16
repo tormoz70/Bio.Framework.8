@@ -8,7 +8,7 @@ namespace Bio.Helpers.Common.Types {
   public interface IDBSession {
     String ConnectionString { get; }
     IDbConnection GetConnection();
-    void StoreTransaction(String pName, IDbTransaction pTrans);
+    void StoreTransaction(String name, IDbTransaction transaction);
     IDbTransaction RestoreTransaction(String pName);
     void KillTransaction(String pName);
     void KillTransactions();
@@ -17,9 +17,9 @@ namespace Bio.Helpers.Common.Types {
     IDbConnection GetConnection(Boolean shareConnection);
     void CloseSharedConnection();
     Boolean ConnectionIsShared { get; }
-    //void StoreTransaction(String pName, IDbTransaction pTrans);
-    //IDbTransaction RestoreTransaction(String pName);
-    //void KillTransaction(String pName);
+    //void StoreTransaction(String name, IDbTransaction pTrans);
+    //IDbTransaction RestoreTransaction(String name);
+    //void KillTransaction(String name);
     //void KillTransactions();
   }
 }

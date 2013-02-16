@@ -2,7 +2,7 @@ namespace Bio.Helpers.Common.Types {
 	using System;
 	using System.IO;
 
-	public class CStrFile:CDisposableObject{
+	public class StrFile:DisposableObject{
 		
 		private String FFileName = null;
 		private System.Text.Encoding FEncode = null;
@@ -11,12 +11,12 @@ namespace Bio.Helpers.Common.Types {
 		private StreamReader FStreamRd = null;
 		private bool FIsWritable = false;
 
-		public CStrFile(String pFileName, System.Text.Encoding pEncode){
+		public StrFile(String pFileName, System.Text.Encoding pEncode){
 			this.FFileName = pFileName;
 			this.FEncode = pEncode;
 		}
 
-		protected override void OnDispose(){
+		protected override void doOnDispose(){
 			try{
 				this.Close();
 			}catch{}

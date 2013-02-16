@@ -55,13 +55,13 @@ namespace Bio.Framework.Server {
             ar = new CBioRequest {
               requestType = enumHelper.GetFieldValueByValueName<RequestType>(v_rqType, StringComparison.CurrentCulture),
               bioCode = v_bioCode,
-              bioParams = new CParams(context.Request.Params)
+              bioParams = new Params(context.Request.Params)
             };
             (ar as CBioRequest).bioParams.Remove(csRequestTypeParamName);
             (ar as CBioRequest).bioParams.Remove(csBioCodeParamName);
           }
         }
-        ar.prms = new CParams(context.Request.Params);
+        ar.prms = new Params(context.Request.Params);
 
         this.processAjaxRequest(context, ar);
       } catch (ThreadAbortException) {

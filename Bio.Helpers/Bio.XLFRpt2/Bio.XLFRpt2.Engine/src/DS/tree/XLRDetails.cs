@@ -1,55 +1,59 @@
 namespace Bio.Helpers.XLFRpt2.Engine {
-
-	using System;
-	using System.Data;
+  using System;
 	using System.Xml;
 	using System.Collections;
 #if OFFICE12
   using Excel = Microsoft.Office.Interop.Excel;
-  using System.Collections.Generic;
+
 #endif
 
 	/// <summary>
-	/// 
+	/// Детали в группе
 	/// </summary>
 	
-	public class CXLRDetails:CXLRGroup{
-//private
-		private ArrayList FDetailRows = null;
-//public
-		//constructor
-		public CXLRDetails(CXLRDataSet pOwner, CXLRGroup pParent, int pTopRow):base(pOwner, pParent, 0){
+	public class XLRDetails:CXLRGroup{
+		private readonly ArrayList _detailRows;
+		/// <summary>
+		/// Конструктор
+		/// </summary>
+		/// <param name="pOwner"></param>
+		/// <param name="pParent"></param>
+		/// <param name="pTopRow"></param>
+		public XLRDetails(CXLRDataSet pOwner, CXLRGroup pParent, int pTopRow):base(pOwner, pParent, 0){
 			this.FTopRow = pTopRow;
-			this.FDetailRows = new ArrayList();
+			this._detailRows = new ArrayList();
 			if(this.RootGroup.FirstDetalsRow == -1){
 				this.RootGroup.FirstDetalsRow = this.TopRow;
 			}
 		}
 
-		protected override void OnDispose(){
-			this.FDetailRows.Clear();
-		}
-
-		public int Count{
+	  /// <summary>
+	  /// Кол-во элементов
+	  /// </summary>
+	  public int Count{
 			get{
-				return this.FDetailRows.Count;
+				return this._detailRows.Count;
 			}
 		}
 
-		public override XmlElement GetXml(XmlDocument pDoc){
-			CXLRColDefs vCols = this.RootGroup.ColDefs;
-			XmlElement vRslt = pDoc.CreateElement("details");
+	  protected override void doOnDispose(){
+	    this._detailRows.Clear();
+	  }
+
+	  public override XmlElement GetXml(XmlDocument pDoc){
+			var vCols = this.RootGroup.ColDefs;
+			var vRslt = pDoc.CreateElement("details");
 			vRslt.SetAttribute("FTopRow", ""+this.TopRow); 
-			for(int i=0; i<this.FDetailRows.Count; i++){
-				XmlElement vRow = pDoc.CreateElement("row");
+			for(var i=0; i<this._detailRows.Count; i++){
+				var vRow = pDoc.CreateElement("row");
 				vRow.SetAttribute("row", ""+(i+1));
 				vRslt.AppendChild(vRow);
-				Object[] vCurVals = (Object[])this.FDetailRows[i];
-				for(int j=0; j<vCols.Count; j++){
-					String vVal = "null";
+				var vCurVals = (Object[])this._detailRows[i];
+				for(var j=0; j<vCols.Count; j++){
+					var vVal = "null";
 					if(vCurVals[j] != null)
 						vVal = vCurVals[j].ToString();
-					String vNm = "null";
+					var vNm = "null";
 					if(vCols[j].FieldName != null)
 						vNm = vCols[j].FieldName;
 					vRow.SetAttribute(vNm, vVal);
@@ -62,23 +66,23 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     }
 
     public override void FillBuffer(Excel.Worksheet pWS, Object[,] pBuffer) {
-			for(int i=0; i<this.FDetailRows.Count; i++){
-				Object[] vCurVals = (Object[])this.FDetailRows[i];
+			for(var i=0; i<this._detailRows.Count; i++){
+				var vCurVals = (Object[])this._detailRows[i];
 				this.RootGroup.AddRowToBuffer(pBuffer, vCurVals);
 			}
 		}
 
 		public Object[] GetRow(int pIndex){
-			if((pIndex >= 0) && (pIndex < this.FDetailRows.Count))
-				return (Object[])this.FDetailRows[pIndex];
+			if((pIndex >= 0) && (pIndex < this._detailRows.Count))
+				return (Object[])this._detailRows[pIndex];
 			else
 				return null;
 		}
 
     public override void DoOnFetch(long rownum, CXLRDataRow row) {
-			CXLRColDefs vCols = this.RootGroup.ColDefs;
-			Object[] vDetals = new Object[vCols.Count];
-			for(int i=0; i<vCols.Count; i++){
+			var vCols = this.RootGroup.ColDefs;
+			var vDetals = new Object[vCols.Count];
+			for(var i=0; i<vCols.Count; i++){
 				Object vCurDT = null;
         var v_leaveGroupData = this.Owner.Owner.Cfg.leaveGroupData;
         if (!v_leaveGroupData && vCols[i].IsGroupField)
@@ -92,7 +96,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         }
 				vDetals[i] = vCurDT;
 			}
-			this.FDetailRows.Add(vDetals);
+			this._detailRows.Add(vDetals);
 			this.DoOnRowsInsert(1);
 		}
 

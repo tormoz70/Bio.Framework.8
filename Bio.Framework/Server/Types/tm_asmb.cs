@@ -33,9 +33,9 @@ namespace Bio.Framework.Server {
     protected override void doExecute() {
       //Thread.Sleep(5000);
       //base.doExecute();
-      String moduleName = CParams.FindParamValue(this.bioParams, "moduleName") as String;
+      String moduleName = Params.FindParamValue(this.bioParams, "moduleName") as String;
       String v_fileName = Utl.NormalizeDir(this.BioSession.Cfg.LocalPath) + @"ClientBin\" + moduleName;
-      String getModule = CParams.FindParamValue(this.bioParams, "getModule") as String;
+      String getModule = Params.FindParamValue(this.bioParams, "getModule") as String;
       if (String.Equals(getModule, "1")) {
         this.sendFileToClient(v_fileName);
       } else {

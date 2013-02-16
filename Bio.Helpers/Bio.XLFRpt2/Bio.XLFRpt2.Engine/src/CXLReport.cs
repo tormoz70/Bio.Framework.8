@@ -25,10 +25,10 @@ namespace Bio.Helpers.XLFRpt2.Engine {
   public delegate void DlgXLReportOnError(Object opener, CXLReport report, Exception ex);
   public delegate void DlgXLReportOnBeforeDispose(CXLReport report);
 
-  public class CXLReport : CDisposableObject, IRemoteProcInst {
+  public class CXLReport : DisposableObject, IRemoteProcInst {
     //private
     private Object FOpener = null;
-    private CExcelSrv FExcelSrv = null;
+    private ExcelSrv FExcelSrv = null;
     private CXLRDefinition FRptDefinition = null;
     private HttpContext FHttpContext = null;
     private RemoteProcState FState = RemoteProcState.Redy;
@@ -54,7 +54,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     public event DlgXLReportOnBeforeDispose OnBeforeDispose;
     public event DlgXLReportOnTerminatingBuild OnTerminatingBuild;
 
-    public CExcelSrv ExcelSrv {
+    public ExcelSrv ExcelSrv {
       get { return this.FExcelSrv; }
     }
 
@@ -84,7 +84,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       this.FHttpContext = httpContext;
       this.FDataSources = new CXLRDataSources(this, cfg.dss);
       this.FExcelSrvIsOutter = (excelInst != null);
-      this.FExcelSrv = new CExcelSrv(excelInst);
+      this.FExcelSrv = new ExcelSrv(excelInst);
       this.FLastReportResultFile = this.FRptDefinition.GetNewTempFileName();
     }
 
@@ -93,7 +93,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     public CXLReport(CXLReportConfig cfg) : this(null, cfg, null, null) { }
 
     //destructor
-    protected override void OnDispose() {
+    protected override void doOnDispose() {
       if (this.OnBeforeDispose != null)
         this.OnBeforeDispose(this);
       if (this.FRptDefinition != null) {
@@ -377,7 +377,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         String rpt_title,
         String rpt_desc,
         String rpt_template,
-        CParams rpt_params,
+        Params rpt_params,
         String dataFactoryTypeName,
         String reportResultFileName,
         List<CXLReportDSConfig> dss,
@@ -407,7 +407,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       vApndXML.WriteLine("<macroAfter/>");
       if (rpt_params != null) {
         vApndXML.WriteLine("<params>");
-        foreach (CParam vPrm in rpt_params)
+        foreach (Param vPrm in rpt_params)
           vApndXML.WriteLine("<param name=\"" + vPrm.Name + "\" type=\"notsql\">" + vPrm.Value + "</param>");
         vApndXML.WriteLine("</params>");
       } else
@@ -442,7 +442,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       vApndXML.WriteLine("<rptWorkPath>" + Path.GetDirectoryName(rpt_template) + "</rptWorkPath>");
       if (rpt_params != null) {
         vApndXML.WriteLine("<inParams>");
-        foreach (CParam vPrm in rpt_params)
+        foreach (Param vPrm in rpt_params)
           vApndXML.WriteLine("<param name=\"" + vPrm.Name + "\">" + vPrm.Value + "</param>");
         vApndXML.WriteLine("</inParams>");
       } else {
@@ -521,7 +521,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
               String vText = null;
               if (this.FState == RemoteProcState.Error) {
                 if (File.Exists(this.FLastErrorFile))
-                  CStrFile.LoadStringFromFile(this.FLastErrorFile, ref vText, null);
+                  StrFile.LoadStringFromFile(this.FLastErrorFile, ref vText, null);
               }
               this.OnChangeState(this.FOpener, this, vText);
             } catch (Exception ex) {
@@ -550,7 +550,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         EBioException ebioex = null;
         if (File.Exists(this.FLastErrorFile)) {
           String vErrText = null;
-          CStrFile.LoadStringFromFile(this.FLastErrorFile, ref vErrText, null);
+          StrFile.LoadStringFromFile(this.FLastErrorFile, ref vErrText, null);
           ebioex = new EBioException(vErrText);
         }
 

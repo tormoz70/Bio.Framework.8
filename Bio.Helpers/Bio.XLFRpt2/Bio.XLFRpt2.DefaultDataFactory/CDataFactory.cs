@@ -1,3 +1,5 @@
+using Bio.Helpers.Common;
+
 namespace Bio.Helpers.XLFRpt2.DataFactory {
 
   using System;
@@ -15,15 +17,15 @@ namespace Bio.Helpers.XLFRpt2.DataFactory {
   /// 
   /// </summary>
   public class CDataFactory:CXLRDataFactory {
-    private CSQLCursor FCmd = null;
-    private CDBSession _dbSess = null;
+    private SQLCursor FCmd = null;
+    private DBSession _dbSess = null;
 
     public override IDbConnection openDbConnection(CXLReportConfig cfg) {
       if (cfg.dbSession != null)
         return cfg.dbSession.GetConnection();
       else { 
         if((this._dbSess == null) && !String.IsNullOrEmpty(cfg.connStr))
-          this._dbSess = new CDBSession(cfg.connStr);
+          this._dbSess = new DBSession(cfg.connStr);
         if (this._dbSess != null)
           return this._dbSess.GetConnection();
         else
@@ -31,12 +33,12 @@ namespace Bio.Helpers.XLFRpt2.DataFactory {
       }
     }
 
-    protected override IDictionary<String, CFieldType> open(IDbConnection conn, CXLReportDSConfig dsCfg, Int32 timeout) {
+    protected override IDictionary<String, FieldType> open(IDbConnection conn, CXLReportDSConfig dsCfg, Int32 timeout) {
 
 
-      IDictionary<String, CFieldType> rslt = null;
+      IDictionary<String, FieldType> rslt = null;
 
-      this.FCmd = new CSQLCursor(conn);
+      this.FCmd = new SQLCursor(conn);
       String vSQL = dsCfg.sql;
       this.FCmd.Init(vSQL, dsCfg.owner.inPrms);
       try {
@@ -44,7 +46,7 @@ namespace Bio.Helpers.XLFRpt2.DataFactory {
           Utl.SaveStringToFile(dsCfg.owner.logPath + dsCfg.owner.extAttrs.shortCode + ".prdDS." + dsCfg.rangeName + ".sql", vSQL, null);
         this.FCmd.Open(timeout);
         //if (this.FDataReader.Next()) {
-          rslt = new Dictionary<String, CFieldType>();
+          rslt = new Dictionary<String, FieldType>();
           for (int i = 0; i < this.FCmd.FieldsCount; i++) {
             rslt.Add(this.FCmd.Fields[i].FieldName,
                      this.FCmd.Fields[i].DataType);
@@ -79,22 +81,22 @@ namespace Bio.Helpers.XLFRpt2.DataFactory {
 
     }
 
-    public override Object GetScalarValue(IDbConnection conn, String cmd, CParams prms, Int32 timeout) {
-      return CSQLCmd.ExecuteScalarSQL(conn, cmd, prms, timeout);
+    public override Object GetScalarValue(IDbConnection conn, String cmd, Params prms, Int32 timeout) {
+      return SQLCmd.ExecuteScalarSQL(conn, cmd, prms, timeout);
     }
 
     private String _preparedSQL = null;
-    private CParams _preparedParams = null;
-    public override IDbCommand PrepareCmd(IDbConnection conn, String cmd, CParams prms, Int32 timeout) {
+    private Params _preparedParams = null;
+    public override IDbCommand PrepareCmd(IDbConnection conn, String cmd, Params prms, Int32 timeout) {
       this._preparedSQL = cmd;
       this._preparedParams = prms;
-      return CSQLCmd.PrepareCommand(conn, cmd, prms, timeout);
+      return SQLCmd.PrepareCommand(conn, cmd, prms, timeout);
     }
 
     public override void ExecCmd(IDbCommand cmd) {
       var trn = cmd.Connection.BeginTransaction();
       try {
-        CSQLCmd.ExecuteScript(cmd, this._preparedSQL, this._preparedParams);
+        SQLCmd.ExecuteScript(cmd, this._preparedSQL, this._preparedParams);
         trn.Commit();
       } catch (ThreadAbortException) {
         trn.Rollback();

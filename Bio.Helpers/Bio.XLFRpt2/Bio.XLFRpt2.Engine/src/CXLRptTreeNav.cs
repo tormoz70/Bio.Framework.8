@@ -42,7 +42,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         vName = Path.GetFileNameWithoutExtension(folderOrRptName);
       else if (Directory.Exists(folderOrRptName))
         vName = new DirectoryInfo(folderOrRptName).Name;
-      String vNameOK = Utl.regexFind(vName, "\\d+[_]\\w+", true);
+      String vNameOK = Utl.RegexFind(vName, "\\d+[_]\\w+", true);
       if (!String.IsNullOrEmpty(vNameOK)) {
         String vSCode = vNameOK.Substring(vNameOK.IndexOf("_") + 1);
         vSCode = vSCode.Replace("(rpt).xml", "");
@@ -96,9 +96,9 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       scanPhisicalPath(rootPath, rptFolderCode, new Action<DirectoryInfo>((di) => {
         CXLFolderNode fldAttr = getFolderAttrs(di.FullName, userRoles);
         if (fldAttr != null) {
-          Utl.appendStr(ref vFullTitle, fldAttr.title, "/");
+          Utl.AppendStr(ref vFullTitle, fldAttr.title, "/");
           String thrCode = extractThrowCode(di.Name);
-          Utl.appendStr(ref vFullThrowCode, thrCode, ".");
+          Utl.AppendStr(ref vFullThrowCode, thrCode, ".");
         }
       }));
       fullTitle = vFullTitle;

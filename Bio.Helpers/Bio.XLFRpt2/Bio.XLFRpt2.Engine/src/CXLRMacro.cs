@@ -9,15 +9,15 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 	/// <summary>
 	/// 
 	/// </summary>
-	public class CXLRMacro:CDisposableObject{
+	public class CXLRMacro:DisposableObject{
 //private
 		private String FName = null;
-    private CParams FParams = null;
+    private Params FParams = null;
 
 //public
 		//constructor
 		public CXLRMacro(XmlElement definition){
-      this.FParams = new CParams();
+      this.FParams = new Params();
       if (definition != null) {
         Boolean v_enabled = Xml.getAttribute<Boolean>(definition, "enabled", true);
         if (v_enabled) {
@@ -35,7 +35,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       }
     }
 
-    public CParams Params {
+    public Params Params {
       get {
         return this.FParams;
       }

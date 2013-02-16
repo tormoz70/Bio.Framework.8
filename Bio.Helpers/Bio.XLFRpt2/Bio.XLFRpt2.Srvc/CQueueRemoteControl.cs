@@ -16,7 +16,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
 
     public String Add(String rptCode, String sessionID, String userUID, String remoteIP, String prms, int priority, ref String err_json) {
       ThreadPriority v_priority = (ThreadPriority)priority;
-      CParams v_prms = CParams.Decode(prms);
+      Params v_prms = Params.Decode(prms);
       String rslt = null;
       try {
         rslt = this.Owner.Add(rptCode, sessionID, userUID, remoteIP, v_prms, v_priority);

@@ -12,7 +12,7 @@ namespace Bio.Framework.Server {
   using Bio.Helpers.Common.Types;
   using Bio.Helpers.Common;
 
-  public partial class CBioSession {
+  public partial class BioSession {
 
     public DateTime CreationDT { get; private set; }
 
@@ -24,13 +24,13 @@ namespace Bio.Framework.Server {
     //private ABioHandler FCurBioMsg = null;
 
     private Hashtable FIOS = null;
-    //private CDBSession FDBSession = null;
+    //private DBSession FDBSession = null;
 
-    public CBioSession(String localPath, String appURL) {
+    public BioSession(String localPath, String appURL) {
 			this.CreationDT = DateTime.Now;
       this.FIOS = new Hashtable();
       this.Cfg = new CBioCfgOra(localPath, appURL);
-      //this.FDBSession = new CDBSession(this.Cfg.ConnectionString, null, this.Cfg.doOnAfterDBConnect);
+      //this.FDBSession = new DBSession(this.Cfg.ConnectionString, null, this.Cfg.doOnAfterDBConnect);
 
     }
 
@@ -91,7 +91,7 @@ namespace Bio.Framework.Server {
       }
     }
 
-    //public CDBSession DBSess {
+    //public DBSession DBSess {
     //  get {
     //    return this.FDBSession;
     //  }
@@ -102,7 +102,7 @@ namespace Bio.Framework.Server {
     //  if(pDSNode != null && pDSNode.HasAttribute("connid"))
     //    vConn = pDSNode.GetAttribute("connid");
     //  vConn = (String.IsNullOrEmpty(vConn)) ? this.CurUser.ConnectionString : this.Cfg.getDBConnStr(vConn);
-    //  CParams vCntxEnv = new CParams();
+    //  Params vCntxEnv = new Params();
     //  vCntxEnv.SetValue(csSYS_CURUSERUID_PARAM_NAME, this.CurUser.USR_UID);
     //  vCntxEnv.SetValue(csSYS_CURODEPUID_PARAM_NAME, this.CurUser.ODEP_UID);
     //  vCntxEnv.SetValue(csSYS_TITLE_PARAM_NAME, this.BioSysTitle);

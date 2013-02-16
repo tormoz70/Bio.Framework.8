@@ -37,7 +37,7 @@ namespace Bio.Framework.Packets {
     public String GetSQL() {
       String rslt = null;
       foreach (var s in this) {
-        Utl.appendStr(ref rslt, String.Format("{0} {1}", s.Key, enumHelper.GetFieldDesc(s.Value)), ",");
+        Utl.AppendStr(ref rslt, String.Format("{0} {1}", s.Key, enumHelper.GetFieldDesc(s.Value)), ",");
       }
       return rslt;
     }

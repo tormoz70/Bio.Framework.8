@@ -35,7 +35,7 @@ namespace Bio.Framework.Server {
       int vCurRowN = vCurCol.Row;
       int vCurRowsN = vCurCol.Rows.Count;
       vCurCol.Insert(Excel.XlInsertShiftDirection.xlShiftToRight, true);
-      Excel.Range vNewCol = CExcelSrv.getRange(vCurCol.Worksheet, vCurCol.Worksheet.Cells[vCurRowN, vCurColN],
+      Excel.Range vNewCol = ExcelSrv.getRange(vCurCol.Worksheet, vCurCol.Worksheet.Cells[vCurRowN, vCurColN],
                                                          vCurCol.Worksheet.Cells[vCurRowN + vCurRowsN, vCurColN]);
       vCurCol.Copy(vNewCol);
       //pRng = XLRUtils.UnionRanges(pRng, vNewCol);
@@ -58,7 +58,7 @@ namespace Bio.Framework.Server {
         throw this.creBioEx("Не допустимый формат столбца " + fld.name + ", expXL_format=\"" + fld.format + "\".", null);
       }
 
-      v_dataCell.HorizontalAlignment = CExcelSrv.ConvertAlignJS2XL(fld.align);
+      v_dataCell.HorizontalAlignment = ExcelSrv.ConvertAlignJS2XL(fld.align);
 
       v_dataCell.ColumnWidth = fld.width;
       v_headerCell.Formula = String.IsNullOrEmpty(fld.header) ? "<пусто>" : fld.header.Replace("\n", String.Empty);
@@ -74,12 +74,12 @@ namespace Bio.Framework.Server {
     }
 
     private void DoOnPrepareTemplate(Object opener, ref Excel.Workbook wb, CXLReport report) {
-        Excel.Range vRng = CExcelSrv.GetRangeByName(ref wb, "mRng");
+        Excel.Range vRng = ExcelSrv.GetRangeByName(ref wb, "mRng");
         if (vRng != null) {
           Excel.Worksheet vWS = vRng.Worksheet;
-          vRng = CExcelSrv.getRange(vWS, vWS.Cells[vRng.Row - 1, 2], vWS.Cells[vRng.Row + vRng.Rows.Count, 2]);
+          vRng = ExcelSrv.getRange(vWS, vWS.Cells[vRng.Row - 1, 2], vWS.Cells[vRng.Row + vRng.Rows.Count, 2]);
           var dsCfg = report.RptDefinition.dsCfgByRangeName("mRng");
-          var colHeadersFromCli = CParams.FindParamValue<Dictionary<String, String>>(report.RptDefinition.InParams, "dataGridOnClientHeaders");
+          var colHeadersFromCli = Params.FindParamValue<Dictionary<String, String>>(report.RptDefinition.InParams, "dataGridOnClientHeaders");
           if (colHeadersFromCli != null) {
             foreach (var fd in dsCfg.fieldDefs) {
               String colHeader;
@@ -142,8 +142,8 @@ namespace Bio.Framework.Server {
         rptCfg.extAttrs.remoteIP = this.BioSession.CurSessionRemoteIP;
         rptCfg.extAttrs.workPath = this.BioSession.Cfg.WorkSpacePath; //this.BioSession.Cfg.IniPath; //vIO.LocalPath;
         //rptCfg.extAttrs.
-        foreach (CParam vPrm in this.bioParams)
-          rptCfg.inPrms.Add((CParam)vPrm.Clone());
+        foreach (Param vPrm in this.bioParams)
+          rptCfg.inPrms.Add((Param)vPrm.Clone());
         rptCfg.debug = Xml.getAttribute<Boolean>(vIO.IniDocument.XmlDoc.DocumentElement, "debug", false);
         rptCfg.dss.Add(CXLReportDSConfig.DecodeFromBio(
           vIO.IniDocument.XmlDoc.DocumentElement,

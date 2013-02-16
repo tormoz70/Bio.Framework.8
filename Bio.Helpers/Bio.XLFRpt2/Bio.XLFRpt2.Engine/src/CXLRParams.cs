@@ -67,7 +67,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 
 	}*/
 	
-	//public class CXLRParams: CParams{
+	//public class CXLRParams: Params{
 		/*private void  InitBlock(){
 			FParams = new ArrayList();
 		}
@@ -148,7 +148,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
   //  public String AsXMLText() { 
   //    StringBuilder rslt = new StringBuilder();
   //    rslt.AppendLine("<params>");
-  //    foreach (CParam p in this) 
+  //    foreach (Param p in this) 
   //      rslt.AppendLine(String.Format("<param name=\"{0}\"><![CDATA[{1}]]></param>", p.Name, p.ValueAsString()));
   //    rslt.AppendLine("</params>");
   //    return rslt.ToString();

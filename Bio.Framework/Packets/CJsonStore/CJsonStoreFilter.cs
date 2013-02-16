@@ -39,7 +39,7 @@ namespace Bio.Framework.Packets {
   }
 
   public abstract class CJSFilterItem: ICloneable {
-    public abstract void buildSQLCondition(ref String sql, CParams prms);
+    public abstract void buildSQLCondition(ref String sql, Params prms);
     protected abstract CJSFilterItem clone();
 #if SILVERLIGHT
     public virtual Boolean check(CRTObject row) { throw new NotImplementedException(); }
@@ -55,7 +55,7 @@ namespace Bio.Framework.Packets {
 
   /*public class CJSFilterItemSplitter : CJSFilterItem {
     public CJSFilterItemSplitterType joinCondition { get; set; }
-    public override void buildSQLCondition(ref String sql, CParams prms) {
+    public override void buildSQLCondition(ref String sql, Params prms) {
       sql = String.Format(" {0} ", enumHelper.NameOfValue(this.joinCondition, false).ToUpper());
     }
     protected override CJSFilterItem clone() {
@@ -77,7 +77,7 @@ namespace Bio.Framework.Packets {
     /// <summary>
     /// Тип поля
     /// </summary>
-    public CFieldType? fieldType { get; set; }
+    public FieldType? fieldType { get; set; }
     /// <summary>
     /// Сравниваемое значение
     /// </summary>
@@ -87,12 +87,12 @@ namespace Bio.Framework.Packets {
     /// </summary>
     public CJSFilterComparisionOperatorType cmpOperator { get; set; }
 
-    private String detectSQLFormat(Boolean hasNot, CJSFilterComparisionOperatorType operation, CFieldType fieldType) {
+    private String detectSQLFormat(Boolean hasNot, CJSFilterComparisionOperatorType operation, FieldType fieldType) {
       //String valStr = (val != null) ? val.ToString() : null;
       String rslt = null;
       switch (fieldType) {
-        case CFieldType.String:
-        case CFieldType.Clob: {
+        case FieldType.String:
+        case FieldType.Clob: {
             switch (operation) {
               case CJSFilterComparisionOperatorType.Eq: rslt = "UPPER({0}) = UPPER(:{1})"; break;
               case CJSFilterComparisionOperatorType.Gt: rslt = "UPPER({0}) > UPPER(:{1})"; break;
@@ -105,7 +105,7 @@ namespace Bio.Framework.Packets {
               case CJSFilterComparisionOperatorType.IsNull: rslt = "{0} IS NULL{1}"; break;
             }
           } break;
-        case CFieldType.Boolean: {
+        case FieldType.Boolean: {
             //Boolean valBool = Utl.parsBoolean(valStr);
             //if (valBool)
             //  rslt = "(to_char({0}) = '1' or upper(to_char({0})) = 'TRUE' or upper(to_char({0})) = 'Y' or upper(to_char({0})) = 'T'){1}";
@@ -113,10 +113,10 @@ namespace Bio.Framework.Packets {
             //  rslt = "(to_char({0}) = '0' or upper(to_char({0})) = 'FALSE' or upper(to_char({0})) = 'N' or upper(to_char({0})) = 'F'){1}";
             rslt = "{0} = :{1}";
           } break;
-        case CFieldType.Float:
-        case CFieldType.Int:
-        case CFieldType.Blob:
-        case CFieldType.Object: {
+        case FieldType.Float:
+        case FieldType.Int:
+        case FieldType.Blob:
+        case FieldType.Object: {
             switch (operation) {
               case CJSFilterComparisionOperatorType.Eq: rslt = "{0} = :{1}"; break;
               case CJSFilterComparisionOperatorType.Gt: rslt = "{0} > :{1}"; break;
@@ -125,7 +125,7 @@ namespace Bio.Framework.Packets {
               case CJSFilterComparisionOperatorType.Le: rslt = "{0} <= :{1}"; break;
             }
           } break;
-        case CFieldType.Date: {
+        case FieldType.Date: {
             //String vOperStr = null;
             switch (operation) {
               case CJSFilterComparisionOperatorType.Eq: rslt = "{0} = :{1}"; break;
@@ -140,10 +140,10 @@ namespace Bio.Framework.Packets {
       return (hasNot) ? String.Format("NOT({0})", rslt) : rslt;
     }
 
-    private CFieldType _detectFTypeGranted() {
-      CFieldType v_ftype = CFieldType.String;
+    private FieldType _detectFTypeGranted() {
+      FieldType v_ftype = FieldType.String;
       if (this.fieldType != null)
-        v_ftype = (CFieldType)this.fieldType;
+        v_ftype = (FieldType)this.fieldType;
       else {
         if (this.fieldValue != null)
           v_ftype = ftypeHelper.ConvertTypeToFType(this.fieldValue.GetType());
@@ -151,21 +151,21 @@ namespace Bio.Framework.Packets {
       return v_ftype;
     }
 
-    public override void buildSQLCondition(ref String sql, CParams prms) {
+    public override void buildSQLCondition(ref String sql, Params prms) {
       if (prms == null)
         throw new ArgumentNullException("prms");
       String v_val_param_name = this.fieldName + "$afilter";
-      CFieldType v_ftype = this._detectFTypeGranted();
+      FieldType v_ftype = this._detectFTypeGranted();
       sql = String.Format(this.detectSQLFormat(this.not, this.cmpOperator, v_ftype), this.fieldName, v_val_param_name);
       var v_ptype = ftypeHelper.ConvertFTypeToType(v_ftype);
       Object v_pval = null;
-      if (v_ftype == CFieldType.Boolean) {
+      if (v_ftype == FieldType.Boolean) {
         v_ptype = typeof(Int64);
         var v_bool = (Boolean)this.fieldValue;
         v_pval = (v_bool) ? 1 : 0;
       }else
         v_pval = this.fieldValue;
-      prms.Add(new CParam { 
+      prms.Add(new Param { 
         Name = v_val_param_name,
         ParamType = v_ptype,
         Value = v_pval
@@ -176,10 +176,10 @@ namespace Bio.Framework.Packets {
     private Boolean _check(Object value) {
       //String valStr = (val != null) ? val.ToString() : null;
       Boolean rslt = false;
-      CFieldType v_ftype = this._detectFTypeGranted();
+      FieldType v_ftype = this._detectFTypeGranted();
       switch (v_ftype) {
-        case CFieldType.String:
-        case CFieldType.Clob: {
+        case FieldType.String:
+        case FieldType.Clob: {
             String v_val = Utl.Convert2Type<String>(value); if(!String.IsNullOrEmpty(v_val)) v_val = v_val.ToUpper();
             String v_fval = this.fieldValue as String; if (!String.IsNullOrEmpty(v_fval)) v_fval = v_fval.ToUpper();
             switch (this.cmpOperator) {
@@ -197,7 +197,7 @@ namespace Bio.Framework.Packets {
               case CJSFilterComparisionOperatorType.IsNull: rslt = String.IsNullOrEmpty(v_val); break;
             }
           } break;
-        case CFieldType.Boolean: {
+        case FieldType.Boolean: {
             //Boolean valBool = Utl.parsBoolean(valStr);
             //if (valBool)
             //  rslt = "(to_char({0}) = '1' or upper(to_char({0})) = 'TRUE' or upper(to_char({0})) = 'Y' or upper(to_char({0})) = 'T'){1}";
@@ -206,10 +206,10 @@ namespace Bio.Framework.Packets {
             Boolean v_val = Utl.Convert2Type<Boolean>(value);
             rslt = (Boolean)this.fieldValue == v_val;
           } break;
-        case CFieldType.Float:
-        case CFieldType.Int:
-        case CFieldType.Blob:
-        case CFieldType.Object: {
+        case FieldType.Float:
+        case FieldType.Int:
+        case FieldType.Blob:
+        case FieldType.Object: {
           Decimal v_val = Utl.Convert2Type<Decimal>(value);
           Decimal v_fval = Utl.Convert2Type<Decimal>(this.fieldValue);
             switch (this.cmpOperator) {
@@ -220,7 +220,7 @@ namespace Bio.Framework.Packets {
               case CJSFilterComparisionOperatorType.Le: rslt = v_val <= v_fval; break;
             }
           } break;
-        case CFieldType.Date: {
+        case FieldType.Date: {
           DateTime v_val = Utl.Convert2Type<DateTime>(value);
           DateTime v_fval = Utl.Convert2Type<DateTime>(this.fieldValue);
             switch (this.cmpOperator) {
@@ -290,7 +290,7 @@ namespace Bio.Framework.Packets {
     }
 #endif
 
-    public void buildSQLConditions(ref String sql, CParams prms) {
+    public void buildSQLConditions(ref String sql, Params prms) {
       sql = null;
       int i = 0;
       while(i < this.Items.Count) {
@@ -300,7 +300,7 @@ namespace Bio.Framework.Packets {
         }
         String v_lsql = null;
         this.Items[i].buildSQLCondition(ref v_lsql, prms);
-        Utl.appendStr(ref sql, v_lsql, vDelimeter);
+        Utl.AppendStr(ref sql, v_lsql, vDelimeter);
         i++; i++;
       }
       if (!String.IsNullOrEmpty(sql))
@@ -335,8 +335,8 @@ namespace Bio.Framework.Packets {
     /// </summary>
     /// <param name="pJsonString"></param>
     /// <returns></returns>
-    public static CParams Decode(String pJsonString) {
-      return jsonUtl.decode<CParams>(pJsonString, new JsonConverter[] { new EBioExceptionConverter() });
+    public static Params Decode(String pJsonString) {
+      return jsonUtl.decode<Params>(pJsonString, new JsonConverter[] { new EBioExceptionConverter() });
     }
 
     #endregion

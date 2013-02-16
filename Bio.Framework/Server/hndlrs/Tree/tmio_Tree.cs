@@ -38,7 +38,7 @@ namespace Bio.Framework.Server {
     //                String pOrgUid, String pNodeUid,
     //                LitJson_killd.JsonWriter jw) {
     //  CSQLCursorBio vCursor = new CSQLCursorBio(pConn, pDS, this.bioCode);
-    //  CParams vPrms = new CParams(new CParam("org_uid", pOrgUid), new CParam("nodeid", pNodeUid));
+    //  Params vPrms = new Params(new Param("org_uid", pOrgUid), new Param("nodeid", pNodeUid));
     //  vCursor.Init(vPrms);
     //  vCursor.Open();
     //  jw.WriteArrayStart();
@@ -46,10 +46,10 @@ namespace Bio.Framework.Server {
     //    while(vCursor.Next()) {
     //      jw.WriteObjectStart();
     //      try {
-    //        CField vIdFld = vCursor.FieldByName(vFldDefs.ID_FLD);
-    //        CField vTxtFld = vCursor.FieldByName(vFldDefs.TEXT_FLD);
-    //        CField vLeafFld = vCursor.FieldByName(vFldDefs.LEAF_FLD);
-    //        CField vClsFld = vCursor.FieldByName(vFldDefs.CLS_FLD);
+    //        Field vIdFld = vCursor.FieldByName(vFldDefs.ID_FLD);
+    //        Field vTxtFld = vCursor.FieldByName(vFldDefs.TEXT_FLD);
+    //        Field vLeafFld = vCursor.FieldByName(vFldDefs.LEAF_FLD);
+    //        Field vClsFld = vCursor.FieldByName(vFldDefs.CLS_FLD);
     //        if(vIdFld == null)
     //          throw new EBioException("В описании <store> объекта [" + this.bioCode + "] должно быть объявлено поле \"" + vFldDefs.ID_FLD + "\".");
     //        if(vTxtFld == null)
@@ -64,12 +64,12 @@ namespace Bio.Framework.Server {
     //        Boolean vLeaf = vLeafFld.AsInteger > 0;
     //        jw.WritePropertyName("leaf").Write(vLeaf);
     //        jw.WritePropertyName("cls").Write(vClsFld.AsString);
-    //        CField vDataFld = vCursor.FieldByName(vFldDefs.DATA_FLD);
+    //        Field vDataFld = vCursor.FieldByName(vFldDefs.DATA_FLD);
     //        if(vDataFld != null) {
     //          String vJSO = vDataFld.AsString;
     //          jw.WritePropertyName("data").Write(vJSO);
     //        }
-    //        CField vIconFld = vCursor.FieldByName(vFldDefs.ICON_FLD);
+    //        Field vIconFld = vCursor.FieldByName(vFldDefs.ICON_FLD);
     //        if(vIconFld != null) {
     //          String vIconData = vIconFld.AsString;
     //          jw.WritePropertyName("icon").Write(this.CurIOLocalUrl + vIconData);
@@ -134,7 +134,7 @@ namespace Bio.Framework.Server {
                 vFullLoad = this.bioParams.ParamByName("fullLoad").ValueAsString().ToLower() == "true";
               //this.loadChildren(
               //      vConn, vDS, vFldDefs, vFullLoad,
-              //      (String)CParams.FindParamValue(this.bioParams, "org_uid"), (String)CParams.FindParamValue(this.bioParams, "nodeid"),
+              //      (String)Params.FindParamValue(this.bioParams, "org_uid"), (String)Params.FindParamValue(this.bioParams, "nodeid"),
               //      jw);
               vResult = sw.ToString();
             }

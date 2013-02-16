@@ -12,7 +12,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 	/// 
 	/// </summary>
 
-  public class CXLRCharts:CDisposableObject{
+  public class CXLRCharts:DisposableObject{
 
     private CXLRDataSource FOwner = null;
     private List<CXLRChart> FCharts;

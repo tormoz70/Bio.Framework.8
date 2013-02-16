@@ -12,19 +12,19 @@ namespace Bio.Framework.Server {
   using Bio.Helpers.Common;
 
   public class CIObject {
-    private CBioSession _ownerSession;
+    private BioSession _ownerSession;
     //private String FExporter;
     private String _locPath;
     private dom4cs _iniDoc;
 
-    public CBioSession OwnerSession { get { return this._ownerSession; } }
+    public BioSession OwnerSession { get { return this._ownerSession; } }
     public String bioCode { get; private set; }
 
-    public static CIObject CreateIObject(String bioCode, CBioSession ownerSession) {
+    public static CIObject CreateIObject(String bioCode, BioSession ownerSession) {
       return CreateIObject(bioCode, ownerSession, false);
     }
 
-    public static CIObject CreateIObject(String bioCode, CBioSession ownerSession, bool suppressErrors) {
+    public static CIObject CreateIObject(String bioCode, BioSession ownerSession, bool suppressErrors) {
       CIObject vResult = null;
       String vIniFileName = SrvUtl.bldiniFileName(ownerSession.Cfg.IniPath, bioCode);
       if(File.Exists(vIniFileName)) {
@@ -45,11 +45,11 @@ namespace Bio.Framework.Server {
       return vResult;
     }
 
-    public CIObject(String bioCode, CBioSession ownerSession) {
+    public CIObject(String bioCode, BioSession ownerSession) {
       this._ownerSession = ownerSession;
       this.bioCode = bioCode;
       this._ownerSession.IObj_set(this.bioCode, this);
-      this._locPath = Utl.genBioLocalPath(this.bioCode);
+      this._locPath = Utl.GenBioLocalPath(this.bioCode);
       if(this._locPath.Length > 0)
         this._locPath = this.OwnerSession.Cfg.IniPath + this._locPath;
     }
@@ -63,7 +63,7 @@ namespace Bio.Framework.Server {
           if(vTextNode != null) {
             String vText = vTextNode.InnerText;
             String vCurrentIOPath = Path.GetDirectoryName(this._iniDoc.FileName);
-            Utl.tryLoadMappedFiles(vCurrentIOPath, ref vText);
+            Utl.TryLoadMappedFiles(vCurrentIOPath, ref vText);
             vTextNode.RemoveAll();
             vTextNode.AppendChild(vTextNode.OwnerDocument.CreateCDataSection(vText));
           }

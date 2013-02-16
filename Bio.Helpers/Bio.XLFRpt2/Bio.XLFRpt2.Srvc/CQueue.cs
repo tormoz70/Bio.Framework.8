@@ -2,21 +2,11 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
 	using System;
 	using System.IO;
 	using System.Xml;
-	using System.Web;
-	using System.Collections;
-  using System.Threading;
-  using Bio.Helpers.XLFRpt2.Engine;
+	using System.Threading;
+  using Engine;
   using System.Collections.Generic;
-  using Bio.Helpers.Common.Types;
-  using System.Runtime.Remoting.Channels.Ipc;
-  using System.Runtime.Remoting.Channels;
-  using System.Runtime.Remoting;
-  using System.Runtime.Remoting.Channels.Tcp;
-  using System.Security.Principal;
-  using System.Runtime.Serialization.Formatters;
-  using System.Reflection;
-  using Bio.Helpers.Common;
-  using System.Net.NetworkInformation;
+  using Common.Types;
+	using Common;
 
   public enum QueueCmd {
     Break = 1,
@@ -26,57 +16,57 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
   public class CXLRptItem {
     public String uid { get; set; }
     public String code { get; set; }
-    public CParams prms { get; set; }
+    public Params prms { get; set; }
     public String usr { get; set; }
   }
+
   public abstract class CQueue {
     internal static String csInternalUserName = "XLR.Queue";
     internal static CQueue instOfQueue = null;
-    protected CConfigSys _cfg = null;
-    private CBackgroundThread1 _thread = null;
-    private Object FOpener = null;
-    private Dictionary<String, IRemoteProcInst> FRunningReports = null;
-    private CQueueRemoteControl _remoteControl = null;
+    protected CConfigSys cfg = null;
+    private readonly CBackgroundThread _thread;
+    private readonly Object _opener;
+    private readonly Dictionary<String, IRemoteProcInst> _runningReports;
 
     private void log_msg(String msg) {
-      if (this._cfg.msgLogWriter != null)
-        this._cfg.msgLogWriter(msg);
+      if (this.cfg.msgLogWriter != null)
+        this.cfg.msgLogWriter(msg);
     }
     private void log_err(Exception ex) {
-      if (this._cfg.errLogWriter != null)
-        this._cfg.errLogWriter(ex);
+      if (this.cfg.errLogWriter != null)
+        this.cfg.errLogWriter(ex);
     }
 
-    public CQueue(Object opener, CConfigSys cfg) {
+    protected CQueue(Object opener, CConfigSys cfg) {
       instOfQueue = this;
-      this._cfg = cfg;
-      this.FOpener = opener;
-      this.FRunningReports = new Dictionary<String, IRemoteProcInst>();
-      String v_srv_name = null;
-      if (this.FOpener is Service)
-        v_srv_name = (this.FOpener as Service).ServiceName;
-      this._thread = new CBackgroundThread1(
-        v_srv_name,
-        this._cfg.adminEmail,
-        this._cfg.smtp,
-        this._cfg.errLogWriter, 
-        this.processQueue);
+      this.cfg = cfg;
+      this._opener = opener;
+      this._runningReports = new Dictionary<String, IRemoteProcInst>();
+      String v_srvName = null;
+      if (this._opener is Service)
+        v_srvName = (this._opener as Service).ServiceName;
+      this._thread = new CBackgroundThread(
+        v_srvName,
+        this.cfg.adminEmail,
+        this.cfg.smtp,
+        this.cfg.errLogWriter, 
+        this._processQueue);
 		}
 
     internal static CQueue creQueue(Object opener, CConfigSys cfg) {
-      CQueue rslt = null;
-      Type vType = Type.GetType(cfg.queueImplementationType);
-      if (vType != null) {
-        Type[] parTypes = new Type[] { typeof(Object), typeof(CConfigSys)};
-        Object[] parVals = new Object[] { opener, cfg };
-        ConstructorInfo ci = vType.GetConstructor(parTypes);
-        rslt = (CQueue)ci.Invoke(parVals);
+      CQueue v_rslt = null;
+      var v_type = Type.GetType(cfg.queueImplementationType);
+      if (v_type != null) {
+        var v_parTypes = new[] { typeof(Object), typeof(CConfigSys)};
+        var v_parVals = new[] { opener, cfg };
+        var v_ci = v_type.GetConstructor(v_parTypes);
+        if (v_ci != null) v_rslt = (CQueue)v_ci.Invoke(v_parVals);
       }
-      return rslt;
+      return v_rslt;
     }
 
 
-    protected abstract String doOnAdd(String rptCode, String sessionID, String userUID, String remoteIP, CParams prms, ThreadPriority pPriority);
+    protected abstract String doOnAdd(String rptCode, String sessionID, String userUID, String remoteIP, Params prms, ThreadPriority pPriority);
     protected abstract void doOnGetReportResult(String rptUID, String userUID, String remoteIP, ref String fileName, ref Byte[] buff);
     protected abstract void doOnBreakReportInst(String rptUID, String userUID, String remoteIP);
     protected abstract void doOnRestartReportInst(String rptUID, String userUID, String remoteIP);
@@ -91,36 +81,37 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
     protected abstract Queue<CXLRptItem> doOnGetReportsRestarting();
     protected abstract void doOnAddReportResult2DB(String rptUID, String fileName);
     protected abstract void doOnMarkRQCmdState(String rptUID, QueueCmd cmd);
+
     /// <summary>
     /// Добавляет отчет в очередь
     /// </summary>
-    /// <param name="pReportCode">Код отчета</param>
+    /// <param name="rptCode"></param>
     /// <param name="sessionID">ID сессии</param>
-    /// <param name="userName">Имя пользователя</param>
+    /// <param name="userUID"></param>
     /// <param name="remoteIP">Адрес с которого вошел пользователь</param>
     /// <param name="prms">Параметры отчета</param>
     /// <param name="pPriority"></param>
-    public String Add(String rptCode, String sessionID, String userUID, String remoteIP, CParams prms, ThreadPriority pPriority){
+    public String Add(String rptCode, String sessionID, String userUID, String remoteIP, Params prms, ThreadPriority pPriority){
       this.log_msg(String.Format("Добавление отчета в очередь \"{0}\", sessID:\"{1}\", ip:\"{2}\", usr:\"{3}\"...", rptCode, sessionID, remoteIP, userUID));
-      String rptUID = this.doOnAdd(rptCode, sessionID, userUID, remoteIP, prms, pPriority);
+      var v_rptUID = this.doOnAdd(rptCode, sessionID, userUID, remoteIP, prms, pPriority);
       this.log_msg(String.Format("Отчет \"{0}\" добавлен в очередь пользователем \"{1}\".", rptCode, userUID));
-      return rptUID;
+      return v_rptUID;
     }
     public void GetReportResult(String rptUID, String userUID, String remoteIP, ref String fileName, ref byte[] buff) {
       this.doOnGetReportResult(rptUID, userUID, remoteIP, ref fileName, ref buff);
     }
     public void Break(String rptUID, String userUID, String remoteIP) {
-      this.log_msg(String.Format("Останов отчета rptUID:\"{0}\", ip:\"{2}\", usr:\"{3}\"...", rptUID, remoteIP, userUID));
+      this.log_msg(String.Format("Останов отчета rptUID:\"{0}\", ip:\"{1}\", usr:\"{2}\"...", rptUID, remoteIP, userUID));
       this.doOnBreakReportInst(rptUID, userUID, remoteIP);
       this.log_msg(String.Format("Отчет rptUID:\"{0}\" остановлен пользователем \"{1}\".", rptUID, userUID));
     }
     public void Restart(String rptUID, String userUID, String remoteIP) {
-      this.log_msg(String.Format("Останов отчета rptUID:\"{0}\", ip:\"{2}\", usr:\"{3}\"...", rptUID, remoteIP, userUID));
+      this.log_msg(String.Format("Останов отчета rptUID:\"{0}\", ip:\"{1}\", usr:\"{2}\"...", rptUID, remoteIP, userUID));
       this.doOnRestartReportInst(rptUID, userUID, remoteIP);
       this.log_msg(String.Format("Отчет rptUID:\"{0}\" остановлен пользователем \"{1}\".", rptUID, userUID));
     }
     public void Drop(String rptUID, String userUID, String remoteIP) {
-      this.log_msg(String.Format("Удаление отчета rptUID:\"{0}\", ip:\"{2}\", usr:\"{3}\"...", rptUID, remoteIP, userUID));
+      this.log_msg(String.Format("Удаление отчета rptUID:\"{0}\", ip:\"{1}\", usr:\"{2}\"...", rptUID, remoteIP, userUID));
       this.doOnDropReportInst(rptUID, userUID, remoteIP);
       this.log_msg(String.Format("Отчет rptUID:\"{0}\" удален пользователем \"{1}\".", rptUID, userUID));
     }
@@ -128,7 +119,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
       return doOnGetQueue(userUID, remoteIP);
     }
     public XmlDocument GetRptTreeNode(String userUID, String remoteIP, String folderCode) { 
-      return this._getRptTreeNode(userUID, remoteIP, this._cfg.rootRptPath, folderCode);
+      return this._getRptTreeNode(userUID, remoteIP, this.cfg.rootRptPath, folderCode);
     }
     public String CheckUsrLogin(String usr, String pwd) {
       return this.doOnCheckUsrLogin(usr, pwd);
@@ -139,61 +130,59 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
       this._thread.start();
     }
 
-    private Boolean _stopRequsted = false;
+    private Boolean _stopRequsted;
     public void Stop() {
       this._stopRequsted = true;
     }
 
     protected void remove_from_running(String rptUID) {
-      if (!String.IsNullOrEmpty(rptUID) && this.FRunningReports.ContainsKey(rptUID.ToUpper())) {
-        lock (this.FRunningReports) {
-          if (this.FRunningReports.ContainsKey(rptUID.ToUpper())) {
-            IRemoteProcInst v_rpt = this.FRunningReports[rptUID.ToUpper()];
-            this.FRunningReports.Remove(rptUID.ToUpper());
+      if (!String.IsNullOrEmpty(rptUID) && this._runningReports.ContainsKey(rptUID.ToUpper())) {
+        lock (this._runningReports) {
+          if (this._runningReports.ContainsKey(rptUID.ToUpper())) {
+            var v_rpt = this._runningReports[rptUID.ToUpper()];
+            this._runningReports.Remove(rptUID.ToUpper());
             if (v_rpt.IsRunning)
               v_rpt.Abort(null);
-            Thread t = new Thread(new ThreadStart(() => {
+            var v_t = new Thread(() => {
               Thread.Sleep(10 * 1000);
               v_rpt.Dispose();
-            }));
-            t.Start();
+            });
+            v_t.Start();
           }
         }
       }
     }
 
-    protected void add_to_running(String rptUID, String rptCode, CParams prms, String usrUID, Int32 priority) {
-      if (!this.FRunningReports.ContainsKey(rptUID)) {
-        CXLReport rptBuilder = null;
-        lock (this.FRunningReports) {
+    protected void add_to_running(String rptUID, String rptCode, Params prms, String usrUID, Int32 priority) {
+      if (!this._runningReports.ContainsKey(rptUID)) {
+        CXLReport v_rptBuilder;
+        lock (this._runningReports) {
           this.log_msg(String.Format("Запуск отчета \"{0}\", UID:\"{1}\"...", rptCode, rptUID));
           try {
-            CXLReportConfig rptCfg = CXLReportConfig.LoadFromFile(
+            var v_rptCfg = CXLReportConfig.LoadFromFile(
               rptUID,
               rptCode,
-              this._cfg.rootRptPath,
-              this._cfg.workPath,
-              this._cfg.connStr,
+              this.cfg.rootRptPath,
+              this.cfg.workPath,
+              this.cfg.connStr,
               null,
               usrUID,
               null,
               prms,
-              !this._cfg.debugEnabled
+              !this.cfg.debugEnabled
             );
-            rptBuilder = new CXLReport(rptCfg);
-            rptBuilder.OnChangeState += new DlgXLReportOnChangeState(rptBuilder_OnChangeState);
-            rptBuilder.OnTerminatingBuild += new DlgXLReportOnTerminatingBuild(rptBuilder_OnAfterBuild);
-            rptBuilder.OnError += new DlgXLReportOnError(rptBuilder_OnError);
-            this.FRunningReports.Add(rptBuilder.UID, rptBuilder);
-          } catch (Exception ex) {
-            String errMsg = String.Format("При инициализации отчета \"{0}\":\"{1}\".\n{2}", rptCode, rptUID, Utl.buildErrorLogMsg(ex, DateTime.Now));
-            this.doOnAddQueueState(rptUID, RemoteProcState.Error, errMsg, csInternalUserName, Utl.getLocalIP());
-            throw ex;
+            v_rptBuilder = new CXLReport(v_rptCfg);
+            v_rptBuilder.OnChangeState += rptBuilder_OnChangeState;
+            v_rptBuilder.OnTerminatingBuild += rptBuilder_OnAfterBuild;
+            v_rptBuilder.OnError += rptBuilder_OnError;
+            this._runningReports.Add(v_rptBuilder.UID, v_rptBuilder);
+          } catch (Exception v_ex) {
+            var v_errMsg = String.Format("При инициализации отчета \"{0}\":\"{1}\".\n{2}", rptCode, rptUID, Utl.BuildErrorLogMsg(v_ex, DateTime.Now));
+            this.doOnAddQueueState(rptUID, RemoteProcState.Error, v_errMsg, csInternalUserName, Utl.GetLocalIP());
+            throw;
           }
         }
-        if (rptBuilder != null) {
-          rptBuilder.Run((ThreadPriority)priority);
-        }
+        v_rptBuilder.Run((ThreadPriority)priority);
       }
     }
 
@@ -203,81 +192,82 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
     }
 
     void rptBuilder_OnAfterBuild(object opener, CXLReport report) {
-      String v_uid = report.UID;
-      String v_full_code = report.FullCode;
-      RemoteProcState v_state = report.State;
-      Boolean vDebug = report.RptDefinition.DebugIsOn;
-      String vUID = report.UID.ToUpper();
-      String rptFileName = report.LastResultFile;
-      this.remove_from_running(vUID);
+      var v_uid = report.UID;
+      var v_fullCode = report.FullCode;
+      var v_state = report.State;
+      var v_debug = report.RptDefinition.DebugIsOn;
+      var v_rptUID = report.UID.ToUpper();
+      var v_rptFileName = report.LastResultFile;
+      this.remove_from_running(v_rptUID);
       if (report.State == RemoteProcState.Done) {
-        this.doOnAddReportResult2DB(vUID, rptFileName);
-        if (!vDebug)
-          File.Delete(rptFileName);
+        this.doOnAddReportResult2DB(v_rptUID, v_rptFileName);
+        if (!v_debug)
+          File.Delete(v_rptFileName);
       }
-      String vDescState = enumHelper.GetFieldDesc(v_state);
+      var v_descState = enumHelper.GetFieldDesc(v_state);
       this.log_msg(String.Format("Построение отчета \"{0}\", UID:\"{1}\" - завершено. Состояние : \"{2}\".",
-        v_full_code, v_uid, vDescState));
-      if ((v_state == RemoteProcState.Done) && vDebug)
-        this.log_msg(String.Format("\t - результат: \"{0}\"", rptFileName));
+        v_fullCode, v_uid, v_descState));
+      if ((v_state == RemoteProcState.Done) && v_debug)
+        this.log_msg(String.Format("\t - результат: \"{0}\"", v_rptFileName));
     }
 
-    private void rptBuilder_OnChangeState(object pOpener, CXLReport pReport, string pText) {
-      this.doOnAddQueueState(pReport.UID, pReport.State, pText, csInternalUserName, Utl.getLocalIP());
+    private void rptBuilder_OnChangeState(Object opener, CXLReport report, string text) {
+      this.doOnAddQueueState(report.UID, report.State, text, csInternalUserName, Utl.GetLocalIP());
     }
 
     private void markBadReports() {
-      lock (this.FRunningReports) {
-        Queue<CXLRptItem> v_rpts = this.doOnGetReportsRunning();
-        foreach (CXLRptItem itm in v_rpts) {
-          if (!this.FRunningReports.ContainsKey(itm.uid))
-            this.doOnAddQueueState(itm.uid, RemoteProcState.Error, "Неизвестная ошибка! Выполнение отчета было прервано по неизвестным причинам!", csInternalUserName, Utl.getLocalIP());
+      lock (this._runningReports) {
+        var v_rpts = this.doOnGetReportsRunning();
+        foreach (var v_itm in v_rpts) {
+          if (!this._runningReports.ContainsKey(v_itm.uid))
+            this.doOnAddQueueState(v_itm.uid, RemoteProcState.Error, "Неизвестная ошибка! Выполнение отчета было прервано по неизвестным причинам!", csInternalUserName, Utl.GetLocalIP());
         }
       }
     }
 
     private void breakBreakingReports() {
-      lock (this.FRunningReports) {
-        Queue<CXLRptItem> v_rpts = this.doOnGetReportsBreaking();
-        foreach (CXLRptItem itm in v_rpts) {
-          if (this.FRunningReports.ContainsKey(itm.uid)) {
-            this.FRunningReports[itm.uid].Abort(null);
+      lock (this._runningReports) {
+        var v_rpts = this.doOnGetReportsBreaking();
+        foreach (var v_itm in v_rpts) {
+          if (this._runningReports.ContainsKey(v_itm.uid)) {
+            this._runningReports[v_itm.uid].Abort(null);
           }
-          this.doOnMarkRQCmdState(itm.uid, QueueCmd.Break);
+          this.doOnMarkRQCmdState(v_itm.uid, QueueCmd.Break);
         }
       }
     }
 
     private void restartRestartingReports() {
-      Queue<CXLRptItem> v_rpts = this.doOnGetReportsRestarting();
-      lock (this.FRunningReports) {
-        foreach (CXLRptItem itm in v_rpts) {
-          if (this.FRunningReports.ContainsKey(itm.uid)) {
-            this.FRunningReports[itm.uid].Abort(() => {
-              this.doOnAddQueueState(itm.uid, RemoteProcState.Redy, null, csInternalUserName, Utl.getLocalIP());
-              this.doOnMarkRQCmdState(itm.uid, QueueCmd.Restart);
+      var v_rpts = this.doOnGetReportsRestarting();
+      lock (this._runningReports) {
+        foreach (var v_itm in v_rpts) {
+          if (this._runningReports.ContainsKey(v_itm.uid)) {
+            var v_itm1 = v_itm;
+            this._runningReports[v_itm.uid].Abort(() => {
+              this.doOnAddQueueState(v_itm1.uid, RemoteProcState.Redy, null, csInternalUserName, Utl.GetLocalIP());
+              this.doOnMarkRQCmdState(v_itm1.uid, QueueCmd.Restart);
             });
           } else {
-            this.doOnAddQueueState(itm.uid, RemoteProcState.Redy, null, csInternalUserName, Utl.getLocalIP());
-            this.doOnMarkRQCmdState(itm.uid, QueueCmd.Restart);
+            this.doOnAddQueueState(v_itm.uid, RemoteProcState.Redy, null, csInternalUserName, Utl.GetLocalIP());
+            this.doOnMarkRQCmdState(v_itm.uid, QueueCmd.Restart);
           }
         }
       }
     }
 
-    private String FLastErrorText = null;
-    private void processQueue() {
+    private String _lastErrorText;
+    private void _processQueue() {
       try {
         this.markBadReports();
         this.breakBreakingReports();
         this.restartRestartingReports();
-        lock (this.FRunningReports) {
-          Queue<CXLRptItem> v_rpts = this.doOnGetReportsReady();
-          while (this.FRunningReports.Count < this._cfg.poolSize) {
+        lock (this._runningReports) {
+          var v_rpts = this.doOnGetReportsReady();
+          while (this._runningReports.Count < this.cfg.poolSize) {
             if (this._stopRequsted)
               break;
             if (v_rpts.Count > 0) {
-              CXLRptItem v_item = v_rpts.Dequeue();
+              var v_item = v_rpts.Dequeue();
               this.add_to_running(v_item.uid, v_item.code, v_item.prms, v_item.usr, 0);
             } else
               break;
@@ -288,11 +278,11 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
         }
       } catch (ThreadAbortException) {
         throw;
-      } catch (Exception ex) {
-        String curErrorText = ex.Message;
-        if (!String.Equals(curErrorText, this.FLastErrorText, StringComparison.CurrentCulture)) {
-          this.log_err(ex);
-          this.FLastErrorText = curErrorText;
+      } catch (Exception v_ex) {
+        var v_curErrorText = v_ex.Message;
+        if (!String.Equals(v_curErrorText, this._lastErrorText, StringComparison.CurrentCulture)) {
+          this.log_err(v_ex);
+          this._lastErrorText = v_curErrorText;
         }
       }
     }
@@ -302,11 +292,12 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
     /// </summary>
     /// <param name="userUID"></param>
     /// <param name="remoteIP"></param>
-    /// <param name="startPath"></param>
+    /// <param name="rootPath"></param>
+    /// <param name="folderCode"></param>
     /// <returns></returns>
     protected XmlDocument _getRptTreeNode(String userUID, String remoteIP, String rootPath, String folderCode) {
-      String usrRoles = this.doOnGetUsrRoles(userUID);
-      return CXLRptTreeNav.buildRptTreeNav(rootPath, folderCode, usrRoles);
+      var v_usrRoles = this.doOnGetUsrRoles(userUID);
+      return CXLRptTreeNav.buildRptTreeNav(rootPath, folderCode, v_usrRoles);
     }
 
 	}

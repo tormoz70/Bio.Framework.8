@@ -16,7 +16,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 		}
 
 		public override String GetRange(){
-			return this.Owner.Owner.GetAboveTotalRange() + new String(CExcelSrv.csRowRangesListDelimeter, 1) + this.Owner.Owner.GetTotalsRangesList();
+			return this.Owner.Owner.GetAboveTotalRange() + new String(ExcelSrv.csRowRangesListDelimeter, 1) + this.Owner.Owner.GetTotalsRangesList();
 		}
 
 	}

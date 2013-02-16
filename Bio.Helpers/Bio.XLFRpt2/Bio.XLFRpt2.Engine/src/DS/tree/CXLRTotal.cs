@@ -67,7 +67,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 			vNewTTL.SetAttribute("ColIndex", this.ColDef.ColIndex+"");
 			String vRRng = this.GetRange();
 			vNewTTL.SetAttribute("Range", vRRng);
-			String[] vRngs = CExcelSrv.ParsColRowRanges(this.ColDef.ColIndex, this.ColDef.ColIndex, vRRng);
+			String[] vRngs = ExcelSrv.ParsColRowRanges(this.ColDef.ColIndex, this.ColDef.ColIndex, vRRng);
 			for(int i=0; i<vRngs.Length; i++){
 				XmlElement vNewRng = pDoc.CreateElement("rng");
 				vNewRng.SetAttribute("Range", vRngs[i]);
@@ -78,7 +78,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 
     private String buildTTLsFormula(String pRRng) {
       String vResult = null;
-      String[] vRngs = CExcelSrv.ParsColRowRanges(this.ColDef.ColIndex, this.ColDef.ColIndex, pRRng);
+      String[] vRngs = ExcelSrv.ParsColRowRanges(this.ColDef.ColIndex, this.ColDef.ColIndex, pRRng);
       for(int i = 0; i < vRngs.Length; i++) {
         String vTotalFormat = this.FCol.Formula; 
         String vTotalFormatPart = this.FCol.Formula; 
@@ -132,9 +132,9 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       String vResult = null;
       String[] vRngs = null;
       if ((this.FCol.TTLCalcType == XLRTTLCalcType.xctMax) || (this.FCol.TTLCalcType == XLRTTLCalcType.xctMin))
-        vRngs = CExcelSrv.ParsColRowRanges(this.ColDef.ColIndex, this.ColDef.ColIndex, rRng);
+        vRngs = ExcelSrv.ParsColRowRanges(this.ColDef.ColIndex, this.ColDef.ColIndex, rRng);
       else
-        vRngs = CExcelSrv.ParsColRowRanges4Root(this.ColDef.ColIndex, this.ColDef.ColIndex, rRng);
+        vRngs = ExcelSrv.ParsColRowRanges4Root(this.ColDef.ColIndex, this.ColDef.ColIndex, rRng);
 
       if((vRngs != null) && (vRngs.Length == 2) && ((vRngs[0] != null) && (vRngs[1] != null))) {
         // Тут строим формулы для условных функций

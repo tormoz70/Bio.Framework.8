@@ -12,12 +12,12 @@ namespace Bio.Framework.Client.SL {
     /// <summary>
     /// Параметры, передаваемые в событие.
     /// </summary>
-    public CParams Params { get; private set; }
+    public Params Params { get; private set; }
     /// <summary>
     /// Создаёт экземпляр класса, описывающего параметры, передаваемые в событие.
     /// </summary>
     /// <param name="pars">Параметры.</param>
-    public DataChangedEventArgs(CParams pars) {
+    public DataChangedEventArgs(Params pars) {
       this.Params = pars;
     }
 
@@ -42,13 +42,13 @@ namespace Bio.Framework.Client.SL {
     /// <summary>
     /// Параметры, передаваемые в событие.
     /// </summary>
-    public CParams Params { get; private set; }
+    public Params Params { get; private set; }
     /// <summary>
     /// Создаёт экземпляр класса, описывающего параметры, передаваемые в событие.
     /// </summary>
     /// <param name="pars">Параметры.</param>
     /// <param name="cancel">Признак отмены события.</param>
-    public DataChangingCancelEventArgs(CParams pars, bool cancel) {
+    public DataChangingCancelEventArgs(Params pars, bool cancel) {
       this.Params = pars;
       this._cancel = cancel;
     }
@@ -109,19 +109,19 @@ namespace Bio.Framework.Client.SL {
     /// <summary>
     /// Параметры плагина
     /// </summary>
-    CParams Params { get; }
+    Params Params { get; }
 
     /// <summary>
     /// Обновление данных извне
     /// </summary>
     /// <param name="prms">Вход. параметры</param>
     /// <param name="force">Обновить данные не смотря ни на что, по умолчанию false</param>
-    void refreshData(CParams prms, Boolean force);
+    void refreshData(Params prms, Boolean force);
     /// <summary>
     /// Обновление данных извне
     /// </summary>
     /// <param name="prms">Вход. параметры</param>
-    void refreshData(CParams prms);
+    void refreshData(Params prms);
 
     /// <summary>
     /// Событие используется, при необходимости оповестить внешние плагины об изменении данных.

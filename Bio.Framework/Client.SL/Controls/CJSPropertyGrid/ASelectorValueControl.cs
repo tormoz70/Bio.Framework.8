@@ -80,7 +80,7 @@ namespace Bio.Framework.Client.SL.JSPropertyGrid {
         var v_in_sel = v_selection as VMultiSelection;
         if (v_sel != null) {
           v_sel.Value = v_in_sel.Value;
-          v_sel.filterParams = (CParams)v_in_sel.filterParams.Clone();
+          v_sel.filterParams = (Params)v_in_sel.filterParams.Clone();
           this._onSelectionChanged();
         }
       }

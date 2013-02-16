@@ -71,7 +71,7 @@
     <Compile Include="CLongOpStatePack.cs" />
     <Compile Include="CRemoteProcessStatePack.cs" />
     <Compile Include="CBioResponse.cs" />
-    <Compile Include="CQueryParams.cs" />
+    <Compile Include="QueryParams.cs" />
     <Compile Include="CRmtClientRequest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

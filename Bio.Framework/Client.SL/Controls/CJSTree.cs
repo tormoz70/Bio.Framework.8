@@ -138,7 +138,7 @@ namespace Bio.Framework.Client.SL {
 
 
   public class BeforeLoadItemChildrenEventArgs : CancelEventArgs {
-    public CParams Params { get; set; }
+    public Params Params { get; set; }
   }
 
 

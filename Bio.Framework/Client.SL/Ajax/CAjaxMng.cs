@@ -116,7 +116,7 @@
       this._currentRequest = bioRequest;
 
       if (bioRequest.url == null) {
-        bioRequest.url = this.Env.ServerUrl; //Utl.bldURL(this.ServerUrl, null);
+        bioRequest.url = this.Env.ServerUrl; //Utl.BuildURL(this.ServerUrl, null);
       }
       var v_clbck = bioRequest.callback;
       bioRequest.callback = (sender, args) => {

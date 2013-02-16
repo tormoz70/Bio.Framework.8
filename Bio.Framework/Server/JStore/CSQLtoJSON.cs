@@ -7,7 +7,7 @@ namespace Bio.Framework.Server {
   using Bio.Helpers.DOA;
   using Bio.Helpers.Common;
 
-  public delegate bool DlgProcessFieldHandler(ref string pFName, ref CField pFVal);
+  public delegate bool DlgProcessFieldHandler(ref string pFName, ref Field pFVal);
 
   /// <summary>
   /// Преобразовывает данные, считанные из курсора в JSON-строку.
@@ -29,7 +29,7 @@ namespace Bio.Framework.Server {
         start = 0
       };
 
-      CField vFVal;
+      Field vFVal;
       result.metaData = CJsonStoreMetadata.ConstructMetadata(cursor.bioCode, cursor.CursorIniDoc);
       result.rows = new CJsonStoreRows();
       int vRowCount = 0;
@@ -43,7 +43,7 @@ namespace Bio.Framework.Server {
         if (result.limit == 0 || ++vRowCount <= result.limit) {
           CJsonStoreRow newRow = result.addRow();
           // перебираем все поля одной записи
-          foreach (CField vCur in cursor.Fields) {
+          foreach (Field vCur in cursor.Fields) {
             String vFName = vCur.FieldName;
             vFVal = vCur;
             Boolean process = true;

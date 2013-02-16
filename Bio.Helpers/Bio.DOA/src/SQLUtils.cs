@@ -9,11 +9,13 @@ namespace Bio.Helpers.DOA {
   using Oracle.DataAccess.Types;
   using System.Linq;
   using System.ComponentModel;
-  using Bio.Helpers.Common;
-  using System.Data.Common;
-  using Bio.Helpers.Common.Types;
+  using Common;
+  using Common.Types;
 
-  public enum CSQLDataType {
+  /// <summary>
+  /// 
+  /// </summary>
+  public enum OracleDataType {
     [Description("VARCHAR2")]
     Varchar2 = OracleDbType.Varchar2,
     [Description("CLOB")]
@@ -32,18 +34,35 @@ namespace Bio.Helpers.DOA {
   /// </summary>
   public class SQLUtils {
 
+    /// <summary>
+    /// Подготавливает SQL предложение к выполнению в Oracle
+    /// </summary>
+    /// <param name="sql"></param>
+    /// <returns></returns>
     public static String PrepareSQLForOlacleExecute(String sql) {
-      String vRslt = null;
+      String v_rslt = null;
       if (sql != null) {
-        Regex vr = new Regex("[-]{2}.*[^$]", RegexOptions.IgnoreCase);
-        vRslt = vr.Replace(sql, "");
-        vRslt = vRslt.Replace("\n", " ");
-        vRslt = vRslt.Replace("\r", " ");
-        vRslt = vRslt.Replace("\t", " ");
+        var vr = new Regex("[-]{2}.*[^$]", RegexOptions.IgnoreCase);
+        v_rslt = vr.Replace(sql, "");
+        v_rslt = v_rslt.Replace("\n", " ");
+        v_rslt = v_rslt.Replace("\r", " ");
+        v_rslt = v_rslt.Replace("\t", " ");
       }
-      return vRslt;
+      return v_rslt;
     }
 
+    /// <summary>
+    /// Загружает файл в BLOB поле таблицы
+    /// </summary>
+    /// <param name="conn">Соединения с БД</param>
+    /// <param name="tableName">Имя таблицы</param>
+    /// <param name="fieldName">Имя поля</param>
+    /// <param name="keyField">Имя поля-первичного ключа</param>
+    /// <param name="keyValue">Значение для первичного ключа</param>
+    /// <param name="fileName">Имя файла</param>
+    /// <param name="deleteFile">Удалить файл после загрузки</param>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="EBioException"></exception>
     public static void SetFile2BLOBField(IDbConnection conn, String tableName, String fieldName, String keyField, Object keyValue, String fileName, Boolean deleteFile) {
       if(File.Exists(fileName)) {
         if(fileName == null)
@@ -56,38 +75,48 @@ namespace Bio.Helpers.DOA {
           throw new ArgumentNullException("keyField");
         if(keyValue == null)
           throw new ArgumentNullException("keyValue");
-        String vSQL = String.Format("update {0} set {1} = :{2} where {3} = :{4}", tableName, fieldName, fieldName, keyField, keyField);
-        var vOraSess = (OracleConnection)conn;
-        OracleCommand vScriptCmd = vOraSess.CreateCommand();
-        vScriptCmd.CommandText = vSQL;
+        var v_sql = String.Format("update {0} set {1} = :{2} where {3} = :{4}", tableName, fieldName, fieldName, keyField, keyField);
+        var v_oraSess = (OracleConnection)conn;
+        var v_scriptCmd = v_oraSess.CreateCommand();
+        v_scriptCmd.CommandText = v_sql;
 
-        OracleParameter vParFile = vScriptCmd.Parameters.Add(fieldName, OracleDbType.Blob);
-        vParFile.Direction = ParameterDirection.Input;
-        byte[] vBuffer = null;
-        //ReadBinFileInBuffer(ref vBuffer, pFileName);
-        vParFile.Value = vBuffer;
+        var v_parFile = v_scriptCmd.Parameters.Add(fieldName, OracleDbType.Blob);
+        v_parFile.Direction = ParameterDirection.Input;
+        byte[] v_buffer = null;
+        Utl.ReadBinFileInBuffer(fileName, ref v_buffer);
+        v_parFile.Value = v_buffer;
 
-        OracleParameter vParKeyValue = vScriptCmd.Parameters.Add(keyField, (keyValue != null) ? SQLUtils.DetectOraTypeByType(keyValue.GetType()) : OracleDbType.Varchar2);
-        vParKeyValue.Value = keyValue;
-        vParKeyValue.Direction = ParameterDirection.Input;
+        var v_parKeyValue = v_scriptCmd.Parameters.Add(keyField, (keyValue != null) ? DetectOraTypeByType(keyValue.GetType()) : OracleDbType.Varchar2);
+        v_parKeyValue.Value = keyValue;
+        v_parKeyValue.Direction = ParameterDirection.Input;
 
         try {
-          int r = vScriptCmd.ExecuteNonQuery();
+          var r = v_scriptCmd.ExecuteNonQuery();
           if((deleteFile) && (r == 1))
             File.Delete(fileName);
         } catch(ThreadAbortException) {
           throw;
         } catch(Exception ex) {
-          StringWriter errm = new StringWriter();
+          var errm = new StringWriter();
           errm.WriteLine("Ошибка при выполнении SQL. Сообщение: " + ex.Message);
-          errm.WriteLine("SQL: " + vScriptCmd.CommandText);
+          errm.WriteLine("SQL: " + v_scriptCmd.CommandText);
           throw new EBioException(errm.ToString(), ex);
-        } finally {
         }
-        vScriptCmd = null;
       }
     }
 
+    /// <summary>
+    /// Загружает файл в BLOB поле таблицы
+    /// </summary>
+    /// <param name="sess">Сессия БД</param>
+    /// <param name="tableName">Имя таблицы</param>
+    /// <param name="fieldName">Имя поля</param>
+    /// <param name="keyField">Имя поля-первичного ключа</param>
+    /// <param name="keyValue">Значение для первичного ключа</param>
+    /// <param name="fileName">Имя файла</param>
+    /// <param name="deleteFile">Удалить файл после загрузки</param>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="EBioException"></exception>
     public static void SetFile2BLOBField(IDBSession sess, String tableName, String fieldName, String keyField, Object keyValue, String fileName, Boolean deleteFile) {
       var conn = sess.GetConnection();
       try {
@@ -97,37 +126,48 @@ namespace Bio.Helpers.DOA {
       }
     }
 
-    public static void ExecSQLCommandNonQuery(IDbConnection conn, ref String sql, CParams prms) {
+    /// <summary>
+    /// Выполняет SQL как скрипт
+    /// </summary>
+    /// <param name="conn"></param>
+    /// <param name="sql"></param>
+    /// <param name="prms"></param>
+    /// <exception cref="EBioException"></exception>
+    public static void ExecSQLCommandNonQuery(IDbConnection conn, ref String sql, Params prms) {
       if(!String.IsNullOrEmpty(sql)) {
-        var vSQL = PrepareSQLForOlacleExecute(sql);
-        var vOraSess = (OracleConnection)conn;
-        var vScriptCmd = vOraSess.CreateCommand();
-        vScriptCmd.CommandText = vSQL;
+        var v_sql = PrepareSQLForOlacleExecute(sql);
+        var v_oraSess = (OracleConnection)conn;
+        var v_scriptCmd = v_oraSess.CreateCommand();
+        v_scriptCmd.CommandText = v_sql;
 
-        OracleParameter vParReslt = null;
         if(prms != null) {
-          for(int i = 0; i < prms.Count; i++) {
-            vParReslt = vScriptCmd.Parameters.Add(prms[i].Name, (prms[i].InnerObject != null) ? SQLUtils.DetectOraTypeByType(prms[i].InnerObject.GetType()) : OracleDbType.Varchar2);
-            vParReslt.Value = prms[i].InnerObject;
-            vParReslt.Direction = ParameterDirection.Input;
+          foreach (var t in prms) {
+            var v_parReslt = v_scriptCmd.Parameters.Add(t.Name, (t.InnerObject != null) ? DetectOraTypeByType(t.InnerObject.GetType()) : OracleDbType.Varchar2);
+            v_parReslt.Value = t.InnerObject;
+            v_parReslt.Direction = ParameterDirection.Input;
           }
         }
 
         try {
-          int r = vScriptCmd.ExecuteNonQuery();
+          v_scriptCmd.ExecuteNonQuery();
         } catch(ThreadAbortException) {
           throw;
         } catch(Exception ex) {
           var errm = new StringWriter();
           errm.WriteLine("Ошибка при выполнении SQL. Сообщение: " + ex.Message);
-          errm.WriteLine("SQL: " + vScriptCmd.CommandText);
+          errm.WriteLine("SQL: " + v_scriptCmd.CommandText);
           throw new EBioException(errm.ToString(), ex);
         }
-        vScriptCmd = null;
       }
     }
 
-    public static void ExecSQLCommandNonQuery(IDBSession sess, ref String sql, CParams prms) {
+    /// <summary>
+    /// Выполняет SQL как скрипт
+    /// </summary>
+    /// <param name="sess"></param>
+    /// <param name="sql"></param>
+    /// <param name="prms"></param>
+    public static void ExecSQLCommandNonQuery(IDBSession sess, ref String sql, Params prms) {
       var conn = sess.GetConnection();
       try {
         ExecSQLCommandNonQuery(conn, ref sql, prms);
@@ -139,17 +179,16 @@ namespace Bio.Helpers.DOA {
     /// <summary>
     /// Определяет тип поля по префиксу
     /// </summary>
-    /// <param name="pFldName"></param>
+    /// <param name="fldName"></param>
     /// <returns></returns>
-    public static OracleDbType DetectOraTypeByFldName(String pFldName) {
-      OracleDbType vParType = OracleDbType.Varchar2;
-      if(Utl.regexMatch(pFldName, "^[VFPS]A_", true))
-        vParType = OracleDbType.Varchar2;
-      else if(Utl.regexMatch(pFldName, "^[VFPS]N_", true))
-        vParType = OracleDbType.Decimal;
-      else if(Utl.regexMatch(pFldName, "^[VFPS]D_", true))
-        vParType = OracleDbType.Date;
-      return vParType;
+    public static OracleDbType DetectOraTypeByFldName(String fldName) {
+      if (Utl.RegexMatch(fldName, "^[VFPS]A_", true).Success)
+        return OracleDbType.Varchar2;
+      if (Utl.RegexMatch(fldName, "^[VFPS]N_", true).Success)
+        return OracleDbType.Decimal;
+      if (Utl.RegexMatch(fldName, "^[VFPS]D_", true).Success)
+        return OracleDbType.Date;
+      return OracleDbType.Varchar2;
     }
 
     /// <summary>
@@ -158,19 +197,22 @@ namespace Bio.Helpers.DOA {
     /// <param name="pTypeName"></param>
     /// <returns></returns>
     public static OracleDbType DetectOraTypeByOraTypeName(String pTypeName) {
-      OracleDbType vParType = OracleDbType.Varchar2;
       if(String.Equals(pTypeName, "VARCHAR2", StringComparison.OrdinalIgnoreCase))
-        vParType = OracleDbType.Varchar2;
-      else if(String.Equals(pTypeName, "CLOB", StringComparison.OrdinalIgnoreCase))
-        vParType = OracleDbType.Clob;
-      else if(String.Equals(pTypeName, "NUMBER", StringComparison.OrdinalIgnoreCase))
-        vParType = OracleDbType.Decimal;
-      else if(String.Equals(pTypeName, "DATE", StringComparison.OrdinalIgnoreCase))
-        vParType = OracleDbType.Date;
-      return vParType;
+        return OracleDbType.Varchar2;
+      if(String.Equals(pTypeName, "CLOB", StringComparison.OrdinalIgnoreCase))
+        return OracleDbType.Clob;
+      if(String.Equals(pTypeName, "NUMBER", StringComparison.OrdinalIgnoreCase))
+        return OracleDbType.Decimal;
+      if(String.Equals(pTypeName, "DATE", StringComparison.OrdinalIgnoreCase))
+        return OracleDbType.Date;
+      return OracleDbType.Varchar2;
     }
 
+    /// <summary>
+    /// Размер поля Clob
+    /// </summary>
     public const Int32 ClobDBSize = 32 * 1024;
+
     /// <summary>
     /// Определяет тип поля по типу данных
     /// </summary>
@@ -179,52 +221,50 @@ namespace Bio.Helpers.DOA {
     /// <returns></returns>
     public static OracleDbType DetectOraTypeByType(Type type, long size) {
       if(type == null)
-        throw new ArgumentNullException("pType");
+        throw new ArgumentNullException("type");
       OracleDbType ot;
-      if (type == typeof(System.String))
+      if (type == typeof(String))
         ot = size < (ClobDBSize) ? OracleDbType.Varchar2 : OracleDbType.Clob;
       else if (type == typeof(OracleClob))
         ot = OracleDbType.Clob;
-      else if ((type == typeof(System.Decimal)) || (type == typeof(System.Double)) ||
-         (type == typeof(System.Int16)) || (type == typeof(System.Int32)) || (type == typeof(System.Int64)))
+      else if ((type == typeof(Decimal)) || (type == typeof(Double)) ||
+         (type == typeof(Int16)) || (type == typeof(Int32)) || (type == typeof(Int64)))
         ot = OracleDbType.Decimal;
-      else if ((type == typeof(System.DateTime)) || (type == typeof(System.DateTime?)) ||
-                (type == typeof(System.DateTimeOffset)) || (type == typeof(System.DateTimeOffset?)))
+      else if ((type == typeof(DateTime)) || (type == typeof(DateTime?)) ||
+                (type == typeof(DateTimeOffset)) || (type == typeof(DateTimeOffset?)))
         ot = OracleDbType.Date;
-      //else if (pType == typeof(System.Char[]))
-      //  ot = OracleDbType.Clob;
-      else if (type == typeof(System.Byte[]))
+      else if (type == typeof(Byte[]))
         ot = OracleDbType.Blob;
-      else if (type == typeof(System.Boolean))
+      else if (type == typeof(Boolean))
         ot = OracleDbType.Decimal;
       else
-        throw new NotSupportedException("Невозможно преобразовать тип \"" + type.Name + "\".");
+        throw new NotSupportedException("Невозможно определить тип \"" + type.Name + "\".");
       return ot;
     }
 
     /// <summary>
     /// Определяет тип поля по типу данных
     /// </summary>
-    /// <param name="pType"></param>
+    /// <param name="type"></param>
     /// <returns></returns>
-    public static OracleDbType DetectOraTypeByType(Type pType) {
-      return DetectOraTypeByType(pType, 0);
+    public static OracleDbType DetectOraTypeByType(Type type) {
+      return DetectOraTypeByType(type, 0);
     }
 
     /// <summary>
     /// Определяет тип объект по типу данных
     /// </summary>
-    /// <param name="pType"></param>
+    /// <param name="type"></param>
     /// <returns></returns>
-    public static Type DetectTypeByOraType(OracleDbType pType) {
-      Type vResult;
-      switch (pType) {
+    public static Type DetectTypeByOraType(OracleDbType type) {
+      Type v_result;
+      switch (type) {
         case OracleDbType.Varchar2:
         case OracleDbType.Char:
         case OracleDbType.NChar:
         case OracleDbType.NVarchar2:
         case OracleDbType.Clob:
-          vResult = typeof(String);
+          v_result = typeof(String);
           break;
         case OracleDbType.Byte:
         case OracleDbType.Double:
@@ -232,63 +272,62 @@ namespace Bio.Helpers.DOA {
         case OracleDbType.Int16:
         case OracleDbType.Int32:
         case OracleDbType.Int64:
-          vResult = typeof(Decimal);
+          v_result = typeof(Decimal);
           break;
         case OracleDbType.Date:
         case OracleDbType.TimeStamp:
-          vResult = typeof(DateTime);
+          v_result = typeof(DateTime);
           break;
         case OracleDbType.Blob:
-          vResult = typeof(Byte[]);
+          v_result = typeof(Byte[]);
           break;
         default:
-          throw new NotSupportedException("Невозможно преобразовать тип \"" + pType + "\".");
+          throw new NotSupportedException("Невозможно преобразовать тип \"" + type + "\".");
       }
-      return vResult;
+      return v_result;
     }
 
     /// <summary>
-    /// Конвертирует значение типа OracleDbType d Object
+    /// Конвертирует значение типа OracleDbType в Object
     /// </summary>
-    /// <param name="pType"></param>
     /// <returns></returns>
     public static Object OraDbValueAsObject(Object value) {
       Object v_result = null;
       if (value != null) {
-        Type v_type = value.GetType();
+        var v_type = value.GetType();
         if (v_type == typeof(OracleString)) {
           if (!((OracleString)value).IsNull) {
-            String vResultStr = ((OracleString)value).Value;
-            v_result = vResultStr;
+            var v_resultStr = ((OracleString)value).Value;
+            v_result = v_resultStr;
           }
         } else if (v_type == typeof(OracleDecimal)) {
           if (!((OracleDecimal)value).IsNull) {
             if (((OracleDecimal)value).IsInt) {
-              Int64 vResultDec = ((OracleDecimal)value).ToInt64();
-              v_result = vResultDec;
+              var v_resultDec = ((OracleDecimal)value).ToInt64();
+              v_result = v_resultDec;
             } else {
-              Double vResultDec = ((OracleDecimal)value).ToDouble();
-              v_result = new Decimal(vResultDec);
+              var v_vResultDec = ((OracleDecimal)value).ToDouble();
+              v_result = new Decimal(v_vResultDec);
             }
           }
         } else if (v_type == typeof(OracleDate)) {
           if (!((OracleDate)value).IsNull) {
-            DateTime vResultDt = ((OracleDate)value).Value;
-            v_result = vResultDt; //DateTime.SpecifyKind(vResultDt, DateTimeKind.Utc);
+            var v_resultDt = ((OracleDate)value).Value;
+            v_result = v_resultDt; //DateTime.SpecifyKind(vResultDt, DateTimeKind.Utc);
           }
         } else if (v_type == typeof(OracleTimeStamp)) {
           if (!((OracleTimeStamp)value).IsNull) {
-            DateTime vResultDt = ((OracleTimeStamp)value).Value;
-            v_result = vResultDt;
+            var v_resultDt = ((OracleTimeStamp)value).Value;
+            v_result = v_resultDt;
           }
         } else if (v_type == typeof(OracleClob)) {
           if (!((OracleClob)value).IsNull) {
-            String vResultStr = Utl.EncodeANSII2UTF(((OracleClob)value).Value);
-            v_result = vResultStr;
+            var v_resultStr = Utl.EncodeANSII2UTF(((OracleClob)value).Value);
+            v_result = v_resultStr;
           }
         } else if (v_type == typeof(OracleBlob)) {
-          Byte[] vResultAByte = ((OracleBlob)value).Value;
-          v_result = vResultAByte;
+          var v_resultAByte = ((OracleBlob)value).Value;
+          v_result = v_resultAByte;
         } else
           v_result = value;
       }
@@ -298,17 +337,16 @@ namespace Bio.Helpers.DOA {
     /// <summary>
     /// Определяет направление параметра по имени. Например: IN, OUT, IN/OUT
     /// </summary>
-    /// <param name="pTypeName"></param>
     /// <returns></returns>
-    public static ParameterDirection DetectParamDirByName(String pDirName) {
-      ParameterDirection vParDir = ParameterDirection.Input;
-      if(String.Equals(pDirName, "IN", StringComparison.OrdinalIgnoreCase))
-        vParDir = ParameterDirection.Input;
-      else if(String.Equals(pDirName, "OUT", StringComparison.OrdinalIgnoreCase))
-        vParDir = ParameterDirection.Output;
-      else if(String.Equals(pDirName, "IN/OUT", StringComparison.OrdinalIgnoreCase))
-        vParDir = ParameterDirection.InputOutput;
-      return vParDir;
+    public static ParameterDirection DetectParamDirByName(String directionName) {
+      var v_parDir = ParameterDirection.Input;
+      if(String.Equals(directionName, "IN", StringComparison.OrdinalIgnoreCase))
+        v_parDir = ParameterDirection.Input;
+      else if(String.Equals(directionName, "OUT", StringComparison.OrdinalIgnoreCase))
+        v_parDir = ParameterDirection.Output;
+      else if(String.Equals(directionName, "IN/OUT", StringComparison.OrdinalIgnoreCase))
+        v_parDir = ParameterDirection.InputOutput;
+      return v_parDir;
     }
 
     /// <summary>
@@ -318,24 +356,24 @@ namespace Bio.Helpers.DOA {
     /// <param name="oraType">Тип</param>
     /// <returns></returns>
     internal static Object StrAsOraValue(String value, OracleDbType oraType) {
-      Object vRslt = null;
+      Object v_rslt = null;
       try {
-        CultureInfo culture = new CultureInfo(CultureInfo.CurrentCulture.Name, true) {
+        var culture = new CultureInfo(CultureInfo.CurrentCulture.Name, true) {
           NumberFormat = { NumberDecimalSeparator = "." }
         };
         switch (oraType) {
           case OracleDbType.Varchar2:
           case OracleDbType.Clob:
-            vRslt = value;
+            v_rslt = value;
             break;
           case OracleDbType.Decimal:
-            vRslt = Double.Parse(value.Replace(",", ".").Replace(" ", ""), culture);
+            v_rslt = Double.Parse(value.Replace(",", ".").Replace(" ", ""), culture);
             break;
           case OracleDbType.Date:
-            vRslt = DateTimeParser.Instance.ParsDateTime(value);
+            v_rslt = DateTimeParser.Instance.ParsDateTime(value);
             break;
           case OracleDbType.Blob:
-            vRslt = Convert.FromBase64String(value);
+            v_rslt = Convert.FromBase64String(value);
             break;
         }
       } catch (Exception ex) {
@@ -343,7 +381,7 @@ namespace Bio.Helpers.DOA {
           "При приведении значения \"" + value + "\" к типу " +
           enumHelper.NameOfValue(oraType) + " ", ex);
       }
-      return vRslt;
+      return v_rslt;
     }
 
     /// <summary>
@@ -352,29 +390,22 @@ namespace Bio.Helpers.DOA {
     /// <param name="value">Значение</param>
     /// <param name="type">Тип</param>
     /// <returns></returns>
-    public static Object StrAsOraValue(String value, CSQLDataType type) {
-      //if (String.IsNullOrEmpty(type))
-      //  throw new EBioException("Параметер \"pOraType\" должен быть задан!");
+    public static Object StrAsOraValue(String value, OracleDataType type) {
       return StrAsOraValue(value, (OracleDbType)type);
-      /*switch (type) {
-        case "VARCHAR2": return StrAsOraValue(value, (OracleDbType)type);
-        case "CLOB": return StrAsOraValue(value, OracleDbType.Clob);
-        case "CHAR": return StrAsOraValue(value, OracleDbType.Char);
-        case "NUMBER": return StrAsOraValue(value, OracleDbType.Decimal);
-        case "DATE": return StrAsOraValue(value, OracleDbType.Date);
-        case "BLOB": return StrAsOraValue(value, OracleDbType.Blob);
-        default: throw new EBioException("Неизвестный тип \"" + type + "\"");
-
-      }*/
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="pObject"></param>
+    /// <returns></returns>
     public static String ObjectAsString(Object pObject) {
       String rslt = null;
       if (pObject != null) {
-        Type tp = pObject.GetType();
-        if (tp.Equals(typeof(OracleClob)))
+        var tp = pObject.GetType();
+        if (tp == typeof(OracleClob))
           rslt = Utl.EncodeANSII2UTF(((OracleClob)pObject).Value);
-        else if (tp.Equals(typeof(OracleBlob)))
+        else if (tp == typeof(OracleBlob))
           rslt = Convert.ToBase64String(((OracleBlob)pObject).Value);
         else
           rslt = Utl.ObjectAsString(pObject);
@@ -382,40 +413,55 @@ namespace Bio.Helpers.DOA {
       return rslt;
     }
 
-    public static CParam findParam(CParams prms, String paramName) {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="prms"></param>
+    /// <param name="paramName"></param>
+    /// <returns></returns>
+    public static Param FindParam(Params prms, String paramName) {
       if ((prms != null) && !String.IsNullOrEmpty(paramName)) {
-        return prms.FirstOrDefault((p) => {
+        return prms.FirstOrDefault(p => {
           var pn1 = p.Name;
           var pn2 = paramName;
-          Utl.regexReplace(ref pn1, @"^\bp_", String.Empty, true);
-          Utl.regexReplace(ref pn2, @"^\bp_", String.Empty, true);
+          Utl.RegexReplace(ref pn1, @"^\bp_", String.Empty, true);
+          Utl.RegexReplace(ref pn2, @"^\bp_", String.Empty, true);
           return String.Equals(pn1, pn2, StringComparison.CurrentCultureIgnoreCase);
         });
       }
       return null;
     }
 
-    public static Object findParamValue(CParams prms, OracleParameter prm) {
-      Object vRslt = null;
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="prms"></param>
+    /// <param name="prm"></param>
+    /// <returns></returns>
+    public static Object FindParamValue(Params prms, OracleParameter prm) {
+      Object v_rslt = null;
       if ((prms != null) && (prm != null)) {
-        CParam vPrm = findParam(prms, prm.ParameterName);
-        if (vPrm != null) {
-          vRslt = vPrm.Value;
+        var v_prm = FindParam(prms, prm.ParameterName);
+        if (v_prm != null) {
+          v_rslt = v_prm.Value;
         }
       }
-      return vRslt;
+      return v_rslt;
     }
 
-    public static OracleParameter findOraParam(OracleParameterCollection prms, String paramName) {
+    /// <summary>
+    /// Ищет параметр OracleParameter в коллекции prms по имени paramName
+    /// </summary>
+    /// <param name="prms"></param>
+    /// <param name="paramName"></param>
+    /// <returns></returns>
+    public static OracleParameter FindOraParam(OracleParameterCollection prms, String paramName) {
       if ((prms != null) && !String.IsNullOrEmpty(paramName)) {
-        //foreach(OracleParameter vPrm in prms)
-        //  if(vPrm.ParameterName.ToUpper().Equals(prmName.ToUpper()))
-        //    return vPrm;
-        return prms.Cast<OracleParameter>().FirstOrDefault((p) => {
+        return prms.Cast<OracleParameter>().FirstOrDefault(p => {
           var pn1 = p.ParameterName;
           var pn2 = paramName;
-          Utl.regexReplace(ref pn1, @"^\bp_", String.Empty, true);
-          Utl.regexReplace(ref pn2, @"^\bp_", String.Empty, true);
+          Utl.RegexReplace(ref pn1, @"^\bp_", String.Empty, true);
+          Utl.RegexReplace(ref pn2, @"^\bp_", String.Empty, true);
           return String.Equals(pn1, pn2, StringComparison.CurrentCultureIgnoreCase);
         });
 
@@ -423,7 +469,12 @@ namespace Bio.Helpers.DOA {
       return null;
     }
 
-    public static ParameterDirection decodeParamDirection(ParamDirection dir) {
+    /// <summary>
+    /// Приводит ParamDirection к ParameterDirection
+    /// </summary>
+    /// <param name="dir"></param>
+    /// <returns></returns>
+    public static ParameterDirection DecodeParamDirection(ParamDirection dir) {
       switch (dir) {
         case ParamDirection.Input: return ParameterDirection.Input;
         case ParamDirection.InputOutput: return ParameterDirection.InputOutput;
@@ -433,7 +484,12 @@ namespace Bio.Helpers.DOA {
       }
     }
 
-    public static ParamDirection encodeParamDirection(ParameterDirection dir) {
+    /// <summary>
+    /// Приводит ParameterDirection к ParamDirection
+    /// </summary>
+    /// <param name="dir"></param>
+    /// <returns></returns>
+    public static ParamDirection EncodeParamDirection(ParameterDirection dir) {
       switch (dir) {
         case ParameterDirection.Input: return ParamDirection.Input;
         case ParameterDirection.InputOutput: return ParamDirection.InputOutput;
@@ -443,7 +499,12 @@ namespace Bio.Helpers.DOA {
       }
     }
 
-    public static Boolean dbConnectionStateIsOppened(ConnectionState connState) {
+    /// <summary>
+    /// Проверяет состояние соединения - Открыто или Закрыто
+    /// </summary>
+    /// <param name="connState"></param>
+    /// <returns></returns>
+    public static Boolean DbConnectionStateIsOppened(ConnectionState connState) {
       return ((connState == ConnectionState.Connecting) ||
                 (connState == ConnectionState.Executing) ||
                   (connState == ConnectionState.Fetching) ||
@@ -451,8 +512,13 @@ namespace Bio.Helpers.DOA {
 
     }
 
-    public static Boolean dbConnectionIsOppened(IDbConnection conn) {
-      return (conn != null) && dbConnectionStateIsOppened(conn.State);
+    /// <summary>
+    /// Проверяет соединение - Открыто или Закрыто
+    /// </summary>
+    /// <param name="conn"></param>
+    /// <returns></returns>
+    public static Boolean DbConnectionIsOppened(IDbConnection conn) {
+      return (conn != null) && DbConnectionStateIsOppened(conn.State);
 
     }
   }

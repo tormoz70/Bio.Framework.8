@@ -10,7 +10,7 @@ namespace Bio.Framework.Server {
 
   class CBioSelection {
     private bool FInvert = false;
-    private CParams FPKs = null;
+    private Params FPKs = null;
 
     public bool extractInvert(String pBioSelection) {
       bool vRslt = false;
@@ -30,15 +30,15 @@ namespace Bio.Framework.Server {
     }
 
 
-    private CParams extractPKItem(String pBioSelItem, CJSCursor pCur) {
-      CParams vRslt = new CParams();
+    private Params extractPKItem(String pBioSelItem, CJSCursor pCur) {
+      Params vRslt = new Params();
       String vBioSelItem = pBioSelItem;
       this.killTrailerChars(ref vBioSelItem, '(', ')');
       String[] vBioSelItemVals = Utl.SplitString(vBioSelItem, ")-(");
       for(int i = 0; i < vBioSelItemVals.Length; i++) {
         String vKey = "" + (i + 1);
         if(pCur.PKFields.ContainsKey(vKey)) {
-          CField vPKFld = (CField)pCur.PKFields[vKey];
+          Field vPKFld = (Field)pCur.PKFields[vKey];
           vRslt.Add(vPKFld.FieldName, vBioSelItemVals[i], vPKFld);
         }
       }
@@ -46,8 +46,8 @@ namespace Bio.Framework.Server {
 
     }
 
-    private CParams extractPKS(String pBioSelection, CJSCursor pCur) {
-      CParams vRslt = new CParams();
+    private Params extractPKS(String pBioSelection, CJSCursor pCur) {
+      Params vRslt = new Params();
       String vRsltStr = null;
       Regex vr = new Regex("\"pks\" *: *.+}", RegexOptions.IgnoreCase);
       Match m = vr.Match(pBioSelection);
@@ -63,7 +63,7 @@ namespace Bio.Framework.Server {
           String vStrItem = vRows[i];
           vStrItem = vStrItem.Trim();
           this.killTrailerChars(ref vStrItem, '"', '"');
-          CParams vPKRow = this.extractPKItem(vStrItem, pCur);
+          Params vPKRow = this.extractPKItem(vStrItem, pCur);
           vRslt.Add("ROW_ID", vStrItem, vPKRow);
         }
       }
@@ -76,26 +76,26 @@ namespace Bio.Framework.Server {
       }
     }
 
-    public CParams PKs {
+    public Params PKs {
       get {
         return this.FPKs;
       }
     }
 
-    public void prepareSQL(String pBioSelection, CJSCursor pCur, ref String vSQL) {
-      this.FInvert = this.extractInvert(pBioSelection);
-      this.FPKs = this.extractPKS(pBioSelection, pCur);
+    public void PrepareSQL(String selection, CJSCursor cursor, ref String sql) {
+      this.FInvert = this.extractInvert(selection);
+      this.FPKs = this.extractPKS(selection, cursor);
 
       String vWhereSQL = null;
       String vInvertStr = "";
       if(this.Invert)
         vInvertStr = "not ";
-      foreach(CParam vPK in this.PKs) {
+      foreach(var pk in this.PKs) {
         String oneCond = null;
-        foreach(CParam vPKFldItem in ((CParams)vPK.InnerObject)) {
-          CField cFld = (CField)vPKFldItem.InnerObject;
-          Utl.appendStr(ref oneCond, cFld.FieldName + " = " + ":" + cFld.FieldName + "", " and ");
-          pCur.Params.Add(cFld.FieldName, vPKFldItem.Value);
+        foreach(var fldItem in ((Params)pk.InnerObject)) {
+          var fld = (Field)fldItem.InnerObject;
+          Utl.AppendStr(ref oneCond, fld.FieldName + " = " + ":" + fld.FieldName + "", " and ");
+          cursor.Params.Add(fld.FieldName, fldItem.Value);
         }
         if(vWhereSQL == null)
           vWhereSQL = " " + vInvertStr + "(" + oneCond + ")";
@@ -104,7 +104,7 @@ namespace Bio.Framework.Server {
       }
 
       if(vWhereSQL != null)
-        vSQL = String.Format("SELECT * FROM ({0}) WHERE {1}", vSQL, vWhereSQL);
+        sql = String.Format("SELECT * FROM ({0}) WHERE {1}", sql, vWhereSQL);
 
     }
   }

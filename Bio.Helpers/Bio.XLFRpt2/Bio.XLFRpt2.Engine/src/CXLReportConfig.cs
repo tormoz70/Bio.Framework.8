@@ -1,3 +1,5 @@
+using Bio.Helpers.Common;
+
 namespace Bio.Helpers.XLFRpt2.Engine {
 
   using System;
@@ -71,7 +73,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         rslt.sql = vSQLElem.InnerText;
       }
       String vSQL = rslt.sql;
-      Utl.tryLoadMappedFiles(rptLocalPath, ref vSQL);
+      Utl.TryLoadMappedFiles(rptLocalPath, ref vSQL);
       rslt.sql = vSQL;
 
       return rslt;
@@ -94,9 +96,9 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         rslt.sql = vSQLElem.InnerText;
       }
       String vSQL = rslt.sql;
-      Utl.tryLoadMappedFiles(rptLocalPath, ref vSQL);
+      Utl.TryLoadMappedFiles(rptLocalPath, ref vSQL);
       rslt.sql = vSQL;
-      rslt.commandType = Utl.detectCommandType(rslt.sql);
+      rslt.commandType = Utl.DetectCommandType(rslt.sql);
 
       rslt.maxExpRows = Xml.getAttribute<Int64>(definition, "maxExpRows", 0);
 
@@ -182,26 +184,26 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         //  this.extAttrs.shortCode = _fileName2ShortCode(this._templateAdv);
       } 
     }
-    private CParams _inPrms = null;
-    public CParams inPrms { 
+    private Params _inPrms = null;
+    public Params inPrms { 
       get {
         if (this._inPrms == null)
-          this._inPrms = new CParams();
+          this._inPrms = new Params();
         return this._inPrms; 
       }
       set {
         this._inPrms = value;
         if (this.rptPrms == null) {
-          this.rptPrms = new CParams();
+          this.rptPrms = new Params();
           this.rptPrms.AddRange(this._inPrms);
         }
       }
     }
-    private CParams _rptPrms = null;
-    public CParams rptPrms { 
+    private Params _rptPrms = null;
+    public Params rptPrms { 
       get {
         if (this._rptPrms == null)
-          this._rptPrms = new CParams();
+          this._rptPrms = new Params();
         return this._rptPrms;
       } 
       set {
@@ -291,7 +293,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 
     private static String csRptThrowCodeDetector = "^\\d+[_]";
     private static String extractThrowCodeOfNode(String nodeName) {
-      String vCdStr = Utl.regexFind(nodeName, csRptThrowCodeDetector, true);
+      String vCdStr = Utl.RegexFind(nodeName, csRptThrowCodeDetector, true);
       if (!String.IsNullOrEmpty(vCdStr)) {
         return vCdStr.Substring(0, vCdStr.IndexOf('_'));
       }
@@ -321,7 +323,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 
     private static String _fileName2ShortCode(String rptFileName) {
       String shrtCode = Path.GetFileNameWithoutExtension(rptFileName);
-      Utl.regexReplace(ref shrtCode, csRptThrowCodeDetector, "", true);
+      Utl.RegexReplace(ref shrtCode, csRptThrowCodeDetector, "", true);
       shrtCode = Path.GetFileNameWithoutExtension(shrtCode).Replace("(rpt)", "");
       return shrtCode;
     }
@@ -332,11 +334,11 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         DirectoryInfo[] dirs = dirInfo.GetDirectories();
         foreach (DirectoryInfo dir in dirs) {
           String vStr = csRptThrowCodeDetector + nodes[level];
-          if (Utl.regexMatch(dir.Name, vStr, true)) {
+          if (Utl.RegexMatch(dir.Name, vStr, true).Success) {
             descFilePath = dir.FullName;
             String vCdStr = extractThrowCodeOfNode(dir.Name);
             if (!String.IsNullOrEmpty(vCdStr))
-              Utl.appendStr(ref throwCode, vCdStr, ".");
+              Utl.AppendStr(ref throwCode, vCdStr, ".");
             _findRptPath(nodes, level + 1, ref descFilePath, ref shrtCode, ref throwCode);
           }
         }
@@ -344,13 +346,13 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         FileInfo[] fls = dirInfo.GetFiles();
         foreach (FileInfo fl in fls) {
           String vStr = csRptThrowCodeDetector + nodes[level] + "[(]rpt[)].xml";
-          if (Utl.regexMatch(fl.Name, vStr, true)) {
+          if (Utl.RegexMatch(fl.Name, vStr, true).Success) {
             descFilePath = fl.FullName;
             shrtCode = fl.Name;
-            Utl.regexReplace(ref shrtCode, csRptThrowCodeDetector, "", true);
+            Utl.RegexReplace(ref shrtCode, csRptThrowCodeDetector, "", true);
             String vCdStr = extractThrowCodeOfNode(fl.Name);
             if (!String.IsNullOrEmpty(vCdStr))
-              Utl.appendStr(ref throwCode, vCdStr, ".");
+              Utl.AppendStr(ref throwCode, vCdStr, ".");
             shrtCode = Path.GetFileNameWithoutExtension(shrtCode).Replace("(rpt)", "");
           }
         }
@@ -376,37 +378,44 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       return vRptFullPath;
     }
 
+    /// <summary>
+    /// Восстанавливает CXLReportConfig из xml-строки
+    /// </summary>
+    /// <param name="xml"></param>
+    /// <returns></returns>
     public static CXLReportConfig Decode(String xml) {
-      CXLReportConfig rslt = new CXLReportConfig();
-      XmlDocument doc = new XmlDocument();
+      var rslt = new CXLReportConfig();
+      var doc = new XmlDocument();
       doc.InnerXml = xml;
       String vUID = null;
-      if (doc.DocumentElement.HasAttribute("uid"))
+      if (doc.DocumentElement != null && doc.DocumentElement.HasAttribute("uid"))
         vUID = doc.DocumentElement.GetAttribute("uid");
       rslt.uid = (String.IsNullOrEmpty(vUID)) ? Guid.NewGuid().ToString().Replace("-", null).ToUpper() : vUID;
 
-      if (doc.DocumentElement.HasAttribute("defaultTableFactory"))
+      if (doc.DocumentElement != null && doc.DocumentElement.HasAttribute("defaultTableFactory"))
         rslt.dataFactoryTypeName = doc.DocumentElement.GetAttribute("defaultTableFactory");
       else
         rslt.dataFactoryTypeName = "Bio.Helpers.XLFRpt2.DataFactory.CDataFactory, Bio.Helpers.XLFRpt2.DefaultDataFactory";
 
-      if (doc.DocumentElement.SelectSingleNode("adv_template") != null)
-        rslt.templateAdv = doc.DocumentElement.SelectSingleNode("adv_template").InnerText;
-      rslt.filenameFmt = Xml.getInnerText(doc.DocumentElement.SelectSingleNode("filename_fmt"));
+      if (doc.DocumentElement != null) {
+        var selectSingleNode = doc.DocumentElement.SelectSingleNode("adv_template");
+        if (selectSingleNode != null) rslt.templateAdv = selectSingleNode.InnerText;
+        rslt.filenameFmt = Xml.getInnerText(doc.DocumentElement.SelectSingleNode("filename_fmt"));
 
-      if (doc.DocumentElement.SelectSingleNode("passwords/pwd_open") != null)
-        rslt.extAttrs.pwdOpen = doc.DocumentElement.SelectSingleNode("passwords/pwd_open").InnerText;
-      if (doc.DocumentElement.SelectSingleNode("passwords/pwd_write") != null)
-        rslt.extAttrs.pwdWrite = doc.DocumentElement.SelectSingleNode("passwords/pwd_write").InnerText;
+        var singleNode = doc.DocumentElement.SelectSingleNode("passwords/pwd_open");
+        if (singleNode != null) rslt.extAttrs.pwdOpen = singleNode.InnerText;
+        var xmlNode = doc.DocumentElement.SelectSingleNode("passwords/pwd_write");
+        if (xmlNode != null) rslt.extAttrs.pwdWrite = xmlNode.InnerText;
+      }
 
       if (String.IsNullOrEmpty(rslt.extAttrs.pwdOpen))
         rslt.extAttrs.pwdOpen = null;
       if (String.IsNullOrEmpty(rslt.extAttrs.pwdWrite))
         rslt.extAttrs.pwdWrite = null;
       
-      if (doc.DocumentElement.SelectSingleNode("append") != null) {
+      if (doc.DocumentElement != null && doc.DocumentElement.SelectSingleNode("append") != null) {
         rslt.extAttrs.rootTreePath = Xml.getInnerText(doc.DocumentElement.SelectSingleNode("append/rptRootTree"));
-        rslt.extAttrs.workPath = Utl.resolvePath(Xml.getInnerText(doc.DocumentElement.SelectSingleNode("append/rptWorkPath")));
+        rslt.extAttrs.workPath = Utl.ResolvePath(Xml.getInnerText(doc.DocumentElement.SelectSingleNode("append/rptWorkPath")));
         
         if (String.IsNullOrEmpty(rslt.extAttrs.rootTreePath))
           rslt.extAttrs.rootTreePath = rslt.extAttrs.workPath;
@@ -432,7 +441,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       rslt.subject = Xml.getInnerText(doc.DocumentElement.SelectSingleNode("subject"));
       rslt.autor = Xml.getInnerText(doc.DocumentElement.SelectSingleNode("autor"));
 
-      XmlElement vDBConn = (XmlElement)doc.DocumentElement.SelectSingleNode("connstr");
+      var vDBConn = (XmlElement)doc.DocumentElement.SelectSingleNode("connstr");
       if (vDBConn != null) 
         rslt.connStr = vDBConn.InnerText;
 
@@ -445,23 +454,25 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         rslt.debug = true;
       }
 
-      XmlNodeList vDSDefs = doc.DocumentElement.SelectNodes("dss/ds[not(@enabled) or @enabled='true']");
-      for (int i = 0; i < vDSDefs.Count; i++) {
-        CXLReportDSConfig dsCfg = CXLReportDSConfig.Decode((XmlElement)vDSDefs[i], rslt.extAttrs.localPath);
-        rslt.dss.Add(dsCfg);
+      var vDSDefs = doc.DocumentElement.SelectNodes("dss/ds[not(@enabled) or @enabled='true']");
+      if (vDSDefs != null) {
+        for (var i = 0; i < vDSDefs.Count; i++) {
+          CXLReportDSConfig dsCfg = CXLReportDSConfig.Decode((XmlElement) vDSDefs[i], rslt.extAttrs.localPath);
+          rslt.dss.Add(dsCfg);
+        }
       }
 
 
-      XmlNodeList inParams = doc.DocumentElement.SelectNodes("append/inParams/param");
-      rslt.inPrms = new CParams();
+      var inParams = doc.DocumentElement.SelectNodes("append/inParams/param");
+      rslt.inPrms = new Params();
       for (int i = 0; i < inParams.Count; i++)
         rslt.inPrms.Add(((XmlElement)inParams[i]).GetAttribute("name"), ((XmlElement)inParams[i]).InnerText);
 
 
-      XmlNodeList rptParams = doc.DocumentElement.SelectNodes("params/param");
-      rslt.rptPrms = new CParams();
-      for (int i = 0; i < rptParams.Count; i++) {
-        String vType = "sql";
+      var rptParams = doc.DocumentElement.SelectNodes("params/param");
+      rslt.rptPrms = new Params();
+      for (var i = 0; i < rptParams.Count; i++) {
+        var vType = "sql";
         if (((XmlElement)rptParams[i]).HasAttribute("type"))
           vType = ((XmlElement)rptParams[i]).GetAttribute("type");
         rslt.rptPrms.Add(((XmlElement)rptParams[i]).GetAttribute("name"), ((XmlElement)rptParams[i]).InnerText, vType);
@@ -475,7 +486,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       if ((vSQLScriptBeforeNode != null) && Xml.getAttribute<Boolean>(vSQLScriptBeforeNode, "enabled", true)) {
         rslt.extAttrs.sqlScriptBefore = vSQLScriptBeforeNode.InnerText;
         String vSQL = rslt.extAttrs.sqlScriptBefore;
-        Utl.tryLoadMappedFiles(rslt.extAttrs.localPath, ref vSQL);
+        Utl.TryLoadMappedFiles(rslt.extAttrs.localPath, ref vSQL);
         rslt.extAttrs.sqlScriptBefore = vSQL;
       }
       rslt.extAttrs.sqlScriptAfter = null;
@@ -483,18 +494,18 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       if ((vSQLScriptAfterNode != null) && Xml.getAttribute<Boolean>(vSQLScriptAfterNode, "enabled", true)) {
         rslt.extAttrs.sqlScriptAfter = vSQLScriptAfterNode.InnerText;
         String vSQL = rslt.extAttrs.sqlScriptAfter;
-        Utl.tryLoadMappedFiles(rslt.extAttrs.localPath, ref vSQL);
+        Utl.TryLoadMappedFiles(rslt.extAttrs.localPath, ref vSQL);
         rslt.extAttrs.sqlScriptAfter = vSQL;
       }
 
       if (File.Exists(rslt.extAttrs.localPath + rslt.extAttrs.sqlScriptBefore)){
         String vLine = null;
-        CStrFile.LoadStringFromFile(rslt.extAttrs.localPath + rslt.extAttrs.sqlScriptBefore, ref vLine, null);
+        StrFile.LoadStringFromFile(rslt.extAttrs.localPath + rslt.extAttrs.sqlScriptBefore, ref vLine, null);
         rslt.extAttrs.sqlScriptBefore = vLine;
       }
       if (File.Exists(rslt.extAttrs.localPath + rslt.extAttrs.sqlScriptAfter)) {
         String vLine = null;
-        CStrFile.LoadStringFromFile(rslt.extAttrs.localPath + rslt.extAttrs.sqlScriptAfter, ref vLine, null);
+        StrFile.LoadStringFromFile(rslt.extAttrs.localPath + rslt.extAttrs.sqlScriptAfter, ref vLine, null);
         rslt.extAttrs.sqlScriptAfter = vLine;
       }
       return rslt;
@@ -504,7 +515,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       get {
         //return this._rptCfg.logPath;
         String vRslt = this.extAttrs.workPath +
-          (!String.IsNullOrEmpty(this.fullCode) ? Utl.genBioLocalPath(this.fullCode) : null) +
+          (!String.IsNullOrEmpty(this.fullCode) ? Utl.GenBioLocalPath(this.fullCode) : null) +
           "log\\" + DateTime.Now.ToString("yyyyMMdd") + "\\" +
           (!String.IsNullOrEmpty(this.extAttrs.remoteIP) ? this.extAttrs.remoteIP + "_" : null) +
           (!String.IsNullOrEmpty(this.extAttrs.userUID) ? this.extAttrs.userUID : null);
@@ -518,7 +529,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     public String tmpPath {
       get {
         return this.extAttrs.workPath +
-          (!String.IsNullOrEmpty(this.fullCode) ? Utl.genBioLocalPath(this.fullCode) : null) +
+          (!String.IsNullOrEmpty(this.fullCode) ? Utl.GenBioLocalPath(this.fullCode) : null) +
           "tmp\\" +
           (!String.IsNullOrEmpty(this.extAttrs.userUID) ? this.extAttrs.sessionID + "\\" : null);
       }
@@ -527,7 +538,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     public String donePath {
       get {
         return this.extAttrs.workPath +
-          (!String.IsNullOrEmpty(this.fullCode) ? Utl.genBioLocalPath(this.fullCode) : null) +
+          (!String.IsNullOrEmpty(this.fullCode) ? Utl.GenBioLocalPath(this.fullCode) : null) +
           "done\\" +
           (!String.IsNullOrEmpty(this.extAttrs.userUID) ? this.extAttrs.userUID + "\\" : null);
 
@@ -556,7 +567,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       String sessionID,
       String userName,
       String remoteIP,
-      CParams inParams,
+      Params inParams,
       Boolean switchOffDebuging
     ) {
       String v_connStr = null;
@@ -601,7 +612,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       vApndXML.WriteLine("<rptWorkPath>" + rootRptWorkPath + "</rptWorkPath>");
       //if (rptParams != null) {
       //  vApndXML.WriteLine("<inParams>");
-      //  foreach (CParam vPrm in rptParams)
+      //  foreach (Param vPrm in rptParams)
       //    vApndXML.WriteLine("<param name=\"" + vPrm.Name + "\">" + vPrm.Value + "</param>");
       //  vApndXML.WriteLine("</inParams>");
       //}
@@ -648,6 +659,6 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     public String format { get; set; }
     public CJSAlignment align { get; set; }
     public Int32 width { get; set; }
-    public CFieldType type { get; set; }
+    public FieldType type { get; set; }
   }
 }

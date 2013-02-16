@@ -18,7 +18,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 	/// </summary>
   public delegate void DlgOnProgressDataSet(CXLRDataSet pSender, Decimal pPrgPrc);
 
-  public class CXLRDataSet:CDisposableObject{
+  public class CXLRDataSet:DisposableObject{
 //private
     private CXLRDataSource FOwner = null;
     //private CXLRDTblFactory FDSTable = null;
@@ -32,7 +32,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 			this.FOwner = pOwner;
     }
 
-    protected override void OnDispose() {
+    protected override void doOnDispose() {
       if(this.FRootGroup != null) {
         this.FRootGroup.Dispose();
         this.FRootGroup = null;
@@ -134,8 +134,8 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     }
 
 
-		public CParams GetSingleRow(Int32 timeout){
-			CParams vResult = null;
+		public Params GetSingleRow(Int32 timeout){
+			Params vResult = null;
       CXLRDataFactory v_dataFactory = this.Owner.Owner.DataFactory;//CXLRDataFactory.createDataFactory(this.Owner.Cfg, this.Owner.DataFactoryTypeName);
       try {
 
@@ -147,7 +147,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         //  this.FDSTable.PrepareDSTable(pOuterDSTable);
         v_dataFactory.Open(this.Owner.Owner.currentDbConnection, this.Owner.Cfg, timeout);
         if (v_dataFactory.Next()) {
-          vResult = new CParams();
+          vResult = new Params();
           for (int i = 0; i < v_dataFactory.ColCount; i++) {
             vResult.Add(v_dataFactory.ColName(i), v_dataFactory.Values[i].ToString());
           }

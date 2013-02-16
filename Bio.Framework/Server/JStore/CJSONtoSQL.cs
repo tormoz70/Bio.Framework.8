@@ -16,19 +16,19 @@
   /// Преобразовывает данные из JSON-строки в запрос к БД.
   /// </summary>
   public class CJSONtoSQL {
-    //public Json.RowData[] Process(DbConnection pConn, XmlElement pCursorDef, CJsonStoreRequest request, CParams pIOParams, String pIOCode) {
+    //public Json.RowData[] Process(DbConnection pConn, XmlElement pCursorDef, CJsonStoreRequest request, Params pIOParams, String pIOCode) {
     //  string jsonString = pExParams.Data;
     //  try {
     //    Json.Rows jsonData = LitJson_killd.JsonMapper.ToObject<Json.Rows>(jsonString);
     //    //pConn.BeginTransaction();
     //    CSQLCursorBio vCommand = new CSQLCursorBio(pConn, pCursorDef, pIOCode);
-    //    CParams vParams = new CParams();
+    //    Params vParams = new Params();
     //    bool isFirst = true;
     //    foreach (Json.RowData row in jsonData.rows) {
     //      foreach (KeyValuePair<string, LitJson_killd.JsonData> field in row.data) {
     //        object vValue = (field.Value != null) ? field.Value.ToDotNetObject() : null;
     //        if(vValue == null){
-    //          CParam vIOPrm = pIOParams.ParamByName(field.Key);
+    //          Param vIOPrm = pIOParams.ParamByName(field.Key);
     //          if(vIOPrm != null)
     //            vValue = vIOPrm.Value;
     //        }
@@ -59,12 +59,12 @@
     //  }
     //}
 
-    //private static LitJson_killd.JsonData BuildOutJson(CParams pParams) {
+    //private static LitJson_killd.JsonData BuildOutJson(Params pParams) {
     //  string json;
     //  using (StringWriter sw = new StringWriter()) {
     //    LitJson_killd.JsonWriter jw = new LitJson_killd.JsonWriter(sw);
     //    bool f = false;
-    //    foreach (CParam param in pParams)
+    //    foreach (Param param in pParams)
     //      if (param.ParamDirection == ParameterDirection.Output || param.ParamDirection == ParameterDirection.InputOutput) {
     //        if (!f) {
     //          jw.WriteObjectStart();
@@ -83,7 +83,7 @@
     //  return String.IsNullOrEmpty(json) ? null : LitJson_killd.JsonMapper.ToObject(json);
     //}
 
-    public void Process(IDbConnection conn, XmlElement cursorDef, CJsonStoreRequest request, CParams bioParams, String bioCode) {
+    public void Process(IDbConnection conn, XmlElement cursorDef, CJsonStoreRequest request, Params bioParams, String bioCode) {
       CJSCursor vCommand = new CJSCursor(conn, cursorDef, bioCode);
       foreach (var row in request.packet.rows) {
         vCommand.DoProcessRowPost(request.packet.metaData, row, bioParams, request.timeout);

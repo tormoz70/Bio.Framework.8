@@ -31,13 +31,13 @@ namespace Bio.Framework.Server {
     /// Вытаскивает из БД файл и отдает его клиенту
     /// </summary>
     /// <param name="bioParams">Параметры запроса к БД</param>
-    private void sendFileToClient(CParams bioPrms) {
+    private void sendFileToClient(Params bioPrms) {
 
       this.Context.Response.ClearContent();
       this.Context.Response.ClearHeaders();
       this.Context.Response.ContentType = "application/octet-stream";
-      String vFileName = CParams.FindParamValue(bioPrms, csFileNameParam) as String;
-      Byte[] vFile = CParams.FindParamValue(bioPrms, csFileParam) as Byte[];
+      String vFileName = Params.FindParamValue(bioPrms, csFileNameParam) as String;
+      Byte[] vFile = Params.FindParamValue(bioPrms, csFileParam) as Byte[];
       if (String.IsNullOrEmpty(vFileName))
         throw new EBioException(String.Format("В исходящих параметрах ИО должен присутствовать параметр \"{0}\"", csFileNameParam));
       if (vFile == null)
@@ -61,7 +61,7 @@ namespace Bio.Framework.Server {
       if (vDS == null) 
         throw new EBioException(String.Format("В описании объекта {0} не найден раздел <store>.", this.bioCode));
 
-      var v_hashCodeOfFile = CParams.FindParamValue(this.QParams, csHashCodeWebParam) as String;
+      var v_hashCodeOfFile = Params.FindParamValue(this.QParams, csHashCodeWebParam) as String;
       if (String.IsNullOrEmpty(v_hashCodeOfFile)) 
         throw new EBioException(String.Format("В параметрах запроса должен присутствовать параметр {0}.", csHashCodeWebParam));
 
@@ -70,19 +70,19 @@ namespace Bio.Framework.Server {
         try {
           try {
             CJSCursor vCursor = new CJSCursor(vConn, vDS, this.bioCode);
-            int vAjaxRequestTimeOut = Utl.Convert2Type<int>(CParams.FindParamValue(this.QParams, "ajaxrqtimeout"));
-            CSQLGarbageMonitor vMon = CSQLGarbageMonitor.GetSQLGarbageMonitor(this.Context);
-            vMon.RegisterSQLCmd(vCursor, (CSQLCmd vSQLCmd, ref Boolean killQuery, ref Boolean killSession, Boolean vAjaxTimeoutExceeded) => {
+            int vAjaxRequestTimeOut = Utl.Convert2Type<int>(Params.FindParamValue(this.QParams, "ajaxrqtimeout"));
+            SQLGarbageMonitor vMon = SQLGarbageMonitor.GetSQLGarbageMonitor(this.Context);
+            vMon.RegisterSQLCmd(vCursor, (SQLCmd vSQLCmd, ref Boolean killQuery, ref Boolean killSession, Boolean vAjaxTimeoutExceeded) => {
               if (Object.Equals(vCursor, vSQLCmd)) {
                 killQuery = !this.Context.Response.IsClientConnected || vAjaxTimeoutExceeded;
                 killSession = killQuery;
               }
             }, vAjaxRequestTimeOut);
             try {
-              var prms = new CParams();
+              var prms = new Params();
               prms.Add("p_hash_code", v_hashCodeOfFile);
-              prms.Add(new CParam(csFileNameParam, null, typeof(String), ParamDirection.Output));
-              prms.Add(new CParam(csFileParam, null, typeof(Byte[]), ParamDirection.Output));
+              prms.Add(new Param(csFileNameParam, null, typeof(String), ParamDirection.Output));
+              prms.Add(new Param(csFileParam, null, typeof(Byte[]), ParamDirection.Output));
               vCursor.DoExecuteSQL(prms, 120);
               this.sendFileToClient(prms);
             } catch (Exception ex) {

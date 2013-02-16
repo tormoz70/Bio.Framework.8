@@ -8,7 +8,7 @@
 
   public class CBioResponse : CAjaxResponse {
     public String transactionID { get; set; }
-    public CParams bioParams { get; set; }
+    public Params bioParams { get; set; }
 
     public CGlobalCfgPack gCfg { get; set; }
 
@@ -21,7 +21,7 @@
       base.copyThis(ref destObj);
       CBioResponse dst = destObj as CBioResponse;
       dst.transactionID = this.transactionID;
-      dst.bioParams = (this.bioParams != null) ? (CParams)this.bioParams.Clone() : null;
+      dst.bioParams = (this.bioParams != null) ? (Params)this.bioParams.Clone() : null;
       dst.gCfg = (this.gCfg != null) ? (CGlobalCfgPack)this.gCfg.Clone() : null;
       dst.rmtStatePacket = (this.rmtStatePacket != null) ? (CRemoteProcessStatePack)this.rmtStatePacket.Clone() : null;
       //dst.loStatePacket = (this.loStatePacket != null) ? (CLongOpStatePack)this.loStatePacket.Clone() : null;

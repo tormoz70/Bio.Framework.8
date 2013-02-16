@@ -44,7 +44,7 @@ namespace Bio.Framework.Server {
 
 		protected void Session_End(Object sender, EventArgs e){
       try {
-        CBioSession bioSession = (CBioSession)this.Session["BioSessIni"];
+        BioSession bioSession = (BioSession)this.Session["BioSessIni"];
         if(bioSession != null) {
           bioSession.DoFinalize();
           if ((bioSession.Cfg != null) && (bioSession.Cfg.CurUser != null)) {

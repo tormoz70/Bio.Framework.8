@@ -108,7 +108,6 @@
     <Compile Include="CJsonStore\CJsonStoreMetadata.cs" />
     <Compile Include="CJsonStore\CJsonStoreResponse.cs" />
     <Compile Include="CJsonStore\CJsonStoreRows.cs" />
-    <Compile Include="CQueryParams.cs" />
     <Compile Include="CRemoteProcessStatePack.cs" />
     <Compile Include="Notifications\CNotificationBase.cs" />
     <Compile Include="Notifications\CNotificationCachedDSChanged.cs" />
@@ -125,6 +124,7 @@
     <Compile Include="CJsonStore\CJsonStoreRequestPost.cs" />
     <Compile Include="CLongOpClientRequest.cs" />
     <Compile Include="CRmtClientRequest.cs" />
+    <Compile Include="QueryParams.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

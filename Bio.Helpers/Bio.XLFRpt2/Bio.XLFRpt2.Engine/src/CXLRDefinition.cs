@@ -23,7 +23,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
   /// <summary>
   /// 
   /// </summary>
-  public class CXLRDefinition : CDisposableObject {
+  public class CXLRDefinition : DisposableObject {
     //private
     private const string csEcoding = "UTF-8";
     private CXLReport _owner = null;
@@ -48,7 +48,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         this.InParams.Add("SYS_TITLE", this._rptCfg.title);
     }
 
-    protected override void OnDispose() {
+    protected override void doOnDispose() {
       this._owner = null;
       this._rptCfg = null;
     }
@@ -186,8 +186,8 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     public CXLRMacro MacroAfter { get { return this._rptCfg.extAttrs.macroAfter; } }
     public String SQLScriptBefore { get { return this._rptCfg.extAttrs.sqlScriptBefore; } }
     public String SQLScriptAfter { get { return this._rptCfg.extAttrs.sqlScriptAfter; } }
-    public CParams InParams { get { return this._rptCfg.inPrms; } }
-    public CParams RptParams { get { return this._rptCfg.rptPrms; } }
+    public Params InParams { get { return this._rptCfg.inPrms; } }
+    public Params RptParams { get { return this._rptCfg.rptPrms; } }
 
     private String buildFileName(String pTempl) {
       String vRslt = pTempl;

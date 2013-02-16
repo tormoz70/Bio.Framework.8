@@ -63,7 +63,7 @@ namespace Bio.Helpers.Common.Types {
     /// К ним добавится системный параметр "rqpckt", в котором будет содержаться сам запрос в виде json-строки,
     /// при этом сериализованный объект запроса не содержит атрибут "prms".
     /// </summary>
-    public CParams prms { get; set; }
+    public Params prms { get; set; }
     ///// <summary>
     ///// Ссылка на объект, вызвавший запрос
     ///// </summary>
@@ -85,7 +85,7 @@ namespace Bio.Helpers.Common.Types {
     public AjaxRequestDelegate callback { get; set; }
 
     //internal void buildFURL(String pServerUrl) {
-    //  this.FURL = ajaxUTL.bldURL(pServerUrl);
+    //  this.FURL = ajaxUTL.BuildURL(pServerUrl);
     //}
     public CAjaxRequest() {
       //this.async = true;
@@ -112,24 +112,24 @@ namespace Bio.Helpers.Common.Types {
     /// </summary>
     /// <typeparam name="TypeOfRequest">Тип запроса</typeparam>
     /// <returns></returns>
-    public CParams BuildQParams(JsonConverter[] converters) {
-      CParams rslt = (this.prms == null) ? new CParams() : (CParams)this.prms.Clone();
+    public Params BuildQParams(JsonConverter[] converters) {
+      Params rslt = (this.prms == null) ? new Params() : (Params)this.prms.Clone();
       CAjaxRequest rq = this.Clone() as CAjaxRequest;
       rq.prms = null;
       String vJsonStr = rq.Encode(converters);
-      rslt.Add(new CParam() { Name = csQParamName, Value = vJsonStr });
+      rslt.Add(new Param() { Name = csQParamName, Value = vJsonStr });
       return rslt;
     }
 
-    public static CAjaxRequest ExtractFromQParams(CParams p_prms, JsonConverter[] converters) {
-      var vJsonStr = CParams.FindParamValue(p_prms, csQParamName) as String;
+    public static CAjaxRequest ExtractFromQParams(Params p_prms, JsonConverter[] converters) {
+      var vJsonStr = Params.FindParamValue(p_prms, csQParamName) as String;
       var rslt = CAjaxRequest.Decode(vJsonStr, converters);
       return rslt;
     }
 
 #if !SILVERLIGHT
     public static CAjaxRequest ExtractFromQParams(NameValueCollection prms, JsonConverter[] converters) {
-      var v_prms = new CParams(prms);
+      var v_prms = new Params(prms);
       return ExtractFromQParams(v_prms, converters);
     }
     public static CAjaxRequest ExtractFromQParams(NameValueCollection prms) {
@@ -139,7 +139,7 @@ namespace Bio.Helpers.Common.Types {
 
     protected virtual void copyThis(ref CAjaxRequest destObj) {
       //destObj.async = this.async;
-      destObj.prms = (this.prms != null) ? (CParams)this.prms.Clone() : null;
+      destObj.prms = (this.prms != null) ? (Params)this.prms.Clone() : null;
       destObj.silent = this.silent;
       destObj.url = this.url;
       destObj.timeout = this.timeout;

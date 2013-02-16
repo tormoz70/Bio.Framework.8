@@ -20,7 +20,7 @@
   //}
 
   //class CRptBuilderPF {
-  //  private CBioSession FSess = null;
+  //  private BioSession FSess = null;
   //  private String FRptCode = null;
   //  private String FRptFile = null;
   //  private String FTmpFileName = null;
@@ -30,7 +30,7 @@
   //  private String FRptLogPath = null;
   //  //private ExportFormatType FExpType = ExportFormatType.PortableDocFormat;
 
-  //  public CRptBuilderPF(CBioSession pSess, String pRptCode) {
+  //  public CRptBuilderPF(BioSession pSess, String pRptCode) {
   //    this.FSess = pSess;
   //    this.FRptCode = pRptCode;
   //    this.FRptFile = this.FSess.IniPath + this.FRptCode.Replace(".", "\\") + ".xml";
@@ -101,7 +101,7 @@
 
   //    //******************************************************************************************************			
   //    /*if(pParams != null) {
-  //      foreach(CParam vPrm in pParams) {
+  //      foreach(Param vPrm in pParams) {
   //        ParameterFieldDefinition paramField = this.findParamInRpt(rptDoc, vPrm.Name);
   //        if(paramField != null) {
   //          ParameterDiscreteValue paramValue = new ParameterDiscreteValue();
@@ -137,7 +137,7 @@
   //    vConn.Open();
   //    try{
   //      CSQLCmd vCmd = new CSQLCmd(vConn);
-  //      vCmd.Init(vSQLText, new CParams());
+  //      vCmd.Init(vSQLText, new Params());
   //      vCmd.Params.Add("p_selection", vSelectionList);
   //      vCmd.Params.Add("p_invert", vSelAll);
   //        vCmd.Open();

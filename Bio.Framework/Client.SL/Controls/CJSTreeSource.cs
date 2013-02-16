@@ -127,7 +127,7 @@ namespace Bio.Framework.Client.SL {
     /// При входе в эту процедуру параметры уже содержат "parent_id=this.ID"
     /// </summary>
     /// <param name="prms"></param>
-    protected virtual void doOnBeforeLoadItem(ref CParams prms) {
+    protected virtual void doOnBeforeLoadItem(ref Params prms) {
     }
 
     public static String csDefaultParentIDParameterName = "parent_id";
@@ -136,7 +136,7 @@ namespace Bio.Framework.Client.SL {
         throw new Exception("Не определен атрибут OwnerTreeView в корневом элементе!");
       this._cli.ajaxMng = this.AjaxMng;
       this._cli.bioCode = this.BioCode;
-      CParams prms = new CParams();
+      Params prms = new Params();
       if (!this.Equals(this.RootItem)) {
         prms.Add(csDefaultParentIDParameterName, this.ID);
       }

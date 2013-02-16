@@ -1,4 +1,6 @@
-﻿namespace Bio.Helpers.Common {
+﻿using Bio.Helpers.Common;
+
+namespace Bio.Helpers.Common {
   using System;
   using System.Collections.Generic;
   using System.Linq;
@@ -86,17 +88,17 @@
       return v_rslt;
     }
 
-    public static CFieldType detectFieldType(String typeName) {
-      CFieldType rslt = ftypeHelper.ConvertStrToFType(typeName);
+    public static FieldType detectFieldType(String typeName) {
+      FieldType rslt = ftypeHelper.ConvertStrToFType(typeName);
       return rslt;
     }
 
-    public static CJSAlignment detectAlignment(CFieldType fldType, String alignName) {
+    public static CJSAlignment detectAlignment(FieldType fldType, String alignName) {
       if (!String.IsNullOrEmpty(alignName)) {
         CJSAlignment rslt = enumHelper.GetFieldValueByDescAttr<CJSAlignment>(alignName, StringComparison.CurrentCulture);
         return rslt;
       } else {
-        if (new CFieldType[] {CFieldType.Currency, CFieldType.Int, CFieldType.Currency}.Contains(fldType))
+        if (new FieldType[] {FieldType.Currency, FieldType.Int, FieldType.Currency}.Contains(fldType))
           return CJSAlignment.Right;
         else
           return CJSAlignment.Left;

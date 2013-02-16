@@ -11,7 +11,7 @@
   //using CrystalDecisions.Shared;
 
   class CRptBuilderCR {
-    private CBioSession FSess = null;
+    private BioSession FSess = null;
     private String FRptCode = null;
     private String FRptFile = null;
     private String FTmpFileName = null;
@@ -21,11 +21,11 @@
     private String FRptLogPath = null;
     //private ExportFormatType FExpType = ExportFormatType.PortableDocFormat;
 
-    public CRptBuilderCR(CBioSession pSess, String pRptCode) {
+    public CRptBuilderCR(BioSession pSess, String pRptCode) {
       this.FSess = pSess;
       this.FRptCode = pRptCode;
       this.FRptFile = this.FSess.Cfg.IniPath + this.FRptCode.Replace(".", "\\") + ".rpt";
-      this.FRptFullPath_ws = this.FSess.Cfg.RptLogsPath + Utl.genBioLocalPath(this.FRptCode);
+      this.FRptFullPath_ws = this.FSess.Cfg.RptLogsPath + Utl.GenBioLocalPath(this.FRptCode);
       this.FRptDonePath = Path.GetDirectoryName(this.FRptFullPath_ws) + "\\done\\"; Directory.CreateDirectory(this.FRptDonePath);
       this.FRptTmpPath = Path.GetDirectoryName(this.FRptFullPath_ws) + "\\tmp\\";
       this.FRptLogPath = Path.GetDirectoryName(this.FRptFullPath_ws) + "\\log\\";
@@ -101,7 +101,7 @@
     //  return null;
     //}
 
-    public void doBuild(CParams pParams) {
+    public void doBuild(Params pParams) {
       //this.FTmpFileName = null;
       //if(!File.Exists(this.FRptFile))
       //  throw new EBioException("Не найден файл отчета " + this.FRptFile);
@@ -155,7 +155,7 @@
 
       ////******************************************************************************************************			
       //if(pParams != null) {
-      //  foreach(CParam vPrm in pParams) {
+      //  foreach(Param vPrm in pParams) {
       //    ParameterFieldDefinition paramField = this.findParamInRpt(rptDoc, vPrm.Name);
       //    if(paramField != null) {
       //      ParameterDiscreteValue paramValue = new ParameterDiscreteValue();
