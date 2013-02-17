@@ -136,7 +136,7 @@
   //    vConn.ConnectionString = vConnStr;
   //    vConn.Open();
   //    try{
-  //      CSQLCmd vCmd = new CSQLCmd(vConn);
+  //      SQLCmd vCmd = new SQLCmd(vConn);
   //      vCmd.Init(vSQLText, new Params());
   //      vCmd.Params.Add("p_selection", vSelectionList);
   //      vCmd.Params.Add("p_invert", vSelAll);

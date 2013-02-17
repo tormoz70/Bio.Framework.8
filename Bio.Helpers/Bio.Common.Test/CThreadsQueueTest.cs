@@ -94,8 +94,8 @@ namespace Bio.Helpers.Common.Test
     }
     [TestMethod()]
     public void connTest() {
-      var sess = new CDBSession("Password=j12;Persist Security Info=True;Connection Lifetime=10;Max Pool Size=15;User ID=GIVC_PUB;Data Source=GIVCDB_EKBS02");
-      var cr = SQLCursor.creAndOpenCursor(sess, "select * from ORGM$ORGWWW", null, 60);
+      var sess = new DBSession("Password=j12;Persist Security Info=True;Connection Lifetime=10;Max Pool Size=15;User ID=GIVC_PUB;Data Source=GIVCDB_EKBS02");
+      var cr = SQLCursor.CreateAndOpenCursor(sess, "select * from ORGM$ORGWWW", null, 60);
       while (cr.Next()) {
         System.Console.WriteLine("...");
       }
