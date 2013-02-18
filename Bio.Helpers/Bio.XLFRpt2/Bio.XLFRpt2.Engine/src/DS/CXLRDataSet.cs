@@ -20,7 +20,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 
   public class CXLRDataSet:DisposableObject{
 //private
-    private CXLRDataSource FOwner = null;
+    private XLRDataSource FOwner = null;
     //private CXLRDTblFactory FDSTable = null;
     //private CXLRDataFactory FDataFactory = null;
     private CXLRootGroup FRootGroup;
@@ -28,7 +28,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 //public
     public event DlgOnProgressDataSet OnProgress;
     //constructor
-		public CXLRDataSet(CXLRDataSource pOwner){
+		public CXLRDataSet(XLRDataSource pOwner){
 			this.FOwner = pOwner;
     }
 
@@ -41,7 +41,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 
     //public CXLRDataFactory DataFactory { get; private set; }
 
-		public CXLRDataSource Owner{
+		public XLRDataSource Owner{
 			get{
 				return FOwner;
 			}

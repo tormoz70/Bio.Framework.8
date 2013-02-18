@@ -39,7 +39,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     private String FProgress = "[0 %]";
     //private TimeSpan FLastDuration = TimeSpan.MinValue;
     private String FLastErrorFile = null;
-    private CXLRDataSources FDataSources = null;
+    private XLRDataSources FDataSources = null;
     private String FLastReportResultFile = null;
     private CXLRSQLScript FCurrentSQLScript = null;
 
@@ -82,7 +82,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       this.FOpener = opener;
       this.FRptDefinition = new CXLRDefinition(this, cfg);
       this.FHttpContext = httpContext;
-      this.FDataSources = new CXLRDataSources(this, cfg.dss);
+      this.FDataSources = new XLRDataSources(this, cfg.dss);
       this.FExcelSrvIsOutter = (excelInst != null);
       this.FExcelSrv = new ExcelSrv(excelInst);
       this.FLastReportResultFile = this.FRptDefinition.GetNewTempFileName();
@@ -111,7 +111,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       }
     }
 
-    public CXLRDataSources DataSources {
+    public XLRDataSources DataSources {
       get {
         return this.FDataSources;
       }
@@ -151,7 +151,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     }
 
 
-    public void DoOnProgressDataSource(CXLRDataSource pSender, Decimal pPrgPrc) {
+    public void DoOnProgressDataSource(XLRDataSource pSender, Decimal pPrgPrc) {
       this.FProgress = "" + pSender.Cfg.wsName + " [" + String.Format("{0:##0.0}", pPrgPrc) + " %]";
     }
 

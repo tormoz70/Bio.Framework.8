@@ -441,9 +441,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 
         if (this.FIsGroupDefined)
           this.GroupChild(dsRange.Worksheet);
-        //this.FDetails
         this.Owner.Owner.Owner.writeLogLine("\tbldr:root-grp:(" + this.Owner.Owner.Cfg.alias + ") : AppliayFormat - OK.");
-        this.Owner.Owner.Charts.Build(this);
 
       } finally {
         this.GRTTmplDef.Dispose();

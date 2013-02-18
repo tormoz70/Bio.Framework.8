@@ -150,7 +150,6 @@
     <Compile Include="src\DS\tree\CXLRTemplateDef.cs" />
     <Compile Include="src\CExcelSrv_lock.cs" />
     <Compile Include="src\CExcelSrv_static.cs" />
-    <Compile Include="src\DS\CXLRChart.cs" />
     <Compile Include="src\CExcelSrv_main.cs" />
     <Compile Include="src\DS\tree\CXLRCols.cs">
       <SubType>Code</SubType>
@@ -179,16 +178,13 @@
     <Compile Include="src\DS\tree\CXLRTotalSub.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\DS\CXLRCharts.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="src\DS\CXLRDataSet.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\DS\CXLRDataSource.cs">
+    <Compile Include="src\DS\XLRDataSource.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\DS\CXLRDataSources.cs">
+    <Compile Include="src\DS\XLRDataSources.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\DS\CXLRDataFactory.cs">
