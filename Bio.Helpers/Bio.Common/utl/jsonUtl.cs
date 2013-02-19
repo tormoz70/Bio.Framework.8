@@ -89,7 +89,7 @@ namespace Bio.Helpers.Common {
     }
 
     public static FieldType detectFieldType(String typeName) {
-      FieldType rslt = ftypeHelper.ConvertStrToFType(typeName);
+      FieldType rslt = ftypeHelper.ConvertStrToFieldType(typeName);
       return rslt;
     }
 

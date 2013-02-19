@@ -29,34 +29,33 @@ namespace Bio.Framework.Server {
         start = 0
       };
 
-      Field vFVal;
       result.metaData = CJsonStoreMetadata.ConstructMetadata(cursor.bioCode, cursor.CursorIniDoc);
       result.rows = new CJsonStoreRows();
-      int vRowCount = 0;
+      var v_rowCount = 0;
       result.start = cursor.rqPacket.start;
       result.limit = cursor.rqPacket.limit;
       result.totalCount = cursor.rqPacket.totalCount;
       // перебираем все записи в курсоре
       //throw new Exception("FTW!!!");
       while (cursor.Next()) {
-        //vRowCount++;
-        if (result.limit == 0 || ++vRowCount <= result.limit) {
-          CJsonStoreRow newRow = result.addRow();
+        if (result.limit == 0 || ++v_rowCount <= result.limit) {
+          var v_newRow = result.addRow();
           // перебираем все поля одной записи
-          foreach (Field vCur in cursor.Fields) {
-            String vFName = vCur.FieldName;
-            vFVal = vCur;
-            Boolean process = true;
+          foreach (var fld in cursor.Fields) {
+            var v_fieldName = fld.FieldName;
+            var v_field = fld;
+            var process = true;
             if (this.ProcessField != null)
-              process = this.ProcessField(ref vFName, ref vFVal);
+              process = this.ProcessField(ref v_fieldName, ref v_field);
             if (process) {
-              newRow.Values[result.metaData.indexOf(vFName)] = vFVal.AsObject;
+              var v_doEncodeFromAnsi = (v_field.DataType == FieldType.Clob) && (v_field.Encoding == FieldEncoding.WINDOWS1251);
+              v_newRow.Values[result.metaData.indexOf(v_fieldName)] = v_doEncodeFromAnsi ? Utl.EncodeANSI2UTF(v_field.AsObject as String) : v_field.AsObject;
             }
           }
         }
       }
-      result.endReached = result.limit == 0 ?  true : vRowCount <= result.limit;
-      result.totalCount = result.start + vRowCount;
+      result.endReached = result.limit == 0 || v_rowCount <= result.limit;
+      result.totalCount = result.start + v_rowCount;
       return result;
     }
 

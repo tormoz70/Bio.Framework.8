@@ -50,27 +50,27 @@ namespace Bio.Helpers.Common {
     /// <summary>
     /// Константа - имя кодировки
     /// </summary>
-    public const String EncIso88591 = "ISO-8859-1";
+    public const String ENC_ISO88591 = "ISO-8859-1";
     /// <summary>
     /// Константа - имя кодировки
     /// </summary>
-    public const String EncUtf8 = "UTF-8";
+    public const String ENC_UTF8 = "UTF-8";
     /// <summary>
     /// Константа - имя кодировки
     /// </summary>
-    public const String EncCp866 = "Cp866";
+    public const String ENC_CP866 = "Cp866";
     /// <summary>
     /// Константа - имя кодировки
     /// </summary>
-    public const String EncIso88595 = "ISO-8859-5";
+    public const String ENC_ISO88595 = "ISO-8859-5";
     /// <summary>
     /// Константа - имя кодировки
     /// </summary>
-    public const String EncWindows1251 = "WINDOWS-1251";
+    public const String ENC_WINDOWS1251 = "WINDOWS-1251";
     /// <summary>
     /// 
     /// </summary>
-    public const String SYS_ENCODING = EncUtf8;
+    public const String SYS_ENCODING = ENC_UTF8;
 
 #if SILVERLIGHT
     public static Encoding DefaultEncoding = Encoding.UTF8;
@@ -133,16 +133,16 @@ namespace Bio.Helpers.Common {
 #endif
 
     /// <summary>
-    /// кодирует ANSII -> UTF
+    /// кодирует ANSII -> SYS_ENCODING
     /// </summary>
     /// <param name="msg"></param>
     /// <returns></returns>
-    public static String EncodeANSII2UTF(String msg) {
+    public static String EncodeANSI2UTF(String msg) {
 #if !SILVERLIGHT
       if (msg != null) {
         var v_enc = new UTF8Encoding();
         var v_bfr = v_enc.GetBytes(msg);
-        v_bfr = Encoding.Convert(Encoding.GetEncoding(EncWindows1251), Encoding.GetEncoding(SYS_ENCODING), v_bfr);
+        v_bfr = Encoding.Convert(Encoding.GetEncoding(ENC_WINDOWS1251), Encoding.GetEncoding(SYS_ENCODING), v_bfr);
         return v_enc.GetString(v_bfr);
       }
       return null;
@@ -1045,7 +1045,7 @@ namespace Bio.Helpers.Common {
             v_rslt = v_rslt.Trim();
         }
       }
-      return EncodeANSII2UTF(v_rslt);
+      return EncodeANSI2UTF(v_rslt);
     }
 
     private static Object _convertFromNullable(Object value) {
@@ -1240,7 +1240,7 @@ namespace Bio.Helpers.Common {
     /// <param name="pFileName">Имя файла</param>
     /// <param name="pBuff">Буфер</param>
     public static void LoadWINFile(String pFileName, ref String pBuff) {
-      LoadStrFile(pFileName, EncWindows1251, ref pBuff);
+      LoadStrFile(pFileName, ENC_WINDOWS1251, ref pBuff);
     }
 
     /// <summary>
@@ -1249,7 +1249,7 @@ namespace Bio.Helpers.Common {
     /// <param name="pFileName">Имя файла</param>
     /// <param name="pBuff">Буфер</param>
     public static void LoadDOSFile(String pFileName, ref String pBuff) {
-      LoadStrFile(pFileName, EncCp866, ref pBuff);
+      LoadStrFile(pFileName, ENC_CP866, ref pBuff);
     }
 
     /// <summary>
@@ -1258,7 +1258,7 @@ namespace Bio.Helpers.Common {
     /// <param name="pFileName">Имя файла</param>
     /// <param name="pBuff">Буфер</param>
     public static void LoadUTF8File(String pFileName, ref String pBuff) {
-      LoadStrFile(pFileName, EncUtf8, ref pBuff);
+      LoadStrFile(pFileName, ENC_UTF8, ref pBuff);
     }
 
     /// <summary>

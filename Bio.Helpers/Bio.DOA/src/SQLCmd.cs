@@ -733,7 +733,7 @@ namespace Bio.Helpers.DOA {
             throw new EBioDOATooMuchRows(v_msg);
           }
           for (var i = 0; i < this._dataReader.FieldCount; i++) {
-            Object v_obj = !this._dataReader.IsDBNull(i) ? SQLUtils.OraDbValueAsObject(this._dataReader.GetOracleValue(i)) : null;
+            var v_obj = !this._dataReader.IsDBNull(i) ? SQLUtils.OraDbValueAsObject(this._dataReader.GetOracleValue(i)) : null;
             this.rowValues[this._dataReader.GetName(i).ToUpper()] = v_obj;
           }
           return true;

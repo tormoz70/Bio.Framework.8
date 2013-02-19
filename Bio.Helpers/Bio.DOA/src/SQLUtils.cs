@@ -296,6 +296,7 @@ namespace Bio.Helpers.DOA {
       if (value != null) {
         var v_type = value.GetType();
         if (v_type == typeof(OracleString)) {
+
           if (!((OracleString)value).IsNull) {
             var v_resultStr = ((OracleString)value).Value;
             v_result = v_resultStr;
@@ -322,7 +323,8 @@ namespace Bio.Helpers.DOA {
           }
         } else if (v_type == typeof(OracleClob)) {
           if (!((OracleClob)value).IsNull) {
-            var v_resultStr = Utl.EncodeANSII2UTF(((OracleClob)value).Value);
+            //var v_resultStr = Utl.EncodeANSI2UTF(((OracleClob)value).Value);
+            var v_resultStr = ((OracleClob)value).Value;
             v_result = v_resultStr;
           }
         } else if (v_type == typeof(OracleBlob)) {
@@ -404,7 +406,7 @@ namespace Bio.Helpers.DOA {
       if (pObject != null) {
         var tp = pObject.GetType();
         if (tp == typeof(OracleClob))
-          rslt = Utl.EncodeANSII2UTF(((OracleClob)pObject).Value);
+          rslt = Utl.EncodeANSI2UTF(((OracleClob)pObject).Value);
         else if (tp == typeof(OracleBlob))
           rslt = Convert.ToBase64String(((OracleBlob)pObject).Value);
         else

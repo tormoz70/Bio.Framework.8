@@ -50,7 +50,13 @@ namespace Bio.Helpers.Common {
     Currency    = 0x0009
 
   };
-  
+
+  public enum FieldEncoding {
+    UTF8 = 0,
+    WINDOWS1251 = 1
+  }
+
+
   public static class ftypeHelper {
 
     /// <summary>
@@ -91,8 +97,13 @@ namespace Bio.Helpers.Common {
       throw new ArgumentException("Невозможно преобразовать тип \"" + type + "\".", "type");
     }
 
-    public static FieldType ConvertStrToFType(String xmlName) {
-      //return enumHelper.GetFieldValueByDescAttr<FTypeMap>(type, StringComparison.CurrentCultureIgnoreCase);
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="xmlName"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public static FieldType ConvertStrToFieldType(String xmlName) {
       if (!String.IsNullOrEmpty(xmlName)) {
         foreach (var fi in typeof(FieldType).GetFields()) {
           var attr = enumHelper.GetAttributeByField<MappingAttribute>(fi);
@@ -101,7 +112,22 @@ namespace Bio.Helpers.Common {
         }
       }
       throw new ArgumentException("Невозможно преобразовать тип \"" + xmlName + "\".", "xmlName");
+    }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="xmlName"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public static FieldEncoding ConvertStrToFieldEncoding(String xmlName) {
+      if (!String.IsNullOrEmpty(xmlName)) {
+        if(String.Equals(xmlName, Utl.ENC_UTF8, StringComparison.OrdinalIgnoreCase))
+          return FieldEncoding.UTF8;
+        if (String.Equals(xmlName, Utl.ENC_WINDOWS1251, StringComparison.OrdinalIgnoreCase))
+          return FieldEncoding.WINDOWS1251;
+      }
+      throw new ArgumentException("Невозможно преобразовать имя кодировки в кодировку \"" + xmlName + "\".", "xmlName");
     }
 
     /// <summary>
@@ -120,7 +146,7 @@ namespace Bio.Helpers.Common {
     /// <param name="xmlName"></param>
     /// <returns></returns>
     public static FieldType ConvertTypeToFType(Type type) {
-      return ConvertStrToFType(ConvertTypeToStr(type));
+      return ConvertStrToFieldType(ConvertTypeToStr(type));
     }
 
   }

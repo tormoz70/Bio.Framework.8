@@ -508,24 +508,25 @@ namespace Bio.Framework.Server {
     /// Создаёт поля по описанию курсора из ИОбъекта.
     /// </summary>
     protected override void InitCursorFields() {
-      XmlNodeList flds = this.CursorIniDoc.SelectNodes("fields/field");
-      if (flds != null) {
-        //this.creRNUMFld();
-        int fIndx = 1;
+      var v_flds = this.CursorIniDoc.SelectNodes("fields/field");
+      if (v_flds != null) {
+        var v_fieldIndx = 1;
         this.PKFields.Clear();
-        foreach (XmlElement celem in flds) {
-          String fname = celem.GetAttribute("name");
-          if (!fname.Equals(Field.FIELD_RNUM)) {
-            //String ftype = TField.ConvertToCompatible(celem.GetAttribute("type"));
-            FieldType ftype = ftypeHelper.ConvertStrToFType(celem.GetAttribute("type"));
-            String fpkindx = celem.GetAttribute("pk");
-            String fcaption = celem.InnerText;
-            Field newFld = new Field(this, fIndx, fname, ftype, fcaption, fpkindx);
+        foreach (XmlElement celem in v_flds) {
+          var v_fieldName = celem.GetAttribute("name");
+          if (!v_fieldName.Equals(Field.FIELD_RNUM)) {
+            var v_fieldType = ftypeHelper.ConvertStrToFieldType(celem.GetAttribute("type"));
+            var v_fieldEncoding = FieldEncoding.UTF8;
+            if(celem.HasAttribute("encoding"))
+              v_fieldEncoding = ftypeHelper.ConvertStrToFieldEncoding(celem.GetAttribute("encoding"));
+            var v_pkIndex = celem.GetAttribute("pk");
+            var v_fieldCaption = celem.InnerText;
+            var v_newFld = new Field(this, v_fieldIndx, v_fieldName, v_fieldType, v_fieldCaption, v_pkIndex, v_fieldEncoding);
             if (!celem.HasAttribute("generate") || celem.GetAttribute("generate") == "true")
-              this.Fields.Add(newFld);
-            if (!fpkindx.Equals(""))
-              this.PKFields.Add(fpkindx, newFld);
-            fIndx++;
+              this.Fields.Add(v_newFld);
+            if (!v_pkIndex.Equals(""))
+              this.PKFields.Add(v_pkIndex, v_newFld);
+            v_fieldIndx++;
           }
         }
       }

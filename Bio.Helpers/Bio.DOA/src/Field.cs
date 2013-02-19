@@ -22,11 +22,13 @@ namespace Bio.Helpers.DOA {
     /// <param name="type"></param>
     /// <param name="header"></param>
     /// <param name="pkIndex"></param>
-    public Field(SQLCursor owner, Int32 id, String name, FieldType type, String header, String pkIndex) {
+    /// <param name="fieldEncoding">Кодировка для CLOB полей</param>
+    public Field(SQLCursor owner, Int32 id, String name, FieldType type, String header, String pkIndex, FieldEncoding fieldEncoding = FieldEncoding.UTF8) {
 			this.FieldID = id;
       this._owner = owner;
       this.FieldName = name.ToUpper();
       this.DataType = type;
+      this.Encoding = fieldEncoding;
       this.FieldCaption = header;
       this.FieldPkIndex = pkIndex;
 		}
@@ -40,11 +42,13 @@ namespace Bio.Helpers.DOA {
     /// <param name="type"></param>
     /// <param name="header"></param>
     /// <param name="pkIndex"></param>
-    public Field(SQLCursor owner, Int32 id, String name, Type type, String header, String pkIndex) {
+    /// <param name="fieldEncoding">Кодировка для CLOB полей</param>
+    public Field(SQLCursor owner, Int32 id, String name, Type type, String header, String pkIndex, FieldEncoding fieldEncoding = FieldEncoding.UTF8) {
       this.FieldID = id;
       this._owner = owner;
       this.FieldName = name.ToUpper();
       this.DataType = ftypeHelper.ConvertTypeToFType(type);
+      this.Encoding = fieldEncoding;
       this.FieldCaption = header;
       this.FieldPkIndex = pkIndex;
     }
@@ -58,6 +62,11 @@ namespace Bio.Helpers.DOA {
     /// Тип поля по БД
     /// </summary>
     public FieldType DataType { get; private set; }
+
+    /// <summary>
+    /// Кодировка строки в CLOB
+    /// </summary>
+    public FieldEncoding Encoding { get; private set; }
 
     /// <summary>
     /// Тип поля в .Net

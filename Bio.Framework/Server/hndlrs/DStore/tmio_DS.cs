@@ -1,15 +1,10 @@
 namespace Bio.Framework.Server {
   using System;
-  using System.Data.Common;
-  using System.IO;
   using System.Web;
   using System.Xml;
-
-  using System.Diagnostics;
-  using Bio.Helpers.DOA;
-  using Bio.Framework.Packets;
-  using Bio.Helpers.Common.Types;
-  using Bio.Helpers.Common;
+  using Packets;
+  using Helpers.Common.Types;
+  using Helpers.Common;
   using System.Data;
 
   /// <summary>
@@ -32,59 +27,50 @@ namespace Bio.Framework.Server {
     }
 
     protected override void doExecute() {
-      //this.Context.Trace.Write(this.bioCode, "doExecute-begin");
-      //this._write_log("begin0");
-      //this._write_log("qparams:" + this.QParams.Encode());
       base.doExecute();
       if (this.FBioDesc == null)
         throw new EBioException("Описание IO:\"" + this.bioCode + "\" не найдено.");
-      XmlElement vDS = this.FBioDesc.DocumentElement;
-      if (vDS != null) {
+      var v_ds = this.FBioDesc.DocumentElement;
+      if (v_ds != null) {
         if (this.BioSession.Cfg.dbSession != null) {
-          IDbConnection vConn = this.AssignTransaction(vDS, this.jsReq);
-          var transactionFinished = false;
+          var v_conn = this.AssignTransaction(v_ds, this.jsReq);
+          var v_transactionFinished = false;
           try {
             if (this.jsReq is CJsonStoreRequestGet) {
               var v_jsReqGet = (this.jsReq as CJsonStoreRequestGet);
               if (v_jsReqGet.getType == CJSRequestGetType.GetData)
-                this.doGet(vConn, vDS);
+                this._doGet(v_conn, v_ds);
               else if (v_jsReqGet.getType == CJSRequestGetType.GetSelectedPks)
-                this._doGetSelectionPks(vConn, vDS);
+                this._doGetSelectionPks(v_conn, v_ds);
             } else if (this.jsReq is CJsonStoreRequestPost)
-              this._doPost(vConn, vDS);
+              this._doPost(v_conn, v_ds);
           } catch(Exception ex) {
             if (this.jsReq is CJsonStoreRequestPost) {
-              this.FinishTransaction(vConn, true, CSQLTransactionCmd.Rollback);
-              transactionFinished = true;
+              this.FinishTransaction(v_conn, true, CSQLTransactionCmd.Rollback);
+              v_transactionFinished = true;
             }
-            throw ex;
+            throw;
           } finally {
-            if(!transactionFinished)
-              this.FinishTransaction(vConn, (this.jsReq is CJsonStoreRequestPost), this.jsReq.transactionCmd);
+            if(!v_transactionFinished)
+              this.FinishTransaction(v_conn, (this.jsReq is CJsonStoreRequestPost), this.jsReq.transactionCmd);
           }
 
         } else
           throw new EBioException("Нет соединения с БД.");
       } else
         throw new EBioException("В документе инициализации [" + this.bioCode + "] не найден раздел <store>.");
-      //this.Context.Trace.Write(this.bioCode, "doExecute-end");
-      //this._write_log("end0");
     }
 
-    private void doGet(IDbConnection conn, XmlElement ds) {
+    private void _doGet(IDbConnection conn, XmlElement ds) {
       
-      var vCursor = new CJSCursor(conn, ds, this.bioCode);
+      var v_cursor = new CJSCursor(conn, ds, this.bioCode);
 
       var rqst = this.bioRequest<CJsonStoreRequestGet>();
-      vCursor.Init(rqst);
-      //try {
-      vCursor.Open(rqst.timeout);
-      //}catch(Exception ex){
-      //  throw ex;
-      //}
+      v_cursor.Init(rqst);
+      v_cursor.Open(rqst.timeout);
       try {
-        var vSqLtoJson = new CSQLtoJSON();
-        var packet = vSqLtoJson.Process(vCursor);
+        var v_sqlToJson = new CSQLtoJSON();
+        var packet = v_sqlToJson.Process(v_cursor);
         var rsp = new CJsonStoreResponse() {
           bioParams = this.bioParams,
           ex = null,
@@ -95,19 +81,19 @@ namespace Bio.Framework.Server {
 
         this.Context.Response.Write(rsp.Encode());
       } finally {
-        vCursor.Close();
+        v_cursor.Close();
       }
     }
 
     private void _doGetSelectionPks(IDbConnection conn, XmlElement ds) {
-      var vCursor = new CJSCursor(conn, ds, this.bioCode);
+      var v_cursor = new CJSCursor(conn, ds, this.bioCode);
       var rqst = this.bioRequest<CJsonStoreRequestGet>();
-      vCursor.Init(rqst);
-      vCursor.Open(rqst.timeout);
+      v_cursor.Init(rqst);
+      v_cursor.Open(rqst.timeout);
       try {
         String pks = null;
-        while (vCursor.Next()) 
-          Utl.AppendStr(ref pks, vCursor.PKValue, ";");
+        while (v_cursor.Next()) 
+          Utl.AppendStr(ref pks, v_cursor.PKValue, ";");
         var rsp = new CJsonStoreResponse() {
           bioParams = this.bioParams,
           ex = null,
@@ -118,7 +104,7 @@ namespace Bio.Framework.Server {
 
         this.Context.Response.Write(rsp.Encode());
       } finally {
-        vCursor.Close();
+        v_cursor.Close();
       }
     }
 
