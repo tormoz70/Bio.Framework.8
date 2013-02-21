@@ -88,14 +88,14 @@ namespace Bio.Framework.Client.SL {
 
     internal CDataGrid _dataGrid = null;
 
-    private BusyIndicator _busyIndicator1 = null;
+    private BusyIndicator _busyIndicator;
 
     private BusyIndicator busyIndicator {
       get {
-        if (this._busyIndicator1 == null) {
-          this._busyIndicator1 = this.GetTemplateChild("busyIndicator") as BusyIndicator;
+        if (this._busyIndicator == null) {
+          this._busyIndicator = this.GetTemplateChild("busyIndicator") as BusyIndicator;
         }
-        return this._busyIndicator1;
+        return this._busyIndicator;
       }
     }
 

@@ -23,17 +23,16 @@
   /// </summary>
   public class CAjaxCli : DisposableObject {
 
-    private String FVersion = "1.0";
-    private String FUserAgentName = "daAjax.CAjaxMng";
-    private String FUserAgentTitle = "BioSys";
-    private int FRequestTimeout = ajaxUTL.RequestTimeout;
+    private readonly String _version = "1.0";
+    private readonly String _userAgentName = "daAjax.CAjaxMng";
+    private readonly String _userAgentTitle = "BioSys";
 
     /// <summary>
     /// Текущая версия клиента
     /// </summary>
     public String UserAgentVersion {
       get {
-        return this.FVersion;
+        return this._version;
       }
     }
 
@@ -42,7 +41,7 @@
     /// </summary>
     public String UserAgentName {
       get {
-        return this.FUserAgentName;
+        return this._userAgentName;
       }
     }
 
@@ -51,49 +50,27 @@
     /// </summary>
     public String UserAgentTitle {
       get {
-        return this.FUserAgentTitle;
+        return this._userAgentTitle;
       }
     }
 
     /// <summary>
-    /// Кол-во секунд ожидания запроса от сервера
-    /// </summary>
-    //public int RequestTimeout {
-    //  get { return this.FRequestTimeout; }
-    //}
-
-    /// <summary>
     /// Конструктор
     /// </summary>
-    /// <param name="pVersion"></param>
-    /// <param name="pUserAgentName"></param>
-    /// <param name="pUserAgentTitle"></param>
-    /// <param name="pDOnLogLine">Процедура, которая получает отладочную инфу</param>
+    /// <param name="version"></param>
+    /// <param name="userAgentName"></param>
+    /// <param name="userAgentTitle"></param>
     public CAjaxCli(String version, String userAgentName, String userAgentTitle) {
-      this.FVersion = version ?? this.FVersion;
-      this.FUserAgentName = userAgentName ?? this.FUserAgentName;
-      this.FUserAgentTitle = userAgentTitle ?? this.FUserAgentTitle;
-      //this.FRequestTimeout = (requestTimeout > 0) ? requestTimeout : this.FRequestTimeout;
+      this._version = version ?? this._version;
+      this._userAgentName = userAgentName ?? this._userAgentName;
+      this._userAgentTitle = userAgentTitle ?? this._userAgentTitle;
     }
-
-    //private void _processEvents(CAjaxRequest ajaxRequest, CAjaxResponse ajaxResponse, AjaxRequestDelegate callback, Object usrToken) {
-
-    //  if (callback != null) {
-    //    AjaxResponseEventArgs args = new AjaxResponseEventArgs { request = ajaxRequest, response = ajaxResponse };
-    //    callback(this, args);
-    //  }
-
-    //}
 
     /// <summary>
     /// Выполнить запрос 
     /// </summary>
-    /// <param name="pCfg"></param>
     public void Request(CAjaxRequest ajaxRequest, Int32 requestTimeout) {
       /*Подготовка запроса*/
-      //ajaxUTL.getDataFromSrv(ajaxRequest, 90, (rq, rsp, usrToken) => {
-      //  this._processEvents(rq, rsp, callback, usrToken);
-      //}, ajaxRequest.userToken);
       ajaxRequest.timeout = requestTimeout;
       ajaxUTL.getDataFromSrv(ajaxRequest);
     }
@@ -110,15 +87,6 @@
       base.doOnDispose();
     }
 
-
-    /// <summary>
-    /// HostName сервера с которым установлено соединение
-    /// </summary>
-    //public String CurSrvInfo{
-    //  get {
-    //    return this.FLoginPrc.CurSrvInfo;
-    //  }
-    //}
 
 
   }

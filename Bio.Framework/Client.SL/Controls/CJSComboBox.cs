@@ -68,7 +68,13 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    public static void LoadItems(IAjaxMng ajaxMng, ComboBox cbx, String bioCode, Params bioParams, Action<ComboBox> callback, Boolean addNullItem, Boolean useCache) {
+    public static void LoadItems(CAjaxResponse prevResponse, IAjaxMng ajaxMng, ComboBox cbx, String bioCode, Params bioParams, Action<ComboBox, CAjaxResponse> callback, Boolean addNullItem, Boolean useCache) {
+      if ((prevResponse != null) && (prevResponse.success == false)) {
+        if (callback != null)
+          callback(cbx, prevResponse);
+        return;
+      }
+
       var v_cli = new CJsonStoreClient {
         ajaxMng = ajaxMng,
         bioCode = bioCode
@@ -79,26 +85,26 @@ namespace Bio.Framework.Client.SL {
       if (storedItems != null) {
         _loadItems(cbx, storedItems, addNullItem);
         if (callback != null)
-          callback(cbx);
+          callback(cbx, new CAjaxResponse { success = true });
       } else {
         v_cli.Load(bioParams, (s, a) => {
           if (a.response.success) {
-            var cbxitems = new CbxItems { metadata = v_cli.jsMetadata, ds = v_cli.DS };
+            var cbxitems = new CbxItems {metadata = v_cli.jsMetadata, ds = v_cli.DS};
             if (useCache)
               _storeItems(bioCode, cbxitems);
             _loadItems(cbx, cbxitems, addNullItem);
-            if (callback != null)
-              callback(cbx);
           }
+          if (callback != null)
+            callback(cbx, a.response);
         });
       }
     }
-    public static void LoadItems(IAjaxMng ajaxMng, ComboBox cbx, String bioCode, Params bioParams, Action<ComboBox> callback, Boolean addNullItem) {
-      LoadItems(ajaxMng, cbx, bioCode, bioParams, callback, addNullItem, false);
+    public static void LoadItems(CAjaxResponse prevResponse, IAjaxMng ajaxMng, ComboBox cbx, String bioCode, Params bioParams, Action<ComboBox, CAjaxResponse> callback, Boolean addNullItem) {
+      LoadItems(prevResponse, ajaxMng, cbx, bioCode, bioParams, callback, addNullItem, false);
     }
 
-    public static void LoadItems(IAjaxMng ajaxMng, ComboBox cbx, String bioCode, Params bioParams, Action<ComboBox> callback) {
-      LoadItems(ajaxMng, cbx, bioCode, bioParams, callback, false, false);
+    public static void LoadItems(CAjaxResponse prevResponse, IAjaxMng ajaxMng, ComboBox cbx, String bioCode, Params bioParams, Action<ComboBox, CAjaxResponse> callback) {
+      LoadItems(prevResponse, ajaxMng, cbx, bioCode, bioParams, callback, false, false);
     }
 
   }

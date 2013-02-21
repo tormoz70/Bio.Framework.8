@@ -147,11 +147,11 @@ namespace Bio.Framework.Client.SL {
     private IEnumerable _creDSInst(Type rowType) {
       IEnumerable rslt = null;
       if (this.pageSize > 0) {
-        var listType = typeof(SortableCollectionView<>).MakeGenericType(new[] { rowType });
-        rslt = Activator.CreateInstance(listType, new EventHandler<RefreshEventArgs>(this._doOnDSRequestRefresh)) as IEnumerable;
+        var v_listType = typeof(SortableCollectionView<>).MakeGenericType(new[] { rowType });
+        rslt = Activator.CreateInstance(v_listType, new EventHandler<RefreshEventArgs>(this._doOnDSRequestRefresh)) as IEnumerable;
       } else {
-        var listType = typeof(ObservableCollection<>).MakeGenericType(new[] { rowType });
-        rslt = Activator.CreateInstance(listType) as IEnumerable;
+        var v_listType = typeof(ObservableCollection<>).MakeGenericType(new[] { rowType });
+        rslt = Activator.CreateInstance(v_listType) as IEnumerable;
       }
       return rslt;
     }
@@ -160,19 +160,19 @@ namespace Bio.Framework.Client.SL {
       this._goto(null, "Сортировка...", null, null);
     }
 
-    private CJsonStoreMetadata _metadata = null;
-    public Boolean readOnly { get { return (this._metadata != null) ? this._metadata.readOnly : true; } }
-    private List<CJSChangedRow> _ds_changes = null;
+    private CJsonStoreMetadata _metadata;
+    public Boolean ReadOnly { get { return (this._metadata == null) || this._metadata.readOnly; } }
+    private readonly List<CJSChangedRow> _dsChanges;
 
-    private IEnumerable _ds = null;
-    public IEnumerable ds0 { get { return this._ds; } }
+    public IEnumerable DS0 { get; private set; }
+
     public IEnumerable<CRTObject> DS {
       get {
-        return (this._ds != null) ? this._ds.Cast<CRTObject>() : null;
+        return (this.DS0 != null) ? this.DS0.Cast<CRTObject>() : null;
       }
     }
 
-    public List<CJSChangedRow> Changes { get { return this._ds_changes; } }
+    public List<CJSChangedRow> Changes { get { return this._dsChanges; } }
     public String groupDefinition { get; set; }
 
     public CJSGrid grid {
@@ -190,7 +190,8 @@ namespace Bio.Framework.Client.SL {
     }
 
     public CJsonStoreClient() {
-      this._ds_changes = new List<CJSChangedRow>();
+      DS0 = null;
+      this._dsChanges = new List<CJSChangedRow>();
     }
 
     private List<CJsonStoreMetadataFieldDef> _creFldDefsRmt(CJsonStoreMetadata metaData) {
@@ -201,34 +202,34 @@ namespace Bio.Framework.Client.SL {
     }
 
     private void _regChanges(CJSChangedRow chng) {
-      var v_exists = this._ds_changes.FirstOrDefault((c) => {
+      var v_exists = this._dsChanges.FirstOrDefault((c) => {
         return c.CurRow.Equals(chng.CurRow);
       });
       if (chng.State == CJsonStoreRowChangeType.Added) {
         if (v_exists == null)
-          this._ds_changes.Add(chng);
+          this._dsChanges.Add(chng);
         else {
           if ((v_exists.State == CJsonStoreRowChangeType.Deleted) ||
                 (v_exists.State == CJsonStoreRowChangeType.Modified)) {
-            this._ds_changes.Remove(v_exists);
-            this._ds_changes.Add(chng);
+            this._dsChanges.Remove(v_exists);
+            this._dsChanges.Add(chng);
           }
         }
       } else if (chng.State == CJsonStoreRowChangeType.Deleted) {
         if (v_exists == null)
-          this._ds_changes.Add(chng);
+          this._dsChanges.Add(chng);
         else {
           if (v_exists.State == CJsonStoreRowChangeType.Added) {
-            this._ds_changes.Remove(v_exists);
+            this._dsChanges.Remove(v_exists);
           }
           if (v_exists.State == CJsonStoreRowChangeType.Modified) {
-            this._ds_changes.Remove(v_exists);
-            this._ds_changes.Add(chng);
+            this._dsChanges.Remove(v_exists);
+            this._dsChanges.Add(chng);
           }
         }
       } else if (chng.State == CJsonStoreRowChangeType.Modified) {
         if (v_exists == null)
-          this._ds_changes.Add(chng);
+          this._dsChanges.Add(chng);
       }
     }
 
@@ -244,17 +245,17 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    public Int32 indexOf(CRTObject row) {
-      var foundItem = this.DS.Select((item, index) => new {
+    public Int32 IndexOf(CRTObject row) {
+      var v_foundItem = this.DS.Select((item, index) => new {
         Item = item,
         Position = index
       }).Where(i => i.Item == row).FirstOrDefault();
-      return (foundItem != null) ? foundItem.Position : -1;
+      return (v_foundItem != null) ? v_foundItem.Position : -1;
     }
 
     private void _doOnAfterInsertRow(CRTObject newRow) {
       if (!this._rowMonEventsDisabled) {
-        var v_indx = this.indexOf(newRow);
+        var v_indx = this.IndexOf(newRow);
         this._regChanges(new CJSChangedRow(v_indx, CJsonStoreRowChangeType.Added, newRow, null));
         var eve = this.OnAfterInsertRow;
         if (eve != null) {
@@ -267,7 +268,7 @@ namespace Bio.Framework.Client.SL {
     public void ForceAllRowsChanged() {
       this._clearChanges();
       foreach (var r in this.DS) {
-        var v_index = this.indexOf(r);
+        var v_index = this.IndexOf(r);
         this._regChanges(new CJSChangedRow(v_index, CJsonStoreRowChangeType.Added, r, null));
       }
     }
@@ -294,7 +295,7 @@ namespace Bio.Framework.Client.SL {
     }
 
     public void InsertRow(Int32 index, CRTObject row) {
-      var v_ds = this._ds as IList;
+      var v_ds = this.DS0 as IList;
       if (v_ds != null) {
         Boolean v_cancel = false;
         this._doOnBeforeInsertRow(ref v_cancel, row);
@@ -330,7 +331,7 @@ namespace Bio.Framework.Client.SL {
       }
     }
     private void _doOnRowPropertyChanged(Object sender, PropertyChangedEventArgs e) {
-      var v_indx = this.indexOf(this._lastPreChangedRow);
+      var v_indx = this.IndexOf(this._lastPreChangedRow);
       this._regChanges(new CJSChangedRow(v_indx, CJsonStoreRowChangeType.Modified, (CRTObject)sender, this._lastPreChangedRow));
       var eve = this.OnRowPropertyChanged;
       if (eve != null) {
@@ -355,7 +356,7 @@ namespace Bio.Framework.Client.SL {
         return null;
     }
     public void RemoveRowAt(Int32 index) {
-      var v_ds = this._ds as IList;
+      var v_ds = this.DS0 as IList;
       if (v_ds != null) {
         if ((index >= 0) && (index < v_ds.Count)) {
           var row = v_ds[index] as CRTObject;
@@ -365,12 +366,12 @@ namespace Bio.Framework.Client.SL {
     }
     public void RemoveRow(CRTObject row) {
       if (row != null) {
-        var v_ds = this._ds as IList;
+        var v_ds = this.DS0 as IList;
         if (v_ds != null) {
           Boolean v_cancel = false;
           this._doOnBeforeDeleteRow(ref v_cancel, row);
           if (!v_cancel) {
-            var v_indx = this.indexOf(row);
+            var v_indx = this.IndexOf(row);
             v_ds.Remove(row);
             this._doOnAfterDeleteRow(v_indx, row);
           }
@@ -421,7 +422,7 @@ namespace Bio.Framework.Client.SL {
     }
 
     public void ClearData() {
-      IList v_ds = this._ds as IList;
+      IList v_ds = this.DS0 as IList;
       if (v_ds != null) {
         v_ds.Clear();
       }
@@ -672,8 +673,8 @@ namespace Bio.Framework.Client.SL {
 
         this._lastRequestedBioCode = this.bioCode;
         CJsonStoreSort v_sort = null;
-        if (!v_isMetadataObsolete && (this._ds != null)) {
-          var v_cv = (this._ds as ICollectionView);
+        if (!v_isMetadataObsolete && (this.DS0 != null)) {
+          var v_cv = (this.DS0 as ICollectionView);
           if (v_cv != null)
             v_sort = this._genJSSortDefinition(v_cv.SortDescriptions);
           var v_paramsChanged = this._paramsChanged(this.bioParams);
@@ -714,7 +715,7 @@ namespace Bio.Framework.Client.SL {
                     this._metadata = v_rsp.packet.metaData;
                     List<CJsonStoreMetadataFieldDef> fldDefs = this._creFldDefsRmt(this._metadata);
                     rowType = this._creRowType(fldDefs);
-                    this._ds = this._creDSInst(rowType);
+                    this.DS0 = this._creDSInst(rowType);
                   }
                   if (v_rsp.packet.limit > 0) {
                     Int64 v_curPageI = ((v_rsp.packet.start + v_rsp.packet.rows.Count) / v_rsp.packet.limit);
@@ -740,9 +741,9 @@ namespace Bio.Framework.Client.SL {
                     this._initGroupDef(this._metadata);
                     this.grid._dataGrid.disableColumnsChangedEvents();
                     if ((v_rsp.packet.limit == 0) && (!String.IsNullOrEmpty(this.groupDefinition)))
-                      this.grid._dataGrid.ItemsSource = this._creDSGrp(this._ds, this._metadata);
+                      this.grid._dataGrid.ItemsSource = this._creDSGrp(this.DS0, this._metadata);
                     else
-                      this.grid._dataGrid.ItemsSource = this._ds;
+                      this.grid._dataGrid.ItemsSource = this.DS0;
 
                     this.grid._dataGrid.enableColumnsChangedEvents();
                   }
@@ -805,8 +806,8 @@ namespace Bio.Framework.Client.SL {
         return false;
     }
     private CRTObject _locateInternal(CJsonStoreFilter locate) {
-      if (this._ds != null) {
-        var rows = this._ds.Cast<CRTObject>().ToArray();
+      if (this.DS0 != null) {
+        var rows = this.DS0.Cast<CRTObject>().ToArray();
         for (int i = 0; i < rows.Length; i++) {
           var rowPos = i + (this.pageCurrent * this.pageSize);
           if (this._checkFilter(rows[i], rowPos, locate)) {
@@ -941,7 +942,7 @@ namespace Bio.Framework.Client.SL {
 
     private void _applyPostingResults(CJsonStoreData packet) {
       foreach (var row in packet.rows.Where(r => (r.changeType == CJsonStoreRowChangeType.Added) || (r.changeType == CJsonStoreRowChangeType.Modified))) {
-        var v_ds_row = this._ds.Cast<Object>().FirstOrDefault(itm => {
+        var v_ds_row = this.DS0.Cast<Object>().FirstOrDefault(itm => {
           return String.Equals((String)CTypeFactory.GetValueOfPropertyOfObject(itm, csInternalROWUID_FieldName), row.internalROWUID);
         });
         if (v_ds_row != null) {
@@ -956,8 +957,8 @@ namespace Bio.Framework.Client.SL {
     }
 
     public void CancelChanges(CRTObject row) {
-      if ((this._ds_changes != null) && (row != null)) {
-        var c = this._ds_changes.Where((itm) => { return itm.CurRow == row; }).FirstOrDefault();
+      if ((this._dsChanges != null) && (row != null)) {
+        var c = this._dsChanges.Where((itm) => { return itm.CurRow == row; }).FirstOrDefault();
         if (c != null) {
           c.CurRow.DisableEvents();
           c.OrigRow.DisableEvents();
@@ -970,14 +971,14 @@ namespace Bio.Framework.Client.SL {
             c.CurRow.EnableEvents();
             c.OrigRow.EnableEvents();
           }
-          this._ds_changes.Remove(c);
+          this._dsChanges.Remove(c);
         }
       }
     }
 
     public void CancelChanges() {
-      if (this._ds_changes != null) {
-        foreach (var c in this._ds_changes) {
+      if (this._dsChanges != null) {
+        foreach (var c in this._dsChanges) {
           c.CurRow.DisableEvents();
           c.OrigRow.DisableEvents();
           try {
@@ -999,7 +1000,7 @@ namespace Bio.Framework.Client.SL {
     }
 
     private void _clearChanges() {
-      this._ds_changes.Clear();
+      this._dsChanges.Clear();
     }
 
     private CJsonStoreRow _rowAsJSRow(CJSChangedRow row) {
@@ -1016,7 +1017,7 @@ namespace Bio.Framework.Client.SL {
     }
     private CJsonStoreRows _getChangesAsJSRows() {
       CJsonStoreRows v_rows = new CJsonStoreRows();
-      foreach (var c in this._ds_changes) {
+      foreach (var c in this._dsChanges) {
         var v_row = this._rowAsJSRow(c);
         if (v_row != null)
           v_rows.Add(v_row);

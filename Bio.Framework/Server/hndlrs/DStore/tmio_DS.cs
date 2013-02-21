@@ -62,7 +62,7 @@ namespace Bio.Framework.Server {
     }
 
     private void _doGet(IDbConnection conn, XmlElement ds) {
-      
+      //throw new Exception("FTW!");
       var v_cursor = new CJSCursor(conn, ds, this.bioCode);
 
       var rqst = this.bioRequest<CJsonStoreRequestGet>();
