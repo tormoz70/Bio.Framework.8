@@ -318,6 +318,13 @@ namespace Bio.Helpers.DOA {
             if(v_inPrm.ParamType != null)
               v_prm.OracleDbType = SQLUtils.DetectOraTypeByType(
                 v_inPrm.ParamType, (!String.IsNullOrEmpty(v_inPrm.ValueAsString()) ? v_inPrm.ValueAsString().Length : v_inPrm.ParamSize));
+            if (v_inPrm.InnerObject != null) {
+              var vParamTypeName = v_inPrm.InnerObject as String;
+              if(String.Equals(vParamTypeName, "clob", StringComparison.CurrentCultureIgnoreCase))
+                v_prm.OracleDbType = OracleDbType.Clob;
+              else if (String.Equals(vParamTypeName, "blob", StringComparison.CurrentCultureIgnoreCase))
+                v_prm.OracleDbType = OracleDbType.Blob;
+            }
           }
 
 

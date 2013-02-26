@@ -351,10 +351,11 @@ namespace Bio.Framework.Server {
           //Type vParamType;
           //if(String.Equals(vParamTypeName, "clob", StringComparison.CurrentCultureIgnoreCase))
           //  vParamType = typeof(OracleClob);
-          ////else if (String.Equals(vParamTypeName, "blob", StringComparison.CurrentCultureIgnoreCase))
-          ////  vParamType = typeof(OracleBlob);
+          //else if (String.Equals(vParamTypeName, "blob", StringComparison.CurrentCultureIgnoreCase))
+          //  vParamType = typeof(OracleBlob);
           //else
           Type vParamType = ftypeHelper.ConvertStrToType(vParamTypeName);
+
           ParamDirection vDir = SQLUtils.EncodeParamDirection(this.detectDir(SQLParam));
           Param param = SQLUtils.FindParam(prms, vParamName);
           if (vDir == ParamDirection.Input) {
@@ -371,6 +372,8 @@ namespace Bio.Framework.Server {
               prms.Add(param);
             }
             param.ParamType = vParamType;
+            param.InnerObject = vParamTypeName; // —охран€ем им€ типа параметра. ≈го придетс€ использовать при инициализации оракловых параметров
+
             param.ParamDir = vDir;
             if (param.ParamType.Equals(typeof(System.String)))
               param.ParamSize = 32000;
