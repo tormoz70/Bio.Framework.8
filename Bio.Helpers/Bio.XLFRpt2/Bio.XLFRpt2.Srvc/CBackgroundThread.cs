@@ -9,16 +9,16 @@ using Bio.Helpers.Common.Types;
 
 namespace Bio.Helpers.XLFRpt2.Srvc {
 
-  public class CBackgroundThread : CBackgroundThreadBase {
+  public class CBackgroundThread : BackgroundThreadBase {
     private readonly ThreadStart _queueProcessor = null;
 
     public CBackgroundThread(String seviceName, String adminEmail, SmtpCfg smtp, ErrorLogWriterDelegate errLogger, ThreadStart execute)
       : base(seviceName) {
       if (errLogger == null)
         throw new EBioException("Праметер p_errLogger не определен!");
-      this._smtpCfg = smtp;
-      this._adminEmail = adminEmail;
-      this.errLogWriter = errLogger;
+      this.smtpCfg = smtp;
+      this.adminEmail = adminEmail;
+      this.ErrLogWriter = errLogger;
       this._queueProcessor = execute;
     }
 
@@ -27,7 +27,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
     }
 
     protected override void logOutInitInfo() {
-      this.log_msg("email администратора: " + this._adminEmail);
+      this.log_msg("email администратора: " + this.adminEmail);
     }
 
     protected override void processJob() {

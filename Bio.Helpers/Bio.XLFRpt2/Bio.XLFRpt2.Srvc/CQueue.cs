@@ -127,7 +127,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
 
     public void Start() {
       this._stopRequsted = false;
-      this._thread.start();
+      this._thread.Start();
     }
 
     private Boolean _stopRequsted;

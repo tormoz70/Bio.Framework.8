@@ -75,12 +75,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="types\APool.cs" />
     <Compile Include="types\ASrvcInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="types\CAjaxRequest.cs" />
     <Compile Include="types\CAjaxResponse.cs" />
-    <Compile Include="types\CBackgroundThreatBase.cs" />
+    <Compile Include="types\BackgroundThreatBase.cs" />
     <Compile Include="types\CConfigBase.cs" />
     <Compile Include="types\IDBSessionFactory.cs" />
     <Compile Include="types\CThreadsQueue.cs" />
@@ -106,6 +107,7 @@
     <Compile Include="types\OraDTParser.cs" />
     <Compile Include="types\DisposableObject.cs" />
     <Compile Include="types\CEventLog.cs" />
+    <Compile Include="types\ASingleton.cs" />
     <Compile Include="types\StrFile.cs" />
     <Compile Include="types\SmtpCfg.cs" />
     <Compile Include="utl\ajaxUTL.cs" />
