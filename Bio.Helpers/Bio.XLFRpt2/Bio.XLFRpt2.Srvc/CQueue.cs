@@ -201,8 +201,13 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
       this.remove_from_running(v_rptUID);
       if (report.State == RemoteProcState.Done) {
         this.doOnAddReportResult2DB(v_rptUID, v_rptFileName);
-        if (!v_debug)
-          File.Delete(v_rptFileName);
+        if (!v_debug) {
+          try {
+            File.Delete(v_rptFileName);
+          } catch (Exception ex) {
+            this.log_msg(String.Format("Ошибка при удалении временного файла \"{0}\", Сообщение:{1}", v_rptFileName, ex.Message));
+          }
+        }
       }
       var v_descState = enumHelper.GetFieldDesc(v_state);
       this.log_msg(String.Format("Построение отчета \"{0}\", UID:\"{1}\" - завершено. Состояние : \"{2}\".",
