@@ -163,6 +163,7 @@ namespace Bio.Helpers.Common.Types {
       if (!this.isRunned) {
         this.log_msg("Запуск службы...");
         this.thread = new Thread(this._execute);
+        this.thread.Name = this.serviceName;
         this.thread.Start();
       }
     }
