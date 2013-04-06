@@ -228,11 +228,7 @@ namespace Bio.Helpers.DOA {
     /// <returns></returns>
     public Int64 GetOraValueAsInt64(String fldName) {
       var v_field = this.FieldByName(fldName.ToUpper());
-      if (v_field != null) {
-        var v_val = v_field.AsDecimal;
-        return (Int64)v_val;
-      }
-      return 0;
+      return v_field != null ? v_field.AsInteger : 0;
     }
 
     /// <summary>
