@@ -29,13 +29,13 @@ namespace Bio.Helpers.Common.Types {
     /// <summary/>
     public ErrorLogWriterDelegate ErrLogWriter { get; set; }
 
-    protected void log_msg(String msg) {
+    protected virtual void log_msg(String msg) {
       lock (this) {
         if (this.MsgLogWriter != null)
           this.MsgLogWriter(msg);
       }
     }
-    protected void log_err(Exception ex) {
+    protected virtual void log_err(Exception ex) {
       lock (this) {
         if (this.ErrLogWriter != null)
           this.ErrLogWriter(ex);
