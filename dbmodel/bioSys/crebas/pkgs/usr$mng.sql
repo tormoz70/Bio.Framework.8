@@ -1,0 +1,154 @@
+CREATE OR REPLACE PACKAGE usr$mng
+  IS
+
+    cs_dont_change_field varchar2(100) := 'BIOSYS_DONT_CHANGE_FIELD';
+
+
+    procedure newpwd(p_usr_uid in varchar2);
+
+    procedure usr_delete(p_usr_uid in varchar2);
+
+    procedure usr_add_grant(p_usr_uid in varchar2, p_grant in varchar2);
+
+    function usr_deleted(p_usr_uid in varchar2) return number;
+
+    procedure usr_restore(p_usr_uid in varchar2);
+
+END; -- Package spec
+/
+CREATE OR REPLACE PACKAGE BODY usr$mng
+IS
+  subtype t_uid           is varchar2(32);
+
+  procedure usr_add_grant(p_usr_uid in varchar2, p_grant in varchar2)
+  is
+    v_usr_uid t_uid := login$utl.usr_exists(p_usr_uid);
+  begin
+    if(v_usr_uid is not null)then
+      if((login$utl.ugrant_exists(p_grant) > 0) and (login$utl.usr_has_grant(v_usr_uid, p_grant) = 0))then
+        insert into USRGRNT(USR_UID, GRANT_UID)
+          values(upper(v_usr_uid), p_grant);
+      end if;
+    end if;
+  end;
+
+  procedure usr_delete(p_usr_uid in varchar2)
+  is
+  begin
+    update usr u set u.garbaged = 1
+     where u.usr_uid = upper(p_usr_uid)
+       and u.garbaged = 0;
+
+  end;
+
+  -- <p_usr_uid> :
+  --    на вх. это может быть как USR_UID, так и USR_LOGIN
+  --    на вых. это всегда USR_UID
+
+  function usr_deleted(p_usr_uid in varchar2) return number
+  is
+    v_rslt pls_integer;
+  begin
+    select count(1) into v_rslt
+      from usr a
+     where ((a.usr_uid = upper(p_usr_uid)) or
+            (a.usr_login = lower(p_usr_uid)))
+       and a.garbaged = 1;
+    return (case when v_rslt = 0 then 0 else 1 end);
+  end;
+
+  procedure usr_restore(p_usr_uid in varchar2)
+  is
+  begin
+    update usr a set a.garbaged = 0
+     where ((a.usr_uid = upper(p_usr_uid)) or
+            (a.usr_login = lower(p_usr_uid)))
+       and a.garbaged = 1;
+  end;
+
+  procedure check_login_unique(p_usr_uid in varchar2, p_login in varchar2)
+  is
+    v_exists pls_integer;
+  begin
+    if(p_usr_uid is not null)then
+      select count(1) into v_exists
+        from usr u
+       where u.usr_login = lower(p_login)
+         and u.usr_uid not in (upper(p_usr_uid));
+    else
+      select count(1) into v_exists
+        from usr u
+       where u.usr_login = lower(p_login);
+    end if;
+    if(v_exists > 0)then
+      raise_application_error(-20000, 'ѕользователь с именем "'||lower(p_login)||'" уже зарегистрирован в системе!');
+    end if;
+  end;
+
+  procedure modrec(
+    p_usr_uid in out varchar2,
+    p_usr_login in varchar2,
+    p_usr_pwd in varchar2,
+    p_email_addr in varchar2,
+    p_workspace_id in number,
+    p_org_id in number,
+    p_fio_fam in varchar2,
+    p_fio_fname in varchar2,
+    p_fio_sname in varchar2,
+    p_usr_phone in varchar2,
+    p_blocked in number,
+    p_confirmed in number,
+    p_extinfo in varchar2
+  )
+  is
+    v_usr_uid t_uid := null;
+    v_usr_pwd varchar2(32) := p_usr_pwd;
+  begin
+    v_usr_uid := login$utl.usr_exists(p_usr_uid);
+    check_login_unique(v_usr_uid, p_usr_login);
+    if(v_usr_uid is not null)then
+      if(upper(v_usr_pwd) = 'AUTOGENERATE')then
+        v_usr_pwd := login$utl.generate_pwd;
+      end if;
+      update usr a set
+        a.usr_login = p_usr_login,
+        a.usr_pwd = decode(v_usr_pwd, null, a.usr_pwd, v_usr_pwd),
+        a.email_addr = p_email_addr,
+        a.org_id = p_org_id,
+        a.fio_fam = p_fio_fam,
+        a.fio_fname = p_fio_fname,
+        a.fio_sname = p_fio_sname,
+        a.usr_phone = p_usr_phone,
+        a.blocked = p_blocked,
+        a.confirmed = p_confirmed,
+        a.extinfo = p_extinfo
+      where a.usr_uid = upper(v_usr_uid);
+    else
+      v_usr_pwd := case when (p_usr_pwd is null) or (upper(p_usr_pwd) = 'AUTOGENERATE')
+                          then login$utl.generate_pwd
+                          else login$utl.encrypt_pwd(p_usr_pwd)
+                     end;
+      insert into usr(usr_uid, org_id, workspace_id, usr_login, usr_pwd, fio_fam, fio_fname, fio_sname, reg_date, blocked,
+                      email_addr, usr_phone, confirmed, garbaged, extinfo)
+      values(upper(sys_guid), p_org_id, p_workspace_id, p_usr_login, v_usr_pwd, p_fio_fam, p_fio_fname, p_fio_sname, sysdate, '0',
+              p_email_addr, p_usr_phone, '1', '0', p_extinfo)
+      returning USR_UID into v_usr_uid;
+    end if;
+    p_usr_uid := v_usr_uid;
+  end;
+
+  procedure newpwd(p_usr_uid in varchar2)
+  is
+    v_usr_uid t_uid := login$utl.usr_exists(p_usr_uid);
+    v_usr_pwd varchar2(100) := null;
+  begin
+    if(v_usr_uid is not null)then
+      v_usr_pwd := login$utl.generate_pwd;
+      update usr a set
+        a.usr_pwd = v_usr_pwd
+      where a.usr_uid = upper(v_usr_uid);
+    end if;
+  end;
+
+END;
+/

@@ -1,0 +1,260 @@
+CREATE OR REPLACE PACKAGE smtp$utl AS
+
+    PROCEDURE send (p_mailhost       IN VARCHAR2,
+                    p_username       IN VARCHAR2,
+                    p_password       IN VARCHAR2,
+                    p_port           IN NUMBER,
+                    p_sender         IN VARCHAR2,
+                    p_sender_name    IN VARCHAR2 default null,
+                    p_recipient      IN VARCHAR2,
+                    p_ccrecipient    IN VARCHAR2 default null,
+                    p_bccrecipient   IN VARCHAR2 default null,
+                    p_subject        IN VARCHAR2 default null,
+                    p_message_text   IN CLOB default EMPTY_CLOB(),
+                    p_message_html   IN CLOB default EMPTY_CLOB(),
+                    p_encoding       IN VARCHAR2 default 'windows-1251',
+                    p_filename       IN VARCHAR2 DEFAULT NULL,
+                    p_binaryfile     IN BLOB DEFAULT EMPTY_BLOB()
+                    );
+
+END;
+/
+CREATE OR REPLACE PACKAGE BODY smtp$utl
+AS
+  crlf                      VARCHAR2(2)  := CHR(13) || CHR(10);
+  -- A unique string that demarcates boundaries of parts in a multi-part email
+  -- The string should not appear inside the body of any part of the email.
+  -- Customize this if needed or generate this randomly dynamically.
+  boundary_0         CONSTANT VARCHAR2 (256) := 'bnd-0-'||sys_guid()||'';
+  boundary_1         CONSTANT VARCHAR2 (256) := 'bnd-1-'||sys_guid()||'';
+  boundary_2         CONSTANT VARCHAR2 (256) := 'bnd-2-'||sys_guid()||'';
+
+  cur_boundary_1     CONSTANT VARCHAR2 (256) := '--' || boundary_1;
+  last_boundary_1    CONSTANT VARCHAR2 (256) := '--' || boundary_1 || '--';
+
+  cur_boundary_2     CONSTANT VARCHAR2 (256) := '--' || boundary_2;
+  last_boundary_2    CONSTANT VARCHAR2 (256) := '--' || boundary_2 || '--';
+
+  procedure wr_data (p_conn       IN OUT NOCOPY UTL_SMTP.connection,
+                        p_text       IN VARCHAR2)
+  is
+  begin
+    UTL_SMTP.write_data (p_conn, p_text);
+    dbms_output.put_line(p_text);
+  end;
+
+  procedure wr_row_data (p_conn       IN OUT NOCOPY UTL_SMTP.connection,
+                        p_text       IN VARCHAR2)
+  is
+  begin
+    UTL_SMTP.write_raw_data (p_conn, UTL_RAW.cast_to_raw (p_text));
+    dbms_output.put_line(p_text);
+  end;
+
+  procedure begin_attachment (
+    conn           in out nocopy utl_smtp.connection,
+    mime_type      in            varchar2 default 'text/plain',
+    filename       in            varchar2 default null,
+    transfer_enc   in            varchar2 default null)
+  is
+  begin
+    wr_data (conn, 'Content-Type:' || mime_type || crlf);
+
+    if (filename is not null) then
+      wr_row_data (conn, 'Content-Disposition: attachment; filename="' || filename || '"' || crlf);
+    end if;
+
+    if (transfer_enc is not null) then
+      wr_data (conn, 'Content-Transfer-Encoding: ' || transfer_enc || crlf);
+    end if;
+
+    wr_data (conn, crlf);
+  end;
+
+  procedure end_attachment (conn   in out nocopy UTL_SMTP.connection)
+  is
+  begin
+    wr_data (conn, crlf);
+  end;
+
+  procedure wr_blob (p_conn       in out nocopy UTL_SMTP.connection,
+                     p_filename   in         varchar2,
+                     p_data       in         blob,
+                     p_encoding   in         varchar2)
+  is
+    max_base64_line_width   constant pls_integer := 76 / 4 * 3;
+    l_buffer                         raw (32767);
+    l_pos                            pls_integer := 1;
+    l_blob_len                       pls_integer;
+    l_amount                         pls_integer := 32767;
+  begin
+    -- Split the Base64-encoded attachment into multiple lines
+
+    -- In writing Base-64 encoded text following the MIME format below,
+    -- the MIME format requires that a long piece of data must be splitted
+    -- into multiple lines and each line of encoded data cannot exceed
+    -- 80 characters, including the new-line characters. Also, when
+    -- splitting the original data into pieces, the length of each chunk
+    -- of data before encoding must be a multiple of 3, except for the
+    -- last chunk. The constant MAX_BASE64_LINE_WIDTH
+    -- (76 / 4 * 3 = 57) is the maximum length (in bytes) of each chunk
+    -- of data before encoding.
+    --
+
+    begin_attachment (p_conn,
+                      'application/octet',
+                      p_filename,
+                      'base64');
+
+    l_blob_len := DBMS_LOB.getlength (p_data);
+
+    --
+    --
+    --
+    --
+    while l_pos < l_blob_len
+    loop
+      l_amount := max_base64_line_width;
+      DBMS_LOB.read (p_data,
+                     l_amount,
+                     l_pos,
+                     l_buffer);
+      UTL_SMTP.write_raw_data (p_conn, UTL_ENCODE.base64_encode (l_buffer));
+      UTL_SMTP.write_data (p_conn, crlf);
+      --UTL_SMTP. (conn);
+      l_pos := l_pos + max_base64_line_width;
+    end loop;
+
+    end_attachment (p_conn);
+    dbms_output.put_line('{blob}');
+  end;
+
+  procedure wr_body_as_raw (p_conn   in out nocopy UTL_SMTP.connection,
+                            p_text   in            clob)
+  is
+  begin
+    if (p_text is not null) then
+      wr_row_data (p_conn, crlf || p_text);
+      dbms_output.put_line(crlf || '{body}');
+    end if;
+  end;
+
+  procedure wr_subj_as_raw (p_conn   in out nocopy UTL_SMTP.connection,
+                            p_text   in            varchar2)
+  is
+  begin
+    if (p_text is not null) then
+      wr_row_data (p_conn, p_text || crlf);
+      dbms_output.put_line(p_text || crlf);
+    end if;
+  end;
+
+  PROCEDURE send (p_mailhost       IN VARCHAR2,
+                  p_username       IN VARCHAR2,
+                  p_password       IN VARCHAR2,
+                  p_port           IN NUMBER,
+                  p_sender         IN VARCHAR2,
+                  p_sender_name    IN VARCHAR2 default null,
+                  p_recipient      IN VARCHAR2,
+                  p_ccrecipient    IN VARCHAR2 default null,
+                  p_bccrecipient   IN VARCHAR2 default null,
+                  p_subject        IN VARCHAR2 default null,
+                  p_message_text   IN CLOB default EMPTY_CLOB(),
+                  p_message_html   IN CLOB default EMPTY_CLOB(),
+                  p_encoding       IN VARCHAR2 default 'windows-1251',
+                  p_filename       IN VARCHAR2 DEFAULT NULL,
+                  p_binaryfile     IN BLOB DEFAULT EMPTY_BLOB()
+                  )
+  IS
+    v_conn                         UTL_SMTP.connection;
+    v_port                         NUMBER (3) := NVL (p_port, 25);
+    v_sender varchar2(2000) := case when p_sender_name is null
+                                    then 'From: '||p_sender
+                                    else 'From: "'||p_sender_name||'" <'||p_sender|| '>'
+                                end;
+  BEGIN
+    v_conn := UTL_SMTP.open_connection (p_mailhost, v_port);
+    UTL_SMTP.ehlo (v_conn, p_mailhost);
+
+    if (p_username is not null) and (p_password is not null)
+    then
+      UTL_SMTP.command (v_conn, 'AUTH LOGIN');
+      UTL_SMTP.command (
+        v_conn,
+        UTL_RAW.cast_to_varchar2 (
+          UTL_ENCODE.base64_encode (UTL_RAW.cast_to_raw (p_username))));
+      UTL_SMTP.command (
+        v_conn,
+        UTL_RAW.cast_to_varchar2 (
+          UTL_ENCODE.base64_encode (UTL_RAW.cast_to_raw (p_password))));
+    end if;
+
+    UTL_SMTP.helo (v_conn, p_mailhost);
+    UTL_SMTP.mail (v_conn, p_sender);
+    UTL_SMTP.rcpt (v_conn, p_recipient);
+
+
+    if p_ccrecipient is not null
+    then
+      UTL_SMTP.rcpt (v_conn, p_ccrecipient);
+    end if;
+
+
+    if p_bccrecipient is not null
+    then
+      UTL_SMTP.rcpt (v_conn, p_bccrecipient);
+    end if;
+
+
+    --
+    -- Sending data
+    --
+    UTL_SMTP.open_data (v_conn);
+    wr_data (v_conn, 'Date: ' || TO_CHAR (SYSDATE - 0.5, 'dd Mon yy hh24:mi:ss')||crlf);
+
+    wr_data (v_conn, 'To: ' || p_recipient||crlf);
+    if(p_ccrecipient is not null)then
+      wr_data (v_conn, 'CC: ' || p_ccrecipient||crlf);
+    end if;
+    wr_subj_as_raw (v_conn, v_sender);
+    wr_subj_as_raw (v_conn, 'Subject: ' || p_subject);
+    wr_data (v_conn, 'MIME-Version: 1.0'||crlf);
+
+    wr_data (v_conn,
+      'Content-Type: multipart/mixed; boundary="' || boundary_1 || '"; charset="'||p_encoding||'"'||crlf||crlf);
+
+    wr_data(v_conn, cur_boundary_1||crlf);
+
+    wr_data (v_conn,
+      'Content-Type: multipart/alternative; boundary="' || boundary_2 || '"; charset="'||p_encoding||'"'||crlf||crlf);
+
+    if(DBMS_LOB.getlength(p_message_text) > 0)then
+      wr_data (v_conn, cur_boundary_2||crlf);
+      wr_data (v_conn, 'Content-Type: text/plain; charset="'||p_encoding||'"' || crlf || crlf);
+      wr_body_as_raw (v_conn, p_message_text);
+      wr_data (v_conn, crlf || crlf);
+    end if;
+
+    if(DBMS_LOB.getlength(p_message_html) > 0)then
+      wr_data (v_conn, cur_boundary_2||crlf);
+      wr_data (v_conn, 'Content-Type: text/html; charset="'||p_encoding||'"' || crlf || crlf);
+      wr_body_as_raw (v_conn, p_message_html);
+      wr_data (v_conn, crlf || crlf);
+    end if;
+    wr_data (v_conn, last_boundary_2||crlf);
+
+    if p_filename is not null then
+      wr_data (v_conn, cur_boundary_1||crlf);
+      wr_blob (v_conn, p_filename, p_binaryfile, p_encoding);
+      wr_data (v_conn, last_boundary_1||crlf);
+    else
+      wr_data (v_conn, last_boundary_1||crlf);
+    end if;
+
+    UTL_SMTP.close_data (v_conn);
+    UTL_SMTP.quit (v_conn);
+  END;
+
+
+END;
+/

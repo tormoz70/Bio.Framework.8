@@ -1,0 +1,11 @@
+file=BIOSYS.dmp
+log=BIOSYS_exp.log
+owner=BIOSYS
+buffer=102400
+feedback=10000
+filesize=500M
+grants=y
+indexes=y
+constraints=y
+rows=y
+compress=y

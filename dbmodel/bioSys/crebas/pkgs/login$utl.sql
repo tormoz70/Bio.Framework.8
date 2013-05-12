@@ -1,0 +1,507 @@
+CREATE OR REPLACE PACKAGE login$utl
+  IS
+  /*
+  Данный пакет предназначен для работы системы BioSys
+  Является интерфейсом взаимодействия BioSys c RDBMS
+  */
+
+  cs_role_bioroot constant varchar2(64) := 'BIOROOT';
+  cs_role_debug constant varchar2(64) := 'DEBUG';
+  cs_role_admin constant varchar2(64) := 'ADMIN';
+  cs_role_wsadmin constant varchar2(64) := 'WSADMIN';
+  cs_role_user constant varchar2(64) := 'USER';
+  cs_role_guest constant varchar2(64) := 'GUEST';
+
+  subtype t_id            is number(18);
+  subtype t_uid           is varchar2(32);
+  subtype t_uid2          is varchar2(64);
+  subtype t_usr_login     is varchar2(64);
+  subtype t_usr_pwd       is varchar2(100);
+  subtype t_usr_fio       is varchar2(300);
+  subtype t_list          is varchar2(4000);
+  subtype t_text          is varchar2(4000);
+  subtype t_flag          is char(1);
+
+  subtype t_ip            is varchar2(32);
+  subtype t_host          is varchar2(100);
+  subtype t_session_id    is varchar2(100);
+  subtype t_client        is varchar2(300);
+  subtype t_status        is varchar2(200);
+
+  subtype t_login         is varchar2(200);
+
+  csBIO_CONTEXT varchar2(32) := 'BIO_CONTEXT';
+  type usr_rec is record(
+    usr_uid                     t_uid,      -- uid пользователя
+    usr_name                    t_usr_login,-- Логин пользователя
+    fio_fam                     t_usr_fio,  -- Фамилия пользователя
+    fio_fname                   t_usr_fio,  -- Имя пользователя
+    fio_sname                   t_usr_fio,  -- Отчество пользователя
+    reg_date                    date,       -- Дата регистрации
+    usr_roles                   t_list,     -- список ролей пользователя (разделитель ';')
+    usr_grants                  t_list,     -- список разрешений пользователя (разделитель ';')
+    email_addr                  t_list,     -- список эл. адресов пользователя
+    usr_phone                   t_list,     -- список телефонов пользователя
+    org_id                      t_id,       -- id подразделения пользователя
+    org_path                    t_list,     -- путь подразделения пользователя (описание)
+    org_uid_path                t_list,     -- путь подразделения пользователя (ids)
+    org_name                    t_text,     -- имя подразделения пользователя
+    org_desc                    t_text,     -- описание подразделения пользователя
+    owner_uid                   t_uid,      -- UID пользователя - владельца рабочего пространства
+    is_debug                    t_flag,     -- '1' - имеет роль debug
+    is_admin                    t_flag,     -- '1' - имеет роль admin
+    is_wsadmin                  t_flag,     -- '1' - имеет роль wsowner - владелец рабочего пространства
+    extinfo                     t_text      -- Доп инф.
+  );
+  type usr_tbl is table of usr_rec;
+
+    procedure reg_connection(
+      p_user in t_usr_login,
+      p_session_id in t_session_id,
+      p_session_remote_ip in t_ip,
+      p_session_remote_host in t_host,
+      p_session_remote_client in t_client,
+      p_status in t_status
+    );
+
+    procedure set_context_value(p_name in varchar2, p_value in varchar2);
+
+    function get_context_value(p_name in varchar2) return varchar2;
+
+    function get_usr(p_usr_uid in t_uid) return usr_tbl pipelined;
+
+
+
+
+
+
+    procedure del_lock(p_lock_id in number);
+
+    procedure save_lock(
+      p_lock_id in number,
+      p_usr_uid in varchar2,
+      p_from in date,
+      p_to in date,
+      p_comments in varchar2,
+      p_deleted in number default 0,
+      p_lock_type in number default 0);
+
+    function get_usr_grants(p_usr_uid in t_uid) return t_list;
+
+    function get_usr_roles(p_usr_uid in t_uid) return t_list;
+
+    function get_org_path(p_org_id in t_id) return t_list;
+
+    function get_org_idpath(p_org_id in t_id) return t_list;
+
+    procedure check_login(p_login in t_login, v_uid out t_uid, v_roles out varchar2);
+
+    procedure init_defaults_data;
+
+    function urole_exists(p_role_uid in t_uid2) return number;
+
+    function ugrant_exists(p_grant_uid in t_uid2) return number;
+
+    function usr_exists(p_usr in t_uid) return t_uid;
+
+    function usr_has_grant(p_usr_uid in t_uid, p_grant_uid in t_uid2) return number;
+
+    function usr_has_role(p_usr_uid in t_uid, p_role_uid in t_uid2) return number;
+
+    procedure check_usr_is_locked(p_usr_login in varchar2);
+
+    function decrypt_pwd(p_usr_pwd in varchar2) return varchar2;
+
+    function encrypt_pwd(p_usr_pwd in varchar2) return varchar2;
+
+    function generate_pwd return varchar2;
+
+    procedure get_login(p_usr_uid in varchar2, v_login out varchar2, v_password out varchar2);
+
+END;
+/
+CREATE OR REPLACE PACKAGE BODY login$utl
+IS
+  /*
+    Это глобальные переменные в контексте текущего соединения
+    "SYS_CURUSERUID" - UID пользователя;
+    "SYS_CURUSERIP" - IP пользователя;
+    "SYS_CURUSERROLES" - список ролей пользователя разделенные ",";
+    "SYS_CURODEPUID" - ID организации;
+    "SYS_TITLE" - Название системы;
+  */
+  cs_key_line CONSTANT varchar2(10) := 'synchronizator';
+  cs_bioroot_login CONSTANT varchar2(10) := 'bioroot';
+  cs_bioroot_pwd CONSTANT varchar2(10) := 'bio23';
+  cs_bioroot_email CONSTANT varchar2(10) := 'aw_gimckt@mail.ru';
+
+  bad_login  EXCEPTION;
+  PRAGMA EXCEPTION_INIT(bad_login, -20401);
+  user_blocked  EXCEPTION;
+  PRAGMA EXCEPTION_INIT(user_blocked, -20402);
+  user_not_confirmed  EXCEPTION;
+  PRAGMA EXCEPTION_INIT(user_not_confirmed, -20403);
+  user_deleted  EXCEPTION;
+  PRAGMA EXCEPTION_INIT(user_deleted, -20404);
+
+
+  type org_rec is record(
+    org_id                         NUMBER(18),
+    prnt_org_id                    NUMBER(18),
+    workspace_id                   NUMBER(18),
+    aname                          VARCHAR2(500),
+    adesc                          VARCHAR2(1000)
+  );
+
+/*  procedure unlock_usr(p_login_name in varchar2)
+  is
+  begin
+    update usrlock a set a.deleted = 1
+    where a.login_name = lower(p_login_name);
+  end;
+*/
+
+  function encrypt_pwd(p_usr_pwd in varchar2) return varchar2
+  is
+  begin
+    return ai$utl.encrypt_string(p_usr_pwd, cs_key_line);
+  end;
+  function decrypt_pwd(p_usr_pwd in varchar2) return varchar2
+  is
+  begin
+    return ai$utl.decrypt_string(p_usr_pwd, cs_key_line);
+  end;
+
+  function generate_pwd return varchar2
+  is
+    rslt varchar2(32);
+  begin
+    rslt := ai$utl.pwd(8);
+    rslt := encrypt_pwd(rslt);
+    return rslt;
+  end;
+
+  procedure del_lock(p_lock_id in number)
+  is
+  begin
+    update usrlock a set a.deleted = 1
+     where a.lock_id = p_lock_id;
+  end;
+
+  procedure save_lock(
+    p_lock_id in number,
+    p_usr_uid in varchar2,
+    p_from in date,
+    p_to in date,
+    p_comments in varchar2,
+    p_deleted in number default 0,
+    p_lock_type in number default 0)
+  is
+    v_org_id number(18);
+    v_user_name varchar2(100);
+  begin
+    if p_lock_id is not null then
+      update usrlock a set
+        a.from_point  = p_from,
+        a.to_point    = p_to,
+        a.comments    = p_comments,
+        a.deleted     = p_deleted
+       where a.lock_id = p_lock_id;
+    else
+       insert into usrlock(lock_id, usr_uid, lock_type, created, from_point, to_point, comments, deleted)
+       values(seq_usrlock.nextval, upper(p_usr_uid), p_lock_type, sysdate, p_from, p_to, p_comments, 0);
+    end if;
+  end;
+
+  procedure check_usr_is_locked(p_usr_login in varchar2)
+  is
+    v_from_point date;
+    v_lock_type pls_integer := null;
+    v_comments varchar2(4000);
+    v_now date := sysdate;
+  begin
+    select a1.lock_type, a1.from_point, a1.comments
+      into v_lock_type, v_from_point, v_comments
+    from (select a.lock_type, a.from_point, a.comments
+            from USRLOCK a
+              inner join USR u on u.usr_uid = a.usr_uid
+           where u.usr_login = lower(p_usr_login)
+             and a.deleted = '1'
+           order by a.from_point desc) a1
+    where rownum = 1;
+
+    if v_lock_type is not null then
+      raise_application_error(-20402, 'Пользователь '''||p_usr_login||''' временно заблокирован. '||
+                                    'Начиная с: '||to_char(v_from_point, 'YYYY.MM.DD HH24:MI:SS')||'. Причина: '||v_comments);
+    end if;
+  exception
+    when NO_DATA_FOUND then
+      null;
+  end;
+
+  procedure reg_raddr(
+    p_session_remote_ip in RADDRSS.rem_addr%type,
+    p_session_remote_host in RADDRSS.rem_host%type
+  )
+  is
+    vExists pls_integer;
+  begin
+    select count(1) into vExists
+      from RADDRSS a
+     where a.rem_addr = p_session_remote_ip;
+    if(vExists = 0) then
+      insert into RADDRSS(rem_addr,rem_host,addr_desc)
+      values(substr(p_session_remote_ip, 1, 32), substr(p_session_remote_host, 1, 100), null);
+    end if;
+  end;
+
+  procedure reg_connection(
+    p_user in t_usr_login,
+    p_session_id in t_session_id,
+    p_session_remote_ip in t_ip,
+    p_session_remote_host in t_host,
+    p_session_remote_client in t_client,
+    p_status in t_status
+  )
+  is
+    vUser USRIN$LOG.usr_login%type := substr(lower(nvl(p_user, '<noname>')), 1, 64);
+    vCurSessionID USRIN$LOG.session_id%type := upper(substr(p_session_id, 1, 32));
+  begin
+    reg_raddr(p_session_remote_ip, p_session_remote_host);
+    insert into USRIN$LOG(rec_id, rem_addr, usr_login, session_id, rem_client, astatus, usrin_date)
+    values(seq_usrin$log.nextval, substr(p_session_remote_ip, 1, 32), vUser, vCurSessionID, substr(nvl(p_session_remote_client, '<неизвестно>'), 1, 1000), substr(p_status, 1, 200), sysdate);
+  end;
+
+  function usr_exists(p_usr in t_uid) return t_uid
+  is
+    rslt t_uid;
+  begin
+    select a.usr_uid into rslt
+      from usr a
+     where ((a.usr_uid = upper(p_usr)) or
+            (a.usr_login = lower(p_usr)));
+    return rslt;
+  exception
+    when NO_DATA_FOUND then
+      return null;
+  end;
+
+  function check_login0(p_usr_login in t_usr_login, p_usr_pwd in t_usr_pwd) return t_uid
+  is
+    v_usr_uid t_uid := usr_exists(p_usr_login);
+  begin
+    if(p_usr_login is null or p_usr_pwd is null) then
+      raise bad_login;
+    end if;
+    begin
+      select a.usr_uid into v_usr_uid
+        from USR a
+       where a.usr_login = lower(p_usr_login)
+         and a.usr_pwd = encrypt_pwd(p_usr_pwd);
+    exception
+      when NO_DATA_FOUND then
+      begin
+        raise bad_login;
+      end;
+      when OTHERS then
+      begin
+        raise_application_error(-20003, 'Неизвестная ошибка при проверке логина. Сообщение: '||sqlerrm);
+      end;
+    end;
+  end;
+
+  procedure check_login(p_login in t_login, v_uid out t_uid, v_roles out varchar2)
+  is
+    v_usr_name varchar2(32) := null;
+    v_usr_pwd varchar2(32) := null;
+  begin
+    ai$utl.pars_login(p_login, v_usr_name, v_usr_pwd);
+
+    v_uid := check_login0(v_usr_name, v_usr_pwd);
+
+    v_roles := get_usr_roles(v_uid);
+  end;
+
+  function ugrant_exists(p_grant_uid in t_uid2) return number
+  is
+    v_exists pls_integer;
+  begin
+    select count(1) into v_exists from ugrant u where u.grant_uid = upper(p_grant_uid);
+    return (case when v_exists = 0 then 0 else 1 end);
+  end;
+
+  function urole_exists(p_role_uid in t_uid2) return number
+  is
+    v_exists pls_integer;
+  begin
+    select count(1) into v_exists from urole u where u.role_uid = upper(p_role_uid);
+    return (case when v_exists = 0 then 0 else 1 end);
+  end;
+
+  function usr_has_grant(p_usr_uid in t_uid, p_grant_uid in t_uid2) return number
+  is
+    v_exists pls_integer;
+  begin
+    select count(1) into v_exists from usrgrnt u
+     where u.usr_uid = upper(p_usr_uid) and u.grant_uid = upper(p_grant_uid);
+    return (case when v_exists = 0 then 0 else 1 end);
+  end;
+  function usr_has_role(p_usr_uid in t_uid, p_role_uid in t_uid2) return number
+  is
+    v_exists pls_integer;
+  begin
+    select count(1) into v_exists from usrrle u
+     where u.usr_uid = upper(p_usr_uid) and u.role_uid = upper(p_role_uid);
+    return (case when v_exists = 0 then 0 else 1 end);
+  end;
+
+  function get_usr_roles(p_usr_uid in t_uid) return t_list
+  is
+    v_rslt t_list;
+  begin
+    v_rslt := null;
+    for c in (select u.role_uid from USRRLE u where u.usr_uid = p_usr_uid) loop
+      ai$utl.push_val_to_list(v_rslt, trim(to_char(c.role_uid)), ';');
+    end loop;
+    return v_rslt;
+  end;
+  function get_usr_grants(p_usr_uid in t_uid) return t_list
+  is
+    v_rslt t_list;
+  begin
+    v_rslt := null;
+    for c in (select u.grant_uid from USRGRNT u where u.usr_uid = p_usr_uid) loop
+      ai$utl.push_val_to_list(v_rslt, trim(to_char(c.grant_uid)), ';');
+    end loop;
+    return v_rslt;
+  end;
+  function get_org_path(p_org_id in t_id) return t_list
+  is
+  begin
+    return null;
+  end;
+  function get_org_idpath(p_org_id in t_id) return t_list
+  is
+  begin
+    return null;
+  end;
+
+  function get_usr(p_usr_uid in t_uid) return usr_tbl pipelined
+  is
+    --v_group_id number(18) := -1;
+    vOrgRec org_rec;
+    vRslt usr_rec;
+    v_is_dbg pls_integer;
+  begin
+
+
+    --dbms_output.put_line('v_org_id:'||v_org_id||', v_group_id:'||v_group_id);
+    select a.*
+      into vOrgRec
+      from usr u
+        inner join org a on a.org_id = u.org_id
+     where u.usr_uid = p_usr_uid;
+
+    select
+    u.usr_uid,                    -- uid пользователя
+    u.usr_login,                  -- Логин пользователя
+    u.fio_fam,                    -- Фамилия пользователя
+    u.fio_fname,                  -- Имя пользователя
+    u.fio_sname,                  -- Отчество пользователя
+    u.reg_date,                   -- Дата регистрации
+    get_usr_roles(u.usr_uid),     -- список ролей пользователя (разделитель ';')
+    get_usr_grants(u.usr_uid),    -- список разрешений пользователя (разделитель ';')
+    u.email_addr,                 -- список эл. адресов пользователя
+    u.usr_phone,                  -- список телефонов пользователя
+    u.org_id,                     -- id подразделения пользователя
+    get_org_path(u.org_id),       -- путь подразделения пользователя (описание)
+    get_org_idpath(u.org_id),     -- путь подразделения пользователя (ids)
+    o.aname,                      -- имя подразделения пользователя
+    o.adesc,                      -- описание подразделения пользователя
+    o.usr_uid,                    -- UID пользователя - владельца рабочего пространства
+    '0' as is_debug,              -- '1' - имеет роль debug
+    '0' as is_admin,              -- '1' - имеет роль admin
+    '0' as is_wsadmin,            -- '1' - имеет роль wsowner - владелец рабочего пространства
+    extinfo                       -- Доп инф.
+    into vRslt
+    from usr u
+      left join (
+        select o1.*, w.usr_uid from org o1
+          inner join uworkspace w on w.workspace_id = o1.workspace_id
+      ) o on o.org_id = u.org_id
+
+    where u.usr_uid = p_usr_uid;
+
+    pipe row(vRslt);
+  end;
+
+  procedure get_login(p_usr_uid in varchar2, v_login out varchar2, v_password out varchar2)
+  is
+  begin
+    select a.usr_login, login$utl.decrypt_pwd(a.usr_pwd)
+      into v_login, v_password
+      from usr a
+     where a.usr_uid = upper(p_usr_uid);
+  exception
+    when NO_DATA_FOUND then
+    begin
+      v_login := null;
+      v_password := null;
+    end;
+  end;
+
+  procedure set_context_value(p_name in varchar2, p_value in varchar2)
+  is
+  begin
+    dbms_session.set_context(csBIO_CONTEXT, p_name, p_value);
+  end;
+
+  function get_context_value(p_name in varchar2) return varchar2
+  is
+  begin
+    return sys_context(csBIO_CONTEXT, p_name);
+  end;
+
+  procedure init_defaults_data
+  is
+    v_bioroot_uid t_uid;
+    v_biows_id t_id;
+  begin
+    -- заполняем справочник ролей
+    insert into urole(role_uid, aname, is_sys, adesc)
+      values(cs_role_bioroot, cs_role_bioroot, '1', 'System role fo superuser BIOROOT');
+    insert into urole(role_uid, aname, is_sys, adesc)
+      values(cs_role_debug, 'Тестировщик', '0', 'Доступ к отладочной информации');
+    insert into urole(role_uid, aname, is_sys, adesc)
+      values(cs_role_admin, 'Суперпользователь', '0', 'Неограниченный доступ ко всем функциям системы, кроме управления доступом');
+    insert into urole(role_uid, aname, is_sys, adesc)
+      values(cs_role_wsadmin, 'Владелец', '0', 'Неограниченный доступ ко всем функциям системы, включая управления доступом');
+    insert into urole(role_uid, aname, is_sys, adesc)
+      values(cs_role_user, 'Пользователь', '0', 'Обычный пользователь');
+    insert into urole(role_uid, aname, is_sys, adesc)
+      values(cs_role_guest, 'Гость', '0', 'Гость');
+
+    -- создаем системного пространство "biows"
+    insert into uworkspace(workspace_id, usr_uid, aname, adesc)
+    values(seq_uworkspace.nextval, null, 'biows', 'biows')
+    returning workspace_id into v_biows_id;
+
+    -- создаем системного пользователя "bioroot"
+    insert into usr(usr_uid, org_id, workspace_id, usr_login, usr_pwd, fio_fam, fio_fname, fio_sname,
+       reg_date, blocked, email_addr, usr_phone, confirmed, garbaged, extinfo)
+    values(sys_guid, null, v_biows_id, cs_bioroot_login, encrypt_pwd(cs_bioroot_pwd), '-', '-', '-',
+       sysdate, '0', cs_bioroot_email, '-', '1', '0', '')
+    returning usr_uid into v_bioroot_uid;
+
+    -- назначем владельца пространства
+    update uworkspace set usr_uid = v_bioroot_uid
+    where workspace_id = v_biows_id;
+
+    -- добавляем роль "bioroot" пользователю "bioroot"
+    insert into usrrle(role_uid, usr_uid)
+    values(cs_role_bioroot, v_bioroot_uid);
+
+  end;
+
+END;
+/

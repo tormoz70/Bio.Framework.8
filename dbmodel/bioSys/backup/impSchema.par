@@ -1,0 +1,15 @@
+file=BIOSYS.dmp
+log=BIOSYS_imp.dmp
+fromuser=BIOSYS
+touser=BIOSYS
+buffer=102400
+feedback=10000
+filesize=500M
+recalculate_statistics=y
+commit=y
+show=n
+ignore=y
+grants=y
+indexes=y
+rows=y
+destroy=n
