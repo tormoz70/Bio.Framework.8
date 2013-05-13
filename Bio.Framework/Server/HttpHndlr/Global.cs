@@ -1,3 +1,6 @@
+using System.Configuration;
+using System.Web.Configuration;
+
 namespace Bio.Framework.Server {
 	using System;
 	using System.Web;
@@ -15,15 +18,27 @@ namespace Bio.Framework.Server {
 
     }
 
-    private static String csMainModuleName = "Ekb.Start.xap";
-		protected void Session_Start(Object sender, EventArgs e){
-      var v_mainModuleFileName = Utl.NormalizeDir(this.Request.PhysicalApplicationPath) + "\\ClientBin\\" + csMainModuleName;
+    //private static String csMainModuleName = "Ekb.Start.xap";
+		protected void Session_Start(Object sender, EventArgs e) {
+		  String v_MainModuleName = null;
+      //Configuration rootWebConfig = WebConfigurationManager.OpenWebConfiguration(null);
+      var webConfig = WebConfigurationManager.OpenWebConfiguration(HttpContext.Current.Request.ApplicationPath);
+      if (webConfig.AppSettings.Settings.Count > 0) {
+        var customSetting = webConfig.AppSettings.Settings["startModuleName"];
+        if (customSetting != null)
+          v_MainModuleName = customSetting.Value;
+        else
+          throw new Exception("No startModuleName application string in WebConfiguration!");
+      }
+
+
+      var v_mainModuleFileName = Utl.NormalizeDir(this.Request.PhysicalApplicationPath) + "\\ClientBin\\" + v_MainModuleName;
       String v_mainModuleChangedTimeStamp = "none";
       if(File.Exists(v_mainModuleFileName)){
         var fi = new FileInfo(v_mainModuleFileName);
         v_mainModuleChangedTimeStamp = fi.LastWriteTime.ToString("yyyyMMdd-HHmmss");
       }
-      this.Application.Set("gvEkbStartName", csMainModuleName + "?timestamp=" + v_mainModuleChangedTimeStamp);
+      this.Application.Set("gvStartupName", v_MainModuleName + "?timestamp=" + v_mainModuleChangedTimeStamp);
 			ArrayList vSessions = null;
 			if(this.Application.Get("bioSessionArray") != null)
 				vSessions = (ArrayList)this.Application.Get("bioSessionArray");

@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bio.Framework.Packets", "Bio.Framework\Packets\Bio.Framework.Packets.csproj", "{8777B6C1-3185-428C-9549-13FB86259786}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bio.Framework.Server.Types", "Bio.Framework\Server\Types\Bio.Framework.Server.Types.csproj", "{430F3A39-DF87-4C63-8682-C399F9222634}"
@@ -60,6 +60,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bio.Framework.Server.Handler.FileSrv", "Bio.Framework\Server\hndlrs\FileSrv\Bio.Framework.Server.Handler.FileSrv.csproj", "{9C8BD43E-864F-4334-BDF3-75E793C21D59}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bio.Framework.Server.Handler.DSFetch", "Bio.Framework\Server\hndlrs\DSFetch\Bio.Framework.Server.Handler.DSFetch.csproj", "{48E9DD2F-F45D-47F8-8E61-602117BC05FB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "deploy.server.2acs", "deploy.server.2acs\deploy.server.2acs.csproj", "{B2F52D88-ECDF-4E73-9E64-F59663B55031}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -331,6 +333,16 @@ Global
 		{48E9DD2F-F45D-47F8-8E61-602117BC05FB}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{48E9DD2F-F45D-47F8-8E61-602117BC05FB}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{48E9DD2F-F45D-47F8-8E61-602117BC05FB}.Release|x86.ActiveCfg = Release|Any CPU
+		{B2F52D88-ECDF-4E73-9E64-F59663B55031}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2F52D88-ECDF-4E73-9E64-F59663B55031}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2F52D88-ECDF-4E73-9E64-F59663B55031}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{B2F52D88-ECDF-4E73-9E64-F59663B55031}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{B2F52D88-ECDF-4E73-9E64-F59663B55031}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B2F52D88-ECDF-4E73-9E64-F59663B55031}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2F52D88-ECDF-4E73-9E64-F59663B55031}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2F52D88-ECDF-4E73-9E64-F59663B55031}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{B2F52D88-ECDF-4E73-9E64-F59663B55031}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{B2F52D88-ECDF-4E73-9E64-F59663B55031}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -344,6 +356,7 @@ Global
 		{92DCDCAB-D6E1-4D90-A9BA-3149E385CFD6} = {52695389-DC8A-451E-AC1F-1CA67AFE225B}
 		{B5999504-0CD1-4466-B4C1-B2F05EF644D4} = {52695389-DC8A-451E-AC1F-1CA67AFE225B}
 		{8777B6C1-3185-428C-9549-13FB86259786} = {52695389-DC8A-451E-AC1F-1CA67AFE225B}
+		{B2F52D88-ECDF-4E73-9E64-F59663B55031} = {52695389-DC8A-451E-AC1F-1CA67AFE225B}
 		{62F35705-9CB5-46C2-97CE-69084EA8C1B0} = {16D8846D-50CD-4FA1-8BF1-5A016670A941}
 		{830A0136-3718-411F-A569-5F6A9F47E2B7} = {16D8846D-50CD-4FA1-8BF1-5A016670A941}
 		{744B8CA4-F3D2-47CF-BDFB-999D350FF16B} = {16D8846D-50CD-4FA1-8BF1-5A016670A941}
