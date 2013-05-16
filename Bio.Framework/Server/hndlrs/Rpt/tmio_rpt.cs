@@ -40,7 +40,7 @@ namespace Bio.Framework.Server {
         null,
         this.bioCode,
         Utl.NormalizeDir(this.BioSession.Cfg.IniPath) + "rpts\\",
-        Utl.NormalizeDir(this.BioSession.Cfg.WorkSpacePath) + "rpts\\",
+        Utl.NormalizeDir(this.BioSession.Cfg.WorkspacePath) + "rpts\\",
         this.BioSession.Cfg.dbSession,
         this.BioSession.CurSessionID,
         this.BioSession.Cfg.CurUser.USR_NAME,

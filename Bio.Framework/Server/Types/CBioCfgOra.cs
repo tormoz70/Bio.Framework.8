@@ -20,7 +20,7 @@
     public CBioCfgOra(String localPath, String appURL)
       : base(localPath, appURL) {
       //CDBFactory.OnAfterDBConnect += this.doOnAfterDBConnect;
-      this.dbSession = new DBSession(this.ConnectionString);
+      this.dbSession = new DBSession(this.ConnectionString, this.WorkspaceSchema);
       ((DBSession)this.dbSession).BeforeDBConnectEvent += this.doOnBeforeDBConnect;
       ((DBSession)this.dbSession).AfterDBConnectEvent += this.doOnAfterDBConnect;
     }

@@ -10,7 +10,7 @@ namespace Bio.Framework.Server {
       ABioHandler vMsg = CBioHandlerFactory.CreateBioHandler(context, ajaxRequest);
 
       if (vMsg.BioSession.Cfg.Debug) {
-        String headersFN = vMsg.BioSession.Cfg.WorkSpacePath + "\\debug\\hdrs(dir)_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
+        String headersFN = vMsg.BioSession.Cfg.WorkspacePath + "\\debug\\hdrs(dir)_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
         httpSrvUtl.saveHeaders(headersFN, context);
       }
 

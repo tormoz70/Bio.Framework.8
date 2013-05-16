@@ -66,8 +66,8 @@ namespace Bio.Helpers.Common.Types {
         CfgDoc = vcfgDoc,
         physicalApplicationPath = physicalApplicationPath,
         logFileName = logFileName,
-        connStr = Xml.getInnerText((XmlElement)vcfgDoc.DocumentElement.SelectSingleNode("connection")),
-        workPath = normPath(vphPath, Xml.getInnerText((XmlElement)vcfgDoc.DocumentElement.SelectSingleNode("work_path")))
+        connStr = Xml.getInnerText(vcfgDoc.DocumentElement, "connection", null),
+        workPath = normPath(vphPath, Xml.getInnerText(vcfgDoc.DocumentElement, "work_path", null))
       };
 
       var dbg = rslt.CfgDoc.DocumentElement.SelectSingleNode("debug") as XmlElement;

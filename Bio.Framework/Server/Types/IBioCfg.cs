@@ -29,7 +29,7 @@
     String IniURL { get; }
     String RptPath { get; }
     String BioSysTitle { get; }
-    String WorkSpacePath { get; }
+    String WorkspacePath { get; }
     String LocalIOCfgPath { get; }
     String TmpPath { get; }
     String RptLogsPath { get; }

@@ -51,6 +51,7 @@ CREATE OR REPLACE PACKAGE login$utl
     is_debug                    t_flag,     -- '1' - имеет роль debug
     is_admin                    t_flag,     -- '1' - имеет роль admin
     is_wsadmin                  t_flag,     -- '1' - имеет роль wsowner - владелец рабочего пространства
+    is_bioroot                  t_flag,     -- '1' - имеет роль bioroot
     extinfo                     t_text      -- Доп инф.
   );
   type usr_tbl is table of usr_rec;
@@ -106,7 +107,6 @@ CREATE OR REPLACE PACKAGE login$utl
 
     function usr_has_grant(p_usr_uid in t_uid, p_grant_uid in t_uid2) return number;
 
-    function usr_has_role(p_usr_uid in t_uid, p_role_uid in t_uid2) return number;
 
     procedure check_usr_is_locked(p_usr_login in varchar2);
 
@@ -117,6 +117,10 @@ CREATE OR REPLACE PACKAGE login$utl
     function generate_pwd return varchar2;
 
     procedure get_login(p_usr_uid in varchar2, v_login out varchar2, v_password out varchar2);
+
+    function check_login0(p_usr_login in t_usr_login, p_usr_pwd in t_usr_pwd) return t_uid;
+
+    function usr_has_role(p_usr_uid in t_uid, p_roles in varchar2) return number;
 
 END;
 /
@@ -130,10 +134,10 @@ IS
     "SYS_CURODEPUID" - ID организации;
     "SYS_TITLE" - Название системы;
   */
-  cs_key_line CONSTANT varchar2(10) := 'synchronizator';
+  cs_key_line CONSTANT varchar2(20) := 'synchronizator';
   cs_bioroot_login CONSTANT varchar2(10) := 'bioroot';
   cs_bioroot_pwd CONSTANT varchar2(10) := 'bio23';
-  cs_bioroot_email CONSTANT varchar2(10) := 'aw_gimckt@mail.ru';
+  cs_bioroot_email CONSTANT varchar2(20) := 'aw_gimckt@mail.ru';
 
   bad_login  EXCEPTION;
   PRAGMA EXCEPTION_INIT(bad_login, -20401);
@@ -298,6 +302,7 @@ IS
         from USR a
        where a.usr_login = lower(p_usr_login)
          and a.usr_pwd = encrypt_pwd(p_usr_pwd);
+      return v_usr_uid;
     exception
       when NO_DATA_FOUND then
       begin
@@ -346,12 +351,13 @@ IS
      where u.usr_uid = upper(p_usr_uid) and u.grant_uid = upper(p_grant_uid);
     return (case when v_exists = 0 then 0 else 1 end);
   end;
-  function usr_has_role(p_usr_uid in t_uid, p_role_uid in t_uid2) return number
+  function usr_has_role(p_usr_uid in t_uid, p_roles in varchar2) return number
   is
     v_exists pls_integer;
   begin
     select count(1) into v_exists from usrrle u
-     where u.usr_uid = upper(p_usr_uid) and u.role_uid = upper(p_role_uid);
+     where u.usr_uid = upper(p_usr_uid)
+       and u.role_uid in (select upper(trim(item)) from table(ai$utl.trans_list(p_roles, ';')));
     return (case when v_exists = 0 then 0 else 1 end);
   end;
 
@@ -396,11 +402,11 @@ IS
 
 
     --dbms_output.put_line('v_org_id:'||v_org_id||', v_group_id:'||v_group_id);
-    select a.*
+    /*select a.*
       into vOrgRec
       from usr u
-        inner join org a on a.org_id = u.org_id
-     where u.usr_uid = p_usr_uid;
+        left join org a on a.org_id = u.org_id
+     where u.usr_uid = upper(p_usr_uid);*/
 
     select
     u.usr_uid,                    -- uid пользователя
@@ -419,9 +425,10 @@ IS
     o.aname,                      -- имя подразделения пользователя
     o.adesc,                      -- описание подразделения пользователя
     o.usr_uid,                    -- UID пользователя - владельца рабочего пространства
-    '0' as is_debug,              -- '1' - имеет роль debug
-    '0' as is_admin,              -- '1' - имеет роль admin
-    '0' as is_wsadmin,            -- '1' - имеет роль wsowner - владелец рабочего пространства
+    usr_has_role(u.usr_uid, cs_role_debug) as is_debug,              -- '1' - имеет роль debug
+    usr_has_role(u.usr_uid, cs_role_admin) as is_admin,              -- '1' - имеет роль admin
+    usr_has_role(u.usr_uid, cs_role_wsadmin) as is_wsadmin,            -- '1' - имеет роль wsowner - владелец рабочего пространства
+    usr_has_role(u.usr_uid, cs_role_bioroot) as is_bioroot,            -- '1' - имеет роль bioroot
     extinfo                       -- Доп инф.
     into vRslt
     from usr u
@@ -430,7 +437,7 @@ IS
           inner join uworkspace w on w.workspace_id = o1.workspace_id
       ) o on o.org_id = u.org_id
 
-    where u.usr_uid = p_usr_uid;
+    where u.usr_uid = upper(p_usr_uid);
 
     pipe row(vRslt);
   end;

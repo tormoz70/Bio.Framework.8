@@ -10,6 +10,7 @@
 
   public abstract class CBioCfgBase {
     public String ConnectionString { get; protected set; }
+    public String WorkspaceSchema { get; protected set; }
 
     public Boolean Debug { get; private set; }
     public Boolean EnableDocInhirance { get; private set; }
@@ -21,7 +22,7 @@
     public String IniURL { get { return this.AppURL + "/ini/"; } }
     public String RptPath { get { return this.IniPath + "reports\\"; } }
     public String BioSysTitle { get; private set; }
-    public String WorkSpacePath { get; private set; }
+    public String WorkspacePath { get; private set; }
     public String LocalIOCfgPath { get; private set; }
     public String TmpPath { get; private set; }
     public String RptLogsPath { get; private set; }
@@ -38,41 +39,38 @@
       //this.LocalPath = Directory.GetParent(this.LocalPath).FullName;
       this.LocalPath = localPath;
       this.AppURL = appURL;
-      dom4cs v_doc = dom4cs.OpenDocument(this.IniPath + SrvConst.csCfgFileName);
+      var v_doc = dom4cs.OpenDocument(this.IniPath + SrvConst.csCfgFileName);
 
-      XmlNode vLoadOptions = v_doc.XmlDoc.DocumentElement.SelectSingleNode("iobjects/load_options");
-      this.DoReloadIOOnInit = (vLoadOptions != null) ? ((XmlElement)vLoadOptions).GetAttribute("reloadIOOnInit").Equals("true") : true;
-      this.EnableDocInhirance = (vLoadOptions != null) ? ((XmlElement)vLoadOptions).GetAttribute("enableDocInhirance").Equals("true") : true;
-      XmlNode vDbg = (XmlElement)v_doc.XmlDoc.DocumentElement.SelectSingleNode("debug[@enabled='true']");
-      this.Debug = (vDbg != null);
+      var v_loadOptions = v_doc.XmlDoc.DocumentElement.SelectSingleNode("iobjects/load_options");
+      this.DoReloadIOOnInit = (v_loadOptions != null) ? ((XmlElement)v_loadOptions).GetAttribute("reloadIOOnInit").Equals("true") : true;
+      this.EnableDocInhirance = (v_loadOptions != null) ? ((XmlElement)v_loadOptions).GetAttribute("enableDocInhirance").Equals("true") : true;
+      var v_dbg = (XmlElement)v_doc.XmlDoc.DocumentElement.SelectSingleNode("debug[@enabled='true']");
+      this.Debug = (v_dbg != null);
 
-      XmlElement vElmBioSysTitle = v_doc.XmlDoc.DocumentElement.SelectSingleNode("biosys_title") as XmlElement;
-      if (vElmBioSysTitle != null)
-        this.BioSysTitle = vElmBioSysTitle.InnerText;
+      this.BioSysTitle = Xml.getInnerText(v_doc.XmlDoc.DocumentElement, "biosys_title", null);
 
       /* Строка соединения с системой учета пользователей */
-      this.ConnectionString = null;
-      XmlElement vElmBioSysConnectionString = v_doc.XmlDoc.DocumentElement.SelectSingleNode("biosys_connection") as XmlElement;
-      if (vElmBioSysConnectionString != null)
-        this.ConnectionString = vElmBioSysConnectionString.InnerText;
+      this.ConnectionString = Xml.getInnerText(v_doc.XmlDoc.DocumentElement, "biosys_connection", null);
+      /* Рабочая схема */
+      this.WorkspaceSchema = Xml.getInnerText(v_doc.XmlDoc.DocumentElement, "work_space_schema", null);
 
       /* рабочий каталог - корень */
-      this.WorkSpacePath = null;
+      this.WorkspacePath = null;
       if (v_doc.XmlDoc.DocumentElement.SelectSingleNode("work_space_path") != null) {
-        this.WorkSpacePath = v_doc.XmlDoc.DocumentElement.SelectSingleNode("work_space_path").InnerText;
-        if (Directory.Exists(this.LocalPath + this.WorkSpacePath)) {
-          String[] vPath = Utl.SplitString(this.LocalPath, '\\');
-          String vAppNamePath = vPath[vPath.Length - 2];
-          this.WorkSpacePath = Path.GetFullPath(this.LocalPath + this.WorkSpacePath + vAppNamePath + "_ws") + "\\";
+        this.WorkspacePath = v_doc.XmlDoc.DocumentElement.SelectSingleNode("work_space_path").InnerText;
+        if (Directory.Exists(this.LocalPath + this.WorkspacePath)) {
+          var v_path = Utl.SplitString(this.LocalPath, '\\');
+          var v_appNamePath = v_path[v_path.Length - 2];
+          this.WorkspacePath = Path.GetFullPath(this.LocalPath + this.WorkspacePath + v_appNamePath + "_ws") + "\\";
         }
       }
-      if (this.WorkSpacePath == null)
-        this.WorkSpacePath = this.LocalPath;
+      if (this.WorkspacePath == null)
+        this.WorkspacePath = this.LocalPath;
 
       /* рабочие папки */
-      this.LocalIOCfgPath = this.WorkSpacePath + "locioini\\";
-      this.RptLogsPath = this.WorkSpacePath + "rpt_logs\\";
-      this.TmpPath = this.WorkSpacePath + "tmp\\";
+      this.LocalIOCfgPath = this.WorkspacePath + "locioini\\";
+      this.RptLogsPath = this.WorkspacePath + "rpt_logs\\";
+      this.TmpPath = this.WorkspacePath + "tmp\\";
     }
 
   }

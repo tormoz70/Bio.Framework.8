@@ -140,7 +140,7 @@ namespace Bio.Framework.Server {
         rptCfg.extAttrs.sessionID = this.BioSession.CurSessionID;
         rptCfg.extAttrs.userUID = this.BioSession.Cfg.CurUser.USR_UID;
         rptCfg.extAttrs.remoteIP = this.BioSession.CurSessionRemoteIP;
-        rptCfg.extAttrs.workPath = this.BioSession.Cfg.WorkSpacePath; //this.BioSession.Cfg.IniPath; //vIO.LocalPath;
+        rptCfg.extAttrs.workPath = this.BioSession.Cfg.WorkspacePath; //this.BioSession.Cfg.IniPath; //vIO.LocalPath;
         //rptCfg.extAttrs.
         foreach (Param vPrm in this.bioParams)
           rptCfg.inPrms.Add((Param)vPrm.Clone());

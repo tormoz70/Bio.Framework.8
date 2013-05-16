@@ -49,8 +49,6 @@ GRANT EXECUTE ON dbms_lock TO biosys
 /
 GRANT EXECUTE ON dbms_session TO biosys
 /
-GRANT EXECUTE ON dbms_session TO biosys
-/
 GRANT EXECUTE ON utl_smtp TO biosys
 /
 

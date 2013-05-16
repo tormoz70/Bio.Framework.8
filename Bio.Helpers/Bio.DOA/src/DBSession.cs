@@ -15,6 +15,7 @@ namespace Bio.Helpers.DOA {
     private readonly Dictionary<String, IDbTransaction> _storedTrans;
     private readonly Params _connStrItems;
     private readonly String _connStr;
+    private readonly String _workSpaceSchema;
     /// <summary>
     /// Событие перед соединением
     /// </summary>
@@ -28,12 +29,20 @@ namespace Bio.Helpers.DOA {
     /// Конструктор
     /// </summary>
     /// <param name="connStr"></param>
-    public DBSession(String connStr) {
+    /// <param name="workSpaceSchema"></param>
+    public DBSession(String connStr, String workSpaceSchema) {
       this._connStrItems = new Params();
       this._storedTrans = new Dictionary<String, IDbTransaction>();
       this._connStr = connStr;
       this._parsConnectionStr(this._connStr);
+      this._workSpaceSchema = workSpaceSchema;
     }
+
+    /// <summary>
+    /// Конструктор
+    /// </summary>
+    /// <param name="connStr"></param>
+    public DBSession(String connStr) : this(connStr, null) {}
 
     /// <summary>
     /// Создать копию
@@ -99,7 +108,7 @@ namespace Bio.Helpers.DOA {
     /// </summary>
     /// <returns></returns>
     public IDbConnection GetConnection() {
-      return DBConnectionFactory.Instance.CreateConnection(this._connStr, this._beforeDBConnectCallback, this._afterDBConnectCallback);
+      return DBConnectionFactory.Instance.CreateConnection(this._connStr, this._workSpaceSchema, this._beforeDBConnectCallback, this._afterDBConnectCallback);
     }
 
     /// <summary>

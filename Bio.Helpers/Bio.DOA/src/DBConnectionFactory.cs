@@ -61,7 +61,7 @@ namespace Bio.Helpers.DOA {
       return this._factory.CreateCommandBuilder();
     }
 
-    public IDbConnection CreateConnection(String connStr, Action<DBConnBeforeEventArgs> beforeDBConnectCallback, 
+    public IDbConnection CreateConnection(String connStr, String workspaceSchema, Action<DBConnBeforeEventArgs> beforeDBConnectCallback, 
                                                                   Action<DBConnAfterEventArgs> afterDBConnectCallback) {
       var v_connStr = connStr;
       if (beforeDBConnectCallback != null) {
@@ -83,6 +83,9 @@ namespace Bio.Helpers.DOA {
         } catch (Exception ex) {
           throw new EBioDBConnectionError("Ошибка соединения с базой данных. Сообщение сервера: " + ex.Message, ex);
         }
+        if (!String.IsNullOrEmpty(workspaceSchema)) {
+          SQLCmd.ExecuteScript(v_result, "ALTER SESSION SET CURRENT_SCHEMA=" + workspaceSchema.ToUpper(), null, 60);
+        }
         if (afterDBConnectCallback != null) {
           var args = new DBConnAfterEventArgs {
             Connection = v_result
@@ -94,7 +97,7 @@ namespace Bio.Helpers.DOA {
       return v_result;
     }
     public IDbConnection CreateConnection() {
-      return CreateConnection(null, null, null);
+      return CreateConnection(null, null, null, null);
     }
 
     public DbConnectionStringBuilder CreateConnectionStringBuilder() {
