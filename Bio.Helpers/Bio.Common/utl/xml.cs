@@ -1,13 +1,10 @@
 using System.Xml.XPath;
 
 namespace Bio.Helpers.Common {
-#if SILVERLIGHT
 	using System;
-#else
 	using System.Xml;
 	using System.IO;
 	using System.Xml.Serialization;
-#endif
 
   public class Xml {
 #if !SILVERLIGHT
