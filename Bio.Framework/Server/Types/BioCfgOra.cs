@@ -1,12 +1,8 @@
 ﻿namespace Bio.Framework.Server {
   using System;
-  using System.Data;
-  using System.Data.Common;
-  using System.Collections.Generic;
-  using System.Text;
-  using Bio.Helpers.Common.Types;
-  using Bio.Helpers.DOA;
-  using Bio.Helpers.Common;
+  using Helpers.Common.Types;
+  using Helpers.DOA;
+  using Helpers.Common;
 
   public enum BioDbSessionContextParams {
     [DbValue("SYS_CURUSERUID")]
@@ -91,24 +87,30 @@
     public override void Login(String login) {
       this.CurUser = null;
 
-      var vSQL = String.Format("begin {0}.check_login(:login, :usr_uid); end;", BIO_LOGIN_PKG);
+      var v_sql = String.Format("begin {0}.check_login(:login, :usr_uid); end;", BIO_LOGIN_PKG);
 
       var v_prms = new Params();
       v_prms.Add("login", login);
       v_prms.Add(new Param("usr_uid", (String)null, typeof(String), ParamDirection.Output));
-      SQLCmd.ExecuteScript(this.dbSession, vSQL, v_prms, DEFAULT_SQL_TIMEOUT);
+      SQLCmd.ExecuteScript(this.dbSession, v_sql, v_prms, DEFAULT_SQL_TIMEOUT);
       var v_usrUID = Params.FindParamValue(v_prms, "usr_uid") as String;
 
-      vSQL = String.Format("select * from table({0}.get_usr(:usr_uid))", BIO_LOGIN_PKG);
-      var v_cur = SQLCursor.CreateAndOpenCursor(this.dbSession, vSQL, new Params(new Param("usr_uid", v_usrUID)), DEFAULT_SQL_TIMEOUT);
+      v_sql = String.Format("select * from table({0}.get_usr(:usr_uid))", BIO_LOGIN_PKG);
+      var v_cur = SQLCursor.CreateAndOpenCursor(this.dbSession, v_sql, new Params(new Param("usr_uid", v_usrUID)), DEFAULT_SQL_TIMEOUT);
       try {
         if (v_cur.IsActive && v_cur.Next()) {
           this.CurUser = new BioUser();
 
           enumHelper.ForEachPropertyInfo(this.CurUser.GetType(), p => {
             var fld = enumHelper.GetAttributeByInfo<DbFieldAttribute>(p);
-            if(fld != null)
-              p.SetValue(this.CurUser, v_cur.GetOraValue(fld.Name), null);
+            if (fld != null) {
+              var val = v_cur.GetOraValue(fld.Name);
+              try {
+                p.SetValue(this.CurUser, val, null);
+              } catch (Exception ex) {
+                throw new Exception(String.Format("Ошибка при восстановлении значения поля [{0}] из [{1}]({2}). Сообщение: {3}", p.Name, val, fld.Name, ex.Message), ex);
+              }
+            }
           });
 
         } else {
