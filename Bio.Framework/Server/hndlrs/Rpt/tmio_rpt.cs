@@ -43,7 +43,7 @@ namespace Bio.Framework.Server {
         Utl.NormalizeDir(this.BioSession.Cfg.WorkspacePath) + "rpts\\",
         this.BioSession.Cfg.dbSession,
         this.BioSession.CurSessionID,
-        this.BioSession.Cfg.CurUser.USR_NAME,
+        this.BioSession.Cfg.CurUser.Login,
         this.BioSession.CurSessionRemoteIP,
         this.bioParams,
         !this.BioSession.Cfg.Debug
@@ -60,7 +60,7 @@ namespace Bio.Framework.Server {
         " :p_iobj_uid," +
         " :p_action); end;",
         new Params(
-          new Param("p_usr_id", this.BioSession.Cfg.CurUser.USR_UID),
+          new Param("p_usr_id", this.BioSession.Cfg.CurUser.UID),
           new Param("p_iobj_cd", "XLR-BUILDER"),
           new Param("p_iobj_uid", this.bioCode),
           new Param("p_action", v_action)

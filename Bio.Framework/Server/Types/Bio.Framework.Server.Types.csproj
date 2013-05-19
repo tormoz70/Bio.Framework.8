@@ -77,8 +77,8 @@
     <Compile Include="ABioHandlerBioTransacted.cs" />
     <Compile Include="ABioHandlerSys.cs" />
     <Compile Include="AHandlerBase.cs" />
-    <Compile Include="CBioCfgOra.cs" />
-    <Compile Include="CBioCfgBase.cs" />
+    <Compile Include="BioCfgOra.cs" />
+    <Compile Include="BioCfgBase.cs" />
     <Compile Include="CBioHandlerFactory.cs" />
     <Compile Include="IBioHandlerSelfAuth.cs" />
     <Compile Include="CRmtThreadHandler.cs" />

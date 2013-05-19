@@ -70,7 +70,7 @@
     /// <summary>
     /// Последний пользователь успешно прошедший идентификацию на сервере
     /// </summary>
-    public CBioUser CurUsr {
+    public BioUser CurUsr {
       get {
         return this._loginPrc.CurUsr;
       }

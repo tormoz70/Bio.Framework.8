@@ -118,9 +118,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.SL.cs" />
+    <Compile Include="types\BioUser.cs" />
     <Compile Include="types\CAjaxRequest.cs" />
     <Compile Include="types\CAjaxResponse.cs" />
-    <Compile Include="types\CBioUser.cs" />
     <Compile Include="types\CEventLog.cs" />
     <Compile Include="types\CFolderCfg.cs" />
     <Compile Include="types\CLogger.cs" />

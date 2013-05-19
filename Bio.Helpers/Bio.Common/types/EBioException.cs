@@ -212,7 +212,7 @@ namespace Bio.Helpers.Common.Types {
       String msg = null;
       String stackTrace = null;
       String applicationErrorMessage = null;
-      CBioUser vUsr = null;
+      BioUser vUsr = null;
       while (reader.TokenType != JsonToken.EndObject) {
 
         if (String.Equals((String)reader.Value, jsonUtl.TypePropertyName)) {
@@ -233,7 +233,7 @@ namespace Bio.Helpers.Common.Types {
         }
         if (String.Equals((String)reader.Value, "Usr")) {
           reader.Read();
-          vUsr = serializer.Deserialize<CBioUser>(reader);
+          vUsr = serializer.Deserialize<BioUser>(reader);
         }
         reader.Read();
       }

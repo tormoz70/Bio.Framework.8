@@ -89,7 +89,7 @@ namespace Bio.Framework.Server {
       String vLocIOIniFN = this.OwnerSession.Cfg.LocalIOCfgPath +
                            this.OwnerSession.CurSessionRemoteIP + "-" +
                            this.bioCode + "-" +
-                           this.OwnerSession.Cfg.CurUser.USR_NAME + ".xml";
+                           this.OwnerSession.Cfg.CurUser.Login + ".xml";
       if(File.Exists(vLocIOIniFN)) {
         dom4cs vLocIOIniDoc = dom4cs.OpenDocument(vLocIOIniFN);
         XmlElement vLocIniSrc = vLocIOIniDoc.XmlDoc.DocumentElement;

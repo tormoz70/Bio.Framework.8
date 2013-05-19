@@ -29,7 +29,7 @@ namespace Bio.Framework.Server {
     public BioSession(String localPath, String appURL) {
 			this.CreationDT = DateTime.Now;
       this.FIOS = new Hashtable();
-      this.Cfg = new CBioCfgOra(localPath, appURL);
+      this.Cfg = new BioCfgOra(localPath, appURL);
       //this.FDBSession = new DBSession(this.Cfg.ConnectionString, null, this.Cfg.doOnAfterDBConnect);
 
     }

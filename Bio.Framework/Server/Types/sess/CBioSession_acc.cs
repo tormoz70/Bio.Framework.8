@@ -42,7 +42,7 @@ namespace Bio.Framework.Server {
     private void chekLogin(String login) {
       try {
         this.Cfg.Login(login);
-        this.Cfg.CurUser.USR_IP = this.CurSessionRemoteIP;
+        this.Cfg.CurUser.AddressIP = this.CurSessionRemoteIP;
       } catch (EBioException ex) {
         switch (ex.ErrorCode) {
           case 20401: throw new EBioBadUser();
@@ -61,12 +61,11 @@ namespace Bio.Framework.Server {
         if (brq != null)
           v_prms = brq.bioParams;
         if (v_prms != null) {
-
-          v_prms.SetValue(CBioCfgOra.csSYS_CurUserUID_PARAM_NAME, this.Cfg.CurUser.USR_UID);
-          v_prms.SetValue(CBioCfgOra.csSYS_CurUserIP_PARAM_NAME, this.Cfg.CurUser.USR_IP);
-          v_prms.SetValue(CBioCfgOra.csSYS_CurUserRoles_PARAM_NAME, this.Cfg.CurUser.Role);
-          v_prms.SetValue(CBioCfgOra.csSYS_CurODepUID_PARAM_NAME, this.Cfg.CurUser.ODEP_UID);
-          v_prms.SetValue(CBioCfgOra.csSYS_TITLE_PARAM_NAME, this.Cfg.BioSysTitle);
+          v_prms.SetValue(enumHelper.GetAttributeByValue<DbValueAttribute>(BioDbSessionContextParams.UserUID).Value, this.Cfg.CurUser.UID);
+          v_prms.SetValue(enumHelper.GetAttributeByValue<DbValueAttribute>(BioDbSessionContextParams.UserIP).Value, this.Cfg.CurUser.AddressIP);
+          v_prms.SetValue(enumHelper.GetAttributeByValue<DbValueAttribute>(BioDbSessionContextParams.UserRoles).Value, this.Cfg.CurUser.Roles);
+          v_prms.SetValue(enumHelper.GetAttributeByValue<DbValueAttribute>(BioDbSessionContextParams.OrgID).Value, this.Cfg.CurUser.OrgID);
+          v_prms.SetValue(enumHelper.GetAttributeByValue<DbValueAttribute>(BioDbSessionContextParams.AppTitle).Value, this.Cfg.BioSysTitle);
         }
       }
     }
@@ -79,13 +78,13 @@ namespace Bio.Framework.Server {
           if (vQLoginPrm != null) {
             this.chekLogin(vQLoginPrm.ValueAsString());
             this.FLoginState = TBioLoginState.ssLoggedOn;
-            this.regConn(this.Cfg.CurUser.USR_NAME, TRemoteConnectionStatus.rcsOk);
+            this.regConn(this.Cfg.CurUser.Login, TRemoteConnectionStatus.rcsOk);
           } else {
             var vHLoginPrm = this.CurBioHandler.QParams.ParamByName(Utl.HASHLOGIN_PARNAME, true);
             if (vHLoginPrm != null) {
               this.chekLogin(vHLoginPrm.ValueAsString());
               this.FLoginState = TBioLoginState.ssLoggedOn;
-              this.regConn(this.Cfg.CurUser.USR_NAME, TRemoteConnectionStatus.rcsOk);
+              this.regConn(this.Cfg.CurUser.Login, TRemoteConnectionStatus.rcsOk);
             }
           }
         }
@@ -109,7 +108,7 @@ namespace Bio.Framework.Server {
             this.chekLogin(vCurLogin);
 
             if(this.FLoginState == TBioLoginState.ssLogginIn) {
-              this.regConn(this.Cfg.CurUser.USR_NAME, TRemoteConnectionStatus.rcsOk);
+              this.regConn(this.Cfg.CurUser.Login, TRemoteConnectionStatus.rcsOk);
               throw new EBioOk(this.Cfg.CurUser);
             }
 

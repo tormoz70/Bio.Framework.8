@@ -187,10 +187,10 @@
     /// <summary>
     /// Последний пользователь успешно прошедший идентификацию на сервере
     /// </summary>
-    public CBioUser CurUsr { get; private set; }
+    public BioUser CurUsr { get; private set; }
 
-    public void assignCurUser(CBioUser usr) {
-      this.CurUsr = (CBioUser)usr.Clone();
+    public void assignCurUser(BioUser usr) {
+      this.CurUsr = (BioUser)usr.Clone();
     }
   }
 }

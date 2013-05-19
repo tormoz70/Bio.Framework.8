@@ -68,7 +68,7 @@ namespace Bio.Helpers.Common {
     public static Type ConvertStrToType(String xmlName) {
       if (!String.IsNullOrEmpty(xmlName)) {
         foreach(var fi in typeof(FieldType).GetFields()) {
-          var attr = enumHelper.GetAttributeByField<MappingAttribute>(fi);
+          var attr = enumHelper.GetAttributeByInfo<MappingAttribute>(fi);
           if((attr != null) && (attr.XmlName.Equals(xmlName)))
             return attr.ToNetType;
         }
@@ -86,7 +86,7 @@ namespace Bio.Helpers.Common {
 
       if (type != null) {
         foreach (var fi in typeof(FieldType).GetFields()) {
-          var attr = enumHelper.GetAttributeByField<MappingAttribute>(fi);
+          var attr = enumHelper.GetAttributeByInfo<MappingAttribute>(fi);
           if (attr != null) {
             if (((attr.FromNetTypes != null) && attr.FromNetTypes.Any(t => t.Equals(type))) ||
                 ((attr.FromNetTypes == null) && (attr.ToNetType.Equals(type))))
@@ -106,7 +106,7 @@ namespace Bio.Helpers.Common {
     public static FieldType ConvertStrToFieldType(String xmlName) {
       if (!String.IsNullOrEmpty(xmlName)) {
         foreach (var fi in typeof(FieldType).GetFields()) {
-          var attr = enumHelper.GetAttributeByField<MappingAttribute>(fi);
+          var attr = enumHelper.GetAttributeByInfo<MappingAttribute>(fi);
           if ((attr != null) && (attr.XmlName.Equals(xmlName)))
             return (FieldType)fi.GetValue(null);
         }
