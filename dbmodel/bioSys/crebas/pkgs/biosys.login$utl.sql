@@ -6,7 +6,7 @@ CREATE OR REPLACE PACKAGE login$utl
   */
 
   cs_role_bioroot constant varchar2(64) := 'BIOROOT';
-  cs_role_debug constant varchar2(64) := 'DEBUG';
+  cs_role_debug constant varchar2(64) := 'DEBUGGER';
   cs_role_admin constant varchar2(64) := 'ADMIN';
   cs_role_wsadmin constant varchar2(64) := 'WSADMIN';
   cs_role_user constant varchar2(64) := 'USER';
@@ -33,25 +33,28 @@ CREATE OR REPLACE PACKAGE login$utl
   csBIO_CONTEXT varchar2(32) := 'BIO_CONTEXT';
   type usr_rec is record(
     usr_uid                     t_uid,      -- uid пользователя
-    usr_name                    t_usr_login,-- Логин пользователя
+    usr_login                   t_usr_login,-- Логин пользователя
     fio_fam                     t_usr_fio,  -- Фамилия пользователя
-    fio_fname                   t_usr_fio,  -- Имя пользователя
-    fio_sname                   t_usr_fio,  -- Отчество пользователя
+    fio_name                    t_usr_fio,  -- Имя пользователя
+    fio_mname                   t_usr_fio,  -- Отчество пользователя
     reg_date                    date,       -- Дата регистрации
     usr_roles                   t_list,     -- список ролей пользователя (разделитель ';')
     usr_grants                  t_list,     -- список разрешений пользователя (разделитель ';')
     email_addr                  t_list,     -- список эл. адресов пользователя
     usr_phone                   t_list,     -- список телефонов пользователя
-    org_id                      t_id,       -- id подразделения пользователя
-    org_path                    t_list,     -- путь подразделения пользователя (описание)
-    org_uid_path                t_list,     -- путь подразделения пользователя (ids)
+    org_id                      t_uid,      -- id подразделения пользователя
     org_name                    t_text,     -- имя подразделения пользователя
     org_desc                    t_text,     -- описание подразделения пользователя
-    owner_uid                   t_uid,      -- UID пользователя - владельца рабочего пространства
-    is_debug                    t_flag,     -- '1' - имеет роль debug
-    is_admin                    t_flag,     -- '1' - имеет роль admin
-    is_wsadmin                  t_flag,     -- '1' - имеет роль wsowner - владелец рабочего пространства
-    is_bioroot                  t_flag,     -- '1' - имеет роль bioroot
+    org_path                    t_list,     -- (вычисляемое) - путь подразделения пользователя (описание)
+    org_ids_path                t_list,     -- (вычисляемое) - путь подразделения пользователя (ids)
+    owner_uid                   t_uid,      -- (вычисляемое) - UID пользователя - владельца рабочего пространства
+    confirmed                   t_flag,     -- Согласован
+    garbaged                    t_flag,     -- В корзине
+    blocked                     t_flag,     -- (вычисляемое) - Заблокирован
+    is_debug                    t_flag,     -- (вычисляемое) - '1' - имеет роль debug
+    is_admin                    t_flag,     -- (вычисляемое) - '1' - имеет роль admin
+    is_wsadmin                  t_flag,     -- (вычисляемое) - '1' - имеет роль wsowner - владелец рабочего пространства
+    is_bioroot                  t_flag,     -- (вычисляемое) - '1' - имеет роль bioroot
     extinfo                     t_text      -- Доп инф.
   );
   type usr_tbl is table of usr_rec;
@@ -95,7 +98,7 @@ CREATE OR REPLACE PACKAGE login$utl
 
     function get_org_idpath(p_org_id in t_id) return t_list;
 
-    procedure check_login(p_login in t_login, v_uid out t_uid, v_roles out varchar2);
+    procedure check_login(p_login in t_login, v_uid out t_uid);
 
     procedure init_defaults_data;
 
@@ -315,16 +318,13 @@ IS
     end;
   end;
 
-  procedure check_login(p_login in t_login, v_uid out t_uid, v_roles out varchar2)
+  procedure check_login(p_login in t_login, v_uid out t_uid)
   is
     v_usr_name varchar2(32) := null;
     v_usr_pwd varchar2(32) := null;
   begin
     ai$utl.pars_login(p_login, v_usr_name, v_usr_pwd);
-
     v_uid := check_login0(v_usr_name, v_usr_pwd);
-
-    v_roles := get_usr_roles(v_uid);
   end;
 
   function ugrant_exists(p_grant_uid in t_uid2) return number
@@ -420,15 +420,18 @@ IS
     u.email_addr,                 -- список эл. адресов пользователя
     u.usr_phone,                  -- список телефонов пользователя
     u.org_id,                     -- id подразделения пользователя
-    get_org_path(u.org_id),       -- путь подразделения пользователя (описание)
-    get_org_idpath(u.org_id),     -- путь подразделения пользователя (ids)
     o.aname,                      -- имя подразделения пользователя
     o.adesc,                      -- описание подразделения пользователя
-    o.usr_uid,                    -- UID пользователя - владельца рабочего пространства
-    usr_has_role(u.usr_uid, cs_role_debug) as is_debug,              -- '1' - имеет роль debug
-    usr_has_role(u.usr_uid, cs_role_admin) as is_admin,              -- '1' - имеет роль admin
-    usr_has_role(u.usr_uid, cs_role_wsadmin) as is_wsadmin,            -- '1' - имеет роль wsowner - владелец рабочего пространства
-    usr_has_role(u.usr_uid, cs_role_bioroot) as is_bioroot,            -- '1' - имеет роль bioroot
+    get_org_path(u.org_id),       -- (вычисляемое) - путь подразделения пользователя (описание)
+    get_org_idpath(u.org_id),     -- (вычисляемое) - путь подразделения пользователя (ids)
+    o.usr_uid,                    -- (вычисляемое) - UID пользователя - владельца рабочего пространства
+    confirmed,                    -- Согласован
+    garbaged,                     -- В корзине
+    '0',                          -- (вычисляемое) - Заблокирован
+    usr_has_role(u.usr_uid, cs_role_debug) as is_debug,              -- (вычисляемое) - '1' - имеет роль debug
+    usr_has_role(u.usr_uid, cs_role_admin) as is_admin,              -- (вычисляемое) - '1' - имеет роль admin
+    usr_has_role(u.usr_uid, cs_role_wsadmin) as is_wsadmin,          -- (вычисляемое) - '1' - имеет роль wsowner - владелец рабочего пространства
+    usr_has_role(u.usr_uid, cs_role_bioroot) as is_bioroot,          -- (вычисляемое) - '1' - имеет роль bioroot
     extinfo                       -- Доп инф.
     into vRslt
     from usr u
@@ -495,9 +498,9 @@ IS
 
     -- создаем системного пользователя "bioroot"
     insert into usr(usr_uid, org_id, workspace_id, usr_login, usr_pwd, fio_fam, fio_fname, fio_sname,
-       reg_date, blocked, email_addr, usr_phone, confirmed, garbaged, extinfo)
+       reg_date, email_addr, usr_phone, confirmed, garbaged, extinfo)
     values(sys_guid, null, v_biows_id, cs_bioroot_login, encrypt_pwd(cs_bioroot_pwd), '-', '-', '-',
-       sysdate, '0', cs_bioroot_email, '-', '1', '0', '')
+       sysdate, cs_bioroot_email, '-', '1', '0', '')
     returning usr_uid into v_bioroot_uid;
 
     -- назначем владельца пространства

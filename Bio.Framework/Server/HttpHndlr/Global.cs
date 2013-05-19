@@ -63,7 +63,7 @@ namespace Bio.Framework.Server {
         if(bioSession != null) {
           bioSession.DoFinalize();
           if ((bioSession.Cfg != null) && (bioSession.Cfg.CurUser != null)) {
-            bioSession.Cfg.regConnect(bioSession.Cfg.CurUser.USR_NAME,
+            bioSession.Cfg.regConnect(bioSession.Cfg.CurUser.Login,
                                       bioSession.CurSessionID,
                                       bioSession.CurSessionRemoteIP,
                                       bioSession.CurSessionRemoteHostName,

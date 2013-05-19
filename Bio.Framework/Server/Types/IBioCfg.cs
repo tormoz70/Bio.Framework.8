@@ -33,7 +33,7 @@
     String LocalIOCfgPath { get; }
     String TmpPath { get; }
     String RptLogsPath { get; }
-    CBioUser CurUser { get; }
+    BioUser CurUser { get; }
     IDBSession dbSession { get; }
     void regConnect(String pUser,
                     String pSessionID,
@@ -41,7 +41,7 @@
                     String pSessionRemoteHost,
                     String pSessionRemoteClient,
                     TRemoteConnectionStatus pStatus);
-    void regUser(CBioUser pUser);
+    void regUser(BioUser pUser);
     void Login(String pUser);
     //String getDBConnStr(String pID);
     String ConnectionString { get; }

@@ -457,7 +457,7 @@ namespace Bio.Framework.Client.SL {
           if ((rsp != null) && (rsp.gCfg != null))
             BioGlobal.Debug = rsp.gCfg.Debug;
           if (this.AjaxMng.CurUsr != null) {
-            BioGlobal.CurUsrIsDebugger = this.AjaxMng.CurUsr.isBioAdmin() || this.AjaxMng.CurUsr.isDebugger();
+            BioGlobal.CurUsrIsDebugger = this.AjaxMng.CurUsr.IsBioRoot() || this.AjaxMng.CurUsr.IsDebugger();
             BioGlobal.CurSessionIsLoggedOn = true;
           }
           if (callback != null) callback(this, args);

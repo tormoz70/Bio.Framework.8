@@ -102,10 +102,10 @@
     public EBioOk()
       : base() {
     }
-    public CBioUser Usr { get; set; }
-    public EBioOk(CBioUser pUsr)
+    public BioUser Usr { get; set; }
+    public EBioOk(BioUser pUsr)
       : base() {
-      this.Usr = (CBioUser)pUsr.Clone();
+      this.Usr = (BioUser)pUsr.Clone();
       //this.Usr.USR_PWD = null;
       //this.Usr.ConnectionString = null;
     }

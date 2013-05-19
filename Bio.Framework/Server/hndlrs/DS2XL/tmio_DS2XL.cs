@@ -128,27 +128,27 @@ namespace Bio.Framework.Server {
           vIsDefaultTempl = false;
         }
 
-        CXLReportConfig rptCfg = new CXLReportConfig();
-        rptCfg.fullCode = vIO.bioCode;
-        rptCfg.extAttrs.roles = "all";
-        rptCfg.debug = false;
-        rptCfg.extAttrs.liveScripts = false;
-        rptCfg.templateAdv = vSeldTempl;
-        rptCfg.title = vTitle;
-        rptCfg.filenameFmt = "{$code}_{$now}";
-        rptCfg.dbSession = this.BioSession.Cfg.dbSession;
-        rptCfg.extAttrs.sessionID = this.BioSession.CurSessionID;
-        rptCfg.extAttrs.userUID = this.BioSession.Cfg.CurUser.USR_UID;
-        rptCfg.extAttrs.remoteIP = this.BioSession.CurSessionRemoteIP;
-        rptCfg.extAttrs.workPath = this.BioSession.Cfg.WorkspacePath; //this.BioSession.Cfg.IniPath; //vIO.LocalPath;
+        var v_rptCfg = new CXLReportConfig();
+        v_rptCfg.fullCode = vIO.bioCode;
+        v_rptCfg.extAttrs.roles = "all";
+        v_rptCfg.debug = false;
+        v_rptCfg.extAttrs.liveScripts = false;
+        v_rptCfg.templateAdv = vSeldTempl;
+        v_rptCfg.title = vTitle;
+        v_rptCfg.filenameFmt = "{$code}_{$now}";
+        v_rptCfg.dbSession = this.BioSession.Cfg.dbSession;
+        v_rptCfg.extAttrs.sessionID = this.BioSession.CurSessionID;
+        v_rptCfg.extAttrs.userUID = this.BioSession.Cfg.CurUser.UID;
+        v_rptCfg.extAttrs.remoteIP = this.BioSession.CurSessionRemoteIP;
+        v_rptCfg.extAttrs.workPath = this.BioSession.Cfg.WorkspacePath; //this.BioSession.Cfg.IniPath; //vIO.LocalPath;
         //rptCfg.extAttrs.
-        foreach (Param vPrm in this.bioParams)
-          rptCfg.inPrms.Add((Param)vPrm.Clone());
-        rptCfg.debug = Xml.getAttribute<Boolean>(vIO.IniDocument.XmlDoc.DocumentElement, "debug", false);
-        rptCfg.dss.Add(CXLReportDSConfig.DecodeFromBio(
+        foreach (var v_prm in this.bioParams)
+          v_rptCfg.inPrms.Add((Param)v_prm.Clone());
+        v_rptCfg.debug = Xml.getAttribute<Boolean>(vIO.IniDocument.XmlDoc.DocumentElement, "debug", false);
+        v_rptCfg.dss.Add(CXLReportDSConfig.DecodeFromBio(
           vIO.IniDocument.XmlDoc.DocumentElement,
-          vIO.LocalPath, "cdsRpt", "mRng", rptCfg.title, null));
-        instance = new CXLReport(vIO, rptCfg, this.Context);
+          vIO.LocalPath, "cdsRpt", "mRng", v_rptCfg.title, null));
+        instance = new CXLReport(vIO, v_rptCfg, this.Context);
         if(vIsDefaultTempl)
           (instance as CXLReport).OnPrepareTemplate += new DlgXLReportOnPrepareTemplate(this.DoOnPrepareTemplate);
       }

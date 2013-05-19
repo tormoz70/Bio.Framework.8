@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 
 namespace Bio.Helpers.Common {
   public static class enumHelper {
+
 #if SILVERLIGHT
     private static Dictionary<Type, IEnumerable> _enumCache = new Dictionary<Type, IEnumerable>();
 
@@ -96,42 +97,69 @@ namespace Bio.Helpers.Common {
     //}
 #endif
 
-    public static FieldInfo GetFieldInfo(Object val) {
-      if (val != null) {
-        Type valType = val.GetType();
-        String valStr = Enum.GetName(valType, val);
-        FieldInfo[] fia = valType.GetFields();
-        foreach (FieldInfo f in fia) {
-          String fValStr = f.Name;
-          if (String.Equals(fValStr, valStr, StringComparison.CurrentCulture))
+    /// <summary>
+    /// Выполняет action для каждого поля
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="action"></param>
+    public static void ForEachFieldInfo(Type type, Action<FieldInfo> action) {
+        foreach (var v in type.GetFields()) {
+          if (action != null)
+            action(v);
+        }
+    }
+    /// <summary>
+    /// Выполняет action для каждого свойства
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="action"></param>
+    public static void ForEachPropertyInfo(Type type, Action<PropertyInfo> action) {
+      foreach (var v in type.GetProperties()) {
+        if (action != null)
+          action(v);
+      }
+    }
+
+    /// <summary>
+    /// Возвращает FieldInfo для val
+    /// </summary>
+    /// <param name="value">Значение enum</param>
+    /// <returns></returns>
+    public static FieldInfo GetFieldInfo(Object value) {
+      if (value != null) {
+        var v_type = value.GetType();
+        var v_str = Enum.GetName(v_type, value);
+        var fia = v_type.GetFields();
+        foreach (var f in fia) {
+          if (String.Equals(f.Name, v_str, StringComparison.CurrentCulture))
             return f;
         }
         return null;
-      } else
-        return null;
+      }
+      return null;
     }
+
     /// <summary>
     /// Возвращет строковое представление значения из enum 
     /// </summary>
     /// <param name="value">Значение enum</param>
-    /// <param name="type">Тип enum</param>
     /// <param name="getFullName">Вернуть полное имя с типом. По умолчанию True.</param>
     /// <returns></returns>
     public static String NameOfValue(Object value, Boolean getFullName) {
       if (value != null) {
-        Type type = value.GetType();
-        FieldInfo[] fis = type.GetFields();
-        foreach (FieldInfo f in fis) {
-          Object vVal = null;
+        var type = value.GetType();
+        var fis = type.GetFields();
+        foreach (var f in fis) {
+          Object v_val = null;
           try {
-            vVal = Enum.Parse(type, f.Name, false);
+            v_val = Enum.Parse(type, f.Name, false);
           } catch { }
-          if (vVal == value)
+          if (v_val == value)
             return ((getFullName) ? (type + ".") : "") + f.Name;
         }
         return null;
-      }else
-        return null;
+      }
+      return null;
     }
 
     /// <summary>
@@ -143,68 +171,99 @@ namespace Bio.Helpers.Common {
       return NameOfValue(value, true);
     }
 
+    /// <summary>
+    /// Возвращет значения атрибута Description
+    /// </summary>
+    /// <param name="value">Значение enum</param>
+    /// <returns></returns>
     public static String GetFieldDesc(Object value) {
-      DescriptionAttribute a = GetAttributeByValue<DescriptionAttribute>(value);
+      var a = GetAttributeByValue<DescriptionAttribute>(value);
       return a.Description;
     }
 
+    /// <summary>
+    /// Возвращет FieldInfo поля типа T по значению атрибута Description поля
+    /// </summary>
+    /// <param name="attrValue"></param>
+    /// <param name="compareParam"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
     public static FieldInfo GetFieldByDescAttr<T>(String attrValue, StringComparison compareParam) {
-      FieldInfo[] fia = typeof(T).GetFields();
-      foreach (FieldInfo f in fia) {
-        DescriptionAttribute a = GetAttributeByField<DescriptionAttribute>(f);
+      var fia = typeof(T).GetFields();
+      foreach (var f in fia) {
+        var a = GetAttributeByInfo<DescriptionAttribute>(f);
         if ((a != null) && String.Equals(a.Description, attrValue, compareParam))
           return f;
       }
       return null;
     }
 
-    public static T GetAttributeByField<T>(ICustomAttributeProvider fieldInfo) {
-      Object[] attrs = fieldInfo.GetCustomAttributes(false);
+    /// <summary>
+    /// Возврящает атрибут типа T для поля или свойсва
+    /// </summary>
+    /// <param name="info">FieldInfo или PropertyInfo</param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static T GetAttributeByInfo<T>(ICustomAttributeProvider info) {
+      var attrs = info.GetCustomAttributes(false);
       return attrs.OfType<T>().FirstOrDefault();
     }
 
+    /// <summary>
+    /// Возврящает атрибут типа T для значения emum
+    /// </summary>
+    /// <param name="value">Значение enum</param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
     public static T GetAttributeByValue<T>(Object value) {
       if (value != null) {
-        Type valType = value.GetType();
-        ICustomAttributeProvider fieldInfo = GetFieldInfo(value);
-        Object[] attrs = fieldInfo.GetCustomAttributes(false);
+        ICustomAttributeProvider v_fieldInfo = GetFieldInfo(value);
+        var attrs = v_fieldInfo.GetCustomAttributes(false);
         return attrs.OfType<T>().FirstOrDefault();
-      } else
-        return default(T);
+      }
+      return default(T);
     }
 
     /// <summary>
-    /// 
+    /// Возврящает значение emum типа T по строковому имени значения
     /// </summary>
     /// <typeparam name="T">Тип параметра</typeparam>
     /// <param name="valueName">Значение параметра как строка</param>
+    /// <param name="compareParam"></param>
     /// <returns></returns>
     public static T GetFieldValueByValueName<T>(String valueName, StringComparison compareParam) {
-      FieldInfo[] fia = typeof(T).GetFields();
-      foreach (FieldInfo f in fia) {
-        String valStr = f.Name;
-        if (String.Equals(valStr, valueName, compareParam))
-          return (T)Enum.Parse(typeof(T), valStr, false);
+      var fia = typeof(T).GetFields();
+      foreach (var f in fia) {
+        var v_str = f.Name;
+        if (String.Equals(v_str, valueName, compareParam))
+          return (T)Enum.Parse(typeof(T), v_str, false);
       }
 
       return default(T);
 
     }
 
+    /// <summary>
+    /// Возврящает значение emum типа T по строковому значению атрибута Description
+    /// </summary>
+    /// <param name="attrValue"></param>
+    /// <param name="compareParam"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
     public static T GetFieldValueByDescAttr<T>(String attrValue, StringComparison compareParam) {
-      FieldInfo fi = GetFieldByDescAttr<T>(attrValue, StringComparison.CurrentCulture);
+      var fi = GetFieldByDescAttr<T>(attrValue, StringComparison.CurrentCulture);
       if (fi != null) {
         return (T)fi.GetValue(null);
-      } else
-        return default(T);
+      }
+      return default(T);
     }
 
   }
 
   public class EnumWrapper {
-    private String _name = null;
+    private String _name;
     public String Name { get { return this._name; } set { this._name = value; } }
-    private Object _value = null;
+    private Object _value;
     public Object Value { get { return this._value; } set { this._value = value; } }
   }
 }

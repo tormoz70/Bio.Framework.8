@@ -8,7 +8,7 @@
   using Bio.Helpers.Common;
   using System.Reflection;
 
-  public abstract class CBioCfgBase {
+  public abstract class BioCfgBase {
     public String ConnectionString { get; protected set; }
     public String WorkspaceSchema { get; protected set; }
 
@@ -27,11 +27,11 @@
     public String TmpPath { get; private set; }
     public String RptLogsPath { get; private set; }
 
-    public CBioUser CurUser { get; protected set; }
+    public BioUser CurUser { get; protected set; }
 
     public abstract void Login(String login);
 
-    public CBioCfgBase(String localPath, String appURL) {
+    public BioCfgBase(String localPath, String appURL) {
       //Assembly asmb0 = Assembly.GetEntryAssembly();
       //Assembly asmb1 = Assembly.GetCallingAssembly();
       //Assembly asmb2 = Assembly.GetExecutingAssembly();
