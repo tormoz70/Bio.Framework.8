@@ -1,4 +1,4 @@
-CREATE OR REPLACE PACKAGE login$utl
+CREATE OR REPLACE PACKAGE biosys.login$utl
   IS
   /*
   Данный пакет предназначен для работы системы BioSys
@@ -125,9 +125,16 @@ CREATE OR REPLACE PACKAGE login$utl
 
     function usr_has_role(p_usr_uid in t_uid, p_roles in varchar2) return number;
 
+    procedure updins_role(
+      p_role_uid in urole.role_uid%type,
+      p_aname in urole.aname%type,
+      p_is_sys in urole.is_sys%type,
+      p_adesc in urole.adesc%type
+    );
+
 END;
 /
-CREATE OR REPLACE PACKAGE BODY login$utl
+CREATE OR REPLACE PACKAGE BODY biosys.login$utl
 IS
   /*
     Это глобальные переменные в контексте текущего соединения
@@ -472,24 +479,37 @@ IS
     return sys_context(csBIO_CONTEXT, p_name);
   end;
 
+  procedure updins_role(
+    p_role_uid in urole.role_uid%type,
+    p_aname in urole.aname%type,
+    p_is_sys in urole.is_sys%type,
+    p_adesc in urole.adesc%type
+  )
+  is
+  begin
+    update UROLE r set
+      r.aname = p_aname,
+      r.is_sys = p_is_sys,
+      r.adesc = p_adesc
+    where r.role_uid = upper(p_role_uid);
+    if sql%notfound then
+      insert into urole(role_uid, aname, is_sys, adesc)
+        values(upper(p_role_uid), p_aname, p_is_sys, p_adesc);
+    end if;
+  end;
+
   procedure init_defaults_data
   is
     v_bioroot_uid t_uid;
     v_biows_id t_id;
   begin
     -- заполняем справочник ролей
-    insert into urole(role_uid, aname, is_sys, adesc)
-      values(cs_role_bioroot, cs_role_bioroot, '1', 'System role fo superuser BIOROOT');
-    insert into urole(role_uid, aname, is_sys, adesc)
-      values(cs_role_debug, 'Тестировщик', '0', 'Доступ к отладочной информации');
-    insert into urole(role_uid, aname, is_sys, adesc)
-      values(cs_role_admin, 'Суперпользователь', '0', 'Неограниченный доступ ко всем функциям системы, кроме управления доступом');
-    insert into urole(role_uid, aname, is_sys, adesc)
-      values(cs_role_wsadmin, 'Владелец', '0', 'Неограниченный доступ ко всем функциям системы, включая управления доступом');
-    insert into urole(role_uid, aname, is_sys, adesc)
-      values(cs_role_user, 'Пользователь', '0', 'Обычный пользователь');
-    insert into urole(role_uid, aname, is_sys, adesc)
-      values(cs_role_guest, 'Гость', '0', 'Гость');
+    updins_role(cs_role_bioroot, cs_role_bioroot, '1', 'System role fo superuser BIOROOT');
+    updins_role(cs_role_debug, 'Тестировщик', '0', 'Доступ к отладочной информации');
+    updins_role(cs_role_admin, 'Суперпользователь', '0', 'Неограниченный доступ ко всем функциям системы, кроме управления доступом');
+    updins_role(cs_role_wsadmin, 'Владелец', '0', 'Неограниченный доступ ко всем функциям системы, включая управления доступом');
+    --updins_role(cs_role_user, 'Пользователь', '0', 'Обычный пользователь');
+    --updins_role(cs_role_guest, 'Гость', '0', 'Гость');
 
     -- создаем системного пространство "biows"
     insert into uworkspace(workspace_id, usr_uid, aname, adesc)
