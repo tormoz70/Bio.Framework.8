@@ -569,10 +569,63 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    public void SelectFirst() {
+    /// <summary>
+    /// Переводит курсор на первую запись в текущем DS на клиенте
+    /// </summary>
+    public void SelectFirstLocal() {
       this._callOnShowDelaied(() => {
         this.SelectedItem = this._jsClient.DS.FirstOrDefault();
       });
+    }
+
+    /// <summary>
+    /// Переводит запись на следующую строку в текущем DS на клиенте
+    /// </summary>
+    /// <returns>true если изменилась</returns>
+    public Boolean SelectNextLocal() {
+      if (this.SelectedItem == null) {
+        this.SelectFirstLocal();
+        return true;
+      }
+
+      var v_storeSelectedIndex = this.SelectedIndex;
+      this.SelectedIndex++;
+      return v_storeSelectedIndex < this.SelectedIndex;
+    }
+
+    /// <summary>
+    /// Переводит запись на предыдущую строку в текущем DS на клиенте
+    /// </summary>
+    /// <returns>true если изменилась</returns>
+    public Boolean SelectPrivLocal() {
+      if (this.SelectedItem == null) {
+        this.SelectFirstLocal();
+        return true;
+      }
+
+      var v_storeSelectedIndex = this.SelectedIndex;
+      this.SelectedIndex--;
+      return v_storeSelectedIndex > this.SelectedIndex;
+    }
+
+    /// <summary>
+    /// Возвращает следующую строку по отношению к выбранной в текущем DS на клиенте
+    /// </summary>
+    /// <returns>null, если курсор стоит на последней или невыбрана ни одна строка</returns>
+    public CRTObject GetNextLocal() {
+      if (this.SelectedItem == null)
+        return null;
+      return this._jsClient.DS.ElementAtOrDefault(this.SelectedIndex + 1);
+    }
+
+    /// <summary>
+    /// Возвращает предыдущую строку по отношению к выбранной в текущем DS на клиенте
+    /// </summary>
+    /// <returns>null, если курсор стоит на первой или невыбрана ни одна строка</returns>
+    public CRTObject GetPrivLocal() {
+      if (this.SelectedItem == null)
+        return null;
+      return this._jsClient.DS.ElementAtOrDefault(this.SelectedIndex - 1);
     }
 
     private Queue<Action> _callOnShowDelaiedCallback = new Queue<Action>();
@@ -616,6 +669,8 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
+    
+
     public DataGridColumn CurrentColumn {
       get {
         return (this._dataGrid != null) ? this._dataGrid.CurrentColumn : null;
@@ -633,18 +688,14 @@ namespace Bio.Framework.Client.SL {
       if (this._refreshCurColumnEnabled) {
         this._disableRefreshCurColumn();
         if ((this._dataGrid != null) && (this._dataGrid.SelectedItem != null)) {
-          foreach (var c in this._dataGrid.Columns)
-            if (c.DisplayIndex == this._currentColumnIndex) {
-              Utl.UiThreadInvoke(() => {
-                try {
-                  this._dataGrid.CurrentColumn = c;
-                  this._dataGrid.ScrollIntoView(this._dataGrid.SelectedItem, this._dataGrid.CurrentColumn);
-                } catch { }
-              });
-              break;
+          Utl.UiThreadInvoke(() => {
+            var v_col = this._dataGrid.Columns.Where((c) => { return c.DisplayIndex == this._currentColumnIndex; }).FirstOrDefault();
+            if (v_col != null) {
+              this._dataGrid.CurrentColumn = v_col;
+              this._dataGrid.ScrollIntoView(this._dataGrid.SelectedItem, this._dataGrid.CurrentColumn);
             }
+          });
         }
-        //this._enableRefreshCurColumn();
       }
     }
 

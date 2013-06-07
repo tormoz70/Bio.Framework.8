@@ -81,6 +81,11 @@ namespace Bio.Framework.Client.SL {
     }
   }
 
+  public enum RestorePosModeType {
+    ByPosition,
+    ByPrimaryKey
+  }
+
   public class CJsonStoreClient {
 
     private CJSGrid _grid { get; set; }
@@ -188,6 +193,8 @@ namespace Bio.Framework.Client.SL {
         }
       }
     }
+
+    public RestorePosModeType RestorePosMode { get; set; }
 
     public CJsonStoreClient() {
       DS0 = null;
@@ -597,27 +604,34 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
+    private void _addItemToSelection(CJsonStoreFilter selection, CRTObject item) {
+      var v_pk_vals = this._metadata.getPK(item);
+      foreach (var p in v_pk_vals) {
+        var v_item = new CJSFilterItemCondition {
+          fieldName = p.Name,
+          fieldType = ftypeHelper.ConvertTypeToFType(p.ParamType),
+          fieldValue = p.Value,
+          cmpOperator = CJSFilterComparisionOperatorType.Eq
+        };
+        selection.Items.Add(v_item);
+      }
+    }
+
     private CJsonStoreFilter _getCurrentSelection() {
       CJsonStoreFilter v_pkSelection = null;
       if ((this.grid != null) && (this.grid.SelectedItem != null) && (this._metadata != null)) {
-        var v_pk_vals = this._metadata.getPK(this.grid.SelectedItem);
         v_pkSelection = new CJsonStoreFilter {
           fromPosition = 0,
           joinCondition = CJSFilterItemSplitterType.And
         };
-        foreach (var p in v_pk_vals) {
-          var v_item = new CJSFilterItemCondition {
-            fieldName = p.Name,
-            fieldType = ftypeHelper.ConvertTypeToFType(p.ParamType),
-            fieldValue = p.Value,
-            cmpOperator = CJSFilterComparisionOperatorType.Eq
-          };
-          v_pkSelection.Items.Add(v_item);
-        }
+        this._addItemToSelection(v_pkSelection, this.grid.SelectedItem);
+        //this.grid.I
       }
       return v_pkSelection;
     }
 
+    //private Int32 _curPage = -1;
+    private Int32 _curRowIndex = -1;
     private Int32 _curColumnIndex = -1;
     private void _load(Params bioPrms, AjaxRequestDelegate callback, Int64? startFrom, CJsonStoreFilter locate, CJSRequestGetType getType, String waitMsg) {
       String v_selection = null;
@@ -677,10 +691,12 @@ namespace Bio.Framework.Client.SL {
           var v_cv = (this.DS0 as ICollectionView);
           if (v_cv != null)
             v_sort = this._genJSSortDefinition(v_cv.SortDescriptions);
-          var v_paramsChanged = this._paramsChanged(this.bioParams);
-          if ((!v_paramsChanged) && (v_locate == null)) {
-            if (v_storeSelection || (this._curPage == startFrom))
-              v_locate = this._getCurrentSelection();
+          if (this.RestorePosMode == RestorePosModeType.ByPrimaryKey) {
+            var v_paramsChanged = this._paramsChanged(this.bioParams);
+            if ((!v_paramsChanged) && (v_locate == null)) {
+              if (v_storeSelection || (this._curPage == startFrom))
+                v_locate = this._getCurrentSelection();
+            }
           }
         }
 
@@ -748,12 +764,13 @@ namespace Bio.Framework.Client.SL {
                     this.grid._dataGrid.enableColumnsChangedEvents();
                   }
 
-                  if (v_rq.packet.locate != null) {
-                    this._lastLocatedRow = this._locateInternal(v_rq.packet.locate);
-                    if (this.grid != null) {
+                  if (this.grid != null) {
+                    if (v_rq.packet.locate != null) {
+                      this._lastLocatedRow = this._locateInternal(v_rq.packet.locate);
                       this.grid.SelectedItem = this._lastLocatedRow;
-                      this.grid.CurrentColumnIndex = this._curColumnIndex;
-                    }
+                    } else 
+                      this.grid.SelectedIndex = (this._curRowIndex == -1 ? 0 : this._curRowIndex);
+                    this.grid.CurrentColumnIndex = (this._curColumnIndex == -1 ? 0 : this._curColumnIndex);
                   }
                 } else {
                   if (BioGlobal.Debug) {
@@ -779,6 +796,7 @@ namespace Bio.Framework.Client.SL {
           }
         };
         this._curColumnIndex = (this.grid != null) ? this.grid.CurrentColumnIndex : -1;
+        this._curRowIndex = (this.grid != null) ? this.grid.SelectedIndex : -1;
         this.ajaxMng.Request(v_reqst);
 
 
