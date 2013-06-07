@@ -39,11 +39,13 @@ namespace Bio.Framework.Packets {
   }
 
   public abstract class CJSFilterItem: ICloneable {
-    public abstract void buildSQLCondition(ref String sql, Params prms);
     protected abstract CJSFilterItem clone();
 #if SILVERLIGHT
     public virtual Boolean check(CRTObject row) { throw new NotImplementedException(); }
+#else
+    public abstract void buildSQLCondition(ref String sql, Params prms);
 #endif
+
     #region ICloneable Members
 
     public object Clone() {
@@ -52,18 +54,6 @@ namespace Bio.Framework.Packets {
 
     #endregion
   }
-
-  /*public class CJSFilterItemSplitter : CJSFilterItem {
-    public CJSFilterItemSplitterType joinCondition { get; set; }
-    public override void buildSQLCondition(ref String sql, Params prms) {
-      sql = String.Format(" {0} ", enumHelper.NameOfValue(this.joinCondition, false).ToUpper());
-    }
-    protected override CJSFilterItem clone() {
-      return new CJSFilterItemSplitter { 
-        joinCondition = this.joinCondition
-      };
-    }
-  }*/
 
   public class CJSFilterItemCondition : CJSFilterItem {
     /// <summary>
@@ -87,8 +77,81 @@ namespace Bio.Framework.Packets {
     /// </summary>
     public CJSFilterComparisionOperatorType cmpOperator { get; set; }
 
+    private FieldType _detectFTypeGranted() {
+      FieldType v_ftype = FieldType.String;
+      if (this.fieldType != null)
+        v_ftype = (FieldType)this.fieldType;
+      else {
+        if (this.fieldValue != null)
+          v_ftype = ftypeHelper.ConvertTypeToFType(this.fieldValue.GetType());
+      }
+      return v_ftype;
+    }
+
+#if SILVERLIGHT
+
+    private Boolean _check(Object value) {
+      Boolean rslt = false;
+      FieldType v_ftype = this._detectFTypeGranted();
+      switch (v_ftype) {
+        case FieldType.String:
+        case FieldType.Clob: {
+            String v_val = Utl.Convert2Type<String>(value); if (!String.IsNullOrEmpty(v_val)) v_val = v_val.ToUpper();
+            String v_fval = this.fieldValue as String; if (!String.IsNullOrEmpty(v_fval)) v_fval = v_fval.ToUpper();
+            switch (this.cmpOperator) {
+              case CJSFilterComparisionOperatorType.Eq:
+                rslt = (String.IsNullOrEmpty(v_val) && String.IsNullOrEmpty(v_fval)) ||
+                  (!String.IsNullOrEmpty(v_val) && v_val.Equals(v_fval));
+                break;
+              case CJSFilterComparisionOperatorType.Gt: rslt = String.Compare(v_val, v_fval) > 0; break;
+              case CJSFilterComparisionOperatorType.Ge: rslt = String.Compare(v_val, v_fval) >= 0; break;
+              case CJSFilterComparisionOperatorType.Lt: rslt = String.Compare(v_val, v_fval) < 0; break;
+              case CJSFilterComparisionOperatorType.Le: rslt = String.Compare(v_val, v_fval) <= 0; break;
+              case CJSFilterComparisionOperatorType.Bgn: rslt = v_val.StartsWith(v_fval); break;
+              case CJSFilterComparisionOperatorType.End: rslt = v_val.EndsWith(v_fval); break;
+              case CJSFilterComparisionOperatorType.In: rslt = v_val.Contains(v_fval); break;
+              case CJSFilterComparisionOperatorType.IsNull: rslt = String.IsNullOrEmpty(v_val); break;
+            }
+          } break;
+        case FieldType.Boolean: {
+            Boolean v_val = Utl.Convert2Type<Boolean>(value);
+            rslt = (Boolean)this.fieldValue == v_val;
+          } break;
+        case FieldType.Float:
+        case FieldType.Int:
+        case FieldType.Blob:
+        case FieldType.Object: {
+            Decimal v_val = Utl.Convert2Type<Decimal>(value);
+            Decimal v_fval = Utl.Convert2Type<Decimal>(this.fieldValue);
+            switch (this.cmpOperator) {
+              case CJSFilterComparisionOperatorType.Eq: rslt = v_val == v_fval; break;
+              case CJSFilterComparisionOperatorType.Gt: rslt = v_val > v_fval; break;
+              case CJSFilterComparisionOperatorType.Ge: rslt = v_val >= v_fval; break;
+              case CJSFilterComparisionOperatorType.Lt: rslt = v_val < v_fval; break;
+              case CJSFilterComparisionOperatorType.Le: rslt = v_val <= v_fval; break;
+            }
+          } break;
+        case FieldType.Date: {
+            DateTime v_val = Utl.Convert2Type<DateTime>(value);
+            DateTime v_fval = Utl.Convert2Type<DateTime>(this.fieldValue);
+            switch (this.cmpOperator) {
+              case CJSFilterComparisionOperatorType.Eq: rslt = v_val == v_fval; break;
+              case CJSFilterComparisionOperatorType.Gt: rslt = v_val > v_fval; break;
+              case CJSFilterComparisionOperatorType.Ge: rslt = v_val >= v_fval; break;
+              case CJSFilterComparisionOperatorType.Lt: rslt = v_val < v_fval; break;
+              case CJSFilterComparisionOperatorType.Le: rslt = v_val <= v_fval; break;
+            }
+          } break;
+      }
+      return (this.not) ? !rslt : rslt;
+    }
+
+    public override Boolean check(CRTObject row) {
+      var val = row.GetValue<Object>(this.fieldName);
+      return this._check(val);
+    }
+#else
     private String detectSQLFormat(Boolean hasNot, CJSFilterComparisionOperatorType operation, FieldType fieldType) {
-      //String valStr = (val != null) ? val.ToString() : null;
       String rslt = null;
       switch (fieldType) {
         case FieldType.String:
@@ -106,11 +169,6 @@ namespace Bio.Framework.Packets {
             }
           } break;
         case FieldType.Boolean: {
-            //Boolean valBool = Utl.parsBoolean(valStr);
-            //if (valBool)
-            //  rslt = "(to_char({0}) = '1' or upper(to_char({0})) = 'TRUE' or upper(to_char({0})) = 'Y' or upper(to_char({0})) = 'T'){1}";
-            //else
-            //  rslt = "(to_char({0}) = '0' or upper(to_char({0})) = 'FALSE' or upper(to_char({0})) = 'N' or upper(to_char({0})) = 'F'){1}";
             rslt = "{0} = :{1}";
           } break;
         case FieldType.Float:
@@ -126,7 +184,6 @@ namespace Bio.Framework.Packets {
             }
           } break;
         case FieldType.Date: {
-            //String vOperStr = null;
             switch (operation) {
               case CJSFilterComparisionOperatorType.Eq: rslt = "{0} = :{1}"; break;
               case CJSFilterComparisionOperatorType.Gt: rslt = "{0} > :{1}"; break;
@@ -134,21 +191,9 @@ namespace Bio.Framework.Packets {
               case CJSFilterComparisionOperatorType.Lt: rslt = "{0} < :{1}"; break;
               case CJSFilterComparisionOperatorType.Le: rslt = "{0} <= :{1}"; break;
             }
-            //rslt = "{0} " + vOperStr + " TO_DATE('{1}', '" + OraDTP.Instance.DetectDateTimeFmt(valStr) + "')";
           } break;
       }
       return (hasNot) ? String.Format("NOT({0})", rslt) : rslt;
-    }
-
-    private FieldType _detectFTypeGranted() {
-      FieldType v_ftype = FieldType.String;
-      if (this.fieldType != null)
-        v_ftype = (FieldType)this.fieldType;
-      else {
-        if (this.fieldValue != null)
-          v_ftype = ftypeHelper.ConvertTypeToFType(this.fieldValue.GetType());
-      }
-      return v_ftype;
     }
 
     public override void buildSQLCondition(ref String sql, Params prms) {
@@ -170,76 +215,6 @@ namespace Bio.Framework.Packets {
         ParamType = v_ptype,
         Value = v_pval
       });
-    }
-
-
-    private Boolean _check(Object value) {
-      //String valStr = (val != null) ? val.ToString() : null;
-      Boolean rslt = false;
-      FieldType v_ftype = this._detectFTypeGranted();
-      switch (v_ftype) {
-        case FieldType.String:
-        case FieldType.Clob: {
-            String v_val = Utl.Convert2Type<String>(value); if(!String.IsNullOrEmpty(v_val)) v_val = v_val.ToUpper();
-            String v_fval = this.fieldValue as String; if (!String.IsNullOrEmpty(v_fval)) v_fval = v_fval.ToUpper();
-            switch (this.cmpOperator) {
-              case CJSFilterComparisionOperatorType.Eq:
-                rslt = (String.IsNullOrEmpty(v_val) && String.IsNullOrEmpty(v_fval)) ||
-                  (!String.IsNullOrEmpty(v_val) && v_val.Equals(v_fval)); 
-                break;
-              case CJSFilterComparisionOperatorType.Gt: rslt = String.Compare(v_val, v_fval) > 0; break;
-              case CJSFilterComparisionOperatorType.Ge: rslt = String.Compare(v_val, v_fval) >= 0; break;
-              case CJSFilterComparisionOperatorType.Lt: rslt = String.Compare(v_val, v_fval) < 0; break;
-              case CJSFilterComparisionOperatorType.Le: rslt = String.Compare(v_val, v_fval) <= 0; break;
-              case CJSFilterComparisionOperatorType.Bgn: rslt = v_val.StartsWith(v_fval); break;
-              case CJSFilterComparisionOperatorType.End: rslt = v_val.EndsWith(v_fval); break;
-              case CJSFilterComparisionOperatorType.In: rslt = v_val.Contains(v_fval); break;
-              case CJSFilterComparisionOperatorType.IsNull: rslt = String.IsNullOrEmpty(v_val); break;
-            }
-          } break;
-        case FieldType.Boolean: {
-            //Boolean valBool = Utl.parsBoolean(valStr);
-            //if (valBool)
-            //  rslt = "(to_char({0}) = '1' or upper(to_char({0})) = 'TRUE' or upper(to_char({0})) = 'Y' or upper(to_char({0})) = 'T'){1}";
-            //else
-            //  rslt = "(to_char({0}) = '0' or upper(to_char({0})) = 'FALSE' or upper(to_char({0})) = 'N' or upper(to_char({0})) = 'F'){1}";
-            Boolean v_val = Utl.Convert2Type<Boolean>(value);
-            rslt = (Boolean)this.fieldValue == v_val;
-          } break;
-        case FieldType.Float:
-        case FieldType.Int:
-        case FieldType.Blob:
-        case FieldType.Object: {
-          Decimal v_val = Utl.Convert2Type<Decimal>(value);
-          Decimal v_fval = Utl.Convert2Type<Decimal>(this.fieldValue);
-            switch (this.cmpOperator) {
-              case CJSFilterComparisionOperatorType.Eq: rslt = v_val == v_fval; break;
-              case CJSFilterComparisionOperatorType.Gt: rslt = v_val > v_fval; break;
-              case CJSFilterComparisionOperatorType.Ge: rslt = v_val >= v_fval; break;
-              case CJSFilterComparisionOperatorType.Lt: rslt = v_val < v_fval; break;
-              case CJSFilterComparisionOperatorType.Le: rslt = v_val <= v_fval; break;
-            }
-          } break;
-        case FieldType.Date: {
-          DateTime v_val = Utl.Convert2Type<DateTime>(value);
-          DateTime v_fval = Utl.Convert2Type<DateTime>(this.fieldValue);
-            switch (this.cmpOperator) {
-              case CJSFilterComparisionOperatorType.Eq: rslt = v_val == v_fval; break;
-              case CJSFilterComparisionOperatorType.Gt: rslt = v_val > v_fval; break;
-              case CJSFilterComparisionOperatorType.Ge: rslt = v_val >= v_fval; break;
-              case CJSFilterComparisionOperatorType.Lt: rslt = v_val < v_fval; break;
-              case CJSFilterComparisionOperatorType.Le: rslt = v_val <= v_fval; break;
-            }
-            //rslt = "{0} " + vOperStr + " TO_DATE('{1}', '" + OraDTP.Instance.DetectDateTimeFmt(valStr) + "')";
-          } break;
-      }
-      return (this.not) ? !rslt : rslt;
-    }
-
-#if SILVERLIGHT
-    public override Boolean check(CRTObject row) {
-      var val = row.GetValue<Object>(this.fieldName);
-      return this._check(val);
     }
 #endif
 
@@ -288,8 +263,7 @@ namespace Bio.Framework.Packets {
       }
       return rslt;
     }
-#endif
-
+#else
     public void buildSQLConditions(ref String sql, Params prms) {
       sql = null;
       int i = 0;
@@ -307,6 +281,7 @@ namespace Bio.Framework.Packets {
         sql = String.Format("({0})", sql);
       //return sql;
     }
+#endif
 
     #region ICloneable Members
 
