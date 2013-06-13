@@ -32,6 +32,7 @@ namespace Bio.Framework.Client.SL {
         if (this.FCfgRec == null) {
           this.FCfgRec = new ConfigRoot();
           this.LoadCfg();
+
         }
         return this.FCfgRec;
       }

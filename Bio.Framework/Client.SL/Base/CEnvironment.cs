@@ -62,13 +62,20 @@ namespace Bio.Framework.Client.SL {
       return String.Format(csModuleVersionKeyPrefix + "[{0}]", moduleName);
     }
 
-    private const Int64 ciQuota = 10000 * 1024;
-    public void IncreaseQuota() {
-      //using (var store = IsolatedStorageFile.GetUserStoreForApplication()) {
-      //  if (store.Quota < ciQuota)
-      //    store.IncreaseQuotaTo(ciQuota);
-      //}
+    private const Int64 ciQuota = 20 * 1000 * 1024;
+
+    public void IncreaseISQuota(Action<Boolean> callback) {
+      var v_curQuota = Utl.GetISQuota();
+      if (v_curQuota < ciQuota) {
+        var rqf = new FrmPromptIncreaseQuotaIS();
+        rqf.ShowM(ciQuota, callback);
+      } else {
+        if (callback != null)
+          callback(true);
+      }
     }
+
+
     private const String csISPluginFolderName = "plugins";
     private void _saveModuleToLoc(Stream stream, String moduleName, String version) {
       if (stream != null) {

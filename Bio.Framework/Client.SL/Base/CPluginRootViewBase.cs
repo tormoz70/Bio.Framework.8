@@ -21,7 +21,6 @@ namespace Bio.Framework.Client.SL {
     }
 
     void CPluginRootViewBase_OnShow(object sender, EventArgs e) {
-      this.ownerPlugin.Env.IncreaseQuota();
     }
 
   }

@@ -94,6 +94,9 @@
     <Compile Include="CPluginViewDialog.xaml.cs">
       <DependentUpon>CPluginViewDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="FrmPromptIncreaseQuotaIS.xaml.cs">
+      <DependentUpon>FrmPromptIncreaseQuotaIS.xaml</DependentUpon>
+    </Compile>
     <Compile Include="PluginNotFoundDummy.cs" />
     <Compile Include="PluginNotFoundDummyView.xaml.cs">
       <DependentUpon>PluginNotFoundDummyView.xaml</DependentUpon>
@@ -108,6 +111,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="CPluginViewDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="FrmPromptIncreaseQuotaIS.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

@@ -2050,6 +2050,16 @@ namespace Bio.Helpers.Common {
       }
     }
 
+    public static Int64 GetISQuota() {
+      try {
+        using (IsolatedStorageFile isf = IsolatedStorageFile.GetUserStoreForApplication()) {
+          return isf.Quota;
+        }
+      } catch (Exception ex) {
+        throw EBioException.CreateIfNotEBio(ex);
+      }
+    }
+
     public static void StoreUserObjectCookie0(String objName, Object obj) {
       if ((obj != null) && !String.IsNullOrEmpty(objName)) {
         var jsonObj = jsonUtl.encode(obj, null);

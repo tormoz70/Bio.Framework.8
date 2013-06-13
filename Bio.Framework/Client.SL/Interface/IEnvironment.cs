@@ -141,7 +141,7 @@ namespace Bio.Framework.Client.SL {
 
     String LastSuccessPwd { get; set; }
 
-    void IncreaseQuota();
+    void IncreaseISQuota(Action<Boolean> callback);
 
     void StoreUserObject(String objName, Object obj);
     T RestoreUserObject<T>(String objName, T defObj);
