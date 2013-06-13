@@ -364,6 +364,15 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
+    private void _invertMultySelection() { 
+      foreach(CRTObject r in this.SelectedItems){
+        if (!this.Selection.CheckSelected(r))
+          this.Selection.AddSelected(r);
+        else
+          this.Selection.RemoveSelected(r);
+      }
+    }
+
     public new event KeyEventHandler KeyDown;
     internal void _onKeyDown(KeyEventArgs e) {
       var handler = this.KeyDown;
@@ -377,6 +386,11 @@ namespace Bio.Framework.Client.SL {
       //    }
       //  }
       //}
+      if (!e.Handled) {
+          if (e.Key == Key.Space) {
+            this._invertMultySelection();
+          }
+      }
     }
 
     public event EventHandler<DataGridRowEventArgs> OnLoadingRow;
