@@ -701,7 +701,7 @@ namespace Bio.Framework.Client.SL {
     internal void _refreshCurColumn() {
       if (this._refreshCurColumnEnabled) {
         this._disableRefreshCurColumn();
-        if ((this._dataGrid != null) && (this._dataGrid.SelectedItem != null)) {
+        if ((this._dataGrid != null) && (this._dataGrid.SelectedItem != null) && (this._jsClient.DS.Count() > 0)) {
           Utl.UiThreadInvoke(() => {
             var v_col = this._dataGrid.Columns.Where((c) => { return c.DisplayIndex == this._currentColumnIndex; }).FirstOrDefault();
             if (v_col != null) {

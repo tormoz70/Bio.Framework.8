@@ -17,9 +17,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition />
             </Grid.RowDefinitions>
-            <TextBlock x:Name="laVerInfo" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" TextAlignment="Center">
-        Для дальнейшей работы приложения необходимо увеличить размер локального хранилища до 20 Мб.
-            </TextBlock>
+            <TextBlock x:Name="laVerInfo" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" TextAlignment="Center" TextWrapping="Wrap">Для дальнейшей работы приложения необходимо увеличить размер локального хранилища до 20 Мб.</TextBlock>
         </Grid>
         <Button Grid.Row="1" x:Name="btnCancel" Content="Отмена" Width="75" Height="23" HorizontalAlignment="Right" Margin="0,12,0,0" Cursor="Hand" Click="btnCancel_Click" />
         <Button Grid.Row="1" x:Name="btnOK" Content="Продолжить" Width="75" Height="23" HorizontalAlignment="Right" Margin="0,12,79,0" Cursor="Hand" Click="btnOK_Click" />

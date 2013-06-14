@@ -38,7 +38,7 @@ namespace Bio.Framework.Server {
         var fi = new FileInfo(v_mainModuleFileName);
         v_mainModuleChangedTimeStamp = fi.LastWriteTime.ToString("yyyyMMdd-HHmmss");
       }
-      this.Application.Set("gvStartupName", v_MainModuleName); // + "?timestamp=" + v_mainModuleChangedTimeStamp);
+      this.Application.Set("gvStartupName", v_MainModuleName + "?timestamp=" + v_mainModuleChangedTimeStamp);
 			ArrayList vSessions = null;
 			if(this.Application.Get("bioSessionArray") != null)
 				vSessions = (ArrayList)this.Application.Get("bioSessionArray");

@@ -768,9 +768,12 @@ namespace Bio.Framework.Client.SL {
                     if (v_rq.packet.locate != null) {
                       this._lastLocatedRow = this._locateInternal(v_rq.packet.locate);
                       this.grid.SelectedItem = this._lastLocatedRow;
-                    } else 
+                    } else
                       this.grid.SelectedIndex = (this._curRowIndex == -1 ? 0 : this._curRowIndex);
                     this.grid.CurrentColumnIndex = (this._curColumnIndex == -1 ? 0 : this._curColumnIndex);
+                  } else { 
+                    if (v_rq.packet.locate != null) 
+                      this._lastLocatedRow = this._locateInternal(v_rq.packet.locate);
                   }
                 } else {
                   if (BioGlobal.Debug) {
