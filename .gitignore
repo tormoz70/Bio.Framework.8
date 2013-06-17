@@ -11,3 +11,4 @@ BuildProcessTemplates/
 obj/
 Debug/
 Release/
+build/
