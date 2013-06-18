@@ -31,38 +31,12 @@ namespace Bio.Helpers.Common.Types {
       return jsonUtl.Decode(pJsonString, null, converters) as CAjaxResponse;
     }
 
-    public String Encode(JsonConverter[] converters) {
+    public virtual String Encode(JsonConverter[] converters) {
       return jsonUtl.encode(this, converters);
     }
-    public String Encode() {
+    public virtual String Encode() {
       return this.Encode(ajaxUTL.GetConverters());
     }
-
-    //protected static T CopyObj<T>(T obj) where T : CAjaxResponse, new() {
-    //  T rslt = new T() {
-    //    responseText = obj.responseText,
-    //    success = obj.success,
-    //    ex = (EBioException)obj.ex.Clone()
-    //  };
-
-    //  if (typeof(T) == typeof(CBioResponse)) {
-    //    CBioResponse frm = obj as CBioResponse; CBioResponse dst = rslt as CBioResponse;
-    //    dst.transactionID = frm.transactionID;
-    //    dst.bioParams = (Params)frm.bioParams.Clone();
-    //    dst.rptStatePacket = (CXLRptStatePack)frm.rptStatePacket;
-    //  }
-
-    //  if (typeof(T) == typeof(CJsonStoreResponse)) {
-    //    CJsonStoreResponse frm = obj as CJsonStoreResponse; CJsonStoreResponse dst = rslt as CJsonStoreResponse;
-    //    //dst.nav = (frm.nav != null) ? (CJsonStoreNav)frm.nav.Clone() : null;
-    //    dst.packet = (frm.packet != null) ? (CJsonStoreData)frm.packet.Clone() : null;
-    //    dst.cmd = frm.cmd;
-    //    dst.sort = (frm.sort != null) ? (CJsonStoreSort)frm.sort.Clone() : null;
-    //    dst.transactionID = frm.transactionID;
-    //  }
-
-    //  return rslt;
-    //}
 
     protected virtual void copyThis(ref CAjaxResponse destObj) {
       destObj.responseText = this.responseText;

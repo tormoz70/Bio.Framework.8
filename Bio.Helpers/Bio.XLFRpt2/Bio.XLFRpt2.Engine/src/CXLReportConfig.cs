@@ -552,11 +552,12 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     /// <param name="rptCode">Код отчета</param>
     /// <param name="rootRptTreePath">Корневой каталог дерева отчетов</param>
     /// <param name="rootRptWorkPath">Корневой каталог дерева логов</param>
-    /// <param name="connStr">Строка соединения с БД, если указана внутри описания отчета, то можно здесь не указывать</param>
+    /// <param name="conn">Строка соединения с БД, если указана внутри описания отчета, то можно здесь не указывать, либо это ссылка на IDBSession</param>
     /// <param name="sessionID">ID сессии, которая запустила отчет. Можно указывать null.</param>
     /// <param name="userName">Имя пользователя, который запустил отчет. Можно указывать null.</param>
     /// <param name="remoteIP">IP адрес скоторого запустили отчет. Можно указывать null.</param>
     /// <param name="inParams">Параметры отчета. Можно указывать null.</param>
+    /// <param name="switchOffDebuging"/>
     /// <returns></returns>
     public static CXLReportConfig LoadFromFile(
       String rptUID,

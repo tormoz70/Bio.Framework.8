@@ -120,7 +120,6 @@ namespace Bio.Helpers.Common.Types {
     /// <summary>
     /// Создает объект типа VMultiSelection из строки
     /// </summary>
-    /// <typeparam name="T">Тип значения первичного ключа</typeparam>
     /// <param name="selection">Строка в формате "id1;id2;..." или "флагИнверсии||id1;id2;...",
     ///                         где флагИнверсии = 0(значение по умолчанию) или 1, если флагИнверсии = 1, то указанные идентификаторы строк яляются исключениями из выборки</param>
     /// <returns></returns>

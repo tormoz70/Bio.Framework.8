@@ -157,7 +157,6 @@ namespace Bio.XLFRpt2.Test {
       String vrsltFileName = rptBuilder.BuildReportSync();
     }
     static void testReport1() {
-      DataTable tbl = null;
       CXLReportDSConfigs v_dss = new CXLReportDSConfigs();
       v_dss.Add(new CXLReportDSConfig { 
         alias = "cdsRpt", 

@@ -24,9 +24,7 @@
 
     private CAjaxMng FOwner = null;
     private DOnLogLine FDOnLogLine = null;
-    private String FCurVerInfo = null;
     private String FCurSrvInfo = null;
-    private String FUserAgentName = null;
 
     /// <summary>
     /// Конструктор

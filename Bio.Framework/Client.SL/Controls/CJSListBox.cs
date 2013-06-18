@@ -27,11 +27,7 @@ using System.ComponentModel;
 namespace Bio.Framework.Client.SL {
 
   public class CJSListBox : ListBox {
-    private BindingExpression bE;
     public CJSListBox() {
     }
-
-
-
   }
 }

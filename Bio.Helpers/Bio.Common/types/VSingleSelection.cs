@@ -18,6 +18,8 @@ namespace Bio.Helpers.Common.Types {
       //  v_rslt = v_rslt && (this.Values[i] == v_obj.Values[i]);
       return v_rslt;
     }
-
+    public override int GetHashCode() {
+      return base.GetHashCode();
+    }
   }
 }

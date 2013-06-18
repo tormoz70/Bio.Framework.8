@@ -123,15 +123,15 @@ namespace Bio.Framework.Client.SL {
     /// <param name="prms">Вход. параметры</param>
     void refreshData(Params prms);
 
-    /// <summary>
-    /// Событие используется, при необходимости оповестить внешние плагины об изменении данных.
-    /// </summary>
-    event EventHandler<DataChangedEventArgs> DataChanged;
+    ///// <summary>
+    ///// Событие используется, при необходимости оповестить внешние плагины об изменении данных.
+    ///// </summary>
+    //event EventHandler<DataChangedEventArgs> DataChanged;
 
-    /// <summary>
-    /// Событие используется, при необходимости оповестить внешние плагины перед изменением данных.
-    /// </summary>
-    event EventHandler<DataChangingCancelEventArgs> DataChanging;
+    ///// <summary>
+    ///// Событие используется, при необходимости оповестить внешние плагины перед изменением данных.
+    ///// </summary>
+    //event EventHandler<DataChangingCancelEventArgs> DataChanging;
 
 }
 

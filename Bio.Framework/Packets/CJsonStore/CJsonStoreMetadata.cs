@@ -110,7 +110,7 @@ namespace Bio.Framework.Packets {
     /// <summary>
     /// Преобразует строку со значениями первичного ключа в параметры.
     /// </summary>
-    /// <param name="pkString">Строка со значениями первичного ключа.</param>
+    /// <param name="row">Строка со значениями первичного ключа.</param>
     /// <returns></returns>
     public Params getPK(CRTObject row) {
       Params vParams = new Params();
@@ -126,7 +126,8 @@ namespace Bio.Framework.Packets {
     /// <summary>
     /// Преобразует строку со значениями первичного ключа в параметры.
     /// </summary>
-    /// <param name="pkString">Строка со значениями первичного ключа.</param>
+    /// <param name="data"></param>
+    /// <param name="row"></param>
     /// <returns></returns>
     public Params getPK(CJsonStoreData data, CJsonStoreRow row) {
       Params vParams = new Params();
@@ -155,8 +156,8 @@ namespace Bio.Framework.Packets {
     /// <summary>
     /// Формирует описание структуры JSON-ответа для клиентского JsonStore из XML-описания.
     /// </summary>
-    /// <param name="pCursorDef">XML-описание курсора.</param>
-    /// <param name="jw">Объект LisJson.JsonWriter, в который запишутся метаданные.</param>
+    /// <param name="bioCode"/>
+    /// <param name="cursorDef">XML-описание курсора.</param>
     public static CJsonStoreMetadata ConstructMetadata(String bioCode, XmlNode cursorDef) {
       CJsonStoreMetadata vResult = new CJsonStoreMetadata();
       vResult.fields = new List<CJsonStoreMetadataFieldDef>();
@@ -284,8 +285,7 @@ namespace Bio.Framework.Packets {
     /// <summary>
     /// Формирует описание структуры JSON-ответа для клиентского JsonStore из объекта System.Data.DataTable.
     /// </summary>
-    /// <param name="pTable">Объект System.Data.DataTable, из которого нужно взять структуру.</param>
-    /// <param name="jw">Объект LisJson.JsonWriter, в который запишутся метаданные.</param>
+    /// <param name="table">Объект System.Data.DataTable, из которого нужно взять структуру.</param>
     public static CJsonStoreMetadata ConstructMetadata(DataTable table) {
       CJsonStoreMetadata vResult = new CJsonStoreMetadata();
       vResult.fields = new List<CJsonStoreMetadataFieldDef>();

@@ -182,6 +182,7 @@ namespace Bio.Helpers.Controls.SL {
     /// This event is called when the menu is open but is still at the initial phase of its storyboard.
     /// Addtion of submenu items is not supported here since references to those elements may have been
     /// broken by the layouting process.
+    /// </summary>
     public event RoutedEventHandler Showing;
     /// <summary>
     /// This event is called when the storyboard animation used to display the menu has completed.
@@ -267,6 +268,7 @@ namespace Bio.Helpers.Controls.SL {
 
     /// <summary>
     /// Gets or sets a reference to the ItemsControl(a ListBox typically) used to accomodate the menu items.
+    /// </summary>
     public ItemsControl ItemsControl {
       get // Get the first child of ContentRoot
       {
@@ -398,8 +400,6 @@ namespace Bio.Helpers.Controls.SL {
         }
       }
     }
-
-    private bool _keepMenusOpen;
 
     private void ItemsControl_KeyUp(object sender, KeyEventArgs e) {
       UIElement selectedItem = null;
@@ -804,6 +804,7 @@ namespace Bio.Helpers.Controls.SL {
     /// Get the item under the mouse
     /// </summary>
     /// <param name="senderElement">The clicked or hovered element</param>
+    /// <param name="e"></param>
     /// <param name="returnSelectableItemIfAny">Return the clicked or hovered item inside the trigger element if the latter is a DataGrid, a ListBox or a TreeView</param>
     /// <param name="selectItemIfSelectable">Select the item if lies in a ListBox, Datagrid or TreeView</param>
     /// <returns>The item under the mouse</returns>
@@ -963,8 +964,6 @@ namespace Bio.Helpers.Controls.SL {
       if (_restoreFocusOnClose && ActualTriggerElement is Control)
         (ActualTriggerElement as Control).Focus();
       _restoreFocusOnClose = false;
-
-      _keepMenusOpen = false;
 
       if (_timerOpen != null) {
         _timerOpen.Change(0, Timeout.Infinite);

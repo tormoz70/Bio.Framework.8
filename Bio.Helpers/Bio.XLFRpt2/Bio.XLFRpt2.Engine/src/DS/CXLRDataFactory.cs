@@ -21,7 +21,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         this.Add(p.Key.ToUpper(), p.Value);
       }
     }
-    public Object this[String fieldName] {
+    public new Object this[String fieldName] {
       get {
         if (!String.IsNullOrEmpty(fieldName)) {
           if (this.ContainsKey(fieldName.ToUpper())) {
@@ -44,17 +44,22 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     /// <summary>
     /// Происходит сразу после открытия
     /// </summary>
+#pragma warning disable 0067
     public event CXLRDTblFactoryOnOpenEveHandler OnOpen;
+#pragma warning restore 0067
     /// <summary>
     /// После каждого Next
     /// </summary>
+#pragma warning disable 0067
     public event CXLRDTblFactoryOnFetchEveHandler OnFetch;
+#pragma warning restore 0067
     /// <summary>
     /// По достижении конца
     /// </summary>
+#pragma warning disable 0067
     public event CXLRDTblFactoryOnEOFEveHandler OnEOF;
+#pragma warning restore 0067
 
-    //protected IDbConnection _conn = null;
     public abstract IDbConnection openDbConnection(CXLReportConfig cfg);
 
 

@@ -134,7 +134,7 @@
       //logOnInfo.ConnectionInfo.Password = vConnStrItems["Password"];
       //foreach(Table table in rptDoc.Database.Tables)
       //  table.ApplyLogOnInfo(logOnInfo);
-      ///*foreach(IConnectionInfo conn in rptDoc.DataSourceConnections) {
+      ////*foreach(IConnectionInfo conn in rptDoc.DataSourceConnections) {
       //  conn.SetConnection(vConnStrItems["Data Source"], "", vConnStrItems["User ID"], vConnStrItems["Password"]);
       //} */
 
@@ -182,7 +182,7 @@
       //  throw new EBioException("[" + vConnStrItems["User ID"] + "/" + vConnStrItems["Password"] + "@" + vConnStrItems["Data Source"] + "]; "+ex.Message);
       //}
 
-      ///*pPrms.response.WriteFile(tmpName);
+      ////*pPrms.response.WriteFile(tmpName);
       //pPrms.response.Flush();
       //pPrms.response.Close();
       //File.Delete(tmpName);*/

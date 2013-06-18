@@ -72,7 +72,7 @@ namespace Bio.Helpers.Common.Types {
     /// <summary>
     /// Процедура для заталкивания данных полученных из трубы монитором в стек процесса
     /// </summary>
-    /// <param name="response"></param>
+    /// <param name="pipedLines"></param>
     void pushPipedLine(String[] pipedLines);
     /// <summary>
     /// Данные считанные из трубы монитором долгого процесса

@@ -23,27 +23,21 @@ namespace Bio.Helpers.Controls.SL {
       this.DialogResult = true;
     }
 
-    //public static void showMsgModal(String pText, String pTitle) {
-    //    msgBx vWin = new msgBx();
-    //    vWin.Title = pTitle;
-    //    vWin.txtMsg.Text = pText;
-    //    vWin.ShowMod();
-    //}
-
     /// <summary>
     /// Выводит окно сообщения об ошибке
     /// </summary>
-    /// <param name="pErrorText">Текст ошибки или Json-строка объекта ошибки</param>
-    /// <param name="pTitle">Заголовок</param>
-    public static void showError(String pErrorText, String pTitle, Action callback) {
+    /// <param name="errorText">Текст ошибки или Json-строка объекта ошибки</param>
+    /// <param name="title">Заголовок</param>
+    /// <param name="callback"></param>
+    public static void showError(String errorText, String title, Action callback) {
       EBioException vEx = null;
       try {
-        vEx = EBioException.Decode(pErrorText);
+        vEx = EBioException.Decode(errorText);
       } catch (Exception) { }
       if (vEx != null) {
-        showError(vEx, pTitle, callback);
+        showError(vEx, title, callback);
       } else {
-        showMsg(pErrorText, pTitle, callback);
+        showMsg(errorText, title, callback);
       }
     }
 
@@ -92,6 +86,7 @@ namespace Bio.Helpers.Controls.SL {
     /// </summary>
     /// <param name="error">Класс ошибки</param>
     /// <param name="title">Заголовок</param>
+    /// <param name="callback"></param>
     public static void showError(EBioException error, String title, Action callback) {
       String vS = formatError(error);
       showMsg(vS, title, callback);
@@ -102,6 +97,7 @@ namespace Bio.Helpers.Controls.SL {
     /// </summary>
     /// <param name="text">Текст сообщения</param>
     /// <param name="title">Заголовок</param>
+    /// <param name="callback"></param>
     private static void showMsg(String text, String title, Action callback) {
       if (!Utl.IsUiThread)
         Utl.UiThreadInvoke(() => {

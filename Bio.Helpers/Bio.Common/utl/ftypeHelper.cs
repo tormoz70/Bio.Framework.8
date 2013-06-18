@@ -143,7 +143,7 @@ namespace Bio.Helpers.Common {
     /// <summary>
     /// Преобразует тип System.Type в тип FTypeMap.
     /// </summary>
-    /// <param name="xmlName"></param>
+    /// <param name="type"></param>
     /// <returns></returns>
     public static FieldType ConvertTypeToFType(Type type) {
       return ConvertStrToFieldType(ConvertTypeToStr(type));

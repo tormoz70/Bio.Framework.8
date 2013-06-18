@@ -107,7 +107,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       } catch (WaitHandleCannotBeOpenedException) {
         //Console.WriteLine("Mutex does not exist.");
         doesNotExist = true;
-      } catch (UnauthorizedAccessException ex) {
+      } catch (UnauthorizedAccessException) {
         //Console.WriteLine("Unauthorized access: {0}", ex.Message);
         unauthorized = true;
       }

@@ -63,6 +63,7 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>Bin\Debug\Silverlight\Bio.Framework.Packets.XML</DocumentationFile>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -76,6 +77,7 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>Bin\Release\Silverlight\Bio.Framework.Packets.xml</DocumentationFile>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.Runtime.Serialization" />

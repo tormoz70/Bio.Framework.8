@@ -42,10 +42,10 @@
     /// <summary>
     /// Загружает файл (Асинхронно)
     /// </summary>
-    /// <param name="pToFileName"></param>
-    /// <param name="pURL"></param>
-    /// <param name="pOnCmpltHndlr"></param>
-    /// <param name="pOnPrgHndlr"></param>
+    /// <param name="saveToFileName"></param>
+    /// <param name="url"></param>
+    /// <param name="callback"></param>
+    /// <param name="onProgress"></param>
     public static void loadFileAsync(String saveToFileName, String url,
                                      AsyncCompletedEventHandler callback,
                                      DownloadProgressChangedEventHandler onProgress) {

@@ -79,33 +79,6 @@ using Bio.Helpers.Common;
         return item;
     }
 
-    #region Overrides
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="e"></param>
-    //protected override void OnGotFocus(RoutedEventArgs e) {
-    //  if (showingCBO)
-    //    return;
-
-    //  base.OnGotFocus(e);
-
-    //  //if (this.Property.CanWrite)
-    //  //  this.ShowComboBox();
-
-    //}
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="e"></param>
-    //protected override void OnLostFocus(RoutedEventArgs e) {
-    //  if (cbo.IsDropDownOpen)
-    //    return;
-
-    //  base.OnLostFocus(e);
-    //}
-    #endregion
-
     #region Methods
     protected virtual void LoadItems(IEnumerable items) {
       Boolean v_selectionChangedEnabled = this._selectionChangedEnabled;

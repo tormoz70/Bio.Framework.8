@@ -51,6 +51,7 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\Bio.Framework.Server.Handler.Tree.XML</DocumentationFile>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>

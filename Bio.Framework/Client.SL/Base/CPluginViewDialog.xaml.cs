@@ -67,7 +67,7 @@ namespace Bio.Framework.Client.SL {
       this.OnShow += new EventHandler(CPluginViewDialog_OnShow);
     }
 
-    public void ShowDialog() {
+    public override void ShowDialog() {
       base.ShowDialog();
     }
 

@@ -16,7 +16,6 @@ namespace Bio.Helpers.XLFRpt2.DataFactory {
   public class CDataFactory:CXLRDataFactory {
 
     private DbDataReader _dataReader;
-    private Boolean _connIsOpened;
     private SqlCommand _cmd;
 
     public override IDbConnection openDbConnection(CXLReportConfig cfg) {
@@ -60,7 +59,6 @@ namespace Bio.Helpers.XLFRpt2.DataFactory {
     }
 
     protected override IDictionary<String, FieldType> open(IDbConnection conn, CXLReportDSConfig dsCfg, Int32 timeout) {
-      this._connIsOpened = true;
       this._cmd = new SqlCommand(dsCfg.sql);
       this._cmd.CommandType = dsCfg.commandType;
       this._cmd.Connection = conn as SqlConnection;

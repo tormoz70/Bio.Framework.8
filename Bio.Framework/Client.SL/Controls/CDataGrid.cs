@@ -25,7 +25,6 @@ namespace Bio.Framework.Client.SL {
       this.LayoutUpdated += new EventHandler(this._layoutUpdated);
     }
 
-    private Style _columnHeadrStyle = null;
     public override void OnApplyTemplate() {
       base.OnApplyTemplate();
 

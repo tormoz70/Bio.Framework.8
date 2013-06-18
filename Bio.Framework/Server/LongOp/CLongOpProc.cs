@@ -61,7 +61,7 @@
           }
           Thread.Sleep(100);
         } catch (ThreadAbortException) {
-        } catch (EBioSQLBreaked ex) {
+        } catch (EBioSQLBreaked) {
           this._state = RemoteProcState.Breaked;
         } catch (Exception ex) {
           this._state = RemoteProcState.Error;

@@ -47,6 +47,7 @@ namespace Bio.Helpers.Common {
     /// Загружает файл (Синхронно)
     /// </summary>
     /// <param name="url"></param>
+    /// <param name="callback"></param>
     public static void loadFile(String url, Action callback) {
       HtmlElement iframe = HtmlPage.Document.GetElementById(csIfrmFileLoaderID);
       if (iframe == null) {

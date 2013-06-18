@@ -30,7 +30,7 @@ namespace Bio.Framework.Server {
     /// <summary>
     /// Вытаскивает из БД файл и отдает его клиенту
     /// </summary>
-    /// <param name="bioParams">Параметры запроса к БД</param>
+    /// <param name="bioPrms">Параметры запроса к БД</param>
     private void sendFileToClient(Params bioPrms) {
 
       this.Context.Response.ClearContent();

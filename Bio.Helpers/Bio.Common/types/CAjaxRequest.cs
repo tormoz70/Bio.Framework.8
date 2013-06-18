@@ -39,19 +39,6 @@ namespace Bio.Helpers.Common.Types {
   public class CAjaxRequest : ICloneable {
     private const String csQParamName = "rqpckt";
 
-
-    /// <summary>
-    /// Если TRUE, то режим асинхронный, иначе синхонный
-    /// </summary>
-    //public Boolean async { get; set; }
-
-    /*
-    /// <summary>
-    /// Настройки Proxy
-    /// </summary>
-    public CDProxy Proxy = null;
-    */
-
     /// <summary>
     /// количество секунд ожидания ответа сервера
     /// </summary>
@@ -101,16 +88,17 @@ namespace Bio.Helpers.Common.Types {
     /// <summary>
     /// Десериализует объект из json-строки
     /// </summary>
-    /// <param name="pJsonString"></param>
+    /// <param name="jsonString"></param>
+    /// <param name="converters">Массив конверторов</param>
     /// <returns></returns>
-    public static CAjaxRequest Decode(String pJsonString, JsonConverter[] converters) {
-      return jsonUtl.decode<CAjaxRequest>(pJsonString, converters);
+    public static CAjaxRequest Decode(String jsonString, JsonConverter[] converters) {
+      return jsonUtl.decode<CAjaxRequest>(jsonString, converters);
     }
 
     /// <summary>
     /// Создает подготовленную к отправке на сервер коллекцию параметров
     /// </summary>
-    /// <typeparam name="TypeOfRequest">Тип запроса</typeparam>
+    /// <param name="converters">Массив конверторов</param>
     /// <returns></returns>
     public Params BuildQParams(JsonConverter[] converters) {
       Params rslt = (this.prms == null) ? new Params() : (Params)this.prms.Clone();

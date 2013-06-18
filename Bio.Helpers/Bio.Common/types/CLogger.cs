@@ -24,6 +24,7 @@ namespace Bio.Helpers.Common.Types {
     /// </summary>
     /// <param name="loggerName">Если null, то для default-Логгера</param>
     /// <param name="eventHandler"></param>
+    /// <param name="insDateTimeMarker"></param>
     public static void RegisterLogger(String loggerName, CLoggerEventHandler eventHandler, Boolean insDateTimeMarker) {
       CLoggerItem vItem = null;
       String locLoggerName = String.IsNullOrEmpty(loggerName) ? csDefaultLoggerName : loggerName;
@@ -63,7 +64,7 @@ namespace Bio.Helpers.Common.Types {
     /// Регистрация Файла logFile как получателя лога.
     /// </summary>
     /// <param name="loggerName">Если null, то для default-Логгера</param>
-    /// <param name="logControl"></param>
+    /// <param name="logFile"></param>
     /// <param name="insDateTimeMarker">Если true, то в начале каждой строки буде вставляться метка [дата/время]</param>
     public static void RegisterLogger(String loggerName, String logFile, Boolean insDateTimeMarker) {
       String vPath = Path.GetDirectoryName(logFile);

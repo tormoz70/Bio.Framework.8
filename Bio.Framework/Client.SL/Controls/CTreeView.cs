@@ -54,7 +54,7 @@ namespace Bio.Framework.Client.SL {
   }
   public class CTreeViewItem : TreeViewItem {
 
-    public event EventHandler<BeforeLoadItemChildrenEventArgs> BeforeLoadChildren;
+    //public event EventHandler<BeforeLoadItemChildrenEventArgs> BeforeLoadChildren;
 
     public CTreeViewItem() {
       this.Expanded += new RoutedEventHandler(CTreeViewItem_Expanded);

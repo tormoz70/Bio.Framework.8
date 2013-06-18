@@ -44,7 +44,7 @@ namespace Bio.Framework.Server {
                 this._doGetSelectionPks(v_conn, v_ds);
             } else if (this.jsReq is CJsonStoreRequestPost)
               this._doPost(v_conn, v_ds);
-          } catch(Exception ex) {
+          } catch(Exception) {
             if (this.jsReq is CJsonStoreRequestPost) {
               this.FinishTransaction(v_conn, true, CSQLTransactionCmd.Rollback);
               v_transactionFinished = true;

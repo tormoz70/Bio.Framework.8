@@ -46,8 +46,12 @@ namespace Bio.Helpers.Controls.SL.SLPropertyGrid {
     /// <summary>
     /// Constructor
     /// </summary>
+    /// <param name="owner"></param>
     /// <param name="instance"></param>
+    /// <param name="value"></param>
     /// <param name="property"></param>
+    /// <param name="readOnly"></param>
+    /// <param name="required"></param>
     public PropertyItem(PropertyGrid owner, Object instance, Object value, PropertyInfo property, Boolean readOnly, Boolean required) {
       this._owner = owner;
       this._instance = instance;

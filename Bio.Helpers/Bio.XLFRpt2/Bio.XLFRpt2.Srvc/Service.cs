@@ -58,7 +58,7 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
       channelProperties["authorizedGroup"] = account.Value;
       channelProperties["typeFilterLevel"] = TypeFilterLevel.Full;
       IpcChannel serverChannel = new IpcChannel(channelProperties, null, null);
-      ChannelServices.RegisterChannel(serverChannel);
+      ChannelServices.RegisterChannel(serverChannel, false);
 
       // Expose an object for remote calls.
       RemotingConfiguration.RegisterWellKnownServiceType(

@@ -300,7 +300,6 @@ namespace Bio.Framework.Server {
     /// Инициализация
     /// </summary>
     /// <param name="request">Описание web-запроса</param>
-    /// <param name="selection">Фильтр по первичному ключу</param>
     public virtual void Init(CJsonStoreRequestGet request) {
       var v_rqget = request; 
       if (v_rqget == null)
@@ -478,6 +477,7 @@ namespace Bio.Framework.Server {
     /// <param name="metadata"></param>
     /// <param name="row"></param>
     /// <param name="bioParams"></param>
+    /// <param name="timeout"/>
     public void DoProcessRowPost(CJsonStoreMetadata metadata, CJsonStoreRow row, Params bioParams, Int32 timeout) {
       var v_params = this._buildPostParams(metadata, row, bioParams);
       if ((row.changeType == CJsonStoreRowChangeType.Added) ||
@@ -502,6 +502,7 @@ namespace Bio.Framework.Server {
     /// <param name="metadata"></param>
     /// <param name="row"></param>
     /// <param name="bioParams"></param>
+    /// <param name="timeout"/>
     public void DoExecuteSQL(CJsonStoreMetadata metadata, CJsonStoreRow row, Params bioParams, Int32 timeout) {
       var v_params = this._buildPostParams(metadata, row, bioParams);
       this._doExecute(v_params, "execute", timeout);

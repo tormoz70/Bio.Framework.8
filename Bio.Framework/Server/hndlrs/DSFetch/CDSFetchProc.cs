@@ -42,8 +42,6 @@ using System.Xml;
     private void doOnError() {
     }
 
-    private IDbCommand _cursorCmd = null;
-    private IDbCommand _execCmd = null;
     private void doProc() {
       if (this._conn != null) {
         try {
@@ -52,7 +50,7 @@ using System.Xml;
           this.doOnStarted();
           this._doProcessCursor();
         } catch (ThreadAbortException) {
-        } catch (EBioSQLBreaked ex) {
+        } catch (EBioSQLBreaked) {
           this._state = RemoteProcState.Breaked;
         } catch (Exception ex) {
           this._state = RemoteProcState.Error;

@@ -15,7 +15,7 @@ namespace Bio.Helpers.Controls.SL.SLPropertyGrid {
     /// <summary>
     /// Constructor
     /// </summary>
-    /// <param name="typeName">The AssemblyQualifiedName of the type that must inherit from <see cref="PropertyEditor"/></param>
+    /// <param name="type">The AssemblyQualifiedName of the type that must inherit from <see cref="PropertyEditor"/></param>
     public EditorAttribute(Type type) {
       if (type == null) throw new ArgumentNullException("type");
       if (!type.IsSubclassOf(typeof(PropertyEditor)))

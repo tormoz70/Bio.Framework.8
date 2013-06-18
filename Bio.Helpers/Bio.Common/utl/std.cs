@@ -360,24 +360,6 @@ namespace Bio.Helpers.Common {
     }
 
     /// <summary>
-    /// Заменяет "&" на "&amp;"
-    /// </summary>
-    /// <param name="line"></param>
-    /// <returns></returns>
-    public static String UrlEncode(String line) {
-      return line.Replace("&", "&amp;");
-    }
-
-    /// <summary>
-    /// Заменяет "&amp;" на "&"
-    /// </summary>
-    /// <param name="line"></param>
-    /// <returns></returns>
-    public static String UrlDecode(String line) {
-      return line.Replace("&amp;", "&");
-    }
-
-    /// <summary>
     /// Возвращает x - (x / y) * y
     /// </summary>
     /// <param name="x"></param>

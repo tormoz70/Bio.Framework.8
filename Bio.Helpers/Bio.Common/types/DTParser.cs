@@ -90,78 +90,7 @@
 
     protected DateTimeParser() { }
 
-    /// <summary>
-    /// Возврящает формат даты по индексу
-    /// </summary>
-    /// <param name="pFmtIndex">Индекс формата</param>
-    /// <returns>Формат даты</returns>
-    //public virtual string SYS_CS_DATETIME_FORMATS(int pFmtIndex) {
-    //  switch (pFmtIndex) {
-    //    case 0: return "yyyyMMddHHmmss";
-    //    case 1: return "dd.MM.yyyy HH:mm:ss";
-    //    case 2: return "yyyy.MM.dd HH:mm:ss";
-    //    case 3: return "yyyy.MM.dd";
-    //    case 4: return "dd.MM.yyyy";
-    //    case 5: return "yyyyMMdd";
-    //    case 6: return "yyyyMM";
-    //    case 7: return "ddMMyyyy";
-    //    case 8: return "yyyy-MM-ddTHH:mm:ss";
-    //    case 9: return "dd.MM.yyyy H:mm:ss";
-    //    case 10: return "yyyy.MM.dd HH:mm";
-    //    case 11: return "yyyyMMdd HH:mm:ss";
-    //    case 12: return "yyyyMMdd HH:mm";
-    //    case 13: return "dd.MM.yyyy H:mm";
-    //    default: return null;
-    //  }
-    //}
-    //protected const String csYear = "[012]\\d{3}";
-    //protected const String csMonth = "[01]\\d{1}";
-    //protected const String csDay = "[0123]\\d{1}";
-    //protected const String csHour = "[012]?\\d{1}";
-    //protected const String csHourS = "\\d{1}";
-    //protected const String csMinute = "[012345]\\d{1}";
-    //protected const String csSecs = "[012345]\\d{1}";
-    //protected const String cdD = "[./-]";
-    //protected const String cdT = "[:]";
-    //protected virtual int SYS_CI_DATETIME_FORMATS_COUNT {
-    //  get { return 14; }
-    //}
-    //protected virtual String SYS_CS_DATETIME_REGEXS(int pFmtIndex) {
-    //  switch (pFmtIndex) {
-    //    case 0: return "^" + csYear + csMonth + csDay + csHour + csMinute + csSecs + "$";
-    //    case 1: return "^" + csDay + cdD + csMonth + cdD + csYear + "\\s" + csHour + cdT + csMinute + cdT + csSecs + "$";
-    //    case 2: return "^" + csYear + cdD + csMonth + cdD + csDay + "\\s" + csHour + cdT + csMinute + cdT + csSecs + "$";
-    //    case 3: return "^" + csYear + cdD + csMonth + cdD + csDay + "$";
-    //    case 4: return "^" + csDay + cdD + csMonth + cdD + csYear + "$";
-    //    case 5: return "^" + csYear + csMonth + csDay + "$";
-    //    case 6: return "^" + csYear + csMonth + "$";
-    //    case 7: return "^" + csDay + csMonth + csYear + "$";
-    //    case 8: return "^" + csYear + cdD + csMonth + cdD + csDay + "T" + csHour + cdT + csMinute + cdT + csSecs + "$";
-    //    case 9: return "^" + csDay + cdD + csMonth + cdD + csYear + "\\s" + csHourS + cdT + csMinute + cdT + csSecs + "$";
-    //    case 10: return "^" + csYear + cdD + csMonth + cdD + csDay + "\\s" + csHour + cdT + csMinute + "$";
-    //    case 11: return "^" + csYear + csMonth + csDay + "\\s" + csHour + cdT + csMinute + cdT + csSecs + "$";
-    //    case 12: return "^" + csYear + csMonth + csDay + "\\s" + csHour + cdT + csMinute + "$";
-    //    case 13: return "^" + csDay + cdD + csMonth + cdD + csYear + "\\s" + csHour + cdT + csMinute + "$";
-    //    default: return null;
-    //  }
-    //}
-
     public CDTFmt[] Fmts { get; set; }
-
-    /// <summary>
-    /// Подбирает нужный формат даты по значению даты
-    /// </summary>
-    /// <param name="pDTValue">Дата в виде строки</param>
-    /// <returns>Индекс фрмата</returns>
-    //public int DetectDateTimeFmtIdx(String pDTValue) {
-    //  Regex vr;
-    //  for (int i = 0; i < SYS_CI_DATETIME_FORMATS_COUNT; i++) {
-    //    vr = new Regex(SYS_CS_DATETIME_REGEXS(i));
-    //    if (vr.IsMatch(pDTValue))
-    //      return i;
-    //  }
-    //  return -1;
-    //}
 
     /// <summary>
     /// Подбирает нужный формат даты по значению даты

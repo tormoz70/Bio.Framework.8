@@ -143,7 +143,7 @@ namespace Bio.Helpers.Common.Types {
 
       //var v_valueChangedMethod = tb.BaseType.GetMethod("valueChanged");
       var v_setPropertyValueMethod = tb.BaseType.GetMethod("setPropertyValue");
-      System.Reflection.Emit.Label lbl1 = default(System.Reflection.Emit.Label);
+      //System.Reflection.Emit.Label lbl1 = default(System.Reflection.Emit.Label);
       ILGenerator setIL = setPropMthdBldr.GetILGenerator();
 
       /*setIL.DeclareLocal(typeof(bool));
@@ -276,7 +276,6 @@ namespace Bio.Helpers.Common.Types {
     /// </summary>
     /// <param name="obj"></param>
     /// <param name="propertyName"></param>
-    /// <param name="comparison"></param>
     /// <returns></returns>
     public static PropertyInfo FindPropertyOfObject(Object obj, String propertyName) {
       return FindPropertyOfObject(obj, propertyName, StringComparison.CurrentCultureIgnoreCase);

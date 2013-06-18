@@ -1075,7 +1075,6 @@ namespace Bio.Framework.Client.SL {
           },
           callback = (sndr, args) => {
             if (args.response.success) {
-              Type rowType = null;
               CJsonStoreRequest rqst = args.request as CJsonStoreRequest;
               CJsonStoreResponse rsp = args.response as CJsonStoreResponse;
               if (rsp != null)

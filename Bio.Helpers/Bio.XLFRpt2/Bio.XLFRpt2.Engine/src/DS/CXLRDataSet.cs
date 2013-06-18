@@ -19,16 +19,15 @@ namespace Bio.Helpers.XLFRpt2.Engine {
   public delegate void DlgOnProgressDataSet(CXLRDataSet pSender, Decimal pPrgPrc);
 
   public class CXLRDataSet:DisposableObject{
-//private
+
     private XLRDataSource FOwner = null;
-    //private CXLRDTblFactory FDSTable = null;
-    //private CXLRDataFactory FDataFactory = null;
     private CXLRootGroup FRootGroup;
 
-//public
+#pragma warning disable 0067
     public event DlgOnProgressDataSet OnProgress;
-    //constructor
-		public CXLRDataSet(XLRDataSource pOwner){
+#pragma warning restore 0067
+
+    public CXLRDataSet(XLRDataSource pOwner){
 			this.FOwner = pOwner;
     }
 
@@ -38,8 +37,6 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         this.FRootGroup = null;
       }
     }
-
-    //public CXLRDataFactory DataFactory { get; private set; }
 
 		public XLRDataSource Owner{
 			get{
@@ -52,18 +49,6 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         return this.FRootGroup;
       }
     }
-
-    //private String getSQL(){
-    //  String vRslt = this.FOwner.SQL;
-    //  /*if((vRslt != null) && (vRslt.Length > 0)){
-    //    for(int i=0; i<this.FOwner.Owner.RptDefinition.InParams.Count; i++)
-    //      vRslt = vRslt.Replace("#"+this.FOwner.Owner.RptDefinition.InParams[i].Name+"#", this.FOwner.Owner.RptDefinition.InParams[i].Value);
-    //    //SQLCSProcessor.ProcessSQLCSFunction(ref vRslt);
-    //  }else
-    //    vRslt = null;*/
-    //  return vRslt;
-    //}
-
 
     public void Init(Excel.Range dsRange) {
       this.FRootGroup = new CXLRootGroup(this, dsRange);
@@ -115,22 +100,13 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         }
       } else {
         this.Owner.Owner.writeLogLine("\tds:(" + this.Owner.Cfg.alias + ") : Заполнение структуры отчета из OuterDSTable...");
-        //long rnum = 0;
+        
         for (int i = 0; i < this.Owner.OuterDSTable.Rows.Count; i++) {
-          //rnum++;
           this.RootGroup.DoOnFetch(i, convertDataRow(this.Owner.OuterDSTable.Rows[i]));
         }
         this.Owner.Owner.writeLogLine("\tds:(" + this.Owner.Cfg.alias + ") : Заполнение структуры отчета из OuterDSTable - ОК.");
       }
 
-      //if (this.Owner.Owner.RptDefinition.DebugIsOn) {
-      //  this.Owner.Owner.writeLogLine("\tds:(" + this.Owner.DSAlias + ") : this.RootGroup.GetXmlDoc().Save...");
-      //  this.RootGroup.GetXmlDoc().Save(this.FOwner.Owner.RptDefinition.LogPath + this.FOwner.Owner.RptDefinition.ShrtCode + ".DS_DATA." + this.FOwner.DSRangeName + ".xml");
-      //  this.Owner.Owner.writeLogLine("\tds:(" + this.Owner.DSAlias + ") : this.RootGroup.GetXmlDoc().Save - OK.");
-      //}
-
-      //this.RootGroup.BuildReport();
-      //this.Owner.Charts.Build(this.RootGroup);
     }
 
 
@@ -139,12 +115,6 @@ namespace Bio.Helpers.XLFRpt2.Engine {
       CXLRDataFactory v_dataFactory = this.Owner.Owner.DataFactory;//CXLRDataFactory.createDataFactory(this.Owner.Cfg, this.Owner.DataFactoryTypeName);
       try {
 
-        //if(pOuterDSTable == null){
-        //  String vSQL = this.getSQL();
-        //  if(vSQL != null)
-        //    this.FDSTable.PrepareDSTable(vSQL);
-        //}else
-        //  this.FDSTable.PrepareDSTable(pOuterDSTable);
         v_dataFactory.Open(this.Owner.Owner.currentDbConnection, this.Owner.Cfg, timeout);
         if (v_dataFactory.Next()) {
           vResult = new Params();
@@ -154,9 +124,6 @@ namespace Bio.Helpers.XLFRpt2.Engine {
         }
 
       }finally{
-        //if (v_dataFactory != null)
-        //v_dataFactory.Dispose();
-        //v_dataFactory = null;
       }
       return vResult;
 		}

@@ -9,8 +9,6 @@ using Bio.Helpers.Common.Types;
 
 namespace Bio.Framework.Packets {
   public class CJsonStoreResponse : CBioResponse {
-    //public CSQLDirection cmd { get; set; }
-    public String transactionID { get; set; }
     /// <summary>
     /// Пакет данных который возвращается при запросе к БД типа "select"
     /// </summary>
@@ -31,7 +29,7 @@ namespace Bio.Framework.Packets {
       return jsonUtl.decode<CJsonStoreResponse>(pJsonString, new JsonConverter[] { new EBioExceptionConverter()/*t12, new CJsonStoreRowConverter() */});
     }
 
-    public String Encode() {
+    public override String Encode() {
       return jsonUtl.encode(this, new JsonConverter[] { new EBioExceptionConverter()/*t12, new CJsonStoreRowConverter() */});
     }
 

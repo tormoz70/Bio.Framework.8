@@ -331,10 +331,10 @@
     /// Загрузить результат выполнения
     /// </summary>
     public void loadResult() {
-      Params vPrms = new Params();
+      //Params vPrms = new Params();
       //vPrms.Add("cmd", Utl.NameOfEnumValue((Int32)CXLRptRequestCmdType.GetResult, typeof(CXLRptRequestCmdType), false));
       //Params vPrms = new Params(new Param("getResult", "true"));
-      String vUrl = null; // vPrms.bldUrlParams(this._lastRequestedURL);
+      //String vUrl = null; // vPrms.bldUrlParams(this._lastRequestedURL);
       //CFileDownloader.loadFileAsync(this.RptFileName, vUrl, this.loadFileAsyncCallback, null);
       //try {
       //  CFileDownloader.loadFile(this.RptFileName, vUrl);

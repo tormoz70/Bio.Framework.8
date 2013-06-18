@@ -76,10 +76,11 @@
     /// <param name="userAgentName">Название клиента</param>
     /// <param name="responseText">Ответ сервера</param>
     /// <param name="requestException">Ошибка, которая произошла при запросе</param>
-    /// <param name="pOnLogLine">Метод пишущий лог</param>
+    /// <param name="onLogLine">Метод пишущий лог</param>
+    /// <param name="timeOut">Сек</param>
     public static void getDataFromSrv(String url, WebProxy proxy, Params prms, String userAgentName,
                                       ref String responseText, ref EBioException requestException,
-                                      DOnLogLine pOnLogLine, int timeOut) {
+                                      DOnLogLine onLogLine, int timeOut) {
       syncObj4WebRequest.WaitOne();
       try {
         responseText = null;
@@ -100,18 +101,18 @@
         if (sessionID != null) {
           FCli.CookieContainer.Add(sessionID);
         }
-        addLogLine("<request>: Host: " + vUri.Host, pOnLogLine);
-        addLogLine("<request>: URL: " + url, pOnLogLine);
+        addLogLine("<request>: Host: " + vUri.Host, onLogLine);
+        addLogLine("<request>: URL: " + url, onLogLine);
         FCli.Method = "POST";
         FCli.UserAgent = userAgentName;
-        addLogLine("<request>: Method: " + FCli.Method, pOnLogLine);
+        addLogLine("<request>: Method: " + FCli.Method, onLogLine);
         Params vParams = (prms == null) ? new Params() : prms;
         vParams.Add("ajaxrqtimeout", ""+FCli.Timeout);
         String vParamsToPost = vParams.bldUrlParams();
 
         //String vParamsToPost = ((pParams == null) || (pParams.Count == 0)) ? "emptypost=yes" : pParams.bldUrlParams();
-        addLogLine("<request>: Params: " + vParamsToPost, pOnLogLine);
-        addLogLine("<request>: " + csSessionIdName + ": " + ((sessionID != null) ? sessionID.Value : "<null>"), pOnLogLine);
+        addLogLine("<request>: Params: " + vParamsToPost, onLogLine);
+        addLogLine("<request>: " + csSessionIdName + ": " + ((sessionID != null) ? sessionID.Value : "<null>"), onLogLine);
         //if(vParamsToPost != null) {
         byte[] postArray = Encoding.UTF8.GetBytes(vParamsToPost);
         FCli.ContentType = "application/x-www-form-urlencoded";
@@ -153,14 +154,14 @@
             vCooDom = (sessionID != null) ? sessionID.Domain : "<null>";
             vCooPath = (sessionID != null) ? sessionID.Path : "<null>";
           }
-          addLogLine("<recived>: " + csSessionIdName + ": " + vSessionID, pOnLogLine);
-          addLogLine("<recived>: Domain: " + vCooDom, pOnLogLine);
-          addLogLine("<recived>: Path: " + vCooPath, pOnLogLine);
+          addLogLine("<recived>: " + csSessionIdName + ": " + vSessionID, onLogLine);
+          addLogLine("<recived>: Domain: " + vCooDom, onLogLine);
+          addLogLine("<recived>: Path: " + vCooPath, onLogLine);
           Stream data = vRsp.GetResponseStream();
           StreamReader reader = new StreamReader(data, Encoding.UTF8);
           try {
             responseText = reader.ReadToEnd();
-            addLogLine("<recived>: " + responseText, pOnLogLine);
+            addLogLine("<recived>: " + responseText, onLogLine);
           } catch (Exception ex) {
             requestException = new EBioException("Ошибка при получении ответа с сервера. Сообщение: " + ex.Message + "\n"
               + "Параметры: " + vUri.AbsoluteUri + "?" + vParamsToPost, ex);
@@ -198,12 +199,7 @@
     /// <summary>
     /// Выполняет синхронный запрос к серверу
     /// </summary>
-    /// <param name="pURL">URL</param>
-    /// <param name="pParams">Дополнительные параметры запроса</param>
-    /// <param name="pUserAgentName">Название клиента</param>
-    /// <param name="vResponseText">Ответ сервера</param>
-    /// <param name="vRequestException">Ошибка, которая произошла при запросе</param>
-    /// <param name="pOnLogLine">Метод пишущий лог</param>
+    /// <param name="request">URL</param>
     public static void getDataFromSrv(CAjaxRequest request) {
       try {
         WebClient v_client = new WebClient();
@@ -291,9 +287,10 @@
     /// <summary>
     /// Строит строку запроса URL
     /// </summary>
-    /// <param name="pServerUrl">URL сервера до уровня приложения</param>
+    /// <param name="requestException"></param>
+    /// <param name="responseText"></param>
+    /// <param name="converters"></param>
     /// <returns></returns>
-
     public static CAjaxResponse CreResponseObject(EBioException requestException, String responseText, JsonConverter[] converters) {
       CAjaxResponse vResponse = null;
       if (requestException == null) {

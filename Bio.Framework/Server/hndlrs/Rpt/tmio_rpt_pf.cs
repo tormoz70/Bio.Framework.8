@@ -7,9 +7,9 @@ namespace Bio.Framework.Server {
   using System.Xml;
   using System.IO;
 
-  /// <summary>
-  /// Обработчик запроса внутренностей компонента Rpt
-  /// </summary>
+  //// <summary>
+  //// Обработчик запроса внутренностей компонента Rpt
+  //// </summary>
   //public class tmio_rpt_pf:ABioHandlerBio {
 
   //  public tmio_rpt_pf(HttpContext pContext, CAjaxRequest pRequest)

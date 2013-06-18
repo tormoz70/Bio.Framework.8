@@ -46,12 +46,8 @@ namespace Bio.Framework.Client.SL {
     public CWebDBClient() { 
     }
 
-    private String _lastRequestedBioCode = null;
-
     public void Open(Params bioPrms, HtmlPopupWindowOptions opts) {
-      //HtmlPage.Window.
       var v_url_body = this._bldBodyUrl();
-      var v_url = "sys/HTMLShowPage.htm";
 
       this.bioParams = Params.PrepareToUse(this.bioParams, bioPrms);
       var v_cli = new CSQLRClient();

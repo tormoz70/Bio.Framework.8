@@ -367,11 +367,15 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     /// <summary>
     /// Создает описание отчета на основании переданных параметров
     /// </summary>
-    /// <param name="template">Путь к шаблону отчета</param>
-    /// <param name="rptParams">Параметрв отчета</param>
-    /// <param name="dataFactoryTypeName">Описание библиотеки, в которой реализован построитель набора данных для отчета</param>
-    /// <param name="reportResultFileName">Шаблон для создания имени файла результата</param>
-    /// <param name="debug">Если true, отладочный режим</param>
+    /// <param name="rpt_title"></param>
+    /// <param name="rpt_desc"></param>
+    /// <param name="rpt_template"></param>
+    /// <param name="rpt_params"></param>
+    /// <param name="dataFactoryTypeName"></param>
+    /// <param name="reportResultFileName"></param>
+    /// <param name="dss"></param>
+    /// <param name="connStr"></param>
+    /// <param name="debug"></param>
     /// <returns></returns>
     public static String BuildReportConfigXml1(
         String rpt_title,
@@ -456,12 +460,8 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     /// <summary>
     /// Синхронный вызов построителя отчета
     /// </summary>
-    /// <param name="template">Шаблон отчета</param>
-    /// <param name="rptParams">Параметры</param>
-    /// <param name="dataFactoryTypeName">Фабрика для создания таблицы с данными в виде "{полное имя класса}, {имя библиотеки без расширения}"</param>
-    /// <param name="reportResultFileName">Результирующее имя файла</param>
-    /// <param name="debug"></param>
-    /// <returns>Полный путь к результату построения отчета</returns>
+    /// <param name="cfg"></param>
+    /// <returns></returns>
     public static String BuildReportSync(CXLReportConfig cfg) {
 
       String vResult = null;
@@ -485,7 +485,6 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     internal CXLRDataFactory DataFactory {
       get {
         if (this._dataFactory == null) {
-          CXLRDataFactory rslt = null;
           if (this.DataSources.Count > 0) {
             this._dataFactory = CXLRDataFactory.createDataFactory(this.RptDefinition.RptCfg);
           }

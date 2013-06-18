@@ -58,11 +58,10 @@
     /// <summary>
     /// Конструктор
     /// </summary>
-    /// <param name="pOwner"></param>
-    /// <param name="pMsg"></param>
-    public EBioLongOpSessAlien(String pOwner)
+    /// <param name="owner"></param>
+    public EBioLongOpSessAlien(String owner)
       : base() {
-      this.Owner = pOwner;
+      this.Owner = owner;
     }
   }
 

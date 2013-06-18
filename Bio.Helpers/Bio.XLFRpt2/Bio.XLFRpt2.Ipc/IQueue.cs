@@ -12,11 +12,11 @@ namespace Bio.Helpers.XLFRpt2.Ipc {
     /// <param name="sessionID">ID сессии в которой создается процесс</param>
     /// <param name="userUID">UID пользователя, который запускает процесс</param>
     /// <param name="remoteIP">IP адрес с котороко запускается процесс</param>
-    /// <param name="prms">Параметры отчета</param>
+    /// <param name="prms_json">Параметры отчета</param>
     /// <param name="priority">Уроверь приоритетности</param>
     /// <param name="err_json">Ошибка, если она произошла</param>
     /// <returns>UID просесса</returns>
-    String Add(String rptCode, String sessionID, String userUID, String remoteIP, String prms_json, int pPriority, ref String err_json);
+    String Add(String rptCode, String sessionID, String userUID, String remoteIP, String prms_json, int priority, ref String err_json);
     /// <summary>
     /// Запрос файла результата отчета
     /// </summary>

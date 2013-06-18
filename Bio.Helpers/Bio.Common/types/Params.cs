@@ -556,15 +556,6 @@ namespace Bio.Helpers.Common.Types {
     }
 
     /// <summary>
-    /// Объект синхронизации
-    /// </summary>
-    //public Object SyncRoot {
-    //  get { 
-    //    return null; 
-    //  }
-    //}
-
-    /// <summary>
     /// Очищает список
     /// </summary>
     public new virtual void Clear() {

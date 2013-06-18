@@ -149,9 +149,9 @@ namespace Bio.Framework.Client.SL {
       throw new NotImplementedException();
     }
 
-    public event EventHandler<DataChangedEventArgs> DataChanged;
+    //public event EventHandler<DataChangedEventArgs> DataChanged;
 
-    public event EventHandler<DataChangingCancelEventArgs> DataChanging;
+    //public event EventHandler<DataChangingCancelEventArgs> DataChanging;
 
     private String genGlobalStoreValueName(String name) {
       return this.GetType().Name + "::" + name;

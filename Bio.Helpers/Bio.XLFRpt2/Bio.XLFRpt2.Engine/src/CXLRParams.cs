@@ -6,9 +6,9 @@ namespace Bio.Helpers.XLFRpt2.Engine {
   using Bio.Helpers.Common.Types;
   using System.Text;
 
-	/// <summary>
-	/// 
-	/// </summary>
+	//// <summary>
+	//// 
+	//// </summary>
 	/*public class TXLRParam{
 		private String FName;
 		private String FValue;

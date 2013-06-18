@@ -7,9 +7,9 @@ namespace Bio.Helpers.XLFRpt2.Engine {
   using System.Collections.Generic;
   using System.Data;
 
-	/// <summary>
-	/// 
-	/// </summary>
+	//// <summary>
+	//// 
+	//// </summary>
   //public class CXLRDataDef{
   //  public String Name { get; set; }
   //  public String SQL { get; set; }
