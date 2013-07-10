@@ -1,31 +1,15 @@
 ﻿using System;
-using System.Net;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Ink;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 using Bio.Helpers.Common.Types;
 using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Text;
 using Bio.Framework.Packets;
 using Bio.Helpers.Common;
-using System.Threading;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Data;
-using System.ComponentModel.DataAnnotations;
-using System.Windows.Controls.Primitives;
 using System.ComponentModel;
 using System.Globalization;
-using System.Diagnostics;
-using System.Windows.Threading;
 using System.Runtime.CompilerServices;
 
 namespace Bio.Framework.Client.SL {
@@ -398,27 +382,24 @@ namespace Bio.Framework.Client.SL {
     private void _loadDS(Type rowType, CJsonStoreResponse jsRsp) {
       this._rowMonEventsDisabled = true;
       try {
-        CJsonStoreResponse v_jsRsp = jsRsp;
+        var v_jsRsp = jsRsp;
         if ((v_jsRsp != null) && (v_jsRsp.packet != null) &&
                 (v_jsRsp.packet.metaData != null) && (v_jsRsp.packet.rows != null)) {
           if (rowType != null)
             this._lastRowType = rowType;
-          Type v_lastRowType = this._lastRowType;
+          var v_lastRowType = this._lastRowType;
           if (v_lastRowType != null) {
             this.ClearData();
-            Int64 vRowNum = v_jsRsp.packet.start;
-            if (v_lastRowType != null) {
-              foreach (var r in v_jsRsp.packet.rows) {
-                var row = this.AddRow();
-                row.DisableEvents();
-                try {
-                  foreach (CJsonStoreMetadataFieldDef fld in v_jsRsp.packet.metaData.fields) {
-                    var value = r.Values[v_jsRsp.packet.metaData.indexOf(fld.name)];
-                    this._setFieldValue(row, fld.name, value);
-                  }
-                } finally {
-                  row.EnableEvents();
+            foreach (var r in v_jsRsp.packet.rows) {
+              var row = this.AddRow();
+              row.DisableEvents();
+              try {
+                foreach (var fld in v_jsRsp.packet.metaData.fields) {
+                  var value = r.Values[v_jsRsp.packet.metaData.indexOf(fld.name)];
+                  this._setFieldValue(row, fld.name, value);
                 }
+              } finally {
+                row.EnableEvents();
               }
             }
           }
@@ -962,9 +943,9 @@ namespace Bio.Framework.Client.SL {
     }
 
     private void _applyPostingResults(CJsonStoreData packet) {
-      foreach (var row in packet.rows.Where(r => (r.changeType == CJsonStoreRowChangeType.Added) || (r.changeType == CJsonStoreRowChangeType.Modified))) {
+      foreach (var row in packet.rows.Where(r => (r.ChangeType == CJsonStoreRowChangeType.Added) || (r.ChangeType == CJsonStoreRowChangeType.Modified))) {
         var v_ds_row = this.DS0.Cast<Object>().FirstOrDefault(itm => {
-          return String.Equals((String)CTypeFactory.GetValueOfPropertyOfObject(itm, csInternalROWUID_FieldName), row.internalROWUID);
+          return String.Equals((String)CTypeFactory.GetValueOfPropertyOfObject(itm, csInternalROWUID_FieldName), row.InternalROWUID);
         });
         if (v_ds_row != null) {
           for (int i = 0; i < packet.metaData.fields.Count; i++) {
@@ -1027,7 +1008,7 @@ namespace Bio.Framework.Client.SL {
     private CJsonStoreRow _rowAsJSRow(CJSChangedRow row) {
       if (row != null) {
         String v_intRowUID = CTypeFactory.GetValueOfPropertyOfObject(row.CurRow, csInternalROWUID_FieldName) as String;
-        var v_rslt = new CJsonStoreRow() { internalROWUID = v_intRowUID, changeType = row.State };
+        var v_rslt = new CJsonStoreRow() { InternalROWUID = v_intRowUID, ChangeType = row.State };
         foreach (var fd in this._metadata.fields) {
           Object v_value = CTypeFactory.GetValueOfPropertyOfObject(row.CurRow, fd.name);
           v_rslt.Values.Add(v_value);

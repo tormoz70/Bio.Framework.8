@@ -98,7 +98,7 @@ namespace Bio.Framework.Packets {
     }
 
     public static CJsonStoreRow CreateNewRow(CJsonStoreMetadata metadata) {
-      var newRow = new CJsonStoreRow() { internalROWUID = Guid.NewGuid().ToString("N"), changeType = CJsonStoreRowChangeType.Unchanged };
+      var newRow = new CJsonStoreRow() { InternalROWUID = Guid.NewGuid().ToString("N"), ChangeType = CJsonStoreRowChangeType.Unchanged };
       if (metadata != null) {
         foreach (var fd in metadata.fields)
           newRow.Values.Add(null);

@@ -1,27 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 using System.ComponentModel;
-using System.Threading;
 using Bio.Helpers.Common;
-using Bio.Framework.Packets;
 using Bio.Helpers.Common.Types;
 
 namespace Bio.Framework.Client.SL {
-  public class CPluginViewBase : UserControl {
+  public class CPluginViewBase : UserControl, IPluginView {
     public IPlugin ownerPlugin { get; protected set; }
     public CPluginViewBase() {
       this.IsDialog = false;
       if(!Utl.DesignTime){
-        this.Loaded += new RoutedEventHandler(CPluginViewBase_Loaded);
+        this.Loaded += CPluginViewBase_Loaded;
       }
     }
 
@@ -31,9 +21,13 @@ namespace Bio.Framework.Client.SL {
     }
 
     /// <summary>
-    /// Происходит при отображении View в контейнере.
+    /// Происходит при отображении View в контейнере, где sender - ссылка на View.
     /// </summary>
     public event EventHandler OnShow;
+    /// <summary>
+    /// Происходит при отображении диалогового окна, в котором собирается отобразится данный View. Соответственно sender - указатель на диалоговое окно. Можно использовать для установки размеров окна.
+    /// </summary>
+    public event EventHandler OnShowDialog;
     /// <summary>
     /// Происходит перед закрытием View.
     /// </summary>
@@ -80,14 +74,21 @@ namespace Bio.Framework.Client.SL {
       this._callback = callback;
       this.IsDialog = true;
       if (this.ownerWindow == null) {
-        this.ownerWindow = new CPluginViewDialog(this.ownerPlugin);
-        this.ownerWindow.Closed += new EventHandler(ownerWindow_Closed);
-        this.ownerWindow.Closing += new EventHandler<CancelEventArgs>(ownerWindow_Closing);
+        this.ownerWindow = new CPluginViewDialog(this);
+        this.ownerWindow.Closed += ownerWindow_Closed;
+        this.ownerWindow.Closing += ownerWindow_Closing;
+        this.ownerWindow.OnShow += ownerWindow_OnShow;
         if (this._buttonDefs != null)
           this.ownerWindow.AddButtons(this._buttonDefs);
       }
       if (!this.ownerWindow.IsVisible)
         this.ownerWindow.ShowDialog();
+    }
+
+    void ownerWindow_OnShow(object sender, EventArgs e) {
+      var v_onShowDialog = this.OnShowDialog;
+      if (v_onShowDialog != null)
+        v_onShowDialog(sender, e);
     }
 
     /// <summary>
@@ -109,6 +110,10 @@ namespace Bio.Framework.Client.SL {
     public Boolean? DialogResult {
       get {
         return (this.ownerWindow != null) ? this.ownerWindow.DialogResult : null;
+      }
+      set {
+        if (this.ownerWindow != null)
+          this.ownerWindow.DialogResult = value;
       }
     }
 

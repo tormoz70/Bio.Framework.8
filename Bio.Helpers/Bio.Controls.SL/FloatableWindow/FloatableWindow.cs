@@ -212,11 +212,11 @@ namespace Bio.Helpers.Controls.SL {
     public FloatableWindow() {
       this.DefaultStyleKey = typeof(FloatableWindow);
       this.ResizeMode = ResizeMode.CanResize;
-      this.LayoutUpdated += new EventHandler(this.doOnLayoutUpdated);
+      this.LayoutUpdated += this.doOnLayoutUpdated;
     }
 
     private void doOnLayoutUpdated(Object sender, EventArgs e) {
-      this._doOnShow(sender, e);
+      this._doOnShow(sender ?? this, e);
     }
 
     /// <summary>

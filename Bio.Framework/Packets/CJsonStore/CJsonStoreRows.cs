@@ -1,12 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.ComponentModel;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json;
-using System.Reflection;
-using Bio.Helpers.Common;
 using Bio.Helpers.Common.Types;
 
 namespace Bio.Framework.Packets {
@@ -22,11 +15,11 @@ namespace Bio.Framework.Packets {
   };
   public class CJsonStoreRow : ICloneable {
     public CJsonStoreRow() { this.Values = new List<Object>(); }
-    public String internalROWUID { get; set; }
-    public CJsonStoreRowChangeType changeType { get; set; }
+    public String InternalROWUID { get; set; }
+    public CJsonStoreRowChangeType ChangeType { get; set; }
     public List<Object> Values { get; set; }
     public object Clone() {
-      var newRow = new CJsonStoreRow() { internalROWUID = this.internalROWUID, changeType = this.changeType };
+      var newRow = new CJsonStoreRow { InternalROWUID = this.InternalROWUID, ChangeType = this.ChangeType };
       foreach (var val in this.Values) {
         newRow.Values.Add((val is ICloneable) ? (val as ICloneable).Clone() : val);
       }

@@ -1,15 +1,55 @@
-CREATE OR REPLACE PACKAGE ddl$utl
-  IS
-  procedure reset_seq(seq_name in varchar2, tbl_name in varchar2, id_fld_name in varchar2);
+CREATE OR REPLACE PACKAGE biosys.ddl$utl
+IS
+    procedure reset_seq(seq_name in varchar2, tbl_name in varchar2, id_fld_name in varchar2, where_clause in varchar2);
     function table_exists(p_table_name in varchar2) return number;
+
+    procedure create_seq(
+      seq_name in varchar2,
+      inc_by in number default null,
+      start_with in number default null,
+      minval in number default null,
+      maxval in number default null,
+      cycleval in varchar2 default null,
+      orderval in varchar2 default null,
+      cacheval in number default null
+    );
 
 END; -- Package spec
 /
-CREATE OR REPLACE PACKAGE BODY ddl$utl
+CREATE OR REPLACE PACKAGE BODY biosys.ddl$utl
 IS
 
-  /* tbl_name передается в виде <имя схемы>.<имя таблицы> */
-  procedure reset_seq(seq_name in varchar2, tbl_name in varchar2, id_fld_name in varchar2)
+  procedure create_seq(
+    seq_name in varchar2,
+    inc_by in number default null,
+    start_with in number default null,
+    minval in number default null,
+    maxval in number default null,
+    cycleval in varchar2 default null,
+    orderval in varchar2 default null,
+    cacheval in number default null
+  )
+  is
+    vSQL varchar2(1024);
+  begin
+    vSQL := 'DROP SEQUENCE '||seq_name;
+    begin
+      execute immediate vSQL;
+    exception
+      when OTHERS then
+        null;
+    end;
+    vSQL := 'CREATE SEQUENCE '||seq_name||' INCREMENT BY '||nvl(inc_by, 1)||' START WITH '||nvl(start_with, 0)||
+              ' '||(case when minval is null then 'nominvalue' else 'minvalue '||minval end)||
+              ' '||(case when maxval is null then 'nomaxvalue' else 'maxvalue '||maxval end)||
+              ' '||(case when cycleval is null then 'nocycle' else cycleval end)||
+              ' '||(case when orderval is null then 'noorder' else orderval end)||
+              ' '||(case when cacheval is null then 'nocache' else 'cache '||cacheval end);
+    execute immediate vSQL;
+  end;
+
+  --tbl_name передается в виде <имя схемы>.<имя таблицы>
+  procedure reset_seq(seq_name in varchar2, tbl_name in varchar2, id_fld_name in varchar2, where_clause in varchar2)
   is
     vSQL varchar2(1024);
     vMax integer;
@@ -22,7 +62,7 @@ IS
       v_seq_name := v_schema_name||'.'||v_seq_name;
     end if;
 
-    vSQL := 'select max('||id_fld_name||') from '||tbl_name;
+    vSQL := 'select max('||id_fld_name||') from '||tbl_name||where_clause;
     execute immediate vSQL into vMax;
     vMax := nvl(vMax, 0) + 1;
     vSQL := 'DROP SEQUENCE '||v_seq_name;
@@ -30,10 +70,9 @@ IS
       execute immediate vSQL;
     exception
       when OTHERS then
-        vSQL := '';
+        null;
     end;
-    vSQL := 'CREATE SEQUENCE '||v_seq_name||' INCREMENT BY 1 START WITH '||vMax||' MINVALUE 0 MAXVALUE 999999999 CYCLE NOORDER CACHE 2';
-    execute immediate vSQL;
+    create_seq(seq_name=>v_seq_name, inc_by=>1, start_with=>0, minval=>0, maxval=>vMax, cycleval=>null, orderval=>null, cacheval=>2);
   end;
 
   function table_exists(p_table_name in varchar2) return number

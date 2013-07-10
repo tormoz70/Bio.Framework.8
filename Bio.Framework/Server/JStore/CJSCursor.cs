@@ -480,11 +480,11 @@ namespace Bio.Framework.Server {
     /// <param name="timeout"/>
     public void DoProcessRowPost(CJsonStoreMetadata metadata, CJsonStoreRow row, Params bioParams, Int32 timeout) {
       var v_params = this._buildPostParams(metadata, row, bioParams);
-      if ((row.changeType == CJsonStoreRowChangeType.Added) ||
-          (row.changeType == CJsonStoreRowChangeType.Modified)) {
+      if ((row.ChangeType == CJsonStoreRowChangeType.Added) ||
+          (row.ChangeType == CJsonStoreRowChangeType.Modified)) {
             this._doExecute(v_params, "insertupdate", timeout);
         this._returnParamsToRow(metadata, row, v_params);
-      } else if (row.changeType == CJsonStoreRowChangeType.Deleted)
+      } else if (row.ChangeType == CJsonStoreRowChangeType.Deleted)
         this._doExecute(v_params, "delete", timeout);
     }
 

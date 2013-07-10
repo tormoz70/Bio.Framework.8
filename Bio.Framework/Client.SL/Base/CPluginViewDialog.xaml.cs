@@ -1,23 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
-using Bio.Framework.Client.SL;
-using Bio.Helpers.Common.Types;
 using Bio.Helpers.Controls.SL;
-using System.Threading;
-using System.ComponentModel;
-using System.Collections;
-using Bio.Helpers.Common;
-using Bio.Framework.Packets;
-using System.Reflection;
 using Bio.Helpers.Common.Extentions;
 
 namespace Bio.Framework.Client.SL {
@@ -58,13 +44,13 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    private IPlugin _owner = null;
-    public CPluginViewDialog(IPlugin owner)
+    private CPluginViewBase _viewContent = null;
+    public CPluginViewDialog(CPluginViewBase viewContent)
       : base() {
       InitializeComponent();
-      this._owner = owner;
-      this.Title = this._owner.ViewTitle;
-      this.OnShow += new EventHandler(CPluginViewDialog_OnShow);
+      this._viewContent = viewContent;
+      this.Title = this._viewContent.ownerPlugin.ViewTitle;
+      this.OnShow += CPluginViewDialog_OnShow;
     }
 
     public override void ShowDialog() {
@@ -72,7 +58,13 @@ namespace Bio.Framework.Client.SL {
     }
 
     void CPluginViewDialog_OnShow(object sender, EventArgs e) {
-      this._owner.View.Show(this.contentControlPart);
+      //this.Width = this._viewContent.Width;
+      //this.Height = this._viewContent.Height;
+      //this.VerticalAlignment = VerticalAlignment.Stretch;
+      //this.HorizontalAlignment = HorizontalAlignment.Stretch;
+      //this.VerticalContentAlignment = VerticalAlignment.Stretch;
+      //this.HorizontalContentAlignment = HorizontalAlignment.Stretch;
+      this._viewContent.Show(this.contentControlPart);
     }
 
 
