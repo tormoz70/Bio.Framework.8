@@ -131,9 +131,9 @@ namespace Bio.Framework.Client.SL {
           //if (row.Header == null) {
           Int32 v_row_index = row.GetIndex();
           Int64 v_start_row = 0;
-          if (this._owner._jsClient.pageSize > 0)
-            v_start_row = (this._owner._jsClient.pageCurrent - 1) * this._owner._jsClient.pageSize;
-          String v_max_rownum = "" + (v_start_row + ((this._owner._jsClient.pageSize > 0) ? this._owner._jsClient.pageSize : this._owner._jsClient.DS.Count()));
+          if (this._owner._jsClient.PageSize > 0)
+            v_start_row = (this._owner._jsClient.PageCurrent - 1) * this._owner._jsClient.PageSize;
+          String v_max_rownum = "" + (v_start_row + ((this._owner._jsClient.PageSize > 0) ? this._owner._jsClient.PageSize : this._owner._jsClient.DS.Count()));
           var v_max_rownum_len = v_max_rownum.Length;
           String v_num_fmt = new String('0', v_max_rownum_len);
           String v_rnum = String.Format("{0:" + v_num_fmt + "} ", v_start_row + v_row_index + 1);

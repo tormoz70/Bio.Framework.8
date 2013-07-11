@@ -76,8 +76,8 @@ namespace Bio.Framework.Client.SL {
       }
 
       var v_cli = new CJsonStoreClient {
-        ajaxMng = ajaxMng,
-        bioCode = bioCode
+        AjaxMng = ajaxMng,
+        BioCode = bioCode
       };
       CbxItems storedItems = null;
       if (useCache)

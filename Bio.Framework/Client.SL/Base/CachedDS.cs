@@ -26,8 +26,8 @@ namespace Bio.Framework.Client.SL {
 
     public void loadData(Action<CachedDS> callback, LinkedListNode<CachedDS> next) {
       var v_cli = new CJsonStoreClient {
-        ajaxMng = ajaxMng,
-        bioCode = bioCode
+        AjaxMng = ajaxMng,
+        BioCode = bioCode
       };
       v_cli.Load(bioParams, (s, a) => {
         if (a.response.success) {

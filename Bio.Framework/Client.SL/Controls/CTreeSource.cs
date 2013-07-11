@@ -128,8 +128,8 @@ namespace Bio.Framework.Client.SL.Old {
     public void Load(Action<T> actOnItem, AjaxRequestDelegate callback) {
       if (this.OwnerTreeView == null)
         throw new Exception("Не определен атрибут OwnerTreeView в корневом элементе!");
-      this._cli.ajaxMng = this.AjaxMng;
-      this._cli.bioCode = this.BioCode;
+      this._cli.AjaxMng = this.AjaxMng;
+      this._cli.BioCode = this.BioCode;
       Params prms = null;
       if (!this.Equals(this.RootItem)) {
         prms = new Params();

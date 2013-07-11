@@ -38,8 +38,8 @@ namespace Bio.Framework.Client.SL.JSPropertyGrid {
         if(v_owner == null)
           throw new Exception(String.Format("{0} можно использовать только в {1}.", this.GetType().Name, typeof(CJSPropertyGrid).Name));
         var v_cli = new CJsonStoreClient() {
-          ajaxMng = v_owner.OwnerPlugin.Env.AjaxMng,
-          bioCode = this._attrs.BioCode
+          AjaxMng = v_owner.OwnerPlugin.Env.AjaxMng,
+          BioCode = this._attrs.BioCode
         };
         this.cbo.Items.Clear();
         this.cbo.Items.Add(new EnumWrapper {

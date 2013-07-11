@@ -72,7 +72,7 @@ namespace Bio.Framework.Client.SL {
 
   public class CJsonStoreClient {
 
-    private CJSGrid _grid { get; set; }
+    //private CJSGrid _grid { get; set; }
 
     public event JSClientEventHandler<JSClientBeforeMonRowEventArgs> OnBeforeInsertRow;
     public event JSClientEventHandler<JSClientAfterMonRowEventArgs> OnAfterInsertRow;
@@ -82,10 +82,10 @@ namespace Bio.Framework.Client.SL {
     public event JSClientEventHandler<JSClientRowPropertyChangingEventArgs> OnRowPropertyChanging;
     public event JSClientEventHandler<JSClientRowPropertyChangedEventArgs> OnRowPropertyChanged;
 
-    public IAjaxMng ajaxMng { get; set; }
-    public String bioCode { get; set; }
+    public IAjaxMng AjaxMng { get; set; }
+    public String BioCode { get; set; }
     private Params _bioParams = null;
-    public Params bioParams {
+    public Params BioParams {
       get {
         if (this._bioParams == null)
           this._bioParams = new Params();
@@ -96,19 +96,19 @@ namespace Bio.Framework.Client.SL {
       }
     }
     private Int64 _pageSize = 0L;
-    public Int64 pageSize {
+    public Int64 PageSize {
       get {
         return this._pageSize;
       }
     }
 
-    public void setPageSize(Int64 pageSize) {
+    public void SetPageSize(Int64 pageSize) {
       this._pageSize = pageSize;
     }
 
     public const String csInternalROWUID_FieldName = "InternalROWUID";
     private List<CPropertyMetadata> _genPropertyDefs(List<CJsonStoreMetadataFieldDef> fieldDefs) {
-      List<CPropertyMetadata> rslt = new List<CPropertyMetadata>();
+      var rslt = new List<CPropertyMetadata>();
       rslt.Add(new CPropertyMetadata {
         Name = csInternalROWUID_FieldName,
         DisplayName = String.Empty,
@@ -127,15 +127,15 @@ namespace Bio.Framework.Client.SL {
       return rslt;
     }
 
-    CTypeFactory _typeFactory = new CTypeFactory();
+    private CTypeFactory _typeFactory = new CTypeFactory();
     private Type _creRowType(List<CJsonStoreMetadataFieldDef> fieldDefs) {
-      List<CPropertyMetadata> v_propDefs = this._genPropertyDefs(fieldDefs);
+      var v_propDefs = this._genPropertyDefs(fieldDefs);
       return this._typeFactory.CreateType(v_propDefs);
     }
 
     private IEnumerable _creDSInst(Type rowType) {
       IEnumerable rslt = null;
-      if (this.pageSize > 0) {
+      if (this.PageSize > 0) {
         var v_listType = typeof(SortableCollectionView<>).MakeGenericType(new[] { rowType });
         rslt = Activator.CreateInstance(v_listType, new EventHandler<RefreshEventArgs>(this._doOnDSRequestRefresh)) as IEnumerable;
       } else {
@@ -164,19 +164,19 @@ namespace Bio.Framework.Client.SL {
     public List<CJSChangedRow> Changes { get { return this._dsChanges; } }
     public String groupDefinition { get; set; }
 
-    public CJSGrid grid {
-      get {
-        return this._grid;
-      }
-      set {
-        if (this._grid != value) {
-          this._grid = value;
-          if ((this._grid != null) && (this._grid._dataGrid != null)) {
-            this._grid._dataGrid.AutoGenerateColumns = true;
-          }
-        }
-      }
-    }
+    //public CJSGrid grid {
+    //  get {
+    //    return this._grid;
+    //  }
+    //  set {
+    //    if (this._grid != value) {
+    //      this._grid = value;
+    //      if ((this._grid != null) && (this._grid._dataGrid != null)) {
+    //        this._grid._dataGrid.AutoGenerateColumns = true;
+    //      }
+    //    }
+    //  }
+    //}
 
     public RestorePosModeType RestorePosMode { get; set; }
 
@@ -186,8 +186,8 @@ namespace Bio.Framework.Client.SL {
     }
 
     private List<CJsonStoreMetadataFieldDef> _creFldDefsRmt(CJsonStoreMetadata metaData) {
-      List<CJsonStoreMetadataFieldDef> flds = new List<CJsonStoreMetadataFieldDef>();
-      foreach (CJsonStoreMetadataFieldDef fld in metaData.fields)
+      var flds = new List<CJsonStoreMetadataFieldDef>();
+      foreach (var fld in metaData.fields)
         flds.Add(fld);
       return flds;
     }
@@ -288,7 +288,7 @@ namespace Bio.Framework.Client.SL {
     public void InsertRow(Int32 index, CRTObject row) {
       var v_ds = this.DS0 as IList;
       if (v_ds != null) {
-        Boolean v_cancel = false;
+        var v_cancel = false;
         this._doOnBeforeInsertRow(ref v_cancel, row);
         if (!v_cancel) {
           if (index >= 0)
@@ -337,15 +337,16 @@ namespace Bio.Framework.Client.SL {
         var row = CTypeFactory.CreateInstance(this._lastRowType, this._doOnRowPropertyChanging, this._doOnRowPropertyChanged);
         row.DisableEvents();
         try {
-          String v_intRowUID = Guid.NewGuid().ToString("N");
+          var v_intRowUID = Guid.NewGuid().ToString("N");
           this._setFieldValue(row, csInternalROWUID_FieldName, v_intRowUID);
         } finally {
           row.EnableEvents();
         }
         return row;
-      } else
-        return null;
+      }
+      return null;
     }
+
     public void RemoveRowAt(Int32 index) {
       var v_ds = this.DS0 as IList;
       if (v_ds != null) {
@@ -359,7 +360,7 @@ namespace Bio.Framework.Client.SL {
       if (row != null) {
         var v_ds = this.DS0 as IList;
         if (v_ds != null) {
-          Boolean v_cancel = false;
+          var v_cancel = false;
           this._doOnBeforeDeleteRow(ref v_cancel, row);
           if (!v_cancel) {
             var v_indx = this.IndexOf(row);
@@ -410,7 +411,7 @@ namespace Bio.Framework.Client.SL {
     }
 
     public void ClearData() {
-      IList v_ds = this.DS0 as IList;
+      var v_ds = this.DS0 as IList;
       if (v_ds != null) {
         v_ds.Clear();
       }
@@ -430,21 +431,21 @@ namespace Bio.Framework.Client.SL {
     /// Текущая страница
     /// </summary>
     private Int64 _curPage = 1;
-    public String pagePositionDesc {
+    public String PagePositionDesc {
       get {
-        if (this.pageSize > 0) {
-          String v_lstPageNum = (this._lastPageDetected == ciLastPageUnassigned) ? "?" : "" + this._lastPageDetected;
-          return String.Format("Страница {0} из {1} (по {2} записей)", this._curPage, v_lstPageNum, this.pageSize);
-        } else
-          return null;
+        if (this.PageSize > 0) {
+          var v_lstPageNum = (this._lastPageDetected == ciLastPageUnassigned) ? "?" : "" + this._lastPageDetected;
+          return String.Format("Страница {0} из {1} (по {2} записей)", this._curPage, v_lstPageNum, this.PageSize);
+        }
+        return null;
       }
     }
-    public Int64 pageCurrent {
+    public Int64 PageCurrent {
       get {
         return this._curPage;
       }
     }
-    public Int64 pageLast {
+    public Int64 PageLast {
       get {
         return this._lastPageDetected;
       }
@@ -453,12 +454,12 @@ namespace Bio.Framework.Client.SL {
     private PagedCollectionView _pcv = null;
     private IEnumerable _creDSGrp(IEnumerable ds, CJsonStoreMetadata metadata) {
       this._pcv = new PagedCollectionView(ds);
-      String[] flds = Utl.SplitString(this.groupDefinition, new Char[] { ',', ';', ' ' });
-      foreach (String fldName in flds) {
-        Int32 v_indx = metadata.indexOf(fldName);
+      var flds = Utl.SplitString(this.groupDefinition, new Char[] { ',', ';', ' ' });
+      foreach (var fldName in flds) {
+        var v_indx = metadata.indexOf(fldName);
         if (v_indx == -1)
           throw new EBioException("Группировка по полю {0} не возможна, т.к. поле не найдено в метаданных.");
-        PropertyGroupDescription gd = new PropertyGroupDescription();
+        var gd = new PropertyGroupDescription();
         gd.PropertyName = metadata.fields[v_indx].name;
         gd.StringComparison = StringComparison.CurrentCultureIgnoreCase;
         gd.Converter = new GroupHeaderFormatter(gd);
@@ -481,10 +482,9 @@ namespace Bio.Framework.Client.SL {
         v_groups.Sort((a, b) => {
           if (a.indx == b.indx)
             return 0;
-          else if (a.indx > b.indx)
+          if (a.indx > b.indx)
             return 1;
-          else
-            return -1;
+          return -1;
         });
         String v_grpDef = null;
         foreach (var f in v_groups)
@@ -500,7 +500,7 @@ namespace Bio.Framework.Client.SL {
 
     private Boolean _paramsChanged(Params bioPrms) {
 
-      Boolean vInParamsChanged = false;
+      var vInParamsChanged = false;
       if (bioPrms != null) {
         var v_inInPrms = bioPrms.Where(p => {
           return (p.ParamDir == ParamDirection.Input) || (p.ParamDir == ParamDirection.InputOutput);
@@ -546,7 +546,7 @@ namespace Bio.Framework.Client.SL {
     }
 
     private CJsonStoreSort _genJSSortDefinition(SortDescriptionCollection sort) {
-      CJsonStoreSort rslt = new CJsonStoreSort();
+      var rslt = new CJsonStoreSort();
       foreach (var s in sort) {
         rslt.Add(s.PropertyName, (s.Direction == ListSortDirection.Ascending) ? CJsonStoreSortOrder.Asc : CJsonStoreSortOrder.Desc);
       }
@@ -554,14 +554,14 @@ namespace Bio.Framework.Client.SL {
     }
 
     public event JSClientEventHandler<AjaxResponseEventArgs> AfterLoadData;
-    private void doAfterLoadData(AjaxResponseEventArgs args) {
+    private void _doAfterLoadData(AjaxResponseEventArgs args) {
       var handler = this.AfterLoadData;
       if (handler != null)
         handler(this, args);
     }
 
     public event JSClientEventHandler<CancelEventArgs> OnBeforeLoadData;
-    private void doBeforLoadData(Action<CancelEventArgs> callback) {
+    private void _doBeforLoadData(Action<CancelEventArgs> callback) {
       Utl.UiThreadInvoke(() => {
         var v_args = new CancelEventArgs {
           Cancel = false
@@ -575,19 +575,19 @@ namespace Bio.Framework.Client.SL {
     }
 
     public CJsonStoreMetadataFieldDef fieldDefByName(String fieldName) {
-      Int32 fldIndx = this._metadata.indexOf(fieldName);
-      CJsonStoreMetadataFieldDef fldDef = (fldIndx >= 0) ? this._metadata.fields[fldIndx] : null;
+      var fldIndx = this._metadata.indexOf(fieldName);
+      var fldDef = (fldIndx >= 0) ? this._metadata.fields[fldIndx] : null;
       return fldDef;
     }
 
-    private void _refreshGreadReadOnly() {
-      if (this.grid._dataGrid != null) {
-      }
-    }
+    //private void _refreshGreadReadOnly() {
+    //  if (this.grid._dataGrid != null) {
+    //  }
+    //}
 
     private void _addItemToSelection(CJsonStoreFilter selection, CRTObject item) {
-      var v_pk_vals = this._metadata.getPK(item);
-      foreach (var p in v_pk_vals) {
+      var v_pkVals = this._metadata.getPK(item);
+      foreach (var p in v_pkVals) {
         var v_item = new CJSFilterItemCondition {
           fieldName = p.Name,
           fieldType = ftypeHelper.ConvertTypeToFType(p.ParamType),
@@ -598,97 +598,104 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    private CJsonStoreFilter _getCurrentSelection() {
-      CJsonStoreFilter v_pkSelection = null;
-      if ((this.grid != null) && (this.grid.SelectedItem != null) && (this._metadata != null)) {
-        v_pkSelection = new CJsonStoreFilter {
-          fromPosition = 0,
-          joinCondition = CJSFilterItemSplitterType.And
-        };
-        this._addItemToSelection(v_pkSelection, this.grid.SelectedItem);
-        //this.grid.I
-      }
-      return v_pkSelection;
-    }
+    //private CJsonStoreFilter _getCurrentSelection() {
+    //  CJsonStoreFilter v_pkSelection = null;
+    //  if ((this.grid != null) && (this.grid.SelectedItem != null) && (this._metadata != null)) {
+    //    v_pkSelection = new CJsonStoreFilter {
+    //      fromPosition = 0,
+    //      joinCondition = CJSFilterItemSplitterType.And
+    //    };
+    //    this._addItemToSelection(v_pkSelection, this.grid.SelectedItem);
+    //  }
+    //  return v_pkSelection;
+    //}
 
-    //private Int32 _curPage = -1;
     private Int32 _curRowIndex = -1;
     private Int32 _curColumnIndex = -1;
-    private void _load(Params bioPrms, AjaxRequestDelegate callback, Int64? startFrom, CJsonStoreFilter locate, CJSRequestGetType getType, String waitMsg) {
-      String v_selection = null;
-      if (getType == CJSRequestGetType.GetSelectedPks) {
-        v_selection = (this._grid != null) ? this._grid.Selection.ToString() : null;
-        if (String.IsNullOrEmpty(v_selection)) {
-          if (callback != null) {
-            callback(this, new AjaxResponseEventArgs());
-          } else
-            return;
-        }
-      }
+    private void _load (
+      Params bioPrms, 
+      AjaxRequestDelegate callback, 
+      Int64? startFrom, 
+      CJsonStoreFilter locate, 
+      CJSRequestGetType getType, 
+      //String waitMsg,
+      String selection,
+      Int64 pageSize
+    ) {
+      var v_selection = selection;
+      //if (getType == CJSRequestGetType.GetSelectedPks) {
+      //  v_selection = (this._grid != null) ? this._grid.Selection.ToString() : null;
+      //  if (String.IsNullOrEmpty(v_selection)) {
+      //    if (callback != null) {
+      //      callback(this, new AjaxResponseEventArgs());
+      //    } else
+      //      return;
+      //  }
+      //}
       var v_locate = locate;
-
+      this.SetPageSize(pageSize);
       var v_storeSelection = (startFrom == null);
       if (startFrom == null)
-        startFrom = (this._curPage - 1) * this.pageSize;
+        startFrom = (this._curPage - 1) * this.PageSize;
 
-      if (this.ajaxMng == null)
+      if (this.AjaxMng == null)
         throw new EBioException("Свойство \"ajaxMng\" должно быть определено!");
-      if (String.IsNullOrEmpty(this.bioCode))
+      if (String.IsNullOrEmpty(this.BioCode))
         throw new EBioException("Свойство \"bioCode\" должно быть определено!");
 
-      this.doBeforLoadData((bla) => {
+      this._doBeforLoadData(bla => {
         if (bla.Cancel) {
           return;
         }
-        if (!(String.IsNullOrEmpty(waitMsg)) && (this.grid != null))
-          this.grid.showBusyIndicator(waitMsg);
+        //if (!(String.IsNullOrEmpty(waitMsg)) && (this.grid != null))
+        //  this.grid.showBusyIndicator(waitMsg);
 
-        if (this.grid != null)
-          this.setPageSize(this.grid.pageSize);
+        //if (this.grid != null)
+        //  this.SetPageSize(this.grid.pageSize);
         if (bioPrms != null) {
-          if (this.bioParams == null)
-            this.bioParams = bioPrms.Clone() as Params;
+          if (this.BioParams == null)
+            this.BioParams = bioPrms.Clone() as Params;
           else {
-            this.bioParams.Clear();
-            this.bioParams = this.bioParams.Merge(bioPrms, true);
+            this.BioParams.Clear();
+            this.BioParams = this.BioParams.Merge(bioPrms, true);
           }
         } else {
-          if (this.bioParams == null)
-            this.bioParams = new Params();
+          if (this.BioParams == null)
+            this.BioParams = new Params();
         }
 
-        Boolean v_isMetadataObsolete = false;
-        Boolean v_isFirstLoad = false;
-        this._detectIsFirstLoad(this.bioCode, this.bioParams, ref v_isMetadataObsolete, ref v_isFirstLoad);
+        var v_isMetadataObsolete = false;
+        var v_isFirstLoad = false;
+        this._detectIsFirstLoad(this.BioCode, this.BioParams, ref v_isMetadataObsolete, ref v_isFirstLoad);
         if (v_isFirstLoad) {
           startFrom = 0;
           this._curPage = 1;
           this._lastPageDetected = ciLastPageUnassigned;
         }
 
-        this._lastRequestedBioCode = this.bioCode;
+        this._lastRequestedBioCode = this.BioCode;
         CJsonStoreSort v_sort = null;
         if (!v_isMetadataObsolete && (this.DS0 != null)) {
           var v_cv = (this.DS0 as ICollectionView);
           if (v_cv != null)
             v_sort = this._genJSSortDefinition(v_cv.SortDescriptions);
-          if (this.RestorePosMode == RestorePosModeType.ByPrimaryKey) {
-            var v_paramsChanged = this._paramsChanged(this.bioParams);
-            if ((!v_paramsChanged) && (v_locate == null)) {
-              if (v_storeSelection || (this._curPage == startFrom))
-                v_locate = this._getCurrentSelection();
-            }
-          }
+          //if (this.RestorePosMode == RestorePosModeType.ByPrimaryKey) {
+          //  var v_paramsChanged = this._paramsChanged(this.BioParams);
+          //  if ((!v_paramsChanged) && (v_locate == null)) {
+          //    if (v_storeSelection || (this._curPage == startFrom))
+          //      v_locate = this._getCurrentSelection();
+          //  }
+          //}
         }
 
-        this._lastRequestedParams = (Params)this.bioParams.Clone();
+        this._lastRequestedParams = (Params)this.BioParams.Clone();
         var v_reqst = new CJsonStoreRequestGet {
-          bioCode = this.bioCode,
+          bioCode = this.BioCode,
           getType = getType,
-          bioParams = this.bioParams,
+          bioParams = this.BioParams,
           prms = null,
           packet = new CJsonStoreData {
-            limit = this.pageSize,
+            limit = this.PageSize,
             start = (Int64)startFrom,
             isFirstLoad = v_isFirstLoad,
             isMetadataObsolete = v_isMetadataObsolete,
@@ -698,8 +705,8 @@ namespace Bio.Framework.Client.SL {
           selection = v_selection,
           callback = (sndr, args) => {
             try {
-              Type rowType = null;
-              var v_rq = args.request as CJsonStoreRequest;
+              Type v_rowType = null;
+              var v_rq = (CJsonStoreRequest)args.request;
               var v_rsp = args.response as CJsonStoreResponse;
               if (v_rsp != null) {
                 this._lastReturnedParams = (v_rsp.bioParams != null) ? v_rsp.bioParams.Clone() as Params : null;
@@ -710,13 +717,13 @@ namespace Bio.Framework.Client.SL {
                   }
                   if (v_rq.packet.isMetadataObsolete) {
                     this._metadata = v_rsp.packet.metaData;
-                    List<CJsonStoreMetadataFieldDef> fldDefs = this._creFldDefsRmt(this._metadata);
-                    rowType = this._creRowType(fldDefs);
-                    this.DS0 = this._creDSInst(rowType);
+                    var v_fldDefs = this._creFldDefsRmt(this._metadata);
+                    v_rowType = this._creRowType(v_fldDefs);
+                    this.DS0 = this._creDSInst(v_rowType);
                   }
                   if (v_rsp.packet.limit > 0) {
-                    Int64 v_curPageI = ((v_rsp.packet.start + v_rsp.packet.rows.Count) / v_rsp.packet.limit);
-                    Double v_curPageD = ((Double)(v_rsp.packet.start + v_rsp.packet.rows.Count) / (Double)v_rsp.packet.limit);
+                    var v_curPageI = ((v_rsp.packet.start + v_rsp.packet.rows.Count) / v_rsp.packet.limit);
+                    var v_curPageD = ((Double)(v_rsp.packet.start + v_rsp.packet.rows.Count) / (Double)v_rsp.packet.limit);
                     if (v_curPageI < v_curPageD)
                       this._curPage = (int)(v_curPageD + 1.0);
                     else
@@ -729,33 +736,33 @@ namespace Bio.Framework.Client.SL {
                       this._lastPage = this._curPage + 1;
                     }
                   }
-                  if ((this.grid != null) && (this.grid._dataGrid != null))
-                    this.grid._dataGrid.ItemsSource = null;
+                  //if ((this.grid != null) && (this.grid._dataGrid != null))
+                  //  this.grid._dataGrid.ItemsSource = null;
 
-                  this._loadDS(rowType, v_rsp);
+                  this._loadDS(v_rowType, v_rsp);
 
-                  if ((this.grid != null) && (this.grid._dataGrid != null)) {
-                    this._initGroupDef(this._metadata);
-                    this.grid._dataGrid.disableColumnsChangedEvents();
-                    if ((v_rsp.packet.limit == 0) && (!String.IsNullOrEmpty(this.groupDefinition)))
-                      this.grid._dataGrid.ItemsSource = this._creDSGrp(this.DS0, this._metadata);
-                    else
-                      this.grid._dataGrid.ItemsSource = this.DS0;
+                  //if ((this.grid != null) && (this.grid._dataGrid != null)) {
+                  //  this._initGroupDef(this._metadata);
+                  //  this.grid._dataGrid.disableColumnsChangedEvents();
+                  //  if ((v_rsp.packet.limit == 0) && (!String.IsNullOrEmpty(this.groupDefinition)))
+                  //    this.grid._dataGrid.ItemsSource = this._creDSGrp(this.DS0, this._metadata);
+                  //  else
+                  //    this.grid._dataGrid.ItemsSource = this.DS0;
 
-                    this.grid._dataGrid.enableColumnsChangedEvents();
-                  }
+                  //  this.grid._dataGrid.enableColumnsChangedEvents();
+                  //}
 
-                  if (this.grid != null) {
-                    if (v_rq.packet.locate != null) {
-                      this._lastLocatedRow = this._locateInternal(v_rq.packet.locate);
-                      this.grid.SelectedItem = this._lastLocatedRow;
-                    } else
-                      this.grid.SelectedIndex = (this._curRowIndex == -1 ? 0 : this._curRowIndex);
-                    this.grid.CurrentColumnIndex = (this._curColumnIndex == -1 ? 0 : this._curColumnIndex);
-                  } else { 
+                  //if (this.grid != null) {
+                  //  if (v_rq.packet.locate != null) {
+                  //    this._lastLocatedRow = this._locateInternal(v_rq.packet.locate);
+                  //    this.grid.SelectedItem = this._lastLocatedRow;
+                  //  } else
+                  //    this.grid.SelectedIndex = (this._curRowIndex == -1 ? 0 : this._curRowIndex);
+                  //  this.grid.CurrentColumnIndex = (this._curColumnIndex == -1 ? 0 : this._curColumnIndex);
+                  //} else { 
                     if (v_rq.packet.locate != null) 
                       this._lastLocatedRow = this._locateInternal(v_rq.packet.locate);
-                  }
+                  //}
                 } else {
                   if (BioGlobal.Debug) {
                     var m = "Bad response: ";
@@ -774,46 +781,47 @@ namespace Bio.Framework.Client.SL {
                 }
               }
             } finally {
-              this.doAfterLoadData(args);
+              this._doAfterLoadData(args);
               if (callback != null) callback(this, args);
             }
           }
         };
-        this._curColumnIndex = (this.grid != null) ? this.grid.CurrentColumnIndex : -1;
-        this._curRowIndex = (this.grid != null) ? this.grid.SelectedIndex : -1;
-        this.ajaxMng.Request(v_reqst);
+        //this._curColumnIndex = (this.grid != null) ? this.grid.CurrentColumnIndex : -1;
+        //this._curRowIndex = (this.grid != null) ? this.grid.SelectedIndex : -1;
+        this.AjaxMng.Request(v_reqst);
 
 
       });
     }
 
-    public void Load(Params bioPrms, AjaxRequestDelegate callback, CJsonStoreFilter locate) {
-      this._load(bioPrms, callback, null, locate, CJSRequestGetType.GetData, "Загрузка данных...");
+    public void Load(Params bioPrms, AjaxRequestDelegate callback, CJsonStoreFilter locate, Int64 pageSize) {
+      this._load(bioPrms, callback, null, locate, CJSRequestGetType.GetData, null, pageSize);
     }
 
     public void Load(Params bioPrms, AjaxRequestDelegate callback) {
       this.Load(bioPrms, callback, null);
     }
 
-    public void LoadSelectedPks(AjaxRequestDelegate callback) {
-      this._load(null, callback, null, null, CJSRequestGetType.GetSelectedPks, null);
+    public void LoadSelectedPks(AjaxRequestDelegate callback, String selection) {
+      this._load(null, callback, null, null, CJSRequestGetType.GetSelectedPks, selection, 0);
     }
-    private Boolean _checkFilter(CRTObject row, Int64 rowPos, CJsonStoreFilter filter) {
+    private static Boolean _checkFilter(CRTObject row, Int64 rowPos, CJsonStoreFilter filter) {
       if ((row != null) && (filter != null)) {
         if (rowPos >= filter.fromPosition) {
           return filter.check(row);
-        } else
-          return false;
-      } else
+        }
         return false;
+      }
+      return false;
     }
+
     private CRTObject _locateInternal(CJsonStoreFilter locate) {
       if (this.DS0 != null) {
         var rows = this.DS0.Cast<CRTObject>().ToArray();
-        for (int i = 0; i < rows.Length; i++) {
-          var rowPos = i + (this.pageCurrent * this.pageSize);
-          if (this._checkFilter(rows[i], rowPos, locate)) {
-            locate.fromPosition = rowPos + 1;
+        for (var i = 0; i < rows.Length; i++) {
+          var v_rowPos = i + (this.PageCurrent * this.PageSize);
+          if (_checkFilter(rows[i], v_rowPos, locate)) {
+            locate.fromPosition = v_rowPos + 1;
             return rows[i];
           }
         }
@@ -822,21 +830,21 @@ namespace Bio.Framework.Client.SL {
     }
 
     private void _doOnLocation(CRTObject row, EBioException exception, EventHandler<OnSelectEventArgs> callback) {
-      if (row != null) {
-        if (this.grid != null)
-          this.grid.SelectedItem = row;
-      } else {
-        if ((this.grid != null) && (this.grid._dataGrid != null) && (this.grid._dataGrid.ItemsSource != null)) {
-          var venumr = this.grid._dataGrid.ItemsSource.GetEnumerator();
-          if (venumr != null) {
-            venumr.Reset();
-            if (venumr.MoveNext()) {
-              this.grid.SelectedItem = venumr.Current as CRTObject;
-              row = this.grid.SelectedItem;
-            }
-          }
-        }
-      }
+      //if (row != null) {
+      //  if (this.grid != null)
+      //    this.grid.SelectedItem = row;
+      //} else {
+      //  if ((this.grid != null) && (this.grid._dataGrid != null) && (this.grid._dataGrid.ItemsSource != null)) {
+      //    var venumr = this.grid._dataGrid.ItemsSource.GetEnumerator();
+      //    if (venumr != null) {
+      //      venumr.Reset();
+      //      if (venumr.MoveNext()) {
+      //        this.grid.SelectedItem = venumr.Current as CRTObject;
+      //        row = this.grid.SelectedItem;
+      //      }
+      //    }
+      //  }
+      //}
       if (callback != null) {
         callback(this, new OnSelectEventArgs {
           ex = exception,
@@ -851,7 +859,7 @@ namespace Bio.Framework.Client.SL {
           if (this.grid != null) {
             this.grid.hideBusyIndicator();
             if (s != null)
-              this.grid.updPosState((s as CJsonStoreClient).pageCurrent, (s as CJsonStoreClient).pageLast);
+              this.grid.updPosState((s as CJsonStoreClient).PageCurrent, (s as CJsonStoreClient).PageLast);
           }
           if (callback != null)
             callback(s, a);
@@ -887,7 +895,7 @@ namespace Bio.Framework.Client.SL {
     public void goPageNext(AjaxRequestDelegate callback) {
       if (this._curPage < this._lastPage) {
         this._curPage++;
-        Int64 startFrom = (this._curPage - 1) * this.pageSize;
+        Int64 startFrom = (this._curPage - 1) * this.PageSize;
         this._goto(startFrom, "к след. странице...", callback, null);
       } else {
         if (callback != null)
@@ -897,7 +905,7 @@ namespace Bio.Framework.Client.SL {
     public void goPagePrev(AjaxRequestDelegate callback) {
       if (this._curPage > 1) {
         this._curPage--;
-        Int64 startFrom = (this._curPage - 1) * this.pageSize;
+        Int64 startFrom = (this._curPage - 1) * this.PageSize;
         this._goto(startFrom, "к пред. странице...", callback, null);
       } else {
         if (callback != null)
@@ -1028,9 +1036,9 @@ namespace Bio.Framework.Client.SL {
     }
 
     private void _post(AjaxRequestDelegate callback, String trunsactionID, CSQLTransactionCmd cmd) {
-      if (this.ajaxMng == null)
+      if (this.AjaxMng == null)
         throw new EBioException("Свойство \"ajaxMng\" должно быть определено!");
-      if (String.IsNullOrEmpty(this.bioCode))
+      if (String.IsNullOrEmpty(this.BioCode))
         throw new EBioException("Свойство \"bioCode\" должно быть определено!");
 
       Boolean cancel = false;
@@ -1039,14 +1047,14 @@ namespace Bio.Framework.Client.SL {
         return;
       }
 
-      if (this.bioParams == null)
-        this.bioParams = new Params();
+      if (this.BioParams == null)
+        this.BioParams = new Params();
 
       CJsonStoreRows v_rows = this._getChangesAsJSRows();
       if (v_rows.Count > 0) {
         CJsonStoreRequest reqst = new CJsonStoreRequestPost {
-          bioCode = this.bioCode,
-          bioParams = this.bioParams,
+          bioCode = this.BioCode,
+          bioParams = this.BioParams,
           prms = null,
           transactionID = trunsactionID,
           transactionCmd = cmd,
@@ -1069,7 +1077,7 @@ namespace Bio.Framework.Client.SL {
             this.doAfterPostData(args);
           }
         };
-        this.ajaxMng.Request(reqst);
+        this.AjaxMng.Request(reqst);
       } else {
         var v_args = new AjaxResponseEventArgs() {
           request = null,

@@ -45,11 +45,11 @@ namespace Bio.Framework.Client.SL {
       this.DefaultStyleKey = typeof(CJSGrid);
       this._multiselection = new VMultiSelection();
       this._jsClient = new CJsonStoreClient();
-      this._jsClient.grid = this;
+      //this._jsClient.grid = this;
       this._jsClient.OnBeforeLoadData += this._onBeforeLoadData;
       this._jsClient.AfterLoadData += this._onAfterLoadData;
-      this._jsClient.OnRowPropertyChanging += new JSClientEventHandler<JSClientRowPropertyChangingEventArgs>(_jsClient_OnRowPropertyChanging);
-      this._jsClient.OnRowPropertyChanged += new JSClientEventHandler<JSClientRowPropertyChangedEventArgs>(_jsClient_OnRowPropertyChanged);
+      this._jsClient.OnRowPropertyChanging += this._jsClient_OnRowPropertyChanging;
+      this._jsClient.OnRowPropertyChanged += this._jsClient_OnRowPropertyChanged;
     }
 
     public event JSClientEventHandler<JSClientRowPropertyChangingEventArgs> OnRowPropertyChanging;
@@ -242,25 +242,25 @@ namespace Bio.Framework.Client.SL {
     }
 
     public void goPageFirst(AjaxRequestDelegate callback) {
-      if (this._jsClient.pageSize == this.pageSize)
+      if (this._jsClient.PageSize == this.pageSize)
         this._jsClient.goPageFirst(callback);
       else
         this.Refresh(callback);
     }
     public void goPagePrev(AjaxRequestDelegate callback) {
-      if (this._jsClient.pageSize == this.pageSize)
+      if (this._jsClient.PageSize == this.pageSize)
         this._jsClient.goPagePrev(callback);
       else
         this.Refresh(callback);
     }
     public void goPageNext(AjaxRequestDelegate callback) {
-      if (this._jsClient.pageSize == this.pageSize)
+      if (this._jsClient.PageSize == this.pageSize)
         this._jsClient.goPageNext(callback);
       else
         this.Refresh(callback);
     }
     public void goPageLast(AjaxRequestDelegate callback) {
-      if (this._jsClient.pageSize == this.pageSize)
+      if (this._jsClient.PageSize == this.pageSize)
         this._jsClient.goPageLast(callback);
       else
         this.Refresh(callback);
@@ -506,29 +506,29 @@ namespace Bio.Framework.Client.SL {
 
     public String bioCode {
       get {
-        return this._jsClient.bioCode;
+        return this._jsClient.BioCode;
       }
       set {
-        var oldBioCode = this._jsClient.bioCode;
-        this._jsClient.bioCode = value;
-        if (!String.Equals(oldBioCode, this._jsClient.bioCode))
+        var oldBioCode = this._jsClient.BioCode;
+        this._jsClient.BioCode = value;
+        if (!String.Equals(oldBioCode, this._jsClient.BioCode))
           this._restoreCfg();
       }
     }
     public IAjaxMng ajaxMng {
       get {
-        return this._jsClient.ajaxMng;
+        return this._jsClient.AjaxMng;
       }
       set {
-        this._jsClient.ajaxMng = value;
+        this._jsClient.AjaxMng = value;
       }
     }
     public Params bioParams {
       get {
-        return this._jsClient.bioParams;
+        return this._jsClient.BioParams;
       }
       set {
-        this._jsClient.bioParams = value;
+        this._jsClient.BioParams = value;
       }
     }
 
@@ -824,18 +824,18 @@ namespace Bio.Framework.Client.SL {
               this.hideBusyIndicator();
 
               if (a.response.success) {
-                CJsonStoreResponse rsp = (a.response as CJsonStoreResponse);
+                var rsp = (a.response as CJsonStoreResponse);
                 if (rsp != null) {
 
                   if (this._dataGrid != null)
                     this._dataGrid.UpdateLayout();
 
-                  this.updPosState((sndr as CJsonStoreClient).pageCurrent, (sndr as CJsonStoreClient).pageLast);
+                  this.updPosState(((CJsonStoreClient)sndr).PageCurrent, ((CJsonStoreClient)sndr).PageLast);
                   if (loadParams.callback != null)
                     loadParams.callback(sndr, a);
                 }
               }
-            }, loadParams.locate);
+            }, loadParams.locate, this.pageSize);
           } catch {
             this.hideBusyIndicator();
             throw;
@@ -1087,7 +1087,14 @@ namespace Bio.Framework.Client.SL {
         this._autoRefreshTimer.Stop();
     }
     public void LoadSelectedPks(AjaxRequestDelegate callback) {
-      this._jsClient.LoadSelectedPks(callback);
+      var v_selection = this.Selection.ToString();
+      if (String.IsNullOrEmpty(v_selection)) {
+        if (callback != null) {
+          callback(this, new AjaxResponseEventArgs());
+        } else
+          return;
+      }
+      this._jsClient.LoadSelectedPks(callback, v_selection);
     }
 
     public Boolean IsChanged {

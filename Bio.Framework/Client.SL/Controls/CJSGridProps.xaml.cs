@@ -153,7 +153,7 @@ namespace Bio.Framework.Client.SL {
         //}), this);
       }
       if (this.pageSize == null)
-        this.pageSize = grid._jsClient.pageSize;
+        this.pageSize = grid._jsClient.PageSize;
     }
 
   }
