@@ -1,11 +1,6 @@
 namespace Bio.Framework.Server {
 
   using System;
-  using System.Data;
-  using System.Data.Common;
-  using System.Collections.Generic;
-  using System.Text;
-  using System.Text.RegularExpressions;
   using System.Xml;
   using System.Web;
   using System.IO;
@@ -14,8 +9,8 @@ namespace Bio.Framework.Server {
 
   public class ABioHandlerBio:ABioHandlerSys {
 
-    public ABioHandlerBio(HttpContext pContext, CAjaxRequest pRequest)
-      : base(pContext, pRequest) {
+    public ABioHandlerBio(HttpContext context, AjaxRequest request)
+      : base(context, request) {
     }
 
     protected String CurIOLocalPath { get; private set; }

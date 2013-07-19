@@ -24,25 +24,25 @@ namespace Bio.Framework.Packets {
     }
   }
 
-  public class CBioRequestTyped : CAjaxRequest {
+  public class BioRequestTyped : AjaxRequest {
 
     /// <summary>
     /// Тип запроса
     /// </summary>
-    public RequestType requestType { get; set; }
+    public RequestType RequestType { get; set; }
 
-    public String getRequestTypeValueAsString() {
-      return enumHelper.NameOfValue(this.requestType, false);
+    public String GetRequestTypeValueAsString() {
+      return enumHelper.NameOfValue(this.RequestType, false);
     }
 
     public static JsonConverter[] GetConverters() {
       return new JsonConverter[] { new EBioExceptionConverter()/*t12, new CJsonStoreRowConverter() */};
     }
 
-    protected override void copyThis(ref CAjaxRequest destObj) {
+    protected override void copyThis(ref AjaxRequest destObj) {
       base.copyThis(ref destObj);
-      CBioRequestTyped dst = destObj as CBioRequestTyped;
-      dst.requestType = this.requestType;
+      BioRequestTyped dst = destObj as BioRequestTyped;
+      dst.RequestType = this.RequestType;
     }
 
   }

@@ -1,28 +1,24 @@
 namespace Bio.Framework.Server {
-
-  using System;
-  using System.Collections.Generic;
-  using System.Text;
   using System.Web;
-  using Bio.Framework.Packets;
-  using Bio.Helpers.Common.Types;
+  using Packets;
+  using Helpers.Common.Types;
 
   public class tm_ping:ABioHandlerBio {
 
-    public tm_ping(HttpContext pContext, CAjaxRequest pRequest)
-      : base(pContext, pRequest) {
+    public tm_ping(HttpContext context, AjaxRequest request)
+      : base(context, request) {
     }
 
     protected override void doExecute() {
       try {
         base.doExecute();
       } catch (EBioOk bex) {
-        var rsp = new CBioResponse() {
-          success = true,
-          gCfg = new CGlobalCfgPack {
+        var rsp = new BioResponse() {
+          Success = true,
+          GCfg = new CGlobalCfgPack {
             Debug = this.BioSession.Cfg.Debug
           },
-          ex = bex
+          Ex = bex
         };
         this.Context.Response.Write(rsp.Encode());
       }

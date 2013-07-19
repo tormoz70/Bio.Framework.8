@@ -49,7 +49,7 @@ namespace Bio.Framework.Client.SL {
     private String _lastRequestedBioCode = null;
     private Params _lastReturnedParams = null;
 
-    private void _exec(Params bioPrms, AjaxRequestDelegate callback, CSQLTransactionCmd cmd, Boolean silent) {
+    private void _exec(Params bioPrms, AjaxRequestDelegate callback, SQLTransactionCmd cmd, Boolean silent) {
       if (this.ajaxMng == null)
         throw new EBioException("Свойство \"ajaxMng\" должно быть определено!");
       if (String.IsNullOrEmpty(this.bioCode))
@@ -68,20 +68,20 @@ namespace Bio.Framework.Client.SL {
       //}
 
       this._lastRequestedBioCode = this.bioCode;
-      this.ajaxMng.Request(new CBioSQLRequest {
-        requestType = RequestType.SQLR,
-        bioCode = this.bioCode,
-        bioParams = this.bioParams,
+      this.ajaxMng.Request(new BioSQLRequest {
+        RequestType = RequestType.SQLR,
+        BioCode = this.bioCode,
+        BioParams = this.bioParams,
         transactionCmd = cmd,
         transactionID = this.transactionID,
-        prms = null,
-        silent = silent,
-        callback = (sndr, args) => {
-          if (args.response.success) {
-            CBioResponse rsp = args.response as CBioResponse;
+        Prms = null,
+        Silent = silent,
+        Callback = (sndr, args) => {
+          if (args.Response.Success) {
+            BioResponse rsp = args.Response as BioResponse;
             if (rsp != null){
-              this._lastReturnedParams = (rsp.bioParams != null) ? rsp.bioParams.Clone() as Params : null;
-              this.transactionID = rsp.transactionID;
+              this._lastReturnedParams = (rsp.BioParams != null) ? rsp.BioParams.Clone() as Params : null;
+              this.transactionID = rsp.TransactionID;
             }
           }
           if (callback != null) callback(this, args);
@@ -90,28 +90,28 @@ namespace Bio.Framework.Client.SL {
 
     }
 
-    public void Exec(Params bioPrms, AjaxRequestDelegate callback, CSQLTransactionCmd cmd, Boolean silent) {
+    public void Exec(Params bioPrms, AjaxRequestDelegate callback, SQLTransactionCmd cmd, Boolean silent) {
       this._exec(bioPrms, callback, cmd, silent);
     }
 
-    public void Exec(Params bioPrms, AjaxRequestDelegate callback, CSQLTransactionCmd cmd) {
+    public void Exec(Params bioPrms, AjaxRequestDelegate callback, SQLTransactionCmd cmd) {
       this._exec(bioPrms, callback, cmd, false);
     }
 
     public void Exec(Params bioPrms, AjaxRequestDelegate callback) {
-      this._exec(bioPrms, callback, CSQLTransactionCmd.Nop, false);
+      this._exec(bioPrms, callback, SQLTransactionCmd.Nop, false);
     }
 
     public void Exec(Params bioPrms, AjaxRequestDelegate callback, Boolean silent) {
-      this._exec(bioPrms, callback, CSQLTransactionCmd.Nop, silent);
+      this._exec(bioPrms, callback, SQLTransactionCmd.Nop, silent);
     }
 
     public void Commit(AjaxRequestDelegate callback) {
-      this._exec(null, callback, CSQLTransactionCmd.Commit, false);
+      this._exec(null, callback, SQLTransactionCmd.Commit, false);
     }
     
     public void Rollback(AjaxRequestDelegate callback) {
-      this._exec(null, callback, CSQLTransactionCmd.Rollback, false);
+      this._exec(null, callback, SQLTransactionCmd.Rollback, false);
     }
 
   }

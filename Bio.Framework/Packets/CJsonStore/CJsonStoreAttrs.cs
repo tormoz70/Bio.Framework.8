@@ -26,8 +26,8 @@ namespace Bio.Framework.Packets {
     //[DefaultValue(CJsonStoreSortOrder.None)]
     //public CJsonStoreSortOrder direction { get; set; }
     public object Clone() {
-      CJsonStoreSort rslt = new CJsonStoreSort();
-      foreach (KeyValuePair<String, CJsonStoreSortOrder> p in this) {
+      var rslt = new CJsonStoreSort();
+      foreach (var p in this) {
         rslt.Add(p.Key, p.Value);
       }
       return rslt;

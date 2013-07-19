@@ -6,7 +6,7 @@
   using Bio.Helpers.Common;
 
   public class CRmtStateReaderEventArgs : EventArgs {
-    public CBioResponse response { get; set; }
+    public BioResponse response { get; set; }
     public RmtMonitorCommand cmd { get; set; }
   }
 
@@ -44,10 +44,10 @@
       if (this.Owner.ajaxMng == null)
         throw new ArgumentNullException("AjaxMng", "Свойство должно быть задано.");
 
-      CRmtClientRequest v_request = this.Owner.createRequest(RmtClientRequestCmd.GetState, null, true,
+      RmtClientRequest v_request = this.Owner.createRequest(RmtClientRequestCmd.GetState, null, true,
         new AjaxRequestDelegate((sndr, args) => {
-          CBioResponse response = args.response as CBioResponse;
-          if ((response.rmtStatePacket != null) || !response.success) {
+          BioResponse response = args.Response as BioResponse;
+          if ((response.RmtStatePacket != null) || !response.Success) {
             CRmtStateReaderReadEventHandler vEve = this.OnRead;
             if (vEve != null) {
               var a = new CRmtStateReaderEventArgs {

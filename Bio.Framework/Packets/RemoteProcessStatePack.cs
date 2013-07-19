@@ -13,26 +13,26 @@
   /// <summary>
   /// Информация о состояние выполняемой операции
   /// </summary>
-  public class CRemoteProcessStatePack : ICloneable {
-    public String bioCode { get; set; }
+  public class RemoteProcessStatePack : ICloneable {
+    public String BioCode { get; set; }
     /// <summary>
     /// Запущена
     /// </summary>
-    public DateTime started { get; set; }
+    public DateTime Started { get; set; }
     /// <summary>
     /// Прошло
     /// </summary>
-    public TimeSpan duration { get; set; }
+    public TimeSpan Duration { get; set; }
     /// <summary>
     /// Состояние
     /// </summary>
-    public RemoteProcState state { get; set; }
+    public RemoteProcState State { get; set; }
     /// <summary>
     /// Последняя ошибка
     /// </summary>
-    public EBioException ex { get; set; }
+    public EBioException Ex { get; set; }
 
-    public Boolean hasResultFile { get; set; }
+    public Boolean HasResultFile { get; set; }
 
     #region Для долгих операций
     /// <summary>
@@ -55,23 +55,23 @@
     /// <summary>
     /// Выполняется
     /// </summary>
-    public Boolean isRunning() {
-      return rmtUtl.isRunning(this.state);
+    public Boolean IsRunning() {
+      return rmtUtl.IsRunning(this.State);
     }
 
-    public String stateDesc() {
-      return enumHelper.GetFieldDesc(this.state);
+    public String StateDesc() {
+      return enumHelper.GetFieldDesc(this.State);
     }
 
     /// <summary>
     /// Выполнен
     /// </summary>
-    public Boolean isFinished() {
-      return rmtUtl.isFinished(this.state);
+    public Boolean IsFinished() {
+      return rmtUtl.IsFinished(this.State);
     }
 
-    public static CRemoteProcessStatePack Decode(String pJsonString) {
-      return jsonUtl.decode<CRemoteProcessStatePack>(pJsonString, new JsonConverter[] { new EBioExceptionConverter() });
+    public static RemoteProcessStatePack Decode(String pJsonString) {
+      return jsonUtl.decode<RemoteProcessStatePack>(pJsonString, new JsonConverter[] { new EBioExceptionConverter() });
     }
 
     public String Encode() {
@@ -81,19 +81,19 @@
 
     #region ICloneable Members
 
-    public static CRemoteProcessStatePack CreateObjOfStatePack(Type rqType) {
+    public static RemoteProcessStatePack CreateObjOfStatePack(Type rqType) {
       ConstructorInfo ci = rqType.GetConstructor(new Type[0]);
-      CRemoteProcessStatePack vR = (CRemoteProcessStatePack)ci.Invoke(new Object[0]);
+      RemoteProcessStatePack vR = (RemoteProcessStatePack)ci.Invoke(new Object[0]);
       return vR;
     }
 
-    protected virtual void copyThis(ref CRemoteProcessStatePack destObj) {
-      destObj.bioCode = this.bioCode;
-      destObj.started = this.started;
-      destObj.duration = this.duration;
-      destObj.state = this.state;
-      destObj.hasResultFile = this.hasResultFile;
-      destObj.ex = (EBioException)this.ex.Clone();
+    protected virtual void copyThis(ref RemoteProcessStatePack destObj) {
+      destObj.BioCode = this.BioCode;
+      destObj.Started = this.Started;
+      destObj.Duration = this.Duration;
+      destObj.State = this.State;
+      destObj.HasResultFile = this.HasResultFile;
+      destObj.Ex = (EBioException)this.Ex.Clone();
       destObj.pipe = this.pipe;
       destObj.sessionUID = this.sessionUID;
       destObj.owner = this.owner;
@@ -101,7 +101,7 @@
     }
 
     public object Clone() {
-      CRemoteProcessStatePack rslt = CreateObjOfStatePack(this.GetType());
+      RemoteProcessStatePack rslt = CreateObjOfStatePack(this.GetType());
       this.copyThis(ref rslt);
       return rslt;
     }

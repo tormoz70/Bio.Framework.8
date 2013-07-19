@@ -85,7 +85,7 @@ namespace Bio.Framework.Client.SL {
         Utl.AppendStr(ref v_opts_line, "menubar:no;status:no;center:yes;help:no;minimize:no;maximize:no;border:think;statusbar:no", ";");
         Utl.AppendStr(ref v_opts_line, "dialogWidth:" + v_opts.Width + "px", ";");
         Utl.AppendStr(ref v_opts_line, "dialogHeight:" + v_opts.Height + "px", ";");
-        //var v_rsp = a.response as CBioResponse;
+        //var v_rsp = a.response as BioResponse;
         var v_html = "Сообщение" + "||" + v_url_body; 
         var v_js = String.Format("self.showModalDialog('{0}', '{1}', '{2}');", v_url, v_html, v_opts_line);
         HtmlPage.Window.Eval(v_js);
@@ -94,10 +94,10 @@ namespace Bio.Framework.Client.SL {
     }
 
     private String _bldBodyUrl() {
-      String prms = ajaxUTL.prepareRequestParams(new CJsonStoreRequestGet {
-        requestType = RequestType.WebDB,
-        bioCode = this.bioCode,
-        bioParams = this.bioParams
+      String prms = ajaxUTL.prepareRequestParams(new JsonStoreRequestGet {
+        RequestType = RequestType.WebDB,
+        BioCode = this.bioCode,
+        BioParams = this.bioParams
       });
       return this.ajaxMng.Env.ServerUrl + "?" + prms;
     }

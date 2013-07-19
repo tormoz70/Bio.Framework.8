@@ -47,7 +47,7 @@ namespace Bio.Framework.Client.SL {
   public interface IAjaxMng {
 
     event EventHandler<AjaxStateChangedEventArgs> OnStateChanged;
-    void Request(CBioRequest ajaxRequest);
+    void Request(BioRequest ajaxRequest);
     BioUser CurUsr { get; }
     IEnvironment Env { get; }
 

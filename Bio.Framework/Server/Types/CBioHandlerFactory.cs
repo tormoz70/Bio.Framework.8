@@ -20,34 +20,26 @@ namespace Bio.Framework.Server {
   /// </summary>
   public class CBioHandlerFactory {
 
-    public static ABioHandler CreateBioHandler(HttpContext pContext, CAjaxRequest request) {
+    public static ABioHandler CreateBioHandler(HttpContext pContext, AjaxRequest request) {
       String vHandlerImplTypeName = null;
-      //String vHandlerType = null;
-      CBioRequestTyped rqt = request as CBioRequestTyped;
+      var rqt = request as BioRequestTyped;
       if (rqt != null)
-        //vHandlerType = Utl.NameOfEnumValue<RequestType>(rqt.requestType, false); 
-        vHandlerImplTypeName = enumHelper.GetAttributeByValue<RequestTypeMappingAttribute>(rqt.requestType).Mapping;
-      //if(vHandlerType != null) {
-        //dom4cs vHandlerReg = ABioHandler.getHandlersRegistry(pContext);
-        //XmlNode vMsgRegNode = vHandlerReg.XmlDoc.DocumentElement.SelectSingleNode("add[@mtp='" + vHandlerType + "']");
-        //if(vMsgRegNode == null)
-        //  throw new EBioException("Сообщение [" + vHandlerType + "] не зарегистрировано в системе.", null);
-        //if(((XmlElement)vMsgRegNode).HasAttribute("goto"))
-        //  vHandlerImplTypeName = ((XmlElement)vMsgRegNode).GetAttribute("goto");
-
-      //}
+        vHandlerImplTypeName = enumHelper.GetAttributeByValue<RequestTypeMappingAttribute>(rqt.RequestType).Mapping;
       if (String.IsNullOrEmpty(vHandlerImplTypeName))
         throw new EBioException("Не возможно определить тип сообщения!", null);
-      Type t = Type.GetType(vHandlerImplTypeName);
+      var t = Type.GetType(vHandlerImplTypeName);
       if(t == null)
         throw new EBioException("Не найден тип сообщения: " + vHandlerImplTypeName, null);
-      Type[] parTypes = new Type[2];
+      var parTypes = new Type[2];
       parTypes[0] = typeof(HttpContext);
-      parTypes[1] = typeof(CAjaxRequest);
-      Object[] parVals = new Object[] { pContext, request };
-      ConstructorInfo ci = t.GetConstructor(parTypes);
-      ABioHandler obj = (ABioHandler)ci.Invoke(parVals);
-      return obj;
+      parTypes[1] = typeof(AjaxRequest);
+      var parVals = new Object[] { pContext, request };
+      var ci = t.GetConstructor(parTypes);
+      if (ci != null) {
+        var obj = (ABioHandler)ci.Invoke(parVals);
+        return obj;
+      }
+      return null;
     }
   }
 }

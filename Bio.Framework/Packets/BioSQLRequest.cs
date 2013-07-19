@@ -9,13 +9,13 @@ using System.ComponentModel;
 
 namespace Bio.Framework.Packets {
 
-  public enum CSQLTransactionCmd { Nop = 0, Commit = 1, Rollback = 2 };
+  public enum SQLTransactionCmd { Nop = 0, Commit = 1, Rollback = 2 };
   
-  public class CBioSQLRequest : CBioRequest {
+  public class BioSQLRequest : BioRequest {
     /// <summary>
     /// Команда управления транзакцией
     /// </summary>
-    public CSQLTransactionCmd transactionCmd { get; set; }
+    public SQLTransactionCmd transactionCmd { get; set; }
 
     /// <summary>
     /// ID транзакции при распределенных операциях с БД
@@ -26,9 +26,9 @@ namespace Bio.Framework.Packets {
     //  return new JsonConverter[] { new EBioExceptionConverter()/*t12, new CJsonStoreRowConverter() */};
     //}
 
-    protected override void copyThis(ref CAjaxRequest destObj) {
+    protected override void copyThis(ref AjaxRequest destObj) {
       base.copyThis(ref destObj);
-      CBioSQLRequest dst = destObj as CBioSQLRequest;
+      BioSQLRequest dst = destObj as BioSQLRequest;
       dst.transactionCmd = this.transactionCmd;
       dst.transactionID = this.transactionID;
     }

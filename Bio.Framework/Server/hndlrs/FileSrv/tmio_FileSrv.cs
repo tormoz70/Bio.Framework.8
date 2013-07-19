@@ -20,28 +20,28 @@ namespace Bio.Framework.Server {
   /// </summary>
   public class tmio_FileSrv : ABioHandlerBio {
 
-    public tmio_FileSrv(HttpContext pContext, CAjaxRequest pRequest)
-      : base(pContext, pRequest) {
+    public tmio_FileSrv(HttpContext context, AjaxRequest request)
+      : base(context, request) {
     }
 
-    private const String csFileNameParam = "v_file_name";
-    private const String csFileParam = "v_file";
-    private const String csHashCodeWebParam = "hf";
+    private const String CS_FILE_NAME_PARAM = "v_file_name";
+    private const String CS_FILE_PARAM = "v_file";
+    private const String CS_HASH_CODE_WEB_PARAM = "hf";
     /// <summary>
     /// Вытаскивает из БД файл и отдает его клиенту
     /// </summary>
     /// <param name="bioPrms">Параметры запроса к БД</param>
-    private void sendFileToClient(Params bioPrms) {
+    private void _sendFileToClient(Params bioPrms) {
 
       this.Context.Response.ClearContent();
       this.Context.Response.ClearHeaders();
       this.Context.Response.ContentType = "application/octet-stream";
-      String vFileName = Params.FindParamValue(bioPrms, csFileNameParam) as String;
-      Byte[] vFile = Params.FindParamValue(bioPrms, csFileParam) as Byte[];
+      var vFileName = Params.FindParamValue(bioPrms, CS_FILE_NAME_PARAM) as String;
+      var vFile = Params.FindParamValue(bioPrms, CS_FILE_PARAM) as Byte[];
       if (String.IsNullOrEmpty(vFileName))
-        throw new EBioException(String.Format("В исходящих параметрах ИО должен присутствовать параметр \"{0}\"", csFileNameParam));
+        throw new EBioException(String.Format("В исходящих параметрах ИО должен присутствовать параметр \"{0}\"", CS_FILE_NAME_PARAM));
       if (vFile == null)
-        throw new EBioException(String.Format("В исходящих параметрах ИО должен присутствовать параметр \"{0}\"", csFileParam));
+        throw new EBioException(String.Format("В исходящих параметрах ИО должен присутствовать параметр \"{0}\"", CS_FILE_PARAM));
 
       this.Context.Response.AppendHeader("Content-Disposition", "attachment; filename=\"" + vFileName + "\"");
       var writer = new MemoryStream(vFile);
@@ -61,34 +61,34 @@ namespace Bio.Framework.Server {
       if (vDS == null) 
         throw new EBioException(String.Format("В описании объекта {0} не найден раздел <store>.", this.bioCode));
 
-      var v_hashCodeOfFile = Params.FindParamValue(this.QParams, csHashCodeWebParam) as String;
+      var v_hashCodeOfFile = Params.FindParamValue(this.QParams, CS_HASH_CODE_WEB_PARAM) as String;
       if (String.IsNullOrEmpty(v_hashCodeOfFile)) 
-        throw new EBioException(String.Format("В параметрах запроса должен присутствовать параметр {0}.", csHashCodeWebParam));
+        throw new EBioException(String.Format("В параметрах запроса должен присутствовать параметр {0}.", CS_HASH_CODE_WEB_PARAM));
 
-        var rqst = this.bioRequest<CBioRequest>();
+        var rqst = this.BioRequest<BioRequest>();
         var vConn = this.BioSession.Cfg.dbSession.GetConnection();
         try {
           try {
-            CJSCursor vCursor = new CJSCursor(vConn, vDS, this.bioCode);
-            int vAjaxRequestTimeOut = Utl.Convert2Type<int>(Params.FindParamValue(this.QParams, "ajaxrqtimeout"));
-            SQLGarbageMonitor vMon = SQLGarbageMonitor.GetSQLGarbageMonitor(this.Context);
-            vMon.RegisterSQLCmd(vCursor, (SQLCmd vSQLCmd, ref Boolean killQuery, ref Boolean killSession, Boolean vAjaxTimeoutExceeded) => {
-              if (Object.Equals(vCursor, vSQLCmd)) {
+            var cursor = new CJSCursor(vConn, vDS, this.bioCode);
+            var ajaxRequestTimeOut = Utl.Convert2Type<int>(Params.FindParamValue(this.QParams, "ajaxrqtimeout"));
+            var vMon = SQLGarbageMonitor.GetSQLGarbageMonitor(this.Context);
+            vMon.RegisterSQLCmd(cursor, (SQLCmd vSQLCmd, ref Boolean killQuery, ref Boolean killSession, Boolean vAjaxTimeoutExceeded) => {
+              if (Equals(cursor, vSQLCmd)) {
                 killQuery = !this.Context.Response.IsClientConnected || vAjaxTimeoutExceeded;
                 killSession = killQuery;
               }
-            }, vAjaxRequestTimeOut);
+            }, ajaxRequestTimeOut);
             try {
               var prms = new Params();
               prms.Add("p_hash_code", v_hashCodeOfFile);
-              prms.Add(new Param(csFileNameParam, null, typeof(String), ParamDirection.Output));
-              prms.Add(new Param(csFileParam, null, typeof(Byte[]), ParamDirection.Output));
-              vCursor.DoExecuteSQL(prms, 120);
-              this.sendFileToClient(prms);
+              prms.Add(new Param(CS_FILE_NAME_PARAM, null, typeof(String), ParamDirection.Output));
+              prms.Add(new Param(CS_FILE_PARAM, null, typeof(Byte[]), ParamDirection.Output));
+              cursor.DoExecuteSQL(prms, 120);
+              this._sendFileToClient(prms);
             } catch (Exception ex) {
               throw EBioException.CreateIfNotEBio(ex);
             } finally {
-              vMon.RemoveItem(vCursor);
+              vMon.RemoveItem(cursor);
             }
           } catch (Exception ex) {
             vConn.Close();
@@ -97,11 +97,9 @@ namespace Bio.Framework.Server {
           }
         } catch (Exception ex) {
           ebioex = new EBioException("Ошибка выполнения на сервере. Сообщение: " + ex.Message, ex);
-        } finally {
-          //this.FinishTransaction(vConn, rqst);
-        }
+        } 
       if (ebioex != null) {
-        this.Context.Response.Write(new CBioResponse() { success = false, bioParams = this.bioParams, ex = ebioex }.Encode());
+        this.Context.Response.Write(new BioResponse() { Success = false, BioParams = this.bioParams, Ex = ebioex }.Encode());
       }
     }
   }

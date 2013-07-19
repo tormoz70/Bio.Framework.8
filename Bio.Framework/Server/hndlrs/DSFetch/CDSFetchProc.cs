@@ -78,7 +78,7 @@ using System.Xml;
 
     public bool IsRunning {
       get {
-        return rmtUtl.isRunning(this.State);
+        return rmtUtl.IsRunning(this.State);
       }
     }
 
@@ -136,11 +136,11 @@ using System.Xml;
       return null;
     }
 
-    private void _doProcessRecord(CJsonStoreMetadata metadata, CJsonStoreRow row) {
+    private void _doProcessRecord(CJsonStoreMetadata metadata, JsonStoreRow row) {
       var conn = this.dbSess.GetConnection();
       try {
         var vCmd = new CJSCursor(conn, this._exec_ds, this._request.execBioCode);
-        vCmd.DoExecuteSQL(metadata, row, this._request.bioParams, 120);
+        vCmd.DoExecuteSQL(metadata, row, this._request.BioParams, 120);
       } finally {
         if (conn != null)
           conn.Close();
@@ -150,7 +150,7 @@ using System.Xml;
     private void _doProcessCursor() {
       var conn = this.dbSess.GetConnection();
       var vCursor = new CJSCursor(conn, this._cursor_ds, this.bioCode);
-      vCursor.Init(null, this._request.bioParams, this._request.filter, this._request.sort, this._request.selection, 120);
+      vCursor.Init(null, this._request.BioParams, this._request.filter, this._request.sort, this._request.selection, 120);
       vCursor.Open(120);
       try {
         while (vCursor.Next()) {
@@ -159,15 +159,14 @@ using System.Xml;
           var newRow = vCursor.rqPacket.metaData.CreateNewRow();
           // перебираем все поля одной записи
           foreach (Field vCur in vCursor.Fields) {
-            String vFName = vCur.FieldName;
+            var vFName = vCur.FieldName;
             var vFVal = vCur;
             newRow.Values[vCursor.rqPacket.metaData.indexOf(vFName)] = vCur.AsObject;
           }
           this._doProcessRecord(vCursor.rqPacket.metaData, newRow);
         }
       } finally {
-        if (vCursor != null)
-          vCursor.Close();
+        vCursor.Close();
         if (conn != null)
           conn.Close();
       }

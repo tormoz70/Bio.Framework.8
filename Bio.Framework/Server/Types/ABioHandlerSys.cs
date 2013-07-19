@@ -1,33 +1,30 @@
 namespace Bio.Framework.Server {
 
   using System;
-  using System.Collections.Generic;
-  using System.Text;
   using System.Web;
-  using System.Xml;
-  using Bio.Helpers.Common.Types;
-  using Bio.Framework.Packets;
-  using Bio.Helpers.Common;
+  using Helpers.Common.Types;
+  using Packets;
+  using Helpers.Common;
 
   public class ABioHandlerSys:ABioHandler {
 
-    public ABioHandlerSys(HttpContext pContext, CAjaxRequest pRequest)
-      : base(pContext, pRequest) {
+    public ABioHandlerSys(HttpContext context, AjaxRequest request)
+      : base(context, request) {
     }
 
     public String bioCode {
       get {
-        CBioRequest brq = this.FBioRequest as CBioRequest;
-        return (brq != null) ? brq.bioCode : null;
+        var brq = this.FBioRequest as BioRequest;
+        return (brq != null) ? brq.BioCode : null;
       }
     }
 
     private Params _bioParams = null;
     protected Params bioParams {
       get {
-        CBioRequest brq = this.FBioRequest as CBioRequest;
+        var brq = this.FBioRequest as BioRequest;
         if (brq != null)
-          this._bioParams = brq.bioParams;
+          this._bioParams = brq.BioParams;
         if (this._bioParams == null)
           this._bioParams = new Params();
         return this._bioParams; 
@@ -87,7 +84,7 @@ namespace Bio.Framework.Server {
       //  //bool vIsLoginPostMsg = this.GetType() == typeof(tm_login_post);
         String vRootDomain = SrvUtl.detectRootDomain(this.bioCode);
         Boolean vSkipLogin = !String.IsNullOrEmpty(vRootDomain) && vRootDomain.ToLower().Equals("sys");
-        this.BioSession.login(vSkipLogin);
+        this.BioSession.Login(vSkipLogin);
       //} catch(EBioStart) {
       //  //if(this.GetType().Equals(typeof(tm_ws)))
       //  //  throw new EBioRestartApp();

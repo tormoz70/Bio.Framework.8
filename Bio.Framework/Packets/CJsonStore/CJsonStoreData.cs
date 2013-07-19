@@ -46,7 +46,7 @@ namespace Bio.Framework.Packets {
     /// <summary>
     /// Коллекция строк
     /// </summary>
-    public CJsonStoreRows rows { get; set; }
+    public JsonStoreRows rows { get; set; }
     /// <summary>
     /// пока не используется
     /// </summary>
@@ -61,11 +61,11 @@ namespace Bio.Framework.Packets {
       this.totalCount = 0;
     }
 
-    public CJsonStoreRow addRow() {
+    public JsonStoreRow addRow() {
       if (this.metaData == null)
         throw new EBioException("Для добавления данных в пакет необходимо определить метаданные!!!");
       if (this.rows == null)
-        this.rows = new CJsonStoreRows();
+        this.rows = new JsonStoreRows();
       var newRow = this.metaData.CreateNewRow();
       this.rows.Add(newRow);
       return newRow;
@@ -78,7 +78,7 @@ namespace Bio.Framework.Packets {
       return null;
     }
 
-    public static Object getValue(CJsonStoreMetadata metaData, CJsonStoreRow row, String fieldName, Type asType) {
+    public static Object getValue(CJsonStoreMetadata metaData, JsonStoreRow row, String fieldName, Type asType) {
       int indx = metaData.indexOf(fieldName);
       if ((indx >= 0) && (indx < row.Values.Count))
         return Utl.Convert2Type(row.Values[indx], asType);
@@ -86,7 +86,7 @@ namespace Bio.Framework.Packets {
         return null;
     }
 
-    public static T getValue<T>(CJsonStoreMetadata metaData, CJsonStoreRow row, String fieldName) {
+    public static T getValue<T>(CJsonStoreMetadata metaData, JsonStoreRow row, String fieldName) {
       var rslt = getValue(metaData, row, fieldName, typeof(T));
       if (rslt == null)
         return default(T);
@@ -95,15 +95,15 @@ namespace Bio.Framework.Packets {
     }
 
 
-    public T getValue<T>(CJsonStoreRow row, String fieldName) {
+    public T getValue<T>(JsonStoreRow row, String fieldName) {
       return getValue<T>(this.metaData, row, fieldName);
     }
 
-    public Object getValue(CJsonStoreRow row, String fieldName, Type asType) {
+    public Object getValue(JsonStoreRow row, String fieldName, Type asType) {
       return getValue(this.metaData, row, fieldName, asType);
     }
 
-    public Object getValue(CJsonStoreRow row, String fieldName) {
+    public Object getValue(JsonStoreRow row, String fieldName) {
       var fd = this.fieldDefByName(fieldName);
       if (fd != null)
         return getValue(row, fieldName, fd.GetDotNetType());
@@ -128,7 +128,7 @@ namespace Bio.Framework.Packets {
         endReached = this.endReached,
         totalCount = this.totalCount,
         metaData = (this.metaData != null) ? (CJsonStoreMetadata)this.metaData.Clone() : null,
-        rows = (this.rows != null) ? (CJsonStoreRows)this.rows.Clone() : null,
+        rows = (this.rows != null) ? (JsonStoreRows)this.rows.Clone() : null,
         locate = (this.locate != null) ? (CJsonStoreFilter)this.locate.Clone() : null
       };
     }
@@ -186,7 +186,7 @@ namespace Bio.Framework.Packets {
       var listType = typeof(List<>).MakeGenericType(new[] { objectType });
       var listOfCustom = Activator.CreateInstance(listType);
 
-      foreach (CJsonStoreRow r in this.rows) {
+      foreach (JsonStoreRow r in this.rows) {
         var row = Activator.CreateInstance(objectType);
         foreach (CJsonStoreMetadataFieldDef fld in this.metaData.fields) {
             PropertyInfo property = objectType.GetProperty(fld.name);

@@ -17,27 +17,13 @@ namespace Bio.Framework.Server {
   /// </summary>
   public class tmio_Templ : ABioHandlerBio {
 
-    public tmio_Templ(HttpContext pContext, CAjaxRequest pRequest)
-      : base(pContext, pRequest) {
+    public tmio_Templ(HttpContext context, AjaxRequest request)
+      : base(context, request) {
     }
 
     protected override void doExecute() {
       base.doExecute();
 
-      //XmlElement vDS = this.FBioDesc.DocumentElement;
-      //String vConnStr = this.BioSession.detectConnStr(vDS);
-      //using(DbConnection vConn = this.BioSession.DBSess.GetConnection(vConnStr)) {
-      //  try {
-      //    if(vDS != null) {
-      //      CSQLCursorBio vCursor = new CSQLCursorBio(vConn, vDS, this.bioCode);
-      //      vCursor.DoExecuteSQL(this.bioParams);
-      //      this.Context.Response.Write(new CBioResponse() { success = true }.Encode());
-      //    }
-      //  } finally {
-      //    if(vConn != null)
-      //      vConn.Close();
-      //  }
-      //}
     }
   }
 }

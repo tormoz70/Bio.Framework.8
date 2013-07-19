@@ -19,12 +19,13 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 using Bio.Framework.Packets;
 using System.Collections;
+using PropertyMetadata = System.Windows.PropertyMetadata;
 
 namespace Bio.Framework.Client.SL {
 
   //public delegate void CJSTreeLoadChildrenDelegate(CJSTreeItemBase item);
   public class CJSTree : ContentControl, IDataControl {
-    //private CJsonStoreClient _jsClient = null;
+    //private JsonStoreClient _jsClient = null;
 
 
     public CJSTree() {

@@ -1,25 +1,14 @@
 ﻿using System;
-using System.Net;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Ink;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 using System.Reflection.Emit;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Text;
 using System.ComponentModel.DataAnnotations;
-using System.Collections;
 using System.ComponentModel;
-using System.Threading;
 using System.Linq;
 
 namespace Bio.Helpers.Common.Types {
-  public class CPropertyMetadata {
+  public class PropertyMetadata {
     public String Name { get; set; }
     public String DisplayName { get; set; }
     public Type Type { get; set; }
@@ -29,10 +18,10 @@ namespace Bio.Helpers.Common.Types {
     public Boolean? Required { get; set; }
   }
 
-  public class CTypeFactory {
+  public class TypeFactory {
     private readonly Dictionary<String, Type> _typeBySigniture = new Dictionary<String, Type>();
-    private String _getTypeSigniture(List<CPropertyMetadata> propDefs) {
-      StringBuilder sb = new StringBuilder();
+    private String _getTypeSigniture(List<PropertyMetadata> propDefs) {
+      var sb = new StringBuilder();
       foreach (var propDef in propDefs) {
         sb.AppendFormat("_{0}_{1}", propDef.Name, propDef.Type);
       }
@@ -44,10 +33,10 @@ namespace Bio.Helpers.Common.Types {
     }
 
     private TypeBuilder _getTypeBuilder(String typeSigniture, Type baseType) {
-      AssemblyName an = new AssemblyName("TempAssembly" + typeSigniture);
-      AssemblyBuilder assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
-      ModuleBuilder moduleBuilder = assemblyBuilder.DefineDynamicModule("MainModule");
-      TypeBuilder tb = moduleBuilder.DefineType("TempType" + typeSigniture
+      var an = new AssemblyName("TempAssembly" + typeSigniture);
+      var assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
+      var moduleBuilder = assemblyBuilder.DefineDynamicModule("MainModule");
+      var tb = moduleBuilder.DefineType("TempType" + typeSigniture
                           , TypeAttributes.Public |
                           TypeAttributes.Class |
                           TypeAttributes.AutoClass |
@@ -58,56 +47,55 @@ namespace Bio.Helpers.Common.Types {
       return tb;
     }
 
-    private void _createProperty(TypeBuilder tb, CPropertyMetadata propDef) {
-      Type propertyType = propDef.Type;
+    private static void _createProperty(TypeBuilder tb, PropertyMetadata propDef) {
+      var propertyType = propDef.Type;
       if (propertyType.IsValueType && !propertyType.IsGenericType) {
         propertyType = typeof(Nullable<>).MakeGenericType(new[] { propertyType });
       }
-      String propertyName = propDef.Name;
-      Boolean propertyHidden = propDef.Hidden;
-      String v_header = !String.IsNullOrEmpty(propDef.DisplayName) ? propDef.DisplayName : propDef.Name;
+      var propertyName = propDef.Name;
+      var propertyHidden = propDef.Hidden;
+      var v_header = !String.IsNullOrEmpty(propDef.DisplayName) ? propDef.DisplayName : propDef.Name;
       if(String.Equals(v_header, "Empty", StringComparison.CurrentCultureIgnoreCase))
         v_header = String.Empty;
-      String propertyHeaderContent = v_header;
+      var propertyHeaderContent = v_header;
       //String groupAggr = !String.IsNullOrEmpty(propDef.Group) ? propDef.Group : "None";
 
-      FieldBuilder fieldBuilder = tb.DefineField("_" + propertyName, propertyType, FieldAttributes.Public);
-      PropertyBuilder propertyBuilder = tb.DefineProperty(propertyName, PropertyAttributes.HasDefault, propertyType, null);
+      var fieldBuilder = tb.DefineField("_" + propertyName, propertyType, FieldAttributes.Public);
+      var propertyBuilder = tb.DefineProperty(propertyName, PropertyAttributes.HasDefault, propertyType, null);
 
-      CustomAttributeBuilder cabuilder0 = new CustomAttributeBuilder(
-        typeof(CategoryAttribute).GetConstructor(new Type[] { typeof(String) }),
+      var cabuilder0 = new CustomAttributeBuilder(
+        typeof(CategoryAttribute).GetConstructor(new[] { typeof(String) }),
         new Object[] { propDef.Group });
       propertyBuilder.SetCustomAttribute(cabuilder0);
 
-      CustomAttributeBuilder cabuilder1 = new CustomAttributeBuilder(
-        typeof(HeaderContentAttribute).GetConstructor(new Type[] { typeof(String) }),
+      var cabuilder1 = new CustomAttributeBuilder(
+        typeof(HeaderContentAttribute).GetConstructor(new[] { typeof(String) }),
         new Object[] { propertyHeaderContent });
       propertyBuilder.SetCustomAttribute(cabuilder1);
 
       if (propertyHidden) {
-        CustomAttributeBuilder cabuilder2 = new CustomAttributeBuilder(
-          typeof(BrowsableAttribute).GetConstructor(new Type[] { typeof(Boolean) }),
+        var cabuilder2 = new CustomAttributeBuilder(
+          typeof(BrowsableAttribute).GetConstructor(new[] { typeof(Boolean) }),
           new Object[] { false });
         propertyBuilder.SetCustomAttribute(cabuilder2);
       }
 
-      //[Display(Name = "TextThatWillBeDisplayedForGroup")]
-      Type displayAttribute = typeof(DisplayAttribute);
-      PropertyInfo info1 = displayAttribute.GetProperty("Name");
-      PropertyInfo info2 = displayAttribute.GetProperty("AutoGenerateField");
+      var displayAttribute = typeof(DisplayAttribute);
+      var info1 = displayAttribute.GetProperty("Name");
+      var info2 = displayAttribute.GetProperty("AutoGenerateField");
       //PropertyInfo info3 = displayAttribute.GetProperty("Order");
       //PropertyInfo info4 = displayAttribute.GetProperty("GroupName");
-      CustomAttributeBuilder cabuilder3 = new CustomAttributeBuilder(
+      var cabuilder3 = new CustomAttributeBuilder(
           displayAttribute.GetConstructor(new Type[] { }),
           new object[] { },
-          new PropertyInfo[] { info1, info2/*, info3, info4 */},
+          new[] { info1, info2/*, info3, info4 */},
           new object[] { propertyHeaderContent, !propertyHidden/*, order, groupAggr */});
       propertyBuilder.SetCustomAttribute(cabuilder3);
 
       if (propDef.Readonly != null) {
         if (propDef.Readonly == true) {
           var v_cabuilder = new CustomAttributeBuilder(
-            typeof(ReadOnlyAttribute).GetConstructor(new Type[] { typeof(Boolean) }),
+            typeof(ReadOnlyAttribute).GetConstructor(new[] { typeof(Boolean) }),
             new Object[] { true });
           propertyBuilder.SetCustomAttribute(v_cabuilder);
         }
@@ -116,7 +104,7 @@ namespace Bio.Helpers.Common.Types {
       if (propDef.Required != null) {
         if (propDef.Required == true) {
           var v_cabuilder = new CustomAttributeBuilder(
-            typeof(RequiredAttribute).GetConstructor(new Type[] { typeof(Boolean) }),
+            typeof(RequiredAttribute).GetConstructor(new[] { typeof(Boolean) }),
             new Object[] { true });
           propertyBuilder.SetCustomAttribute(v_cabuilder);
         }
@@ -128,23 +116,23 @@ namespace Bio.Helpers.Common.Types {
               MethodAttributes.HideBySig,
               propertyType, Type.EmptyTypes);
 
-      ILGenerator getIL = getPropMthdBldr.GetILGenerator();
+      var getIL = getPropMthdBldr.GetILGenerator();
 
       getIL.Emit(OpCodes.Ldarg_0);
       getIL.Emit(OpCodes.Ldfld, fieldBuilder);
       getIL.Emit(OpCodes.Ret);
 
-      MethodBuilder setPropMthdBldr =
+      var setPropMthdBldr =
           tb.DefineMethod("set_" + propertyName,
             MethodAttributes.Public |
             MethodAttributes.SpecialName |
             MethodAttributes.HideBySig,
-            null, new Type[] { propertyType });
+            null, new[] { propertyType });
 
       //var v_valueChangedMethod = tb.BaseType.GetMethod("valueChanged");
-      var v_setPropertyValueMethod = tb.BaseType.GetMethod("setPropertyValue");
+      var setPropertyValueMethod = tb.BaseType.GetMethod("SetPropertyValue");
       //System.Reflection.Emit.Label lbl1 = default(System.Reflection.Emit.Label);
-      ILGenerator setIL = setPropMthdBldr.GetILGenerator();
+      var setIL = setPropMthdBldr.GetILGenerator();
 
       /*setIL.DeclareLocal(typeof(bool));
       setIL.Emit(OpCodes.Nop);
@@ -181,7 +169,7 @@ namespace Bio.Helpers.Common.Types {
       setIL.Emit(OpCodes.Ldarg_1);
       setIL.Emit(OpCodes.Box, propertyType);
       setIL.Emit(OpCodes.Ldstr, propertyName);
-      setIL.Emit(OpCodes.Call, v_setPropertyValueMethod);
+      setIL.Emit(OpCodes.Call, setPropertyValueMethod);
       setIL.Emit(OpCodes.Nop);
       setIL.Emit(OpCodes.Ret);
 
@@ -190,36 +178,36 @@ namespace Bio.Helpers.Common.Types {
     }
 
 
-    public Type CreateType(List<CPropertyMetadata> propDefs) {
-      Type baseType = typeof(CRTObject);
-      ConstructorInfo BaseCtor0 = baseType.GetConstructor(new Type[0]);
-      ConstructorInfo BaseCtor1 = baseType.GetConstructor(new Type[] { typeof(PropertyChangingEventHandler), typeof(PropertyChangedEventHandler) });
-      String typeSigniture = this._getTypeSigniture(propDefs);
-      Type objectType = this._getTypeByTypeSigniture(typeSigniture);
+    public Type CreateType(List<PropertyMetadata> propDefs) {
+      var baseType = typeof(CRTObject);
+      var baseCtor0 = baseType.GetConstructor(new Type[0]);
+      var baseCtor1 = baseType.GetConstructor(new[] { typeof(PropertyChangingEventHandler), typeof(PropertyChangedEventHandler) });
+      var typeSigniture = this._getTypeSigniture(propDefs);
+      var objectType = this._getTypeByTypeSigniture(typeSigniture);
       if (objectType == null) {
-        TypeBuilder tb = this._getTypeBuilder(typeSigniture, baseType);
+        var tb = this._getTypeBuilder(typeSigniture, baseType);
 
-        ConstructorBuilder constructorBuilder =
+        var constructorBuilder =
                     tb.DefineConstructor(
                                 MethodAttributes.Public, CallingConventions.Standard, null);
-        ILGenerator constructorIL = constructorBuilder.GetILGenerator();
+        var constructorIL = constructorBuilder.GetILGenerator();
         constructorIL.Emit(OpCodes.Ldarg_0);
-        constructorIL.Emit(OpCodes.Call, BaseCtor0);
+        constructorIL.Emit(OpCodes.Call, baseCtor0);
         constructorIL.Emit(OpCodes.Ret);
 
         constructorBuilder = tb.DefineConstructor(
-                                MethodAttributes.Public, CallingConventions.Standard, new Type[] { typeof(PropertyChangingEventHandler), typeof(PropertyChangedEventHandler) });
+                                MethodAttributes.Public, CallingConventions.Standard, new[] { typeof(PropertyChangingEventHandler), typeof(PropertyChangedEventHandler) });
 
         constructorIL = constructorBuilder.GetILGenerator();
         constructorIL.Emit(OpCodes.Ldarg_0);
         constructorIL.Emit(OpCodes.Ldarg_1);
         constructorIL.Emit(OpCodes.Ldarg_2);
-        constructorIL.Emit(OpCodes.Call, BaseCtor1);
+        constructorIL.Emit(OpCodes.Call, baseCtor1);
         constructorIL.Emit(OpCodes.Ret);
 
 
         foreach (var propDef in propDefs) {
-          this._createProperty(tb, propDef);
+          _createProperty(tb, propDef);
         }
         objectType = tb.CreateType();
         this._typeBySigniture.Add(typeSigniture, objectType);
@@ -228,18 +216,16 @@ namespace Bio.Helpers.Common.Types {
     }
 
     public static CRTObject CreateInstance(Type type, PropertyChangingEventHandler onPropertyChanging, PropertyChangedEventHandler onPropertyChanged) {
-      var constructor = type.GetConstructor(new Type[] { typeof(PropertyChangingEventHandler), typeof(PropertyChangedEventHandler) });
+      var constructor = type.GetConstructor(new[] { typeof(PropertyChangingEventHandler), typeof(PropertyChangedEventHandler) });
       if (constructor != null)
         return constructor.Invoke(new Object[] { onPropertyChanging, onPropertyChanged }) as CRTObject;
-      else
-        return null;
+      return null;
     }
     public static CRTObject CreateInstance(Type type) {
       var constructor = type.GetConstructor(new Type[0]);
       if (constructor != null)
         return constructor.Invoke(new Object[0]) as CRTObject;
-      else
-        return null;
+      return null;
     }
 
     /// <summary>
@@ -250,7 +236,7 @@ namespace Bio.Helpers.Common.Types {
     /// <param name="comparison"></param>
     /// <returns></returns>
     public static PropertyInfo FindPropertyOfType(Type type, String propertyName, StringComparison comparison) {
-      return type.GetProperties().FirstOrDefault((p) => { return p.Name.Equals(propertyName, comparison); });
+      return type.GetProperties().FirstOrDefault(p => p.Name.Equals(propertyName, comparison));
     }
     /// <summary>
     /// Возвращает свойство типа по имени без учера регистра
@@ -282,17 +268,15 @@ namespace Bio.Helpers.Common.Types {
     }
 
     public static Object GetValueOfPropertyOfObject(Object obj, String propertyName, StringComparison comparison) {
-      var v_pi = CTypeFactory.FindPropertyOfObject(obj, propertyName, comparison);
-      if (v_pi != null)
-        return v_pi.GetValue(obj, null);
-      return null;
+      var v_pi = FindPropertyOfObject(obj, propertyName, comparison);
+      return v_pi != null ? v_pi.GetValue(obj, null) : null;
     }
     public static Object GetValueOfPropertyOfObject(Object obj, String propertyName) {
       return GetValueOfPropertyOfObject(obj, propertyName, StringComparison.CurrentCultureIgnoreCase);
     }
 
     public static void SetValueOfPropertyOfObject(Object obj, String propertyName, Object value) {
-      var v_pi = CTypeFactory.FindPropertyOfObject(obj, propertyName, StringComparison.CurrentCultureIgnoreCase);
+      var v_pi = FindPropertyOfObject(obj, propertyName, StringComparison.CurrentCultureIgnoreCase);
       if (v_pi != null) {
         var v_value = Utl.Convert2Type(value, v_pi.PropertyType);
         v_pi.SetValue(obj, v_value, null);
@@ -323,58 +307,56 @@ namespace Bio.Helpers.Common.Types {
     #region INotifyPropertyChanged Members
     public event PropertyChangedEventHandler PropertyChanged;
     #endregion
-    public CRTObject()
-      : base() {
+    public CRTObject() {
         this.OnPropertyChanging = null;
         this.OnPropertyChanged = null;
     }
-    public CRTObject(PropertyChangingEventHandler onChanging, PropertyChangedEventHandler onChanged)
-      : base() {
+    public CRTObject(PropertyChangingEventHandler onChanging, PropertyChangedEventHandler onChanged) {
         this.OnPropertyChanging += onChanging;
         this.OnPropertyChanged += onChanged;
     }
     
     private bool _valueChanged(Object oldValue, Object newValue) {
-      return !Object.Equals(oldValue, newValue);
+      return !Equals(oldValue, newValue);
     }
 
     private void _internalSetProperty(String propertyName, Object value) {
-      String fldName = "_" + propertyName;
-      Type v_thisType = this.GetType();
+      var fldName = "_" + propertyName;
+      var thisType = this.GetType();
       // для private - полей
       //var fldInfos = v_thisType.GetFields(BindingFlags.NonPublic | BindingFlags.Instance);
       //var fldInfo = fldInfos.FirstOrDefault((f) => { 
       //  return f.Name.Equals(fldName); 
       //});
-      var fldInfo = v_thisType.GetField(fldName);
-      if (fldInfo != null)
-        try {
-          fldInfo.SetValue(this, value);
-          var eve1 = this.PropertyChanged;
-          if (eve1 != null)
-            eve1(this, new PropertyChangedEventArgs(propertyName));
+      var fldInfo = thisType.GetField(fldName);
+      if (fldInfo != null) {
+        fldInfo.SetValue(this, value);
+        var eve1 = this.PropertyChanged;
+        if (eve1 != null)
+          eve1(this, new PropertyChangedEventArgs(propertyName));
 
-        } catch (Exception ex) {
-          throw ex;
-        }
+      }
     }
 
     public CRTObject Copy() { 
-      Type v_thisType = this.GetType();
-      var constr = v_thisType.GetConstructor(new Type[0]);
-      CRTObject rslt = constr.Invoke(new Object[0]) as CRTObject;
-      var fldInfos = v_thisType.GetFields();
-      foreach (var fi in fldInfos) {
-        fi.SetValue(rslt, fi.GetValue(this));
+      var thisType = this.GetType();
+      var constr = thisType.GetConstructor(new Type[0]);
+      if (constr != null) {
+        var rslt = constr.Invoke(new Object[0]) as CRTObject;
+        var fldInfos = thisType.GetFields();
+        foreach (var fi in fldInfos) {
+          fi.SetValue(rslt, fi.GetValue(this));
+        }
+        return rslt;
       }
-      return rslt;
+      return null;
     }
 
 
-    private Boolean _eventsDisabled = false;
+    private Boolean _eventsDisabled;
     public void DisableEvents() { _eventsDisabled = true; }
     public void EnableEvents() { _eventsDisabled = false; }
-    public void setPropertyValue(Object oldValue, Object newValue, String propertyName) {
+    public void SetPropertyValue(Object oldValue, Object newValue, String propertyName) {
       if (this._eventsDisabled)
         this._internalSetProperty(propertyName, newValue);
       else {
@@ -395,16 +377,16 @@ namespace Bio.Helpers.Common.Types {
 
     public void SetValue(String propertyName, Object value) {
       var oldVal = this.GetValue<Object>(propertyName);
-      this.setPropertyValue(oldVal, value, propertyName);
+      this.SetPropertyValue(oldVal, value, propertyName);
     }
 
     public void SetValues(Object obj) {
       if ((obj != null) && obj.GetType().IsClass) {
-        PropertyInfo[] props = this.GetType().GetProperties();
+        var props = this.GetType().GetProperties();
         foreach (var prop in props) {
           if (prop.CanWrite) {
             try {
-              Object value = Utl.GetPropertyValue(obj, prop.Name);
+              var value = Utl.GetPropertyValue(obj, prop.Name);
               prop.SetValue(this, value, null);
             } catch { }
           }
@@ -414,21 +396,21 @@ namespace Bio.Helpers.Common.Types {
 
     public Object this[String propertyName] {
       get {
-        return CTypeFactory.GetValueOfPropertyOfObject(this, propertyName);
+        return TypeFactory.GetValueOfPropertyOfObject(this, propertyName);
       }
       set {
-        CTypeFactory.SetValueOfPropertyOfObject(this, propertyName, value);
+        TypeFactory.SetValueOfPropertyOfObject(this, propertyName, value);
       }
     }
 
     public T GetValue<T>(String propertyName) {
-      return Utl.Convert2Type<T>(CTypeFactory.GetValueOfPropertyOfObject(this, propertyName));
+      return Utl.Convert2Type<T>(TypeFactory.GetValueOfPropertyOfObject(this, propertyName));
     }
     public Object GetValue(String propertyName, Type type) {
-      return Utl.Convert2Type(CTypeFactory.GetValueOfPropertyOfObject(this, propertyName), type);
+      return Utl.Convert2Type(TypeFactory.GetValueOfPropertyOfObject(this, propertyName), type);
     }
     public Object GetValue(String propertyName) {
-      return CTypeFactory.GetValueOfPropertyOfObject(this, propertyName);
+      return TypeFactory.GetValueOfPropertyOfObject(this, propertyName);
     }
     [Browsable(false)]
     public Object ExtObject { get; set; }

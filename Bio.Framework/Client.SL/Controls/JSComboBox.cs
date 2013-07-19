@@ -1,35 +1,18 @@
 ﻿using System;
-using System.Net;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Ink;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 using Bio.Helpers.Common.Types;
 using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Text;
 using Bio.Framework.Packets;
-using Bio.Helpers.Common;
-using System.Threading;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Data;
-using System.ComponentModel.DataAnnotations;
-using System.Windows.Controls.Primitives;
-using System.ComponentModel;
 
 namespace Bio.Framework.Client.SL {
 
-  public class CJSComboBox : ComboBox {
+  public class JSComboBox : ComboBox {
 
     private BindingExpression bE;
-    public CJSComboBox() {
+    public JSComboBox() {
       this.SelectionChanged += this._selectionChanged;
     }
 
@@ -68,14 +51,14 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    public static void LoadItems(CAjaxResponse prevResponse, IAjaxMng ajaxMng, ComboBox cbx, String bioCode, Params bioParams, Action<ComboBox, CAjaxResponse> callback, Boolean addNullItem, Boolean useCache) {
-      if ((prevResponse != null) && (prevResponse.success == false)) {
+    public static void LoadItems(AjaxResponse prevResponse, IAjaxMng ajaxMng, ComboBox cbx, String bioCode, Params bioParams, Action<ComboBox, AjaxResponse> callback, Boolean addNullItem, Boolean useCache) {
+      if ((prevResponse != null) && (prevResponse.Success == false)) {
         if (callback != null)
           callback(cbx, prevResponse);
         return;
       }
 
-      var v_cli = new CJsonStoreClient {
+      var v_cli = new JsonStoreClient {
         AjaxMng = ajaxMng,
         BioCode = bioCode
       };
@@ -85,25 +68,25 @@ namespace Bio.Framework.Client.SL {
       if (storedItems != null) {
         _loadItems(cbx, storedItems, addNullItem);
         if (callback != null)
-          callback(cbx, new CAjaxResponse { success = true });
+          callback(cbx, new AjaxResponse { Success = true });
       } else {
         v_cli.Load(bioParams, (s, a) => {
-          if (a.response.success) {
+          if (a.Response.Success) {
             var cbxitems = new CbxItems {metadata = v_cli.jsMetadata, ds = v_cli.DS};
             if (useCache)
               _storeItems(bioCode, cbxitems);
             _loadItems(cbx, cbxitems, addNullItem);
           }
           if (callback != null)
-            callback(cbx, a.response);
+            callback(cbx, a.Response);
         });
       }
     }
-    public static void LoadItems(CAjaxResponse prevResponse, IAjaxMng ajaxMng, ComboBox cbx, String bioCode, Params bioParams, Action<ComboBox, CAjaxResponse> callback, Boolean addNullItem) {
+    public static void LoadItems(AjaxResponse prevResponse, IAjaxMng ajaxMng, ComboBox cbx, String bioCode, Params bioParams, Action<ComboBox, AjaxResponse> callback, Boolean addNullItem) {
       LoadItems(prevResponse, ajaxMng, cbx, bioCode, bioParams, callback, addNullItem, false);
     }
 
-    public static void LoadItems(CAjaxResponse prevResponse, IAjaxMng ajaxMng, ComboBox cbx, String bioCode, Params bioParams, Action<ComboBox, CAjaxResponse> callback) {
+    public static void LoadItems(AjaxResponse prevResponse, IAjaxMng ajaxMng, ComboBox cbx, String bioCode, Params bioParams, Action<ComboBox, AjaxResponse> callback) {
       LoadItems(prevResponse, ajaxMng, cbx, bioCode, bioParams, callback, false, false);
     }
 
@@ -115,12 +98,12 @@ namespace Bio.Framework.Client.SL {
 
     public CRTObject NewRow() {
       if ((this.ds != null) && (this.ds.First() != null)) {
-        var row = CTypeFactory.CreateInstance(this.ds.First().GetType(), null, null);
+        var row = TypeFactory.CreateInstance(this.ds.First().GetType(), null, null);
         row.DisableEvents();
         try {
           String v_intRowUID = Guid.NewGuid().ToString("N");
           if (row != null) {
-            row[CJsonStoreClient.csInternalROWUID_FieldName] = v_intRowUID;
+            row[JsonStoreClient.CS_INTERNAL_ROWUID_FIELD_NAME] = v_intRowUID;
           }
 
         } finally {

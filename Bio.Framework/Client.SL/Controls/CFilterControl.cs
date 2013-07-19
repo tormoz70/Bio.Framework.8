@@ -14,6 +14,7 @@ using System.ComponentModel;
 using System.Threading;
 using System.Linq;
 using Bio.Helpers.Common;
+using PropertyMetadata = System.Windows.PropertyMetadata;
 
 namespace Bio.Framework.Client.SL {
   public class CFilterControl : Control {

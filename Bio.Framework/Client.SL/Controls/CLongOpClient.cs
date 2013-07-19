@@ -30,16 +30,16 @@
       : this(null, null, null) {
     }
 
-    internal override CRmtClientRequest createRequest(RmtClientRequestCmd cmd, Params bioParams, Boolean silent, AjaxRequestDelegate callback) {
-      var rslt = this.creRequestOfClient<CLongOpClientRequest>(cmd, bioParams, silent, callback);
-      rslt.pipe = this.PipeName;
-      rslt.sessionUID = this.SessionUID;
+    internal override RmtClientRequest createRequest(RmtClientRequestCmd cmd, Params bioParams, Boolean silent, AjaxRequestDelegate callback) {
+      var rslt = this.creRequestOfClient<LongOpClientRequest>(cmd, bioParams, silent, callback);
+      rslt.Pipe = this.PipeName;
+      rslt.SessionUID = this.SessionUID;
       return rslt;
     }
 
-    protected override void doOnRmtProcRunnedSuccess(CBioResponse response) {
-      if (response.rmtStatePacket != null)
-        this.SessionUID = response.rmtStatePacket.sessionUID;
+    protected override void doOnRmtProcRunnedSuccess(BioResponse response) {
+      if (response.RmtStatePacket != null)
+        this.SessionUID = response.RmtStatePacket.sessionUID;
     }
 
   }

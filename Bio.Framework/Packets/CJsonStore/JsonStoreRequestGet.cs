@@ -15,10 +15,23 @@ namespace Bio.Framework.Packets {
   using System.Windows.Forms;
 #endif
 
-  public class CJsonStoreRequestPost : CJsonStoreRequest {
+  public enum CJSRequestGetType { GetData = 0, GetSelectedPks = 1 };
+
+  public class JsonStoreRequestGet : JsonStoreRequest {
+    public CJSRequestGetType getType { get; set; }
+    public String selection { get; set; }
+
     //public static JsonConverter[] GetConverters() {
     //  return new JsonConverter[] { new EBioExceptionConverter()/*t12, new CJsonStoreRowConverter() */};
     //}
+
+    protected override void copyThis(ref AjaxRequest destObj) {
+      base.copyThis(ref destObj);
+      var dst = destObj as JsonStoreRequestGet;
+      dst.getType = this.getType;
+      dst.selection = this.selection;
+    }
+
   }
 
 

@@ -122,7 +122,7 @@ namespace Bio.Helpers.Common {
           return EBioException.CreateEBioEx(type, null);
         });
         return contract;
-      } else if (type.Equals(typeof(CAjaxRequest)) || type.IsSubclassOf(typeof(CAjaxRequest))) {
+      } else if (type.Equals(typeof(AjaxRequest)) || type.IsSubclassOf(typeof(AjaxRequest))) {
         JsonContract contract = base.ResolveContract(type);
         JsonProperty c = (contract as JsonObjectContract).Properties.GetProperty("callback", StringComparison.CurrentCulture);
         if (c != null)

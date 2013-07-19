@@ -16,7 +16,7 @@
   /// Менеджер запросов к серверу
   /// </summary>
   public class CAjaxMng : IAjaxMng {
-    private readonly Queue<CBioRequest> _queue = null;
+    private readonly Queue<BioRequest> _queue = null;
     private readonly CAjaxCli _ajax = null;
     private readonly CAjaxLogin _loginPrc = null;
 
@@ -27,7 +27,7 @@
     /// <param name="env">Ссылка на среду окружения</param>
     public CAjaxMng(IEnvironment env) {
       this.Env = env;
-      this._queue = new Queue<CBioRequest>();
+      this._queue = new Queue<BioRequest>();
       this._ajax = new CAjaxCli(env.AppVersion, env.UserAgentName, env.AppTitle);
       this._loginPrc = new CAjaxLogin(this, this.doOnLogLine);
     }
@@ -83,7 +83,7 @@
       }
     }
 
-    private CBioRequest _currentRequest = null;
+    private BioRequest _currentRequest = null;
 
     private void _processCallback(AjaxRequestDelegate callback, Object sender, AjaxResponseEventArgs args) {
       Utl.UiThreadInvoke(() => {
@@ -92,7 +92,7 @@
       });
     }
 
-    private void _request(CBioRequest bioRequest) {
+    private void _request(BioRequest bioRequest) {
       //Debug.WriteLine("Request:0 - bioRequest.requestType[" + bioRequest.requestType + "]; prms:" + bioRequest.prms);
       if ((this.RequestState == RequestState.Requesting) && (this._currentRequest != bioRequest)) {
         this._queue.Enqueue(bioRequest);
@@ -102,17 +102,17 @@
       this.RequestState = RequestState.Requesting;
       this._currentRequest = bioRequest;
 
-      if (bioRequest.url == null) {
-        bioRequest.url = this.Env.ServerUrl; //Utl.BuildURL(this.ServerUrl, null);
+      if (bioRequest.URL == null) {
+        bioRequest.URL = this.Env.ServerUrl; //Utl.BuildURL(this.ServerUrl, null);
       }
-      var v_clbck = bioRequest.callback;
-      bioRequest.callback = (sender, args) => {
+      var v_clbck = bioRequest.Callback;
+      bioRequest.Callback = (sender, args) => {
           //Debug.WriteLine("Request:2 - bioRequest.callback - start");
-          CBioResponse response = args.response as CBioResponse;
-          if ((response != null) && !response.success) {
+          BioResponse response = args.Response as BioResponse;
+          if ((response != null) && !response.Success) {
             //Debug.WriteLine("Request:3 - response.success:false");
             // Сервер вернул ошибку
-            EBioLogin vBioLoginExcp = CAjaxLogin.decBioLoginExcp(response.ex);
+            EBioLogin vBioLoginExcp = CAjaxLogin.decBioLoginExcp(response.Ex);
             if (vBioLoginExcp != null) {
               //Debug.WriteLine("Request:4 - vBioLoginExcp:" + vBioLoginExcp.GetType().Name);
               // Попадаем сюда если сервер вернул сообщение связанное с логином (Например EBioStart-это значит, что соединение отсутствует и необходимо начать новую сессию)  
@@ -123,9 +123,9 @@
                 // - соединение отсутствует и сервер запросил параметры для новой сессии
                 // - запускаем процедуру логина.
                 //Debug.WriteLine("Request:5 - запускаем процедуру логина: this._loginPrc.processLogin");
-                this._loginPrc.processLogin(vBioLoginExcp, args.request as CBioRequest, (e, r) => {
-                  response.ex = e;
-                  if (response.ex is EBioOk) {
+                this._loginPrc.processLogin(vBioLoginExcp, args.Request as BioRequest, (e, r) => {
+                  response.Ex = e;
+                  if (response.Ex is EBioOk) {
                     //Debug.WriteLine("Request:6 - this._loginPrc.processLogin: response.ex == null");
                     // -- Новая сессия создана без ошибок
                     // устанавливаем состояние сессии
@@ -134,12 +134,12 @@
                     else if (this.ConnectionState == ConnectionState.Breaking)
                       this.ConnectionState = ConnectionState.Breaked;
                     // тут необходимо запустить запрос, который был отправлен на сервер перед тем как сервер вернул запрос параметров новой сессии
-                    //Debug.WriteLine("Request:7 - перезапускаем первоначальный запрос: this.Request(args.request as CBioRequest);");
-                    this.Request(args.request as CBioRequest);
+                    //Debug.WriteLine("Request:7 - перезапускаем первоначальный запрос: this.Request(args.request as BioRequest);");
+                    this.Request(args.Request as BioRequest);
                   } else {
                     //Debug.WriteLine("Request:8 - this._loginPrc.processLogin: response.ex: " + response.ex.GetType().Name);
                     // -- При создании сессии произошла ошибка
-                    if (response.ex is EBioCancel) {
+                    if (response.Ex is EBioCancel) {
                       // Пользователь нажал кнопку "Отмена" в окне ввода логина
                       this.ConnectionState = ConnectionState.Canceled;
                       this.RequestState = RequestState.Requested;
@@ -148,9 +148,9 @@
                       // Непредвиденная ошибка при проверке логина
                       this.ConnectionState = ConnectionState.Error;
                       this.RequestState = RequestState.Requested;
-                      if (!args.request.silent) {
-                        if (!(response.ex is EBioAutenticationError))
-                          msgBx.showError(response.ex, "Ошибка обращения к серверу", () => this._processCallback(v_clbck, this, args));
+                      if (!args.Request.Silent) {
+                        if (!(response.Ex is EBioAutenticationError))
+                          msgBx.showError(response.Ex, "Ошибка обращения к серверу", () => this._processCallback(v_clbck, this, args));
                       }
                     }
                   }
@@ -161,8 +161,8 @@
                 // Непредвиденная ошибка
                 this.ConnectionState = ConnectionState.Error;
                 this.RequestState = RequestState.Requested;
-                if (!args.request.silent) {
-                  msgBx.showError(response.ex, "Ошибка обращения к серверу", () => {
+                if (!args.Request.Silent) {
+                  msgBx.showError(response.Ex, "Ошибка обращения к серверу", () => {
                     this._processCallback(v_clbck, this, args);
                   });
                 } else
@@ -172,22 +172,22 @@
               //Debug.WriteLine("Request:12 - Непредвиденная ошибка.");
               //this.ConnectionState = ConnectionState.Unconnected;
               this.RequestState = RequestState.Error;
-              if (!args.request.silent) {
-                msgBx.showError(response.ex, "Ошибка обращения к серверу", () => this._processCallback(v_clbck, this, args));
+              if (!args.Request.Silent) {
+                msgBx.showError(response.Ex, "Ошибка обращения к серверу", () => this._processCallback(v_clbck, this, args));
               } else
                 this._processCallback(v_clbck, this, args);
             }
           } else {
-            if (args.response.ex != null) {
-              if (args.response.ex is EBioLoggedOut) {
+            if (args.Response.Ex != null) {
+              if (args.Response.Ex is EBioLoggedOut) {
                 //Debug.WriteLine("Request:9 - сессия завершена.");
                 // - сервер завершил сессию
                 this.ConnectionState = ConnectionState.Breaked;
-              } else if (args.response.ex is EBioOk) {
+              } else if (args.Response.Ex is EBioOk) {
                 // Это ответ на запрос doPing когда сессия уже существует
                 //Debug.WriteLine("Request:10 - сессия создана.");
                 // ответ - заершающий создание сесии
-                this._loginPrc.assignCurUser((args.response.ex as EBioOk).Usr);
+                this._loginPrc.assignCurUser((args.Response.Ex as EBioOk).Usr);
                 this.ConnectionState = ConnectionState.Connected;
                 //Debug.WriteLine("Request:10-1 - this._queue.Dequeue();");
               }
@@ -208,7 +208,7 @@
     /// Выполнить запрос к серверу
     /// </summary>
     /// <param name="bioRequest">Конфигурация запроса</param>
-    public void Request(CBioRequest bioRequest) {
+    public void Request(BioRequest bioRequest) {
       this._request(bioRequest);
     }
 	

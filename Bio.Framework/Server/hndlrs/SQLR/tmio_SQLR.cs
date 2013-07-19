@@ -14,8 +14,8 @@ namespace Bio.Framework.Server {
   /// </summary>
   public class tmio_SQLR : ABioHandlerBioTransacted {
 
-    public tmio_SQLR(HttpContext pContext, CAjaxRequest pRequest)
-      : base(pContext, pRequest) { }
+    public tmio_SQLR(HttpContext context, AjaxRequest request)
+      : base(context, request) { }
 
     protected override void doExecute() {
       base.doExecute();
@@ -24,38 +24,31 @@ namespace Bio.Framework.Server {
         throw new EBioException(String.Format("Описание объекта {0} не найдено на сервере.", this.bioCode));
       var vDS = this.FBioDesc.DocumentElement;
       if (vDS != null) {
-        var rqst = this.bioRequest<CBioSQLRequest>();
+        var rqst = this.BioRequest<BioSQLRequest>();
         var vConn = this.AssignTransaction(vDS, rqst);
         try {
-          //try {
           var vCursor = new CJSCursor(vConn, vDS, this.bioCode);
-          int vAjaxRequestTimeOut = Utl.Convert2Type<int>(Params.FindParamValue(this.QParams, "ajaxrqtimeout"));
+          var vAjaxRequestTimeOut = Utl.Convert2Type<int>(Params.FindParamValue(this.QParams, "ajaxrqtimeout"));
           var vMon = SQLGarbageMonitor.GetSQLGarbageMonitor(this.Context);
           vMon.RegisterSQLCmd(vCursor, (SQLCmd vSQLCmd, ref Boolean killQuery, ref Boolean killSession, Boolean vAjaxTimeoutExceeded) => {
-            if (Object.Equals(vCursor, vSQLCmd)) {
+            if (Equals(vCursor, vSQLCmd)) {
               killQuery = !this.Context.Response.IsClientConnected || vAjaxTimeoutExceeded;
               killSession = killQuery;
             }
           }, vAjaxRequestTimeOut);
           try {
-            vCursor.DoExecuteSQL(this.bioParams, rqst.timeout);
+            vCursor.DoExecuteSQL(this.bioParams, rqst.Timeout);
             this.Context.Response.Write(
-              new CBioResponse() {
-                success = true,
-                transactionID = !this.AutoCommitTransaction ? this.TransactionID : null,
-                bioParams = this.bioParams
+              new BioResponse() {
+                Success = true,
+                TransactionID = !this.AutoCommitTransaction ? this.TransactionID : null,
+                BioParams = this.bioParams
               }.Encode());
-          //} catch (Exception ex) {
-          //  throw EBioException.CreateIfNotEBio(ex);
           } finally {
             vMon.RemoveItem(vCursor);
           }
-          //} catch (Exception ex) {
-          //  this.RollbackTransaction();
-          //  throw EBioException.CreateIfNotEBio(ex);
-          //}
         } catch (Exception ex) {
-          this.FinishTransaction(vConn, true, CSQLTransactionCmd.Rollback);
+          this.FinishTransaction(vConn, true, SQLTransactionCmd.Rollback);
           ebioex = new EBioException("Ошибка выполнения на сервере. Сообщение: " + ex.Message, ex);
         } finally {
           this.FinishTransaction(vConn, true, rqst.transactionCmd);
@@ -63,7 +56,7 @@ namespace Bio.Framework.Server {
       } else
         ebioex = new EBioException("В описании объекта [" + this.bioCode + "] не найден раздел <store>.");
       if (ebioex != null) {
-        this.Context.Response.Write(new CBioResponse() { success = false, bioParams = this.bioParams, ex = ebioex }.Encode());
+        this.Context.Response.Write(new BioResponse() { Success = false, BioParams = this.bioParams, Ex = ebioex }.Encode());
       }
     }
 

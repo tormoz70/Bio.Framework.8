@@ -13,16 +13,16 @@ namespace Bio.Framework.Server {
   using Bio.Helpers.Common.Types;
 
   public class ABioHandlerBioTransacted : ABioHandlerBio {
-    public ABioHandlerBioTransacted(HttpContext pContext, CAjaxRequest pRequest) : base(pContext, pRequest) { }
+    public ABioHandlerBioTransacted(HttpContext context, AjaxRequest request) : base(context, request) { }
 
     protected string TransactionID { get; private set; }
     protected bool AutoCommitTransaction { get; private set; }
     
 
-    protected IDbConnection AssignTransaction(XmlElement ds, CBioSQLRequest request) {
+    protected IDbConnection AssignTransaction(XmlElement ds, BioSQLRequest request) {
       this.TransactionID = null;
       this.AutoCommitTransaction = false;
-      if (request is CJsonStoreRequestGet) {
+      if (request is JsonStoreRequestGet) {
         return this.BioSession.Cfg.dbSession.GetConnection();
       }
       this.AutoCommitTransaction = true;
@@ -45,7 +45,7 @@ namespace Bio.Framework.Server {
       return vConn;
     }
 
-    protected void FinishTransaction(IDbConnection vConn, Boolean isPostRequest, CSQLTransactionCmd cmd) {
+    protected void FinishTransaction(IDbConnection vConn, Boolean isPostRequest, SQLTransactionCmd cmd) {
       if (!isPostRequest) {
         if (vConn != null) {
           vConn.Close();
@@ -54,25 +54,23 @@ namespace Bio.Framework.Server {
         return;
       }
 
-      Boolean vCommited = false;
-      if (this.AutoCommitTransaction || (cmd == CSQLTransactionCmd.Commit)) {
+      var vCommited = false;
+      if (this.AutoCommitTransaction || (cmd == SQLTransactionCmd.Commit)) {
         vCommited = true;
         if (!String.IsNullOrEmpty(this.TransactionID))
           this.BioSession.Cfg.dbSession.StoreTransaction(this.TransactionID, null);
-      } else if (cmd == CSQLTransactionCmd.Rollback)
+      } else if (cmd == SQLTransactionCmd.Rollback)
         this.BioSession.Cfg.dbSession.KillTransaction(this.TransactionID);
-      if (vCommited || (cmd == CSQLTransactionCmd.Rollback)) {
+      if (vCommited || (cmd == SQLTransactionCmd.Rollback)) {
         if (vConn != null) {
           vConn.Close();
           vConn.Dispose();
-          vConn = null;
         }
       }
     }
 
     protected void RollbackTransaction() {
       if (!String.IsNullOrEmpty(this.TransactionID)) {
-        //DbTransaction vStoredTrans = this.BioSession.DBSess.restoreTransaction(this.FTransactionID);
         this.BioSession.Cfg.dbSession.KillTransaction(this.TransactionID);
       }
     }

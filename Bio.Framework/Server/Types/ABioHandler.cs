@@ -3,14 +3,10 @@ namespace Bio.Framework.Server {
   using System;
   using System.IO;
   using System.Web;
-  using System.Collections.Generic;
   using System.Xml;
-  using System.Text;
-  using System.Reflection;
-
-  using Bio.Framework.Packets;
-  using Bio.Helpers.Common.Types;
-  using Bio.Helpers.Common;
+  using Packets;
+  using Helpers.Common.Types;
+  using Helpers.Common;
 
   /// <summary>
   /// Ѕазовый класс дл€ все получаемых системой сообщений        
@@ -19,134 +15,95 @@ namespace Bio.Framework.Server {
   ///   который наследуетс€ от данного и зарегистрировать его в файле /ini/regmsgs.xml
   /// </summary>
   public abstract class ABioHandler {
-
-    private HttpContext FContext = null;
-    private QueryParams FQParams = null;
-    private BioSession FBioSession = null;
     protected XmlDocument FBioDesc = null;
-    protected CAjaxRequest FBioRequest = null;
+    protected AjaxRequest FBioRequest = null;
     public String RemoteIP { get; private set; }
-    //protected XMLResponse FXMLResponse = null;
 
-    public ABioHandler(HttpContext context, CAjaxRequest request) {
+    protected ABioHandler(HttpContext context, AjaxRequest request) {
+      BioSession = null;
       this.RemoteIP = httpSrvUtl.detectRemoteIP(context);
-      this.FContext = context;
+      this.Context = context;
       this.FBioRequest = request;
-      if(this.FContext != null) {
-        this.FBioSession = (BioSession)this.FContext.Session["BioSessIni"];
-        if(this.FBioSession == null) {
-          this.FBioSession = new BioSession(this.FContext.Request.PhysicalApplicationPath, this.FContext.Request.ApplicationPath);
-          this.FContext.Session["BioSessIni"] = this.FBioSession;
+      if(this.Context != null) {
+        this.BioSession = (BioSession)this.Context.Session["BioSessIni"];
+        if(this.BioSession == null) {
+          this.BioSession = new BioSession(this.Context.Request.PhysicalApplicationPath, this.Context.Request.ApplicationPath);
+          this.Context.Session["BioSessIni"] = this.BioSession;
         }
       }
-      this.FBioSession.Init(this);
-      //this.FXMLResponse = new XMLResponse(this);
-      this.FQParams = QueryParams.ParsQString(this.FContext.Request);
+      this.BioSession.Init(this);
+      this.QParams = QueryParams.ParsQString(this.Context.Request);
     }
 
-    public T bioRequest<T>() where T : CAjaxRequest {
+    public T BioRequest<T>() where T : AjaxRequest {
       return this.FBioRequest as T;
     }
 
     protected String getQParamValue(String pName, bool pMandatory) {
-      Param vParam = this.QParams.ParamByName(pName);
-      if(pMandatory && (vParam == null))
+      var param = this.QParams.ParamByName(pName);
+      if(pMandatory && (param == null))
         throw new EBioException("Ќе найден об€зательный параметр запроса [" + pName + "]!");
-      if(vParam != null)
-        return vParam.ValueAsString();
-      else
-        return null;
+      return param != null ? param.ValueAsString() : null;
     }
 
-    //protected String buildBackResponseXSL() {
-    //  return this.BioSession.LocalPath + "src" + this.selfTypePathWithoutExt + ".xsl";
-    //}
-
-    //protected void sendBackResponseStd() {
-    //  this.sendBackResponseStd(false);
-    //}
-    //protected void sendBackResponseStd(bool pDoNotTransform) {
-    //  if(pDoNotTransform)
-    //    this.FXMLResponse.Send(this.Context.Response);
-    //  else {
-    //    String vXSL_fileName = this.buildBackResponseXSL();
-    //    this.FXMLResponse.Send(this.Context.Response, vXSL_fileName);
-    //  }
-    //}
-
-    //protected abstract void doBeforeExecute();
     protected abstract void doExecute();
     public void DoExecute() {
-      //this.doBeforeExecute();
       this.doExecute();
     }
 
     public static dom4cs getHandlersRegistry(HttpContext pContext) {
-      dom4cs vResult = (dom4cs)pContext.Session["BioMsgsRegistry"];
-      if(vResult == null) {
-        String vHandlersRegFN = pContext.Request.PhysicalApplicationPath + "\\ini\\reghanlers.xml";
+      var result = (dom4cs)pContext.Session["BioMsgsRegistry"];
+      if(result == null) {
+        var vHandlersRegFN = pContext.Request.PhysicalApplicationPath + "\\ini\\reghanlers.xml";
         if (!File.Exists(vHandlersRegFN))
           throw new EBioException("Ќе найден файл: реестр сообщений: " + vHandlersRegFN);
-        vResult = dom4cs.OpenDocument(vHandlersRegFN);
-        pContext.Session["BioMsgsRegistry"] = vResult;
+        result = dom4cs.OpenDocument(vHandlersRegFN);
+        pContext.Session["BioMsgsRegistry"] = result;
       }
-      return vResult;
+      return result;
     }
 
-    public BioSession BioSession {
-      get {
-        return this.FBioSession;
-      }
-    }
+    public BioSession BioSession { get; private set; }
 
-    public HttpContext Context {
-      get {
-        return this.FContext;
-      }
-    }
+    public HttpContext Context { get; private set; }
 
-    public QueryParams QParams {
-      get {
-        return this.FQParams;
-      }
-    }
+    public QueryParams QParams { get; private set; }
 
     public String RawUrl {
       get {
-        return this.FContext.Request.RawUrl;
+        return this.Context.Request.RawUrl;
       }
     }
 
 
     public String RqstURL {
       get {
-        return this.FContext.Request.Path + "?" + this.FContext.Request.QueryString;
+        return this.Context.Request.Path + "?" + this.Context.Request.QueryString;
       }
     }
 
     public Object GetHttpSessionObject(String pName) {
-      if((this.FContext != null) && (this.FContext.Session != null))
-        return this.FContext.Session[pName];
-      else
-        return null;
+      if((this.Context != null) && (this.Context.Session != null))
+        return this.Context.Session[pName];
+      return null;
     }
 
     public void SetHttpSessionObject(String pName, Object pObject) {
-      if((this.FContext != null) && (this.FContext.Session != null))
-        this.FContext.Session[pName] = pObject;
+      if((this.Context != null) && (this.Context.Session != null))
+        this.Context.Session[pName] = pObject;
     }
 
     public void RemoveHttpSessionObject(String pName) {
-      if((this.FContext != null) && (this.FContext.Session != null))
-        this.FContext.Session.Remove(pName);
+      if((this.Context != null) && (this.Context.Session != null))
+        this.Context.Session.Remove(pName);
     }
 
-    public String selfTypePathWithoutExt {
+    public String SelfTypePathWithoutExt {
       get {
         return this.GetType().Namespace.Replace("Bio", "").Replace(".", "\\") + "\\" + this.GetType().Name;
       }
     }
-    public String selfTypeUrlPathWithoutExt {
+    public String SelfTypeUrlPathWithoutExt {
       get {
         return this.GetType().Namespace.Replace("Bio", "").Replace(".", "/") + "/" + this.GetType().Name;
       }

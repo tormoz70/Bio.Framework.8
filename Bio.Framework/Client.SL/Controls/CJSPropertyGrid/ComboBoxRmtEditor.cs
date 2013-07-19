@@ -37,7 +37,7 @@ namespace Bio.Framework.Client.SL.JSPropertyGrid {
         var v_owner = this.Property.Owner as CJSPropertyGrid;
         if(v_owner == null)
           throw new Exception(String.Format("{0} можно использовать только в {1}.", this.GetType().Name, typeof(CJSPropertyGrid).Name));
-        var v_cli = new CJsonStoreClient() {
+        var v_cli = new JsonStoreClient() {
           AjaxMng = v_owner.OwnerPlugin.Env.AjaxMng,
           BioCode = this._attrs.BioCode
         };
@@ -49,8 +49,8 @@ namespace Bio.Framework.Client.SL.JSPropertyGrid {
         this.cbo.SelectedValue = 0;
         v_cli.Load(null, (s, a) => {
           //this.OwnerTreeView.Dispatcher.BeginInvoke(() => {
-          if (a.response.success) {
-            CJsonStoreResponse rsp = a.response as CJsonStoreResponse;
+          if (a.Response.Success) {
+            JsonStoreResponse rsp = a.Response as JsonStoreResponse;
             if (rsp != null) {
               //this.Items.Clear();
               List<Object> values = new List<Object>();

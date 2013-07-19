@@ -11,8 +11,8 @@ namespace Bio.Framework.Server {
   /// Обработчик запросов на отображение таблицы
   /// </summary>
   public class tmio_DS : ABioHandlerBioTransacted {
-    public tmio_DS(HttpContext pContext, CAjaxRequest pRequest)
-      : base(pContext, pRequest) {
+    public tmio_DS(HttpContext context, AjaxRequest request)
+      : base(context, request) {
     }
 
     private void _write_log(String pMsg) {
@@ -20,9 +20,9 @@ namespace Bio.Framework.Server {
       //  this.write_log("tmio_DS-doExecute-Get", pMsg);
     }
 
-    private CJsonStoreRequest jsReq {
+    private JsonStoreRequest JSReq {
       get {
-        return this.FBioRequest as CJsonStoreRequest;
+        return this.FBioRequest as JsonStoreRequest;
       }
     }
 
@@ -33,26 +33,26 @@ namespace Bio.Framework.Server {
       var v_ds = this.FBioDesc.DocumentElement;
       if (v_ds != null) {
         if (this.BioSession.Cfg.dbSession != null) {
-          var v_conn = this.AssignTransaction(v_ds, this.jsReq);
-          var v_transactionFinished = false;
+          var v_conn = this.AssignTransaction(v_ds, this.JSReq);
+          var transactionFinished = false;
           try {
-            if (this.jsReq is CJsonStoreRequestGet) {
-              var v_jsReqGet = (this.jsReq as CJsonStoreRequestGet);
+            if (this.JSReq is JsonStoreRequestGet) {
+              var v_jsReqGet = (this.JSReq as JsonStoreRequestGet);
               if (v_jsReqGet.getType == CJSRequestGetType.GetData)
                 this._doGet(v_conn, v_ds);
               else if (v_jsReqGet.getType == CJSRequestGetType.GetSelectedPks)
                 this._doGetSelectionPks(v_conn, v_ds);
-            } else if (this.jsReq is CJsonStoreRequestPost)
+            } else if (this.JSReq is JsonStoreRequestPost)
               this._doPost(v_conn, v_ds);
           } catch(Exception) {
-            if (this.jsReq is CJsonStoreRequestPost) {
-              this.FinishTransaction(v_conn, true, CSQLTransactionCmd.Rollback);
-              v_transactionFinished = true;
+            if (this.JSReq is JsonStoreRequestPost) {
+              this.FinishTransaction(v_conn, true, SQLTransactionCmd.Rollback);
+              transactionFinished = true;
             }
             throw;
           } finally {
-            if(!v_transactionFinished)
-              this.FinishTransaction(v_conn, (this.jsReq is CJsonStoreRequestPost), this.jsReq.transactionCmd);
+            if(!transactionFinished)
+              this.FinishTransaction(v_conn, (this.JSReq is JsonStoreRequestPost), this.JSReq.transactionCmd);
           }
 
         } else
@@ -65,17 +65,17 @@ namespace Bio.Framework.Server {
       //throw new Exception("FTW!");
       var v_cursor = new CJSCursor(conn, ds, this.bioCode);
 
-      var rqst = this.bioRequest<CJsonStoreRequestGet>();
+      var rqst = this.BioRequest<JsonStoreRequestGet>();
       v_cursor.Init(rqst);
-      v_cursor.Open(rqst.timeout);
+      v_cursor.Open(rqst.Timeout);
       try {
         var v_sqlToJson = new CSQLtoJSON();
         var packet = v_sqlToJson.Process(v_cursor);
-        var rsp = new CJsonStoreResponse() {
-          bioParams = this.bioParams,
-          ex = null,
-          success = true,
-          transactionID = this.TransactionID,
+        var rsp = new JsonStoreResponse() {
+          BioParams = this.bioParams,
+          Ex = null,
+          Success = true,
+          TransactionID = this.TransactionID,
           packet = packet,
         };
 
@@ -87,18 +87,18 @@ namespace Bio.Framework.Server {
 
     private void _doGetSelectionPks(IDbConnection conn, XmlElement ds) {
       var v_cursor = new CJSCursor(conn, ds, this.bioCode);
-      var rqst = this.bioRequest<CJsonStoreRequestGet>();
+      var rqst = this.BioRequest<JsonStoreRequestGet>();
       v_cursor.Init(rqst);
-      v_cursor.Open(rqst.timeout);
+      v_cursor.Open(rqst.Timeout);
       try {
         String pks = null;
         while (v_cursor.Next()) 
           Utl.AppendStr(ref pks, v_cursor.PKValue, ";");
-        var rsp = new CJsonStoreResponse() {
-          bioParams = this.bioParams,
-          ex = null,
-          success = true,
-          transactionID = this.TransactionID,
+        var rsp = new JsonStoreResponse {
+          BioParams = this.bioParams,
+          Ex = null,
+          Success = true,
+          TransactionID = this.TransactionID,
           selectedPkList = pks
         };
 
@@ -109,16 +109,16 @@ namespace Bio.Framework.Server {
     }
 
     private void _doPost(IDbConnection conn, XmlElement ds) {
-      var request = this.bioRequest<CJsonStoreRequest>();
+      var request = this.BioRequest<JsonStoreRequest>();
       var proc = new CJSONtoSQL();
       proc.Process(conn, ds, request, this.bioParams, this.bioCode);
 
-      var rsp = new CJsonStoreResponse() {
-        bioParams = this.bioParams,
-        ex = null,
-        success = true,
-        transactionID = this.TransactionID,
-        packet = request.packet
+      var rsp = new JsonStoreResponse {
+        BioParams = this.bioParams,
+        Ex = null,
+        Success = true,
+        TransactionID = this.TransactionID,
+        packet = request.Packet
       };
 
       this.Context.Response.Write(rsp.Encode());

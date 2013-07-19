@@ -15,11 +15,11 @@ namespace Bio.Framework.Server {
   /// Обработчик запроса внутренностей компонента LongOp
   /// </summary>
   public class tmio_LongOp: ABioHandlerBio {
-    private CRmtClientRequest _request = null;
+    private RmtClientRequest _request = null;
 
-    public tmio_LongOp(HttpContext pContext, CAjaxRequest pRequest)
-      : base(pContext, pRequest) {
-      this._request = pRequest as CRmtClientRequest;
+    public tmio_LongOp(HttpContext context, AjaxRequest request)
+      : base(context, request) {
+      this._request = request as RmtClientRequest;
     }
 
     protected override void doExecute() {
@@ -30,11 +30,11 @@ namespace Bio.Framework.Server {
         "application/octet-stream", //"application/vnd.ms-excel",
         "longop[" + this.bioCode + "]");
       vBldr.OnRunEvent += new CRmtThreadOnRunEvent(this._doOnRunEvent);
-      vBldr.doExecute(this.bioRequest<CRmtClientRequest>().cmd, this.bioParams);
+      vBldr.DoExecute(this.BioRequest<RmtClientRequest>().cmd, this.bioParams);
     }
 
     private void _doOnRunEvent(CRmtThreadHandler sender, ref IRemoteProcInst instance) {
-      var rqst = this.bioRequest<CLongOpClientRequest>();
+      var rqst = this.BioRequest<LongOpClientRequest>();
       instance = new CLongOpProc(this.BioSession.Cfg.dbSession, null, rqst, this._prepareCmdDelegate);
     }
 

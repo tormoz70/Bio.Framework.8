@@ -188,39 +188,39 @@
     }
 
 #else
-    private static void _processResponseError(Exception e, CAjaxRequest request) {
-      CAjaxResponse vResponse = new CAjaxResponse {
-        ex = EBioException.CreateIfNotEBio(e),
-        success = false
+    private static void _processResponseError(Exception e, AjaxRequest request) {
+      AjaxResponse vResponse = new AjaxResponse {
+        Ex = EBioException.CreateIfNotEBio(e),
+        Success = false
       };
-      if (request.callback != null)
-        request.callback(null, new AjaxResponseEventArgs { request = request, response = vResponse });
+      if (request.Callback != null)
+        request.Callback(null, new AjaxResponseEventArgs { Request = request, Response = vResponse });
     }
     /// <summary>
     /// Выполняет синхронный запрос к серверу
     /// </summary>
     /// <param name="request">URL</param>
-    public static void getDataFromSrv(CAjaxRequest request) {
+    public static void getDataFromSrv(AjaxRequest request) {
       try {
         WebClient v_client = new WebClient();
         v_client.Headers["Content-Type"] = "application/x-www-form-urlencoded";
         v_client.UploadStringCompleted += new UploadStringCompletedEventHandler((Object sender, UploadStringCompletedEventArgs args) => {
           if (args.Error == null) {
-            Utl.UiThreadInvoke(new Action<Object, CAjaxRequest, UploadStringCompletedEventArgs>((s, r, a) => {
+            Utl.UiThreadInvoke(new Action<Object, AjaxRequest, UploadStringCompletedEventArgs>((s, r, a) => {
               try {
                 JsonConverter[] c = ajaxUTL.getConvertersFromRequestType(r.GetType());
                 String vResponseText = a.Result;
-                CAjaxResponse vResponse = ajaxUTL.CreResponseObject(null, vResponseText, c);
-                if (r.callback != null)
-                  r.callback(s, new AjaxResponseEventArgs { request = r, response = vResponse });
+                AjaxResponse vResponse = ajaxUTL.CreResponseObject(null, vResponseText, c);
+                if (r.Callback != null)
+                  r.Callback(s, new AjaxResponseEventArgs { Request = r, Response = vResponse });
               } catch (Exception ex) {
                 _processResponseError(ex, r);
               }
-            }), sender, (CAjaxRequest)args.UserState, args);
+            }), sender, (AjaxRequest)args.UserState, args);
           }else
-            _processResponseError(args.Error, (CAjaxRequest)args.UserState);
+            _processResponseError(args.Error, (AjaxRequest)args.UserState);
         });
-        Uri uri = new Uri(request.url, UriKind.Relative);
+        Uri uri = new Uri(request.URL, UriKind.Relative);
         String vParamsToPost = prepareRequestParams(request);
         v_client.UploadStringAsync(uri, "POST", vParamsToPost, request);
       } catch (Exception e) {
@@ -228,21 +228,21 @@
       }
     }
 
-    public static String prepareRequestParams(CAjaxRequest request) {
+    public static String prepareRequestParams(AjaxRequest request) {
       Params vParams = request.BuildQParams(ajaxUTL.getConvertersFromRequestType(request.GetType()));
       //vParams.Add("ajaxrqtimeout", "" + request.timeout);
       return vParams.bldUrlParams();
     }
 
     
-    public static void getFileFromSrv(CAjaxRequest request, String appendUrlParams) {
+    public static void getFileFromSrv(AjaxRequest request, String appendUrlParams) {
       Action<Exception> p_doOnErr = (e) => {
-        CAjaxResponse vResponse = new CAjaxResponse {
-          ex = EBioException.CreateIfNotEBio(e),
-          success = false
+        AjaxResponse vResponse = new AjaxResponse {
+          Ex = EBioException.CreateIfNotEBio(e),
+          Success = false
         };
-        if (request.callback != null)
-          request.callback(null, new AjaxResponseEventArgs { request = request, response = vResponse });
+        if (request.Callback != null)
+          request.Callback(null, new AjaxResponseEventArgs { Request = request, Response = vResponse });
       };
       try {
         WebClient cli = new WebClient();
@@ -250,19 +250,19 @@
           if (e.Error == null) {
             //if (callback != null)
             //  callback(e);
-            if (request.callback != null) {
-              CAjaxResponse vResponse = new CAjaxResponse {
-                success = true
+            if (request.Callback != null) {
+              AjaxResponse vResponse = new AjaxResponse {
+                Success = true
               };
               var a = new AjaxResponseEventArgs {
-                request = request,
-                response = vResponse, 
-                stream = new MemoryStream()
+                Request = request,
+                Response = vResponse, 
+                Stream = new MemoryStream()
               };
-              e.Result.CopyTo(a.stream);
+              e.Result.CopyTo(a.Stream);
               //e.Result.Flush();
               e.Result.Close();
-              request.callback(sender, a);
+              request.Callback(sender, a);
             }
 
 
@@ -272,7 +272,7 @@
         });
         String vParamsToPost = prepareRequestParams(request);
         String v_appendUrlParams = String.IsNullOrEmpty(appendUrlParams) ? String.Empty : "&" + appendUrlParams;
-        Uri uri = new Uri(request.url + "?" + vParamsToPost + v_appendUrlParams, UriKind.Relative);
+        Uri uri = new Uri(request.URL + "?" + vParamsToPost + v_appendUrlParams, UriKind.Relative);
         cli.OpenReadAsync(uri);
       } catch (Exception ex) {
         p_doOnErr(ex);
@@ -291,25 +291,25 @@
     /// <param name="responseText"></param>
     /// <param name="converters"></param>
     /// <returns></returns>
-    public static CAjaxResponse CreResponseObject(EBioException requestException, String responseText, JsonConverter[] converters) {
-      CAjaxResponse vResponse = null;
+    public static AjaxResponse CreResponseObject(EBioException requestException, String responseText, JsonConverter[] converters) {
+      AjaxResponse vResponse = null;
       if (requestException == null) {
         try {
-          vResponse = CAjaxResponse.Decode(responseText, converters);
-          vResponse.responseText = responseText;
+          vResponse = AjaxResponse.Decode(responseText, converters);
+          vResponse.ResponseText = responseText;
         } catch (Exception e) {
-          vResponse = new CAjaxResponse() {
-            ex = new EBioException("Ошибка при восстановлении объекта Response. Сообщение: " + e.Message + "\nResponseText: " + responseText, e),
-            responseText = responseText,
-            success = false
+          vResponse = new AjaxResponse() {
+            Ex = new EBioException("Ошибка при восстановлении объекта Response. Сообщение: " + e.Message + "\nResponseText: " + responseText, e),
+            ResponseText = responseText,
+            Success = false
           };
         }
       } else {
-        vResponse = new CAjaxResponse() {
-          ex = requestException,
-          responseText = responseText,
+        vResponse = new AjaxResponse() {
+          Ex = requestException,
+          ResponseText = responseText,
           //request = pRequest,
-          success = false
+          Success = false
         };
       }
       return vResponse;

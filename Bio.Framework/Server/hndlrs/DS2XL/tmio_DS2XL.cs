@@ -26,8 +26,8 @@ namespace Bio.Framework.Server {
   /// </summary>
   public class tmio_DS2XL: ABioHandlerBio {
 
-    public tmio_DS2XL(HttpContext pContext, CAjaxRequest pRequest)
-      : base(pContext, pRequest) {
+    public tmio_DS2XL(HttpContext context, AjaxRequest request)
+      : base(context, request) {
     }
 
     private Excel.Range addFirstCol(ref Excel.Range pRng, Excel.Range vCurCol) {
@@ -38,14 +38,13 @@ namespace Bio.Framework.Server {
       Excel.Range vNewCol = ExcelSrv.getRange(vCurCol.Worksheet, vCurCol.Worksheet.Cells[vCurRowN, vCurColN],
                                                          vCurCol.Worksheet.Cells[vCurRowN + vCurRowsN, vCurColN]);
       vCurCol.Copy(vNewCol);
-      //pRng = XLRUtils.UnionRanges(pRng, vNewCol);
       vCurCol.ColumnWidth = vNewCol.ColumnWidth;
       return vCurCol;
     }
 
-    private void initCol(Excel.Range col, CXLReportDSFieldDef fld) {
-      Excel.Range v_headerCell = (Excel.Range)col.Cells[1, 1];
-      Excel.Range v_dataCell = (Excel.Range)col.Cells[2, 1];
+    private void _initCol(Excel.Range col, CXLReportDSFieldDef fld) {
+      var v_headerCell = (Excel.Range)col.Cells[1, 1];
+      var v_dataCell = (Excel.Range)col.Cells[2, 1];
 
       //    Selection.NumberFormat = "0" -int
       //    Selection.NumberFormat = "@" -string
@@ -66,10 +65,10 @@ namespace Bio.Framework.Server {
 
     private void insertCols(ref Excel.Range rng, List<CXLReportDSFieldDef> fields) {
       Excel.Range vCol = rng;
-      this.initCol(vCol, fields[0]);
+      this._initCol(vCol, fields[0]);
       for(int i=1; i<fields.Count; i++) {
         vCol = this.addFirstCol(ref rng, vCol);
-        this.initCol(vCol, fields[i]);
+        this._initCol(vCol, fields[i]);
       }
     }
 
@@ -94,82 +93,79 @@ namespace Bio.Framework.Server {
    protected override void doExecute() {
       base.doExecute();
 
-      String vExpTypeStr = this.getQParamValue("exptype", false);
-      if (String.IsNullOrEmpty(vExpTypeStr))
-        vExpTypeStr = "xls";
-      var vBldr = new CRmtThreadHandler(
+      var expTypeStr = this.getQParamValue("exptype", false);
+      if (String.IsNullOrEmpty(expTypeStr))
+        expTypeStr = "xls";
+      var bldr = new CRmtThreadHandler(
           this.BioSession,
           "application/octet-stream",
           "report[" + this.bioCode + "]");
-        if (vExpTypeStr == "xls")
-          vBldr.OnRunEvent += new CRmtThreadOnRunEvent(this.doOnRunEventXLS);
-        else if (vExpTypeStr == "csv")
-          vBldr.OnRunEvent += new CRmtThreadOnRunEvent(this.doOnRunEventCSV);
-        vBldr.doExecute(this.bioRequest<CRmtClientRequest>().cmd, this.bioParams);
+        if (expTypeStr == "xls")
+          bldr.OnRunEvent += this._doOnRunEventXls;
+        else if (expTypeStr == "csv")
+          bldr.OnRunEvent += this._doOnRunEventCsv;
+        bldr.DoExecute(this.BioRequest<RmtClientRequest>().cmd, this.bioParams);
     }
 
-    private void doOnRunEventXLS(CRmtThreadHandler sender, ref IRemoteProcInst instance) {
-      String vTitle = this.bioRequest<CRmtClientRequest>().title;
-      if (vTitle != null)
-        vTitle = vTitle.Replace("<br>", "\n");
+    private void _doOnRunEventXls(CRmtThreadHandler sender, ref IRemoteProcInst instance) {
+      var title = this.BioRequest<RmtClientRequest>().title;
+      if (title != null)
+        title = title.Replace("<br>", "\n");
       else
-        vTitle = "";
-      CIObject vIO = this.BioSession.IObj_get(this.bioCode);
-      if(vIO != null) {
-        String vDefaultTmpl = this.BioSession.Cfg.IniPath + "iod\\bio2xl_default.xlsm";
-        String vCustomTmpl = vIO.ioTemplate2XL;
+        title = "";
+      var vIo = this.BioSession.IObj_get(this.bioCode);
+      if(vIo != null) {
+        var vDefaultTmpl = this.BioSession.Cfg.IniPath + "iod\\bio2xl_default.xlsm";
+        var vCustomTmpl = vIo.ioTemplate2XL;
         if((!File.Exists(vDefaultTmpl)) && (String.IsNullOrEmpty(vCustomTmpl)))
           throw this.creBioEx("Шаблон для экспорта не найден в системе.", null);
 
-        Boolean vIsDefaultTempl = true;
-        String vSeldTempl = vDefaultTmpl;
+        var isDefaultTempl = true;
+        var seldTempl = vDefaultTmpl;
         if(!String.IsNullOrEmpty(vCustomTmpl)) {
-          vSeldTempl = vCustomTmpl;
-          vIsDefaultTempl = false;
+          seldTempl = vCustomTmpl;
+          isDefaultTempl = false;
         }
 
-        var v_rptCfg = new CXLReportConfig();
-        v_rptCfg.fullCode = vIO.bioCode;
-        v_rptCfg.extAttrs.roles = "all";
-        v_rptCfg.debug = false;
-        v_rptCfg.extAttrs.liveScripts = false;
-        v_rptCfg.templateAdv = vSeldTempl;
-        v_rptCfg.title = vTitle;
-        v_rptCfg.filenameFmt = "{$code}_{$now}";
-        v_rptCfg.dbSession = this.BioSession.Cfg.dbSession;
-        v_rptCfg.extAttrs.sessionID = this.BioSession.CurSessionID;
-        v_rptCfg.extAttrs.userUID = this.BioSession.Cfg.CurUser.UID;
-        v_rptCfg.extAttrs.remoteIP = this.BioSession.CurSessionRemoteIP;
-        v_rptCfg.extAttrs.workPath = this.BioSession.Cfg.WorkspacePath; //this.BioSession.Cfg.IniPath; //vIO.LocalPath;
-        //rptCfg.extAttrs.
+        var rptCfg = new CXLReportConfig();
+        rptCfg.fullCode = vIo.bioCode;
+        rptCfg.extAttrs.roles = "all";
+        rptCfg.debug = false;
+        rptCfg.extAttrs.liveScripts = false;
+        rptCfg.templateAdv = seldTempl;
+        rptCfg.title = title;
+        rptCfg.filenameFmt = "{$code}_{$now}";
+        rptCfg.dbSession = this.BioSession.Cfg.dbSession;
+        rptCfg.extAttrs.sessionID = this.BioSession.CurSessionID;
+        rptCfg.extAttrs.userUID = this.BioSession.Cfg.CurUser.UID;
+        rptCfg.extAttrs.remoteIP = this.BioSession.CurSessionRemoteIP;
+        rptCfg.extAttrs.workPath = this.BioSession.Cfg.WorkspacePath;
         foreach (var v_prm in this.bioParams)
-          v_rptCfg.inPrms.Add((Param)v_prm.Clone());
-        v_rptCfg.debug = Xml.getAttribute<Boolean>(vIO.IniDocument.XmlDoc.DocumentElement, "debug", false);
-        v_rptCfg.dss.Add(CXLReportDSConfig.DecodeFromBio(
-          vIO.IniDocument.XmlDoc.DocumentElement,
-          vIO.LocalPath, "cdsRpt", "mRng", v_rptCfg.title, null));
-        instance = new CXLReport(vIO, v_rptCfg, this.Context);
-        if(vIsDefaultTempl)
-          (instance as CXLReport).OnPrepareTemplate += new DlgXLReportOnPrepareTemplate(this.DoOnPrepareTemplate);
+          rptCfg.inPrms.Add((Param)v_prm.Clone());
+        rptCfg.debug = Xml.getAttribute<Boolean>(vIo.IniDocument.XmlDoc.DocumentElement, "debug", false);
+        rptCfg.dss.Add(CXLReportDSConfig.DecodeFromBio(
+          vIo.IniDocument.XmlDoc.DocumentElement,
+          vIo.LocalPath, "cdsRpt", "mRng", rptCfg.title, null));
+        instance = new CXLReport(vIo, rptCfg, this.Context);
+        if(isDefaultTempl)
+          (instance as CXLReport).OnPrepareTemplate += this.DoOnPrepareTemplate;
       }
     }
 
-    private void doOnRunEventCSV(CRmtThreadHandler sender, ref IRemoteProcInst instance) {
-      XmlElement vDS = this.FBioDesc.DocumentElement;
-      IDbConnection vConn = this.BioSession.Cfg.dbSession.GetConnection();
-      //String vColsList = this.getQParamValue("cols", false);
-      String vAddHeaderStr = this.getQParamValue("addheader", false);
-      Boolean vAddHeader = !String.IsNullOrEmpty(vAddHeaderStr) && vAddHeaderStr.Equals("true");
+    private void _doOnRunEventCsv(CRmtThreadHandler sender, ref IRemoteProcInst instance) {
+      if (instance == null) throw new ArgumentNullException("instance");
+      var ds = this.FBioDesc.DocumentElement;
+      var conn = this.BioSession.Cfg.dbSession.GetConnection();
+      var addHeaderStr = this.getQParamValue("addheader", false);
+      var addHeader = !String.IsNullOrEmpty(addHeaderStr) && addHeaderStr.Equals("true");
       instance = new CCSVReport(
         this.bioCode,
         this.Context,
-        vDS,
-        //nm,
-        //vCols,
+        ds,
         this.bioParams,
-        vConn,
+        conn,
         this.BioSession.Cfg.RptLogsPath,
-        vAddHeader);
+        addHeader);
     }
 
   }

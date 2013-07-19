@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.ComponentModel;
 
 namespace Bio.Helpers.Common {
@@ -31,7 +28,7 @@ namespace Bio.Helpers.Common {
     /// <summary>
     /// Выполняется
     /// </summary>
-    public static Boolean isRunning(RemoteProcState state) {
+    public static Boolean IsRunning(RemoteProcState state) {
       switch (state) {
         case RemoteProcState.Breaked:
         case RemoteProcState.Done:
@@ -46,7 +43,7 @@ namespace Bio.Helpers.Common {
     /// <summary>
     /// Выполнен
     /// </summary>
-    public static Boolean isFinished(RemoteProcState state) {
+    public static Boolean IsFinished(RemoteProcState state) {
       switch (state) {
         case RemoteProcState.Breaked:
         case RemoteProcState.Done:

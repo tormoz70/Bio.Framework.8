@@ -78,10 +78,10 @@ namespace Bio.Framework.Server {
     }
 
     public virtual void Init(Params pBioParams) {
-      this.Init(new CJsonStoreRequestGet {
-        bioParams = pBioParams,
-        packet = this._creJSData(),
-        sort = null,
+      this.Init(new JsonStoreRequestGet {
+        BioParams = pBioParams,
+        Packet = this._creJSData(),
+        Sort = null,
         //nav = null
       });
     }
@@ -263,7 +263,7 @@ namespace Bio.Framework.Server {
       if (this.rqPacket == null)
         this.rqPacket = this._creJSData();
       XmlElement SQLtext = detectSQLTextElement(this.CursorIniDoc, this.bioCode);
-      this.ApplyParamsTypes((XmlElement)SQLtext.ParentNode, this.rqBioParams);
+      _applyParamsTypes((XmlElement)SQLtext.ParentNode, this.rqBioParams);
       this.InitCursorFields();
       if (this.rqBioParams == null)
         this._rq_bioParams = new Params();
@@ -300,37 +300,34 @@ namespace Bio.Framework.Server {
     /// Инициализация
     /// </summary>
     /// <param name="request">Описание web-запроса</param>
-    public virtual void Init(CJsonStoreRequestGet request) {
+    public virtual void Init(JsonStoreRequestGet request) {
       var v_rqget = request; 
       if (v_rqget == null)
         throw new Exception("Для данного вида запроса параметер request должен быть типа CJsonStoreRequestGet, а на входе " + request.GetType().Name + ".");
-      this.Init(v_rqget.packet, v_rqget.bioParams, v_rqget.filter, v_rqget.sort, v_rqget.selection, request.timeout);
+      this.Init(v_rqget.Packet, v_rqget.BioParams, v_rqget.Filter, v_rqget.Sort, v_rqget.selection, request.Timeout);
     }
 
     protected override void onBeforeOpen() {
       Thread.Sleep(100);
     }
 
-    private System.Data.ParameterDirection detectDir(XmlElement pParamDesc) {
-      System.Data.ParameterDirection vResult = System.Data.ParameterDirection.Input;
-      String pd = pParamDesc.GetAttribute("direction");
+    private static ParameterDirection _detectDir(XmlElement pParamDesc) {
+      var result = ParameterDirection.Input;
+      var pd = pParamDesc.GetAttribute("direction");
       if (!String.IsNullOrEmpty(pd)) {
         switch (pd) {
           case "Input":
-            vResult = System.Data.ParameterDirection.Input;
+            result = ParameterDirection.Input;
             break;
           case "Output":
-            vResult = System.Data.ParameterDirection.Output;
+            result = ParameterDirection.Output;
             break;
           case "InputOutput":
-            vResult = System.Data.ParameterDirection.InputOutput;
+            result = ParameterDirection.InputOutput;
             break;
-          /*case "ReturnValue":
-          vResult = System.Data.ParameterDirection.ReturnValue;
-          break;*/
         }
       }
-      return vResult;
+      return result;
     }
 
 
@@ -340,23 +337,17 @@ namespace Bio.Framework.Server {
     /// <param name="sqlElement">XML-описание запроса.</param>
     /// <param name="prms">Набор параметров, в которые пропишутся типы.</param>
     /// <exception cref="ArgumentNullException"></exception>
-    private void ApplyParamsTypes(XmlElement sqlElement, Params prms) {
+    private static void _applyParamsTypes(XmlElement sqlElement, Params prms) {
       if (sqlElement == null)
         throw new ArgumentNullException("sqlElement");
       if (prms != null) {
         foreach (XmlElement SQLParam in sqlElement.SelectNodes("param")) {
-          String vParamName = SQLParam.GetAttribute("name");
-          String vParamTypeName = SQLParam.GetAttribute("type");
-          //Type vParamType;
-          //if(String.Equals(vParamTypeName, "clob", StringComparison.CurrentCultureIgnoreCase))
-          //  vParamType = typeof(OracleClob);
-          //else if (String.Equals(vParamTypeName, "blob", StringComparison.CurrentCultureIgnoreCase))
-          //  vParamType = typeof(OracleBlob);
-          //else
-          Type vParamType = ftypeHelper.ConvertStrToType(vParamTypeName);
+          var vParamName = SQLParam.GetAttribute("name");
+          var vParamTypeName = SQLParam.GetAttribute("type");
+          var vParamType = ftypeHelper.ConvertStrToType(vParamTypeName);
 
-          ParamDirection vDir = SQLUtils.EncodeParamDirection(this.detectDir(SQLParam));
-          Param param = SQLUtils.FindParam(prms, vParamName);
+          var vDir = SQLUtils.EncodeParamDirection(_detectDir(SQLParam));
+          var param = SQLUtils.FindParam(prms, vParamName);
           if (vDir == ParamDirection.Input) {
             if (param != null) {
               param.ParamType = vParamType;
@@ -374,36 +365,23 @@ namespace Bio.Framework.Server {
             param.InnerObject = vParamTypeName; // Сохраняем имя типа параметра. Его придется использовать при инициализации оракловых параметров
 
             param.ParamDir = vDir;
-            if (param.ParamType.Equals(typeof(System.String)))
+            if (param.ParamType == typeof(String))
               param.ParamSize = 32000;
           }
-          /*if((param != null) && ((vDir == ParamDirection.Input) || (vDir == ParamDirection.InputOutput))) {
-            if (!String.IsNullOrEmpty(param.ValueAsString())) {
-              if(param.ParamType.Equals(typeof(System.Decimal)))
-                param.Value = SQLUtils.StrAsOraValue(param.ValueAsString(), OracleDataType.Varchar2);
-              else if(param.ParamType.Equals(typeof(System.DateTime)))
-                param.Value = SQLUtils.StrAsOraValue(param.ValueAsString(), OracleDataType.Date);
-              //else if (param.ParamType.Equals(typeof(System.Char[])))
-              //  param.Value = SQLUtils.StrAsOraValue(param.Value, OracleDbType.Clob);
-              else if (param.ParamType.Equals(typeof(System.Byte[])))
-                param.Value = SQLUtils.StrAsOraValue(param.ValueAsString(), OracleDataType.Blob);
-            }
-          }*/
-
         }
       }
     }
 
     private void _doExecute(Params prms, String actionName, Int32 timeout) {
-      var SQLelem = (XmlElement)this.CursorIniDoc.SelectSingleNode("SQL[@action='" + actionName + "']");
-      if (SQLelem != null) {
-        var SQLtext = (XmlElement)SQLelem.SelectSingleNode("text");
-        if (SQLtext != null) {
-          SQLtext.InnerText = SQLtext.InnerText.Trim();
+      var sqlElement = (XmlElement)this.CursorIniDoc.SelectSingleNode("SQL[@action='" + actionName + "']");
+      if (sqlElement != null) {
+        var sqLtext = (XmlElement)sqlElement.SelectSingleNode("text");
+        if (sqLtext != null) {
+          sqLtext.InnerText = sqLtext.InnerText.Trim();
           try {
-            this.ApplyParamsTypes(SQLelem, prms);
-            var cmd = SQLCmd.PrepareCommand(this.Connection, SQLtext.InnerText, prms, timeout);
-            SQLCmd.ExecuteScript(cmd, SQLtext.InnerText, prms);
+            _applyParamsTypes(sqlElement, prms);
+            var cmd = PrepareCommand(this.Connection, sqLtext.InnerText, prms, timeout);
+            ExecuteScript(cmd, sqLtext.InnerText, prms);
           } catch (EBioException be) {
             throw new EBioException("При выполнении PL/SQL блока " + this.bioCode + "[" + actionName + "] произошла ошибка.\nСообщение: " + be.Message, be);
           }
@@ -426,7 +404,7 @@ namespace Bio.Framework.Server {
         if (SQLtext != null) {
           sql = SQLtext.InnerText.Trim();
           try {
-            this.ApplyParamsTypes(SQLelem, prms);
+            _applyParamsTypes(SQLelem, prms);
             stmt = SQLCmd.PrepareCommand(this.Connection, sql, prms, timeout);
           } catch (EBioException be) {
             throw new EBioException("При подготовке PL/SQL блока " + this.bioCode + "[" + csActionName + "] произошла ошибка.\nСообщение: " + be.Message, be);
@@ -456,7 +434,7 @@ namespace Bio.Framework.Server {
     }
     */
 
-    private Params _buildPostParams(CJsonStoreMetadata metadata, CJsonStoreRow row, Params bioParams) {
+    private Params _buildPostParams(CJsonStoreMetadata metadata, JsonStoreRow row, Params bioParams) {
       Params v_rslt = new Params();
       for (int i = 0; i < metadata.fields.Count; i++)
         v_rslt.Add(metadata.fields[i].name.ToLower(), row.Values[i]);
@@ -465,7 +443,7 @@ namespace Bio.Framework.Server {
 
     }
 
-    private void _returnParamsToRow(CJsonStoreMetadata metadata, CJsonStoreRow row, Params bioParams) {
+    private void _returnParamsToRow(CJsonStoreMetadata metadata, JsonStoreRow row, Params bioParams) {
       var v_out_params = bioParams.Where(p => { return (p.ParamDir != ParamDirection.Input)/* || String.Equals(p.Name, CJsonStoreMetadata.csPKFieldName)*/; });
       foreach (var p in v_out_params)
         row.Values[metadata.indexOf(p.Name)] = p.Value;
@@ -478,13 +456,13 @@ namespace Bio.Framework.Server {
     /// <param name="row"></param>
     /// <param name="bioParams"></param>
     /// <param name="timeout"/>
-    public void DoProcessRowPost(CJsonStoreMetadata metadata, CJsonStoreRow row, Params bioParams, Int32 timeout) {
+    public void DoProcessRowPost(CJsonStoreMetadata metadata, JsonStoreRow row, Params bioParams, Int32 timeout) {
       var v_params = this._buildPostParams(metadata, row, bioParams);
-      if ((row.ChangeType == CJsonStoreRowChangeType.Added) ||
-          (row.ChangeType == CJsonStoreRowChangeType.Modified)) {
+      if ((row.ChangeType == JsonStoreRowChangeType.Added) ||
+          (row.ChangeType == JsonStoreRowChangeType.Modified)) {
             this._doExecute(v_params, "insertupdate", timeout);
         this._returnParamsToRow(metadata, row, v_params);
-      } else if (row.ChangeType == CJsonStoreRowChangeType.Deleted)
+      } else if (row.ChangeType == JsonStoreRowChangeType.Deleted)
         this._doExecute(v_params, "delete", timeout);
     }
 
@@ -503,7 +481,7 @@ namespace Bio.Framework.Server {
     /// <param name="row"></param>
     /// <param name="bioParams"></param>
     /// <param name="timeout"/>
-    public void DoExecuteSQL(CJsonStoreMetadata metadata, CJsonStoreRow row, Params bioParams, Int32 timeout) {
+    public void DoExecuteSQL(CJsonStoreMetadata metadata, JsonStoreRow row, Params bioParams, Int32 timeout) {
       var v_params = this._buildPostParams(metadata, row, bioParams);
       this._doExecute(v_params, "execute", timeout);
     }

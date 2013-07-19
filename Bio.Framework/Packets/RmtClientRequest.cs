@@ -10,13 +10,13 @@ namespace Bio.Framework.Packets {
     Run = 0, Break = 1, Kill = 2, GetState = 3, GetResult = 4
   };
 
-  public class CRmtClientRequest : CBioRequest {
+  public class RmtClientRequest : BioRequest {
     public String title { get; set; }
     public RmtClientRequestCmd cmd { get; set; }
 
-    protected override void copyThis(ref CAjaxRequest destObj) {
+    protected override void copyThis(ref AjaxRequest destObj) {
       base.copyThis(ref destObj);
-      var dst = destObj as CRmtClientRequest;
+      var dst = destObj as RmtClientRequest;
       dst.title = this.title;
       dst.cmd = this.cmd;
     }

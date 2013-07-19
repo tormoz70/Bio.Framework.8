@@ -34,7 +34,7 @@ namespace Bio.Framework.Client.SL {
   }
 
   public class CEditorBase : INotifyPropertyChanged {
-    private Object _getValue(CJsonStoreRow row, CJsonStoreMetadata metaData, String fieldName) {
+    private Object _getValue(JsonStoreRow row, CJsonStoreMetadata metaData, String fieldName) {
       int indx = metaData.indexOf(fieldName);
       if ((indx >= 0) && (indx < row.Values.Count))
         return row.Values[indx];
@@ -55,7 +55,7 @@ namespace Bio.Framework.Client.SL {
     /// </summary>
     /// <param name="row"></param>
     /// <param name="metaData"></param>
-    public void assignRow(CJsonStoreRow row, CJsonStoreMetadata metaData) {
+    public void assignRow(JsonStoreRow row, CJsonStoreMetadata metaData) {
       if ((row != null) && (metaData != null)) {
         this._headers = new Dictionary<String, String>();
         PropertyInfo[] props = this.GetType().GetProperties();
@@ -76,7 +76,7 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    public static T CreRec<T>(CJsonStoreRow row, CJsonStoreMetadata metaData) where T : CEditorBase, new() {
+    public static T CreRec<T>(JsonStoreRow row, CJsonStoreMetadata metaData) where T : CEditorBase, new() {
       var v_result = new T();
       v_result.assignRow(row, metaData);
       return v_result;

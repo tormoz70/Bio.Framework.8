@@ -30,7 +30,7 @@ namespace Bio.Framework.Client.SL {
 
       this._owner = this.FindParentOfType<CJSGrid>();
       if (this._owner != null) {
-        this._owner._jsClient.AfterLoadData += new JSClientEventHandler<AjaxResponseEventArgs>(_jsClient_AfterLoadData);
+        this._owner._jsClient.OnAfterLoadData += new JSClientEventHandler<AjaxResponseEventArgs>(_jsClient_AfterLoadData);
         this._owner._doOnDataGridAssigned(this);
 
         if (this._owner.delaidAssignPopupMenu != null) {
@@ -57,7 +57,7 @@ namespace Bio.Framework.Client.SL {
       base.OnDrop(e);
     }
 
-    void _jsClient_AfterLoadData(CJsonStoreClient sender, AjaxResponseEventArgs args) {
+    void _jsClient_AfterLoadData(JsonStoreClient sender, AjaxResponseEventArgs args) {
       if ((this._owner != null) &&
             (this._owner._jsClient != null) &&
               (this._owner._jsClient.jsMetadata != null)) {
@@ -132,40 +132,36 @@ namespace Bio.Framework.Client.SL {
           Int32 v_row_index = row.GetIndex();
           Int64 v_start_row = 0;
           if (this._owner._jsClient.PageSize > 0)
-            v_start_row = (this._owner._jsClient.PageCurrent - 1) * this._owner._jsClient.PageSize;
-          String v_max_rownum = "" + (v_start_row + ((this._owner._jsClient.PageSize > 0) ? this._owner._jsClient.PageSize : this._owner._jsClient.DS.Count()));
-          var v_max_rownum_len = v_max_rownum.Length;
-          String v_num_fmt = new String('0', v_max_rownum_len);
-          String v_rnum = String.Format("{0:" + v_num_fmt + "} ", v_start_row + v_row_index + 1);
+            v_start_row = (this._owner.PageCurrent - 1) * this._owner._jsClient.PageSize;
+          var maxRownum = "" + (v_start_row + ((this._owner._jsClient.PageSize > 0) ? this._owner._jsClient.PageSize : this._owner._jsClient.DS.Count()));
+          var maxRownumLen = maxRownum.Length;
+          var numFmt = new String('0', maxRownumLen);
+          var rnum = String.Format("{0:" + numFmt + "} ", v_start_row + v_row_index + 1);
           if (!this._owner.SuppressMultiselection && this._owner._jsClient.jsMetadata.multiselection) {
             var v_hpan = new StackPanel();
-            v_hpan.HorizontalAlignment = System.Windows.HorizontalAlignment.Right;
+            v_hpan.HorizontalAlignment = HorizontalAlignment.Right;
             v_hpan.Orientation = Orientation.Horizontal;
-            v_hpan.FlowDirection = System.Windows.FlowDirection.LeftToRight;
+            v_hpan.FlowDirection = FlowDirection.LeftToRight;
 
             var v_htxt = new TextBlock();
-            v_htxt.Text = v_rnum;
+            v_htxt.Text = rnum;
             v_hpan.Children.Add(v_htxt);
 
-            var v_row_data = row.DataContext as CRTObject;
+            var rowData = row.DataContext as CRTObject;
             var v_hcbx = new CheckBox();
-            var v_is_selected = this._owner._multiselection.CheckSelected(v_row_data);
+            var v_is_selected = this._owner._multiselection.CheckSelected(rowData);
             if (this._owner._multiselection.Inversion)
               v_hcbx.IsChecked = !v_is_selected;
             else
               v_hcbx.IsChecked = v_is_selected;
 
             v_hpan.Children.Add(v_hcbx);
-            v_hcbx.Checked += new RoutedEventHandler((s1, e1) => {
-              this._doOnRowCheckedChanged(v_row_data, true);
-            });
-            v_hcbx.Unchecked += new RoutedEventHandler((s1, e1) => {
-              this._doOnRowCheckedChanged(v_row_data, false);
-            });
-            v_row_data.ExtObject = v_hcbx;
+            v_hcbx.Checked += (s1, e1) => this._doOnRowCheckedChanged(rowData, true);
+            v_hcbx.Unchecked += (s1, e1) => this._doOnRowCheckedChanged(rowData, false);
+            rowData.ExtObject = v_hcbx;
             row.Header = v_hpan;
           } else
-            row.Header = v_rnum;
+            row.Header = rnum;
 
 
 
@@ -296,7 +292,7 @@ namespace Bio.Framework.Client.SL {
         this._owner._doOnBeforeGenColumn(e);
       if (!e.Cancel) {
 
-        CJsonStoreMetadataFieldDef fldDef = this._owner._jsClient.fieldDefByName(e.PropertyName);
+        CJsonStoreMetadataFieldDef fldDef = this._owner._jsClient.FieldDefByName(e.PropertyName);
         e.Cancel = ((fldDef == null) || fldDef.hidden);
         if (!e.Cancel) {
           //e.Column.v

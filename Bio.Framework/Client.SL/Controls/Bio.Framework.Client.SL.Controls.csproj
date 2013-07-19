@@ -116,7 +116,7 @@
     <Compile Include="CJSTreeSource.cs" />
     <Compile Include="CLongOpClient.cs" />
     <Compile Include="CDSFetchClient.cs" />
-    <Compile Include="CJSComboBox.cs" />
+    <Compile Include="JSComboBox.cs" />
     <Compile Include="CJSListBox.cs" />
     <Compile Include="CFilterControl.cs" />
     <Compile Include="CJSGridProps.xaml.cs">
@@ -138,7 +138,7 @@
     <Compile Include="CJSClient\RefreshEventArgs.cs" />
     <Compile Include="CJSClient\SortableCollectionView.cs" />
     <Compile Include="CJSGrid.cs" />
-    <Compile Include="CJSClient\CJsonStoreClient.cs" />
+    <Compile Include="CJSClient\JsonStoreClient.cs" />
     <Compile Include="CJSTree.cs" />
     <Compile Include="CTreeSource.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

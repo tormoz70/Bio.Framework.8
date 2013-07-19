@@ -17,11 +17,11 @@ namespace Bio.Framework.Server {
   /// Обработчик запроса внутренностей компонента Rpt
   /// </summary>
   public class tmio_rpt: ABioHandlerBio {
-    private CRmtClientRequest _request = null;
+    private RmtClientRequest _request = null;
 
-    public tmio_rpt(HttpContext pContext, CAjaxRequest pRequest)
-      : base(pContext, pRequest) {
-        this._request = pRequest as CRmtClientRequest;
+    public tmio_rpt(HttpContext context, AjaxRequest request)
+      : base(context, request) {
+        this._request = request as RmtClientRequest;
     }
 
     protected override void doExecute() {
@@ -31,12 +31,12 @@ namespace Bio.Framework.Server {
         this.BioSession,
         "application/octet-stream", //"application/vnd.ms-excel",
         "report[" + this.bioCode + "]");
-        vBldr.OnRunEvent += new CRmtThreadOnRunEvent(this.doOnRunEventXLS);
-      vBldr.doExecute(this.bioRequest<CRmtClientRequest>().cmd, this.bioParams);
+        vBldr.OnRunEvent += this._doOnRunEventXls;
+      vBldr.DoExecute(this.BioRequest<RmtClientRequest>().cmd, this.bioParams);
     }
 
-    private void doOnRunEventXLS(CRmtThreadHandler sender, ref IRemoteProcInst instance) {
-      CXLReportConfig rptCfg = CXLReportConfig.LoadFromFile(
+    private void _doOnRunEventXls(CRmtThreadHandler sender, ref IRemoteProcInst instance) {
+      var rptCfg = CXLReportConfig.LoadFromFile(
         null,
         this.bioCode,
         Utl.NormalizeDir(this.BioSession.Cfg.IniPath) + "rpts\\",

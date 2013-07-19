@@ -8,12 +8,12 @@ namespace Bio.Framework.Server {
   
   public class tm_login_post:ABioHandlerSys {
 
-    public tm_login_post(HttpContext pContext, CAjaxRequest pRequest)
-      : base(pContext, pRequest) {
+    public tm_login_post(HttpContext context, AjaxRequest request)
+      : base(context, request) {
     }
 
     protected override void doExecute() {
-      this.BioSession.setLoginState(TBioLoginState.ssLogginIn);
+      this.BioSession.SetLoginState(TBioLoginState.ssLogginIn);
       base.doExecute();
     }
   }

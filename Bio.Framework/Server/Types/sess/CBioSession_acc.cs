@@ -26,11 +26,11 @@ namespace Bio.Framework.Server {
 
     private String FRqstURL = null;
 
-    public void setLoginState(TBioLoginState pState) {
+    public void SetLoginState(TBioLoginState pState) {
       this.FLoginState = pState;
     }
 
-    private void regConn(String pUser, TRemoteConnectionStatus pState) {
+    private void _regConn(String pUser, TRemoteConnectionStatus pState) {
       this.Cfg.regConnect(pUser,
                           this.CurSessionID,
                           this.CurSessionRemoteIP,
@@ -39,7 +39,7 @@ namespace Bio.Framework.Server {
                           pState);
     }
 
-    private void chekLogin(String login) {
+    private void _chekLogin(String login) {
       try {
         this.Cfg.Login(login);
         this.Cfg.CurUser.AddressIP = this.CurSessionRemoteIP;
@@ -57,9 +57,9 @@ namespace Bio.Framework.Server {
     private void _initHttpContext() {
       if (this.FLoginState == TBioLoginState.ssLoggedOn) { 
         Params v_prms = null;
-        var brq = this.CurBioHandler.bioRequest<CBioRequest>();
+        var brq = this.CurBioHandler.BioRequest<BioRequest>();
         if (brq != null)
-          v_prms = brq.bioParams;
+          v_prms = brq.BioParams;
         if (v_prms != null) {
           v_prms.SetValue(enumHelper.GetAttributeByValue<DbValueAttribute>(BioDbSessionContextParams.UserUID).Value, this.Cfg.CurUser.UID);
           v_prms.SetValue(enumHelper.GetAttributeByValue<DbValueAttribute>(BioDbSessionContextParams.UserIP).Value, this.Cfg.CurUser.AddressIP);
@@ -70,58 +70,55 @@ namespace Bio.Framework.Server {
       }
     }
 
-    public void login(Boolean pSkipLogin) {
+    public void Login(Boolean pSkipLogin) {
       if(!pSkipLogin) {
 
         if(this.FLoginState != TBioLoginState.ssLoggedOn) {
           var vQLoginPrm = this.CurBioHandler.QParams.ParamByName(Utl.QLOGIN_PARNAME, true);
           if (vQLoginPrm != null) {
-            this.chekLogin(vQLoginPrm.ValueAsString());
+            this._chekLogin(vQLoginPrm.ValueAsString());
             this.FLoginState = TBioLoginState.ssLoggedOn;
-            this.regConn(this.Cfg.CurUser.Login, TRemoteConnectionStatus.rcsOk);
+            this._regConn(this.Cfg.CurUser.Login, TRemoteConnectionStatus.rcsOk);
           } else {
             var vHLoginPrm = this.CurBioHandler.QParams.ParamByName(Utl.HASHLOGIN_PARNAME, true);
             if (vHLoginPrm != null) {
-              this.chekLogin(vHLoginPrm.ValueAsString());
+              this._chekLogin(vHLoginPrm.ValueAsString());
               this.FLoginState = TBioLoginState.ssLoggedOn;
-              this.regConn(this.Cfg.CurUser.Login, TRemoteConnectionStatus.rcsOk);
+              this._regConn(this.Cfg.CurUser.Login, TRemoteConnectionStatus.rcsOk);
             }
           }
         }
         if(this.FLoginState != TBioLoginState.ssLoggedOn) {
           try {
-            //this.Cfg.CurUser = null;
             if(this.CurBioHandler.GetType() == typeof(tm_login_post))
               this.FLoginState = TBioLoginState.ssLogginIn;
             if(this.FLoginState != TBioLoginState.ssLogginIn) {
-              this.regConn("mrnemo", TRemoteConnectionStatus.rcsTry);
+              this._regConn("mrnemo", TRemoteConnectionStatus.rcsTry);
               throw new EBioStart();
             }
-            //Param vCurLoginPrm = this.CurBioMsg.QParams.ParamByName(Bio.Common.Utl.FLOGIN_PARNAME);
-            //String vCurLogin = (vCurLoginPrm != null) ? vCurLoginPrm.ValueAsString() : null;
-            CBioLoginRequest rq = this.CurBioHandler.bioRequest<CBioLoginRequest>();
-            String vCurLogin = (rq != null) ? rq.login : null;
+            var rq = this.CurBioHandler.BioRequest<BioLoginRequest>();
+            var vCurLogin = (rq != null) ? rq.login : null;
             if (vCurLogin == null) {
-              this.regConn("mrnemo", TRemoteConnectionStatus.rcsTry);
+              this._regConn("mrnemo", TRemoteConnectionStatus.rcsTry);
               throw new EBioStart();
             }
-            this.chekLogin(vCurLogin);
+            this._chekLogin(vCurLogin);
 
             if(this.FLoginState == TBioLoginState.ssLogginIn) {
-              this.regConn(this.Cfg.CurUser.Login, TRemoteConnectionStatus.rcsOk);
+              this._regConn(this.Cfg.CurUser.Login, TRemoteConnectionStatus.rcsOk);
               throw new EBioOk(this.Cfg.CurUser);
             }
 
-          } catch(EBioError ex) {
+          } catch(EBioError) {
             this.FLoginState = TBioLoginState.ssLoginError;
-            throw ex;
-          } catch(EBioStart ex) {
+            throw;
+          } catch(EBioStart) {
             this.FLoginState = TBioLoginState.ssLogginIn;
             this.FRqstURL = this.CurBioHandler.Context.Request.Path + "?" + this.CurBioHandler.Context.Request.QueryString;
-            throw ex;
-          } catch(EBioOk ex) {
+            throw;
+          } catch(EBioOk) {
             this.FLoginState = TBioLoginState.ssLoggedOn;
-            throw ex;
+            throw;
           }
         } else if (this.FLoginState == TBioLoginState.ssLoggedOn) {
           if (this.CurBioHandler is tm_ping)

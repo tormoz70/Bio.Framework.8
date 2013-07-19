@@ -23,29 +23,27 @@ namespace Bio.Framework.Server {
 
     private const int C_MaxRecords = 1000;
 
-    public tmio_WebDB(HttpContext pContext, CAjaxRequest pRequest)
-      : base(pContext, pRequest) {
+    public tmio_WebDB(HttpContext context, AjaxRequest request)
+      : base(context, request) {
     }
 
     private void processData(CJSCursor pCursor, StringBuilder vDoc, ref EBioException vEx) {
       try {
-        bool NeedClose = false;
+        var needClose = false;
         if(!pCursor.IsActive && (pCursor.Connection != null)) {
           pCursor.Open(120);
-          NeedClose = true;
+          needClose = true;
         }
       // перебираем все записи в курсоре
         while(pCursor.Next()) {
           // перебираем все поля одной записи
-          StringBuilder vFRow = new StringBuilder();
+          var fRow = new StringBuilder();
           foreach(DictionaryEntry vCur in pCursor.RowValues) {
-            vFRow.Append(SQLUtils.ObjectAsString(vCur.Value));
+            fRow.Append(SQLUtils.ObjectAsString(vCur.Value));
           }
-          vDoc.Append(vFRow.ToString());
+          vDoc.Append(fRow);
         }
-      /*} catch(ebio.doa.EBioDOATooMuchRows ex) {
-        vDoc.AppendLine("<!-- " + ex.ToString() + " -->");*/
-        if(NeedClose)
+        if(needClose)
           pCursor.Close();
       } catch(Exception ex) {
         vEx = EBioException.CreateIfNotEBio(ex);
@@ -57,7 +55,7 @@ namespace Bio.Framework.Server {
       using (var vConn = this.BioSession.Cfg.dbSession.GetConnection()) {
         try {
           var vCursor = new CJSCursor(vConn, ds, this.bioCode);
-          var v_request = this.bioRequest<CJsonStoreRequestGet>();
+          var v_request = this.BioRequest<JsonStoreRequestGet>();
           vCursor.Init(v_request);
           try {
             this.processData(vCursor, doc, ref v_ex);
@@ -77,9 +75,9 @@ namespace Bio.Framework.Server {
       using (var vConn = this.BioSession.Cfg.dbSession.GetConnection()) {
         try {
           var vCursor = new CJSCursor(vConn, ds, this.bioCode);
-          var v_request = this.bioRequest<CJsonStoreRequestGet>();
-          vCursor.DoExecuteSQL(v_request.bioParams, 120);
-          var v_out_prm = v_request.bioParams.Where((p) => {
+          var v_request = this.BioRequest<JsonStoreRequestGet>();
+          vCursor.DoExecuteSQL(v_request.BioParams, 120);
+          var v_out_prm = v_request.BioParams.Where((p) => {
             return (p.ParamDir == ParamDirection.InputOutput) ||
                      (p.ParamDir == ParamDirection.Output) ||
                        (p.ParamDir == ParamDirection.Return);
@@ -112,28 +110,27 @@ namespace Bio.Framework.Server {
 
       } finally {
         if(vEx == null) {
-          String vIOFN = SrvUtl.bldiniFileName(this.BioSession.Cfg.IniPath, this.bioCode);
-          String vXSLFN = vIOFN.ToLower().Replace(".xml", ".xsl");
-          String vCSSFN = vIOFN.ToLower().Replace(".xml", ".css");
-          if(File.Exists(vXSLFN)) {
-            dom4cs vRsltDoc = new dom4cs();
-            vRsltDoc.XmlDoc = dom4cs.CreXmlDocument(vDoc.ToString());
-            XmlElement vElem = vRsltDoc.XmlDoc.CreateElement("appurl");
+          var iofn = SrvUtl.bldiniFileName(this.BioSession.Cfg.IniPath, this.bioCode);
+          var xslfn = iofn.ToLower().Replace(".xml", ".xsl");
+          var cssfn = iofn.ToLower().Replace(".xml", ".css");
+          if(File.Exists(xslfn)) {
+            var rsltDoc = new dom4cs();
+            rsltDoc.XmlDoc = dom4cs.CreXmlDocument(vDoc.ToString());
+            var vElem = rsltDoc.XmlDoc.CreateElement("appurl");
             vElem.InnerText = this.BioSession.Cfg.AppURL;
-            vRsltDoc.XmlDoc.DocumentElement.AppendChild(vElem);
-            vElem = vRsltDoc.XmlDoc.CreateElement("biourl");
+            rsltDoc.XmlDoc.DocumentElement.AppendChild(vElem);
+            vElem = rsltDoc.XmlDoc.CreateElement("biourl");
             vElem.InnerText = SrvUtl.bldIOPathUrl(this.BioSession.Cfg.AppURL, this.bioCode);
-            vRsltDoc.XmlDoc.DocumentElement.AppendChild(vElem);
-            vRsltDoc.WriteToStream(this.Context.Response.OutputStream, vXSLFN);
+            rsltDoc.XmlDoc.DocumentElement.AppendChild(vElem);
+            rsltDoc.WriteToStream(this.Context.Response.OutputStream, xslfn);
           } else {
             this.Context.Response.Write(vDoc.ToString());
           }
         } else {
-          String vAgent = this.BioSession.CurSessionRemoteAgent;
+          var vAgent = this.BioSession.CurSessionRemoteAgent;
           if(vAgent.ToUpper().StartsWith("DALPHA"))
             throw vEx;
-          else
-            this.Context.Response.Write(vEx.ToString());
+          this.Context.Response.Write(vEx.ToString());
         }
         this.Context.Response.Flush();
       }

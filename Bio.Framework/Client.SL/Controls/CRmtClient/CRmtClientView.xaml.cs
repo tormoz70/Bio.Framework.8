@@ -69,7 +69,7 @@ namespace Bio.Framework.Client.SL {
         //this.IsVisible = false;
         e.Cancel = true;
         if (MessageBox.Show("Остановить построение отчета?", "Останов", MessageBoxButton.OKCancel) == MessageBoxResult.OK) {
-          this._owner.breakProc();
+          this._owner.BreakProc();
           MessageBox.Show("Построение отчета остановлено. Дождитесь завершения.", "Останов", MessageBoxButton.OK);
         }
         //this._owner.breakProc((s, a) => {
@@ -81,8 +81,8 @@ namespace Bio.Framework.Client.SL {
         //  }
         //});
       } else {
-        if (this._owner.stateReader != null)
-          this._owner.stateReader.ForceStop();
+        if (this._owner.StateReader != null)
+          this._owner.StateReader.ForceStop();
       }
     }
 
@@ -104,10 +104,10 @@ namespace Bio.Framework.Client.SL {
     }
 
     private RemoteProcState? _prevState = null;
-    private void _doOnChangeState(CRemoteProcessStatePack packet) {
-      if ((this._prevState == null) || (this._prevState != packet.state)) {
-        this._prevState = packet.state;
-        if (rmtUtl.isRunning(packet.state)) {
+    private void _doOnChangeState(RemoteProcessStatePack packet) {
+      if ((this._prevState == null) || (this._prevState != packet.State)) {
+        this._prevState = packet.State;
+        if (rmtUtl.IsRunning(packet.State)) {
           this.btnRun.IsEnabled = false;
           this.btnBreak.IsEnabled = true;
           this.btnClose.IsEnabled = false;
@@ -115,13 +115,13 @@ namespace Bio.Framework.Client.SL {
         } else {
           this.btnRun.IsEnabled = true;
           this.btnBreak.IsEnabled = false;
-          this.btnClose.IsEnabled = rmtUtl.isFinished(packet.state);
-          this.btnOpen.IsEnabled = (packet.state == RemoteProcState.Done) && packet.hasResultFile;
+          this.btnClose.IsEnabled = rmtUtl.IsFinished(packet.State);
+          this.btnOpen.IsEnabled = (packet.State == RemoteProcState.Done) && packet.HasResultFile;
         }
       }
     }
 
-    public void doOnChangeState(CRemoteProcessStatePack packet) {
+    public void doOnChangeState(RemoteProcessStatePack packet) {
       this._doOnChangeState(packet);
     }
 
@@ -134,22 +134,22 @@ namespace Bio.Framework.Client.SL {
     //}
 
     private void btnRun_Click(object sender, RoutedEventArgs e) {
-      this._owner.restartProc();
+      this._owner.RestartProc();
     }
 
     private void btnBreak_Click(object sender, RoutedEventArgs e) {
-      this._owner.breakProc();
+      this._owner.BreakProc();
     }
 
     private void btnOpen_Click(object sender, RoutedEventArgs e) {
       //this.btnOpen.IsEnabled = false;
-      this._owner.openResult(() => {
+      this._owner.OpenResult(() => {
         //this.btnOpen.IsEnabled = true;
       });
     }
 
     private void btnReadState_Click(object sender, RoutedEventArgs e) {
-      this._owner.stateReader.readState(null);
+      this._owner.StateReader.readState(null);
     }
 
   }

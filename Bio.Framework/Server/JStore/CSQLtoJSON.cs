@@ -30,7 +30,7 @@ namespace Bio.Framework.Server {
       };
 
       result.metaData = CJsonStoreMetadata.ConstructMetadata(cursor.bioCode, cursor.CursorIniDoc);
-      result.rows = new CJsonStoreRows();
+      result.rows = new JsonStoreRows();
       var v_rowCount = 0;
       result.start = cursor.rqPacket.start;
       result.limit = cursor.rqPacket.limit;

@@ -93,12 +93,12 @@ namespace Bio.Framework.Packets {
       }
     }
 
-    public CJsonStoreRow CreateNewRow() {
+    public JsonStoreRow CreateNewRow() {
       return CreateNewRow(this);
     }
 
-    public static CJsonStoreRow CreateNewRow(CJsonStoreMetadata metadata) {
-      var newRow = new CJsonStoreRow() { InternalROWUID = Guid.NewGuid().ToString("N"), ChangeType = CJsonStoreRowChangeType.Unchanged };
+    public static JsonStoreRow CreateNewRow(CJsonStoreMetadata metadata) {
+      var newRow = new JsonStoreRow() { InternalROWUID = Guid.NewGuid().ToString("N"), ChangeType = JsonStoreRowChangeType.Unchanged };
       if (metadata != null) {
         foreach (var fd in metadata.fields)
           newRow.Values.Add(null);
@@ -129,7 +129,7 @@ namespace Bio.Framework.Packets {
     /// <param name="data"></param>
     /// <param name="row"></param>
     /// <returns></returns>
-    public Params getPK(CJsonStoreData data, CJsonStoreRow row) {
+    public Params getPK(CJsonStoreData data, JsonStoreRow row) {
       Params vParams = new Params();
       var v_pkDef = this.getPKFields();
       for (int i = 0; i < v_pkDef.Length; i++) {

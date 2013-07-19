@@ -123,36 +123,36 @@ namespace Bio.Framework.Server {
     }
 
     private DataTable _prepareDSTable(String bioCode, Params prms, IDbConnection conn) {
-      DataTable vTable = new DataTable("DSTable");
-      CJsonStoreRequestGet request = null; // (CExParams)Params.FindParamValue(vPrms, "ExParams");
-      CJSCursor vCursor = null;// new CJSCursor(vConn, vDSDefNode, bioCode);
-      vCursor.Init(request);
+      var table = new DataTable("DSTable");
+      JsonStoreRequestGet request = null; // (CExParams)Params.FindParamValue(vPrms, "ExParams");
+      CJSCursor cursor = null;// new CJSCursor(vConn, vDSDefNode, bioCode);
+      cursor.Init(request);
 
       try {
-        vCursor.Open(120);
+        cursor.Open(120);
 
         try {
           bool vIsFirstRow = true;
           Int64 vRowCount = 0;
-          while (vCursor.Next()) {
+          while (cursor.Next()) {
             if (vIsFirstRow) {
-              DataColumn vNewColmn = vTable.Columns.Add();
+              DataColumn vNewColmn = table.Columns.Add();
               vNewColmn.ColumnName = csEXPDATAROWNUMBER_COL_NAME;
               vNewColmn.DataType = typeof(Int64);
-              for (int i = 0; i < vCursor.DataReader.FieldCount; i++) {
-                vNewColmn = vTable.Columns.Add();
-                vNewColmn.ColumnName = vCursor.DataReader.GetName(i);
-                vNewColmn.DataType = vCursor.DataReader.GetFieldType(i);
+              for (int i = 0; i < cursor.DataReader.FieldCount; i++) {
+                vNewColmn = table.Columns.Add();
+                vNewColmn.ColumnName = cursor.DataReader.GetName(i);
+                vNewColmn.DataType = cursor.DataReader.GetFieldType(i);
               }
               vIsFirstRow = false;
             }
-            Object[] vVals = new Object[vCursor.DataReader.FieldCount];
-            vCursor.DataReader.GetValues(vVals);
-            Object[] vVals1 = new Object[vVals.Length + 1];
+            var vVals = new Object[cursor.DataReader.FieldCount];
+            cursor.DataReader.GetValues(vVals);
+            var vVals1 = new Object[vVals.Length + 1];
             vVals.CopyTo(vVals1, 1);
             vRowCount++;
             vVals1[0] = vRowCount;
-            vTable.Rows.Add(vVals1);
+            table.Rows.Add(vVals1);
           }
         } catch (ThreadAbortException) {
           throw;
@@ -160,32 +160,24 @@ namespace Bio.Framework.Server {
           throw new EBioException("Ошибка при считывании данных из БД. Сообщение: " + ex.ToString(), ex);
         }
       } finally {
-        if (vCursor != null)
-          vCursor.Close();
+        cursor.Close();
         conn.Close();
       }
-      return vTable;
+      return table;
     }
 
-    private void buildFile() {
+    private void _buildFile() {
       try {
         this._state = RemoteProcState.Running;
         this._started = DateTime.Now;
-        //this.prepareDS();
-        //DbConnection vConn = this.CreOraConn(vDS);
-        //CExParams vExParams = new CExParams(this._context.Request.Params);
         this._bioParams.SetValue("hide_deleted1", 1);
         this._bioParams.SetValue("hide_deleted2", 1);
-        Params vPrms = new Params(
+        var prms = new Params(
           new Param("IOCode", this._bioCode),
           new Param("DSDefNode", this._ds),
           new Param("IOParams", this._bioParams),
-          //new Param("ExParams", vExParams),
           new Param("DbConn", this._conn)
           );
-        //CXLRDataFactory vTbl = new CXLRDataFactory(null, vPrms);
-        //vTbl.PrepareDSTable();
-        //this.bldCSV(vTbl, this._lastReportResultFile, this._headerIsOn, this.FCols);
       } catch (ThreadAbortException ex) {
         Utl.SaveStringToFile(this._lastErrorFile, ex.ToString(), null);
         this._state = RemoteProcState.Breaked;
@@ -215,7 +207,7 @@ namespace Bio.Framework.Server {
 
     public Boolean IsRunning {
       get { 
-        return rmtUtl.isRunning(this.State); 
+        return rmtUtl.IsRunning(this.State); 
       }
     }
 
@@ -256,7 +248,7 @@ namespace Bio.Framework.Server {
 
     public void Run(ThreadPriority priority) {
       if (this.State == RemoteProcState.Redy) {
-        this._thread = new Thread(new ThreadStart(this.buildFile));
+        this._thread = new Thread(new ThreadStart(this._buildFile));
         this._thread.Priority = ThreadPriority.Normal;
         this._thread.Start();
       }

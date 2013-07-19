@@ -14,8 +14,8 @@ namespace Bio.Framework.Server {
   /// </summary>
   public class tmio_rpt_cr:ABioHandlerBio {
 
-    public tmio_rpt_cr(HttpContext pContext, CAjaxRequest pRequest)
-      : base(pContext, pRequest) {
+    public tmio_rpt_cr(HttpContext context, AjaxRequest request)
+      : base(context, request) {
     }
 
     private void openReport() {
@@ -37,30 +37,23 @@ namespace Bio.Framework.Server {
     protected override void doExecute() {
       base.doExecute();
       String vLoadMode = this.getQParamValue("getRptResult", false);
-      if((vLoadMode != null) && (vLoadMode.ToLower().Equals("true"))) {
+      if ((vLoadMode != null) && (vLoadMode.ToLower().Equals("true"))) {
         // отдаем результат
         this.openReport();
       } else {
         // строим отчет
-        try {
-          String vRptCode = this.getQParamValue("iocd", true);
+        var vRptCode = this.getQParamValue("iocd", true);
 
-          CRptBuilderCR vBldr = new CRptBuilderCR(this.BioSession, vRptCode);
-          //String vCS = this.BioSession.DBSess.ConnectionString;
-          Params vPrms = this.bioParams;
-          vBldr.doBuild(vPrms);
+        var vBldr = new CRptBuilderCR(this.BioSession, vRptCode);
+        //String vCS = this.BioSession.DBSess.ConnectionString;
+        var vPrms = this.bioParams;
+        vBldr.doBuild(vPrms);
 
-          //String vFN = xlReportInst.LastReportResultFile;
-          this.Context.Session.Add("last_report_filename", vBldr.resultFileName);
-          this.Context.Session.Add("last_report_fileext", vBldr.FileExt);
-          this.Context.Session.Add("last_report_cnt_type", vBldr.ContentType);
-          this.Context.Response.Write(new CBioResponse() { success = true }.Encode());
-        } //catch(Exception ex) {
-          //  //this.Context.Response.Write("{\"errors\":[], \"errMsg\":\"" + xml2jsn.safeJSON(ex.ToString()) + "\"}");
-          //  //this.Context.Response.Write(ex.ToString());
-          //}
-        finally {
-        }
+        //String vFN = xlReportInst.LastReportResultFile;
+        this.Context.Session.Add("last_report_filename", vBldr.resultFileName);
+        this.Context.Session.Add("last_report_fileext", vBldr.FileExt);
+        this.Context.Session.Add("last_report_cnt_type", vBldr.ContentType);
+        this.Context.Response.Write(new BioResponse {Success = true}.Encode());
       }
     }
   }

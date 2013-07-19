@@ -127,12 +127,12 @@ namespace Bio.Framework.Client.SL {
 
     private void _loadModuleFromRmt(String moduleName, Action<AjaxResponseEventArgs> callback) {
       var v_curClientVersion = "cliver="+Utl.GetCurrentClientVersion();
-      ajaxUTL.getFileFromSrv(new CBioRequest {
-        url = this.ServerUrl,
-        requestType = RequestType.asmbVer,
-        bioParams = new Params(new Param { Name = "moduleName", Value = moduleName },
+      ajaxUTL.getFileFromSrv(new BioRequest {
+        URL = this.ServerUrl,
+        RequestType = RequestType.asmbVer,
+        BioParams = new Params(new Param { Name = "moduleName", Value = moduleName },
                                 new Param { Name = "getModule", Value = "1" }),
-        callback = (s, a) => {
+        Callback = (s, a) => {
           callback(a);
         }
       }, v_curClientVersion);
@@ -165,37 +165,37 @@ namespace Bio.Framework.Client.SL {
     }
 
     private String _getRmtVer(AjaxResponseEventArgs a) {
-      CBioResponse rsp = a.response as CBioResponse;
+      BioResponse rsp = a.Response as BioResponse;
       if (rsp != null)
-        return Params.FindParamValue(rsp.bioParams, "moduleVersion") as String;
+        return Params.FindParamValue(rsp.BioParams, "moduleVersion") as String;
       else
         return null;
     }
 
     private void _loadRmtAssemblyVer(String moduleName, Action<AjaxResponseEventArgs> callback) {
-      ajaxUTL.getDataFromSrv(new CBioRequest {
-        url = this.ServerUrl,
-        requestType = RequestType.asmbVer,
-        bioParams = new Params(new Param { Name = "moduleName", Value = moduleName }),
-        callback = (s, a) => {
+      ajaxUTL.getDataFromSrv(new BioRequest {
+        URL = this.ServerUrl,
+        RequestType = RequestType.asmbVer,
+        BioParams = new Params(new Param { Name = "moduleName", Value = moduleName }),
+        Callback = (s, a) => {
           callback(a);
         }
       });
     }
 
     private void _doOnLoadRmtAssembly(String moduleName, String moduleVersion, AjaxResponseEventArgs a, Action<AjaxResponseEventArgs, Assembly> callback) {
-      if (a.response.success) {
+      if (a.Response.Success) {
         // Сборка удачно загружена с сервера
         // загружаем ее
-        Assembly assemly = this._loadModuleFromStream(a.stream);
+        Assembly assemly = this._loadModuleFromStream(a.Stream);
         // Сохраняем ее в локальное хранилище
         String v_loc_ver = moduleVersion;
-        this._saveModuleToLoc(a.stream, moduleName, v_loc_ver);
+        this._saveModuleToLoc(a.Stream, moduleName, v_loc_ver);
         // Возвращаем
         if (callback != null)
           callback(a, assemly);
       } else {
-        msgBx.showError(EBioException.CreateIfNotEBio(a.response.ex), "Ошибка при загрузки модуля с сервера", () => {
+        msgBx.showError(EBioException.CreateIfNotEBio(a.Response.Ex), "Ошибка при загрузки модуля с сервера", () => {
           if (callback != null)
             callback(a, null);
         });
@@ -214,7 +214,7 @@ namespace Bio.Framework.Client.SL {
       if (!String.IsNullOrEmpty(v_loc_ver)) {
         // Загружаем с сервера описание весии этого модуля
         this._loadRmtAssemblyVer(moduleName, (a) => {
-          if (a.response.success) {
+          if (a.Response.Success) {
             String v_rmt_ver = this._getRmtVer(a);
             // Сравниваем версии локального модуля и модуля на сервере
             if (String.Equals(v_loc_ver, v_rmt_ver)) {
@@ -231,7 +231,7 @@ namespace Bio.Framework.Client.SL {
               });
             }
           } else {
-            msgBx.showError(a.response.ex, "Ошибка при получении атрибутов модуля с сервера", () => {
+            msgBx.showError(a.Response.Ex, "Ошибка при получении атрибутов модуля с сервера", () => {
               if (callback != null)
                 callback(a, null);
             });
@@ -270,7 +270,7 @@ namespace Bio.Framework.Client.SL {
           if (callback != null) {
             Assembly assemly = this._loadModuleFromLoc(moduleName);
             if (assemly != null)
-              callback(new AjaxResponseEventArgs { response = new CAjaxResponse { success = true } }, assemly);
+              callback(new AjaxResponseEventArgs { Response = new AjaxResponse { Success = true } }, assemly);
             else
               v_doLoadRemote = true;
           }
@@ -293,7 +293,7 @@ namespace Bio.Framework.Client.SL {
 
     private void _loadModuleDirect(String moduleName, Action<AjaxResponseEventArgs, Assembly> callback) {
       this._loadModuleFromRmt(moduleName, (a1) => {
-        Assembly assemly = this._loadModuleFromStream(a1.stream);
+        Assembly assemly = this._loadModuleFromStream(a1.Stream);
         if (callback != null)
           callback(a1, assemly);
       });
@@ -339,7 +339,7 @@ namespace Bio.Framework.Client.SL {
                 act(new LoadPluginCompletedEventArgs { Plugin = plg });
             } else {
               var v_msg = String.Format("Ошибка при загрузке модуля {0} с сервера.", moduleName);
-              var v_err = new EBioException(v_msg, e.response.ex);
+              var v_err = new EBioException(v_msg, e.Response.Ex);
               msgBx.showError(v_err, "Загрузка модуля", null);
             }
           } finally {
@@ -456,13 +456,13 @@ namespace Bio.Framework.Client.SL {
       } 
     }
     public void Connect(AjaxRequestDelegate callback) {
-      this.AjaxMng.Request(new CBioRequest {
-        requestType = RequestType.doPing,
-        prms = null,
-        callback = (sndr, args) => {
-          var rsp = args.response as CBioResponse;
-          if ((rsp != null) && (rsp.gCfg != null))
-            BioGlobal.Debug = rsp.gCfg.Debug;
+      this.AjaxMng.Request(new BioRequest {
+        RequestType = RequestType.doPing,
+        Prms = null,
+        Callback = (sndr, args) => {
+          var rsp = args.Response as BioResponse;
+          if ((rsp != null) && (rsp.GCfg != null))
+            BioGlobal.Debug = rsp.GCfg.Debug;
           if (this.AjaxMng.CurUsr != null) {
             BioGlobal.CurUsrIsDebugger = this.AjaxMng.CurUsr.IsBioRoot() || this.AjaxMng.CurUsr.IsDebugger();
             BioGlobal.CurSessionIsLoggedOn = true;
@@ -473,11 +473,11 @@ namespace Bio.Framework.Client.SL {
     }
 
     public void Disconnect(AjaxRequestDelegate callback, Boolean silent) {
-      this.AjaxMng.Request(new CBioRequest {
-        requestType = RequestType.doLogout,
-        silent = silent,
-        prms = null,
-        callback = (sndr, args) => {
+      this.AjaxMng.Request(new BioRequest {
+        RequestType = RequestType.doLogout,
+        Silent = silent,
+        Prms = null,
+        Callback = (sndr, args) => {
           if (callback != null) callback(this, args);
         }
       });

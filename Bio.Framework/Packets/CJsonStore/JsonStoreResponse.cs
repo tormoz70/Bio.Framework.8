@@ -8,7 +8,7 @@ using Bio.Helpers.Common;
 using Bio.Helpers.Common.Types;
 
 namespace Bio.Framework.Packets {
-  public class CJsonStoreResponse : CBioResponse {
+  public class JsonStoreResponse : BioResponse {
     /// <summary>
     /// Пакет данных который возвращается при запросе к БД типа "select"
     /// </summary>
@@ -25,8 +25,8 @@ namespace Bio.Framework.Packets {
 
     public String selectedPkList { get; set; }
 
-    public static CJsonStoreResponse Decode(String pJsonString) {
-      return jsonUtl.decode<CJsonStoreResponse>(pJsonString, new JsonConverter[] { new EBioExceptionConverter()/*t12, new CJsonStoreRowConverter() */});
+    public static JsonStoreResponse Decode(String pJsonString) {
+      return jsonUtl.decode<JsonStoreResponse>(pJsonString, new JsonConverter[] { new EBioExceptionConverter()/*t12, new CJsonStoreRowConverter() */});
     }
 
     public override String Encode() {
@@ -34,17 +34,17 @@ namespace Bio.Framework.Packets {
     }
 
     //public override object Clone() {
-    //  return CAjaxResponse.CopyObj<CJsonStoreResponse>(this);
+    //  return AjaxResponse.CopyObj<JsonStoreResponse>(this);
     //}
 
-    protected override void copyThis(ref CAjaxResponse destObj) {
+    protected override void copyThis(ref AjaxResponse destObj) {
       base.copyThis(ref destObj);
-      CJsonStoreResponse dst = destObj as CJsonStoreResponse;
+      JsonStoreResponse dst = destObj as JsonStoreResponse;
       dst.packet = (this.packet != null) ? (CJsonStoreData)this.packet.Clone() : null;
       //dst.cmd = this.cmd;
       dst.sort = (this.sort != null) ? (CJsonStoreSort)this.sort.Clone() : null;
       dst.filter = (this.filter != null) ? (CJsonStoreFilter)this.filter.Clone() : null;
-      dst.transactionID = this.transactionID;
+      dst.TransactionID = this.TransactionID;
       dst.selectedPkList = this.selectedPkList;
     }
 

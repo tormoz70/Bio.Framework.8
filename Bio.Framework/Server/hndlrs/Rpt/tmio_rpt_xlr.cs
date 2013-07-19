@@ -16,8 +16,8 @@ namespace Bio.Framework.Server {
   /// </summary>
   public class tmio_rpt_xlr: ABioHandlerBio {
 
-    public tmio_rpt_xlr(HttpContext pContext, CAjaxRequest pRequest)
-      : base(pContext, pRequest) {
+    public tmio_rpt_xlr(HttpContext context, AjaxRequest request)
+      : base(context, request) {
     }
 
     private const String csRptQueueIpcClientKey = "RptQueueIpcClientKey";

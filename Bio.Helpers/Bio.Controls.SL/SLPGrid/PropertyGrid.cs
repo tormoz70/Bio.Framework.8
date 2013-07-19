@@ -82,7 +82,7 @@ namespace Bio.Helpers.Controls.SL.SLPropertyGrid {
     #region SelectedObject
 
     public static readonly DependencyProperty SelectedObjectProperty =
-      DependencyProperty.Register("SelectedObject", typeof(object), thisType, new PropertyMetadata(null, OnSelectedObjectChanged));
+      DependencyProperty.Register("SelectedObject", typeof(object), thisType, new System.Windows.PropertyMetadata(null, OnSelectedObjectChanged));
 
     public object SelectedObject {
       get { return base.GetValue(SelectedObjectProperty); }
@@ -107,7 +107,7 @@ namespace Bio.Helpers.Controls.SL.SLPropertyGrid {
     /// The DefaultLabelWidth DependencyProperty
     /// </summary>
     public static readonly DependencyProperty DefaultLabelWidthProperty =
-      DependencyProperty.Register("DefaultLabelWidth", typeof(GridLength), thisType, new PropertyMetadata(new GridLength(75)));
+      DependencyProperty.Register("DefaultLabelWidth", typeof(GridLength), thisType, new System.Windows.PropertyMetadata(new GridLength(75)));
     /// <summary>
     /// Gets or sets the Default Width for the labels
     /// </summary>
@@ -121,7 +121,7 @@ namespace Bio.Helpers.Controls.SL.SLPropertyGrid {
     #region Grid BorderBrush
 
     public static readonly DependencyProperty GridBorderBrushProperty =
-      DependencyProperty.Register("GridBorderBrush", typeof(Brush), thisType, new PropertyMetadata(new SolidColorBrush(Colors.LightGray), _onGridBorderBrushChanged));
+      DependencyProperty.Register("GridBorderBrush", typeof(Brush), thisType, new System.Windows.PropertyMetadata(new SolidColorBrush(Colors.LightGray), _onGridBorderBrushChanged));
 
     /// <summary>
     /// Gets or sets the Border Brush of the Property Grid
@@ -142,7 +142,7 @@ namespace Bio.Helpers.Controls.SL.SLPropertyGrid {
     #region Grid BorderThickness
 
     public static readonly DependencyProperty GridBorderThicknessProperty =
-      DependencyProperty.Register("GridBorderThickness", typeof(Thickness), thisType, new PropertyMetadata(new Thickness(1), _onGridBorderThicknessChanged));
+      DependencyProperty.Register("GridBorderThickness", typeof(Thickness), thisType, new System.Windows.PropertyMetadata(new Thickness(1), _onGridBorderThicknessChanged));
 
     /// <summary>
     /// Gets or sets the Border Thickness of the Property Grid

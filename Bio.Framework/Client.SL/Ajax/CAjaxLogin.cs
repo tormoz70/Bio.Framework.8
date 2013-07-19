@@ -17,7 +17,7 @@
   /// <summary>
   /// Обработка запросов аутентикации
   /// </summary>
-  public delegate CAjaxResponse DlgDoContinueRequest(CBioRequest pRequest);
+  public delegate AjaxResponse DlgDoContinueRequest(BioRequest pRequest);
   public delegate void DlgDoOnRequestLogin(Object pSender, ref String vLogin);
   public delegate void DlgDoOnLoginChecked(Object pSender, String pLogin, bool pLoginIsOk);
   internal class CAjaxLogin {
@@ -36,7 +36,7 @@
       this.FDOnLogLine = doOnLogLine;
     }
 
-    private void postLogin(String pLogin, Action<CBioResponse> callback) {
+    private void postLogin(String pLogin, Action<BioResponse> callback) {
       try {
         String[] vLgnArr = Utl.SplitString(pLogin, '/');
         if (vLgnArr.Length != 2)
@@ -46,22 +46,22 @@
         if (String.IsNullOrEmpty(vLgnArr[1]))
           throw new EBioBadPwd("Пароль не может быть пустым!");
       } catch (EBioException e) {
-        CBioResponse vRslt = new CBioResponse { 
-          ex = e,
-          success = false
+        BioResponse vRslt = new BioResponse { 
+          Ex = e,
+          Success = false
         };
         if (callback != null) callback(vRslt);
         return;
       }
 
-      CBioLoginRequest rq = new CBioLoginRequest() {
-        url = this.FOwner.Env.ServerUrl,
-        requestType = RequestType.doPostLoginForm,
+      BioLoginRequest rq = new BioLoginRequest() {
+        URL = this.FOwner.Env.ServerUrl,
+        RequestType = RequestType.doPostLoginForm,
         login = pLogin,
-        timeout = this.FOwner.Env.ConfigRoot.RequestTimeout, //this.FOwner.AjaxCli.RequestTimeout,
-        callback = (s, a) => {
+        Timeout = this.FOwner.Env.ConfigRoot.RequestTimeout, //this.FOwner.AjaxCli.RequestTimeout,
+        Callback = (s, a) => {
           if (callback != null)
-            callback(a.response as CBioResponse);
+            callback(a.Response as BioResponse);
         }
       };
 
@@ -125,7 +125,7 @@
             String vCurUsrPwd = Utl.ExtractUsrPwdFromLogin(newLogin);
             // Запускаем процедуру проверки логина 
             postLogin(newLogin, (r) => {
-              EBioException vExcp = decBioLoginExcp(r.ex);
+              EBioException vExcp = decBioLoginExcp(r.Ex);
               if (vExcp != null) {
                 if (vExcp is EBioOk) {
                   this.assignCurUser(((EBioOk)vExcp).Usr);
@@ -151,11 +151,11 @@
                     this._processLogin(bioLoginExcp, callback);
                   });
                 } else {
-                  vExcp = new EBioException("Непредвиденная ошибка: " + r.ex.Message);
+                  vExcp = new EBioException("Непредвиденная ошибка: " + r.Ex.Message);
                   if (callback != null) callback(vExcp);
                 }
               } else {
-                vExcp = EBioException.CreateIfNotEBio(r.ex);
+                vExcp = EBioException.CreateIfNotEBio(r.Ex);
                 if (callback != null) callback(vExcp);
               }
                 
@@ -165,7 +165,7 @@
       }
     }
 
-    public void processLogin(EBioLogin bioLoginExcp, CBioRequest request, Action<EBioException, CBioRequest> callback) {
+    public void processLogin(EBioLogin bioLoginExcp, BioRequest request, Action<EBioException, BioRequest> callback) {
       if (bioLoginExcp != null) {
         this._processLogin(bioLoginExcp, (EBioException e) => {
           if (callback != null) callback(e, request);

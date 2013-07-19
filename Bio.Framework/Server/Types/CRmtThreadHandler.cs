@@ -1,15 +1,12 @@
 namespace Bio.Framework.Server {
 
   using System;
-  using System.Collections.Generic;
-  using System.Text;
   using System.Web;
   using System.Xml;
   using System.IO;
-  using System.ComponentModel;
-  using Bio.Helpers.Common.Types;
-  using Bio.Framework.Packets;
-  using Bio.Helpers.Common;
+  using Helpers.Common.Types;
+  using Packets;
+  using Helpers.Common;
   using System.Threading;
 
 
@@ -19,34 +16,34 @@ namespace Bio.Framework.Server {
   /// </summary>
   public class CRmtThreadHandler {
 
-    public BioSession bioSess { get; private set; }
-    public HttpContext context { get; private set; }
-    public String contentType { get; private set; }
-    public String appURL { get; private set; }
-    public String bioCode { get; private set; }
-    public XmlDocument bioDoc { get; private set; }
-    public Params bioParams { get; private set; }
-    public String instanceUID { get; protected set; }
+    public BioSession BioSess { get; private set; }
+    public HttpContext Context { get; private set; }
+    public String ContentType { get; private set; }
+    public String AppURL { get; private set; }
+    public String BioCode { get; private set; }
+    public XmlDocument BioDoc { get; private set; }
+    public Params BioParams { get; private set; }
+    public String InstanceUID { get; protected set; }
 
     public CRmtThreadHandler(BioSession bioSess, String contentType, String instanceUID) {
-      this.bioSess = bioSess;
-      this.context = this.bioSess.CurBioHandler.Context;
-      this.contentType = contentType;
-      var iObj = this.bioSess.CurBiObject;
-      this.appURL = this.bioSess.Cfg.AppURL;
-      this.bioCode = this.bioSess.CurBioCode;
-      this.bioDoc = (iObj != null) ? iObj.IniDocument.XmlDoc : null;
-      this.instanceUID = instanceUID;
+      this.BioSess = bioSess;
+      this.Context = this.BioSess.CurBioHandler.Context;
+      this.ContentType = contentType;
+      var iObj = this.BioSess.CurBiObject;
+      this.AppURL = this.BioSess.Cfg.AppURL;
+      this.BioCode = this.BioSess.CurBioCode;
+      this.BioDoc = (iObj != null) ? iObj.IniDocument.XmlDoc : null;
+      this.InstanceUID = instanceUID;
     }
 
     public virtual IRemoteProcInst Instance {
       get {
-        return this.context.Session[this.instanceUID] as IRemoteProcInst;
+        return this.Context.Session[this.InstanceUID] as IRemoteProcInst;
       }
     }
 
     protected virtual void SetInstance(IRemoteProcInst instance) {
-      this.context.Session.Add(this.instanceUID, instance);
+      this.Context.Session.Add(this.InstanceUID, instance);
       instance.Run(ThreadPriority.Normal);
     }
 
@@ -54,36 +51,23 @@ namespace Bio.Framework.Server {
       var v_inst = this.Instance;
       if (v_inst != null)
         v_inst.Dispose();
-      this.context.Session.Remove(this.instanceUID);
+      this.Context.Session.Remove(this.InstanceUID);
     }
 
-    private void sendFileToClient() {
+    private void _sendFileToClient() {
       var v_inst = this.Instance;
       if (v_inst != null) {
-        this.context.Response.ClearContent();
-        this.context.Response.ClearHeaders();
-        this.context.Response.ContentType = this.contentType;
-        String vFileName = v_inst.LastResultFile;
-        String v_docExt = Path.GetExtension(vFileName);
-        //String v_uid = "_"+DateTime.Now.Ticks;
-        String vRemoteFName = Path.GetFileNameWithoutExtension(vFileName).Replace(".", "_") + /*v_uid + */v_docExt;
-        this.context.Response.AppendHeader("Content-Disposition", "attachment; filename=\"" + vRemoteFName + "\"");
-        this.context.Response.WriteFile(vFileName);
+        this.Context.Response.ClearContent();
+        this.Context.Response.ClearHeaders();
+        this.Context.Response.ContentType = this.ContentType;
+        var fileName = v_inst.LastResultFile;
+        var docExt = Path.GetExtension(fileName);
+        var vRemoteFName = Path.GetFileNameWithoutExtension(fileName).Replace(".", "_") + /*v_uid + */docExt;
+        this.Context.Response.AppendHeader("Content-Disposition", "attachment; filename=\"" + vRemoteFName + "\"");
+        this.Context.Response.WriteFile(fileName);
 
-        //FileStream inStream = File.OpenRead(vFileName); 
-        //MemoryStream storeStream = new MemoryStream();
-
-        //storeStream.SetLength(inStream.Length);
-        //inStream.Read(storeStream.GetBuffer(), 0, (int)inStream.Length);
-
-        //storeStream.Flush();
-        //inStream.Close();
-
-        //storeStream.WriteTo(this.context.Response.OutputStream);
-        //storeStream.Close();
-        
-        this.context.Response.Flush();
-        this.context.Response.Close();
+        this.Context.Response.Flush();
+        this.Context.Response.Close();
       }
     }
 
@@ -93,7 +77,7 @@ namespace Bio.Framework.Server {
     }
 
 
-    private void doOnRun() {
+    private void _doOnRun() {
       var vEve = this.OnRunEvent;
       if (vEve != null) {
         IRemoteProcInst v_inst = null;
@@ -102,37 +86,33 @@ namespace Bio.Framework.Server {
         this.doJustAfterRun(v_inst);
       }
     }
-    private void run() {
+    private void _run() {
       var v_inst = this.Instance;
       if (v_inst != null) {
         if (v_inst.IsRunning)
           return;
-        else {
-          v_inst.Dispose();
-          //this.context.Session.Remove(this.instanceUID);
-          this.removeInstance();
-          v_inst = null;
-        }
+        v_inst.Dispose();
+        this.removeInstance();
       }
-      this.doOnRun();
+      this._doOnRun();
     }
 
-    protected virtual CRemoteProcessStatePack getCurrentStatePack() {
+    protected virtual RemoteProcessStatePack getCurrentStatePack() {
       var v_inst = this.Instance;
       if (v_inst != null) {
-        Boolean v_hasResultFile = (v_inst.State == RemoteProcState.Done) &&
+        var hasResultFile = (v_inst.State == RemoteProcState.Done) &&
           File.Exists(v_inst.LastResultFile);
 
-        var vStatePack = new CRemoteProcessStatePack() {
-          bioCode = this.bioCode,
+        var vStatePack = new RemoteProcessStatePack() {
+          BioCode = this.BioCode,
           owner = v_inst.Owner,
           pipe = v_inst.Pipe,
           sessionUID = v_inst.UID,
-          started = v_inst.Started,
-          duration = v_inst.Duration,
-          state = v_inst.State,
-          ex = v_inst.LastError,
-          hasResultFile = v_hasResultFile,
+          Started = v_inst.Started,
+          Duration = v_inst.Duration,
+          State = v_inst.State,
+          Ex = v_inst.LastError,
+          HasResultFile = hasResultFile,
           lastPipedLines = v_inst.popPipedLines()
         };
 
@@ -142,31 +122,30 @@ namespace Bio.Framework.Server {
     }
 
 
-    public void doExecute(RmtClientRequestCmd cmd, Params bioParams) {
-      //String vOper = pCmd;
+    public void DoExecute(RmtClientRequestCmd cmd, Params bioParams) {
       if (bioParams != null)
-        this.bioParams = bioParams;
-      if (this.bioParams == null)
-        this.bioParams = new Params();
+        this.BioParams = bioParams;
+      if (this.BioParams == null)
+        this.BioParams = new Params();
       try {
         switch (cmd) {
           case RmtClientRequestCmd.Run: {
               // запусить
-              this.run();
-              this.context.Response.Write(new CBioResponse { 
-                success = true, 
-                bioParams = this.bioParams,
-                rmtStatePacket = this.getCurrentStatePack()
+              this._run();
+              this.Context.Response.Write(new BioResponse { 
+                Success = true, 
+                BioParams = this.BioParams,
+                RmtStatePacket = this.getCurrentStatePack()
               }.Encode());
             } break;
           case RmtClientRequestCmd.GetState: {
               // проверить состояния
-              CBioResponse rspns = new CBioResponse() {
-                success = true,
-                bioParams = this.bioParams,
-                rmtStatePacket = this.getCurrentStatePack()
+              var rspns = new BioResponse {
+                Success = true,
+                BioParams = this.BioParams,
+                RmtStatePacket = this.getCurrentStatePack()
               };
-              this.context.Response.Write(rspns.Encode());
+              this.Context.Response.Write(rspns.Encode());
             } break;
           case RmtClientRequestCmd.Break: {
               // остановить
@@ -174,11 +153,11 @@ namespace Bio.Framework.Server {
               if (vRptInst != null) {
                 vRptInst.Abort(null);
               }
-              this.context.Response.Write(new CBioResponse { success = true, bioParams = this.bioParams }.Encode());
+              this.Context.Response.Write(new BioResponse { Success = true, BioParams = this.BioParams }.Encode());
             } break;
           case RmtClientRequestCmd.GetResult: {
               // отдать результат
-              this.sendFileToClient();
+              this._sendFileToClient();
             } break;
           case RmtClientRequestCmd.Kill: {
               var vRptInst = this.Instance;
@@ -189,8 +168,8 @@ namespace Bio.Framework.Server {
         }
 
       } catch(Exception ex) {
-        EBioException ebioex = EBioException.CreateIfNotEBio(ex);
-        this.context.Response.Write(new CBioResponse { success = false, bioParams = this.bioParams, ex = ebioex }.Encode());
+        var ebioex = EBioException.CreateIfNotEBio(ex);
+        this.Context.Response.Write(new BioResponse { Success = false, BioParams = this.BioParams, Ex = ebioex }.Encode());
       }
     }
   }

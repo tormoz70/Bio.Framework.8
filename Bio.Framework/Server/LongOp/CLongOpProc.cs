@@ -17,28 +17,26 @@
 
   public class CLongOpProc : IRemoteProcInst {
     private RemoteProcState _state = RemoteProcState.Redy;
-    private Thread _thread = null;
-    private LongOpPrepareCmdDelegate _prepareCmdProc = null;
-    private EBioException _lastError = null;
-    //private DateTime FStarted = DateTime.Now;
-    private IDbCommand _currentCmd = null;
-    private const Int64 ciPipedLinesMaxCount = 1000;
-    private Queue<String> _pipedLines = null;
-    private CLongOpClientRequest _request = null;
+    private Thread _thread;
+    private readonly LongOpPrepareCmdDelegate _prepareCmdProc;
+    private EBioException _lastError;
+    private IDbCommand _currentCmd;
+    private const Int64 CI_PIPED_LINES_MAX_COUNT = 1000;
+    private readonly Queue<String> _pipedLines;
+    private readonly LongOpClientRequest _request;
 
     public String Owner { get; private set; }
-    public IDBSession dbSess { get; private set; }
+    public IDBSession DBSess { get; private set; }
 
-    public CLongOpProc(IDBSession dbSess, String owner, CLongOpClientRequest request, LongOpPrepareCmdDelegate prepareCmdProc) {
-      this.dbSess = dbSess;
+    public CLongOpProc(IDBSession dbSess, String owner, LongOpClientRequest request, LongOpPrepareCmdDelegate prepareCmdProc) {
+      this.DBSess = dbSess;
       this.Owner = owner;
       this._request = request;
-      //this.Pipe = pPipeName;
       this._prepareCmdProc = prepareCmdProc;
       this._pipedLines = new Queue<String>();
     }
 
-    public void doOnStarted() {
+    public void DoOnStarted() {
     }
     private void doOnFinished() {
     }
@@ -52,7 +50,7 @@
         try {
           this._state = RemoteProcState.Running;
           this.Started = DateTime.Now;
-          this.doOnStarted();
+          this.DoOnStarted();
           if (this._prepareCmdProc != null) {
             String vCurrentSQL = null;
             Params vCurrentParams = null;
@@ -85,11 +83,11 @@
       }
     }
 
-    public String Pipe { get { return this._request.pipe; } }
+    public String Pipe { get { return this._request.Pipe; } }
 
     public bool IsRunning {
       get {
-        return rmtUtl.isRunning(this.State);
+        return rmtUtl.IsRunning(this.State);
       }
     }
 
@@ -127,7 +125,7 @@
 
     private IDbConnection _conn = null;
     public void Run(ThreadPriority priority) {
-      this._conn = this.dbSess.GetConnection();
+      this._conn = this.DBSess.GetConnection();
       this._state = RemoteProcState.Running;
       this.UID = this._getSessionUID();
       this._thread = new Thread(this.doProc);
@@ -170,7 +168,7 @@
           foreach (String lines in pipedLines) {
             if (!String.IsNullOrEmpty(lines)) {
               this._pipedLines.Enqueue(lines);
-              if (this._pipedLines.Count > ciPipedLinesMaxCount)
+              if (this._pipedLines.Count > CI_PIPED_LINES_MAX_COUNT)
                 this._pipedLines.Dequeue();
             }
           }

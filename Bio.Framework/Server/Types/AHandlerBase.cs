@@ -32,56 +32,52 @@ namespace Bio.Framework.Server {
       get { return true; }
     }
 
-    protected abstract void processAjaxRequest(HttpContext context, CAjaxRequest ajaxRequest);
+    protected abstract void processAjaxRequest(HttpContext context, AjaxRequest ajaxRequest);
 
     public virtual void ProcessRequest(HttpContext context) {
-      RequestType v_cur_rqtp = RequestType.Unassigned;
+      var curRqtp = RequestType.Unassigned;
       try {
         this.FLocalPath = context.Request.PhysicalApplicationPath;
         this.FAppURL = context.Request.ApplicationPath;
         context.Response.ContentType = SrvConst.HTML_CONTENT_TYPE;
         context.Response.BufferOutput = true;
         context.Response.ContentEncoding = Encoding.GetEncoding(Utl.SYS_ENCODING);
-        CAjaxRequest ar = CAjaxRequest.ExtractFromQParams(context.Request.Params) as CAjaxRequest;
-        if (ar is CBioRequestTyped)
-          v_cur_rqtp = (ar as CBioRequestTyped).requestType;
+        var ar = AjaxRequest.ExtractFromQParams(context.Request.Params) as AjaxRequest;
+        if (ar is BioRequestTyped)
+          curRqtp = (ar as BioRequestTyped).RequestType;
 
         if (ar == null) {
-          var v_rqType = context.Request.Params[csRequestTypeParamName];
-          var v_bioCode = context.Request.Params[csBioCodeParamName];
-          if (String.IsNullOrEmpty(v_rqType) || String.IsNullOrEmpty(v_bioCode))
-            ar = new CAjaxRequest();
+          var rqType = context.Request.Params[csRequestTypeParamName];
+          var bioCode = context.Request.Params[csBioCodeParamName];
+          if (String.IsNullOrEmpty(rqType) || String.IsNullOrEmpty(bioCode))
+            ar = new AjaxRequest();
           else {
-            ar = new CBioRequest {
-              requestType = enumHelper.GetFieldValueByValueName<RequestType>(v_rqType, StringComparison.CurrentCulture),
-              bioCode = v_bioCode,
-              bioParams = new Params(context.Request.Params)
+            ar = new BioRequest {
+              RequestType = enumHelper.GetFieldValueByValueName<RequestType>(rqType, StringComparison.CurrentCulture),
+              BioCode = bioCode,
+              BioParams = new Params(context.Request.Params)
             };
-            (ar as CBioRequest).bioParams.Remove(csRequestTypeParamName);
-            (ar as CBioRequest).bioParams.Remove(csBioCodeParamName);
+            (ar as BioRequest).BioParams.Remove(csRequestTypeParamName);
+            (ar as BioRequest).BioParams.Remove(csBioCodeParamName);
           }
         }
-        ar.prms = new Params(context.Request.Params);
+        ar.Prms = new Params(context.Request.Params);
 
         this.processAjaxRequest(context, ar);
       } catch (ThreadAbortException) {
       } catch (EBioUnknownRequest bex) {
-        context.Response.Write(new CBioResponse() { success = true, ex = bex }.Encode());
+        context.Response.Write(new BioResponse { Success = true, Ex = bex }.Encode());
         context.Session.Abandon();
       } catch (EBioLoggedOut bex) {
-        context.Response.Write(new CBioResponse() { success = true, ex = bex }.Encode());
+        context.Response.Write(new BioResponse { Success = true, Ex = bex }.Encode());
         context.Session.Abandon();
       } catch (EBioRestartApp bex) {
-        context.Response.Write(new CBioResponse() { success = true, ex = bex }.Encode());
+        context.Response.Write(new BioResponse { Success = true, Ex = bex }.Encode());
       } catch (EBioException bex) {
-        //if ((bex is EBioOk) && (v_cur_rqtp == RequestType.doPing))
-          //Данный ответ - является нормальным на doPing если сессия уже существует
-          //context.Response.Write(new CBioResponse() { success = true, ex = bex }.Encode());
-        //else
-          context.Response.Write(new CBioResponse() { success = false, ex = bex }.Encode());
+        context.Response.Write(new BioResponse { Success = false, Ex = bex }.Encode());
       } catch (Exception bex) {
-        EBioException ebioex = new EBioException("Непредвиденная ошибка на сервере.\nСообщение: " + bex.Message, bex);
-        context.Response.Write(new CBioResponse() { success = false, ex = ebioex }.Encode());
+        var ebioex = new EBioException("Непредвиденная ошибка на сервере.\nСообщение: " + bex.Message, bex);
+        context.Response.Write(new BioResponse { Success = false, Ex = ebioex }.Encode());
       }
     }
   }

@@ -19,33 +19,20 @@ namespace Bio.Framework.Server {
   /// </summary>
   public class tmio_Pipe:ABioHandlerBio {
 
-    public tmio_Pipe(HttpContext pContext, CAjaxRequest pRequest)
-      : base(pContext, pRequest) {
+    public tmio_Pipe(HttpContext context, AjaxRequest request)
+      : base(context, request) {
     }
 
     protected override void doExecute() {
       base.doExecute();
 
       
-      String vMode = Params.FindParamValue(this.QParams, "mod") as String;
+      var vMode = Params.FindParamValue(this.QParams, "mod") as String;
       if(String.Equals(vMode, "read", StringComparison.CurrentCultureIgnoreCase)) {
-        String vPipeName = Params.FindParamValue(this.QParams, "pipe") as String;
-        //String vSQL = "select dralpha.ai_pipe.receive(:pPipeName) as F_RSLT from dual";
-        String vConnStr = this.BioSession.Cfg.ConnectionString;
-        /*using(OracleConnection vConn = this.BioSession.DBSess.GetConnection(vConnStr)) {
-          Object vResObj = bioDOA.SQLCmd.ExecuteScalarSQL(vSQL, vConn, new Params(new Param("pPipeName", vPipeName)));
-          String vLinesData = bioDOA.utlDOA.ObjectAsString(vResObj);
-          Params vResult = new Params();
-          vResult.Add("lines", vLinesData);
-          this.Context.Response.Write(new srvTP.CSimpleResult(true, vResult, null).ToJson());
-          vConn.Close();
-        }*/
+        var vPipeName = Params.FindParamValue(this.QParams, "pipe") as String;
+        var vConnStr = this.BioSession.Cfg.ConnectionString;
 
-        //String vPipeName = this.FPipeName;
-        //String vConnStr = this.FOwner.MonitorSessionConnStr;
-        CBioResponse vRsp = ReadPipe(vPipeName, null);
-        //Params vResult = new Params();
-        //vResult.Add("lines", vRsp.lines);
+        BioResponse vRsp = ReadPipe(vPipeName, null);
         this.Context.Response.Write(vRsp.Encode());
 
       }
@@ -56,15 +43,15 @@ namespace Bio.Framework.Server {
     /// </summary>
     /// <param name="vDataLine"></param>
     /// <returns></returns>
-    public static String exctractSessionID(ref String vDataLine) {
+    public static String ExctractSessionID(ref String vDataLine) {
       String vResult = null;
-      String csDelimiter = "||";
-      String[] vLines = Utl.SplitString(vDataLine, csDelimiter);
+      const string c_delimiter = "||";
+      var vLines = Utl.SplitString(vDataLine, c_delimiter);
       if (vLines.Length > 0) {
         vResult = vLines[0];
-        ArrayList vALines = new ArrayList(vLines);
+        var vALines = new ArrayList(vLines);
         vALines.RemoveAt(0);
-        vDataLine = Utl.CombineString((String[])vALines.ToArray(typeof(String)), csDelimiter);
+        vDataLine = Utl.CombineString((String[])vALines.ToArray(typeof(String)), c_delimiter);
       }
       return vResult;
     }
@@ -72,38 +59,29 @@ namespace Bio.Framework.Server {
     /// <summary>
     /// —читывает
     /// </summary>
-    public static CBioResponse ReadPipe(String pipe, IDBSession dbSess) {
-      CBioResponse vResult = new CBioResponse() {
-        success = true
+    public static BioResponse ReadPipe(String pipe, IDBSession dbSess) {
+      var vResult = new BioResponse {
+        Success = true
       };
-      var v_sp = new CRemoteProcessStatePack();
+      var v_sp = new RemoteProcessStatePack();
 
       if (!String.IsNullOrEmpty(pipe)) {
-        String vSQL = "select ai_pipe.receive(:pipeName) as F_RSLT from dual";
+        var sql = "select ai_pipe.receive(:pipeName) as F_RSLT from dual";
         v_sp.pipe = pipe;
         try {
-          //if(!String.IsNullOrEmpty(connStr)) {
-          //using(IDbConnection vConn = CDBFactory.CreateConnection(connStr, )) {
-          //vConn.Open();
-          Object vResObj = SQLCmd.ExecuteScalarSQL(dbSess, vSQL, new Params(new Param("pipeName", v_sp.pipe)), 120);
-          String vLinesData = SQLUtils.ObjectAsString(vResObj);
-          if (vLinesData != null) {
-            v_sp.sessionUID = exctractSessionID(ref vLinesData);
-            v_sp.lastPipedLines = new String[] { vLinesData };
+          var resObj = SQLCmd.ExecuteScalarSQL(dbSess, sql, new Params(new Param("pipeName", v_sp.pipe)), 120);
+          var linesData = SQLUtils.ObjectAsString(resObj);
+          if (linesData != null) {
+            v_sp.sessionUID = ExctractSessionID(ref linesData);
+            v_sp.lastPipedLines = new[] { linesData };
           }
-          //  conn.Close();
-          //}
-          //}
         } catch (ThreadAbortException) {
           throw;
         } catch (Exception ex) {
-          vResult.ex = EBioException.CreateIfNotEBio(ex);
+          vResult.Ex = EBioException.CreateIfNotEBio(ex);
         }
-      } else {
-        //vResult.SessionID = 
-        //v_sp.sessionUID =
       }
-      vResult.rmtStatePacket = v_sp;
+      vResult.RmtStatePacket = v_sp;
       return vResult;
     }
 

@@ -533,13 +533,13 @@ namespace Bio.Helpers.XLFRpt2.Engine {
 
     public Boolean IsRunning {
       get {
-        return rmtUtl.isRunning(this.State);
+        return rmtUtl.IsRunning(this.State);
       }
     }
 
     public bool IsFinished {
       get {
-        return rmtUtl.isFinished(this.State);
+        return rmtUtl.IsFinished(this.State);
       }
     }
 

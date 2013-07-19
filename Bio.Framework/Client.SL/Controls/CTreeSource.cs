@@ -37,10 +37,10 @@ namespace Bio.Framework.Client.SL.Old {
   }
 
   public class CTreeSourceItem<T> : CTreeSourceItemBase where T : CTreeSourceItemBase, new() {
-    private CJsonStoreClient _cli = null;
+    private JsonStoreClient _cli = null;
 
     public CTreeSourceItem() : base() {
-      this._cli = new CJsonStoreClient();
+      this._cli = new JsonStoreClient();
     }
 
     public CTreeSourceItem(CJSTree ownerTree)
@@ -112,7 +112,7 @@ namespace Bio.Framework.Client.SL.Old {
       return newItem;
     }
 
-    protected virtual T doOnLoadItem(CJsonStoreMetadata metadata, CJsonStoreRow row) {
+    protected virtual T doOnLoadItem(CJsonStoreMetadata metadata, JsonStoreRow row) {
       int bgnIndx = 0;
       if(metadata.PKDefined)
         bgnIndx = 1;
@@ -147,8 +147,8 @@ namespace Bio.Framework.Client.SL.Old {
 
       this._cli.Load(args.Params, (s, a) => {
         //this.OwnerTreeView.Dispatcher.BeginInvoke(() => {
-        if (a.response.success) {
-          CJsonStoreResponse rsp = a.response as CJsonStoreResponse;
+        if (a.Response.Success) {
+          JsonStoreResponse rsp = a.Response as JsonStoreResponse;
           if (rsp != null) {
             this.Items.Clear();
             foreach (var r in rsp.packet.rows) {

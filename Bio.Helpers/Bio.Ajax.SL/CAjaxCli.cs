@@ -69,9 +69,9 @@
     /// <summary>
     /// Выполнить запрос 
     /// </summary>
-    public void Request(CAjaxRequest ajaxRequest, Int32 requestTimeout) {
+    public void Request(AjaxRequest ajaxRequest, Int32 requestTimeout) {
       /*Подготовка запроса*/
-      ajaxRequest.timeout = requestTimeout;
+      ajaxRequest.Timeout = requestTimeout;
       ajaxUTL.getDataFromSrv(ajaxRequest);
     }
 

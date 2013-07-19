@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 namespace Bio.Framework.Packets {
 
   
-  public class CBioLoginRequest : CBioRequestTyped {
+  public class BioLoginRequest : BioRequestTyped {
     /// <summary>
     /// login
     /// </summary>
@@ -19,9 +19,9 @@ namespace Bio.Framework.Packets {
     //  return new JsonConverter[] { new EBioExceptionConverter() };
     //}
 
-    protected override void copyThis(ref CAjaxRequest destObj) {
+    protected override void copyThis(ref AjaxRequest destObj) {
       base.copyThis(ref destObj);
-      CBioLoginRequest dst = destObj as CBioLoginRequest;
+      BioLoginRequest dst = destObj as BioLoginRequest;
       dst.login = this.login;
     }
 

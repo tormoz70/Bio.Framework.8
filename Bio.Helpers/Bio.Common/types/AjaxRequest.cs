@@ -1,33 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Collections;
 using System.ComponentModel;
-using Newtonsoft.Json.Converters;
 using Newtonsoft.Json;
 #if !SILVERLIGHT
-using System.Web;
-#endif
 using System.Collections.Specialized;
-using System.Reflection;
-using Bio.Helpers.Common.Types;
-using Bio.Helpers.Common;
+#endif
 using System.IO;
 
 namespace Bio.Helpers.Common.Types {
 
-  //public class CAjaxRequestEventArgs : CancelEventArgs {
-  //  public CAjaxRequest request { get; set; }
-  //}
-
   public class AjaxResponseEventArgs : EventArgs {
-    public CAjaxRequest request { get; set; }
-    public CAjaxResponse response { get; set; }
-    public Stream stream { get; set; }
+    public AjaxRequest Request { get; set; }
+    public AjaxResponse Response { get; set; }
+    public Stream Stream { get; set; }
+  }
+
+  public class JsonStoreDSLoadedEventArgs : EventArgs {
+    public IEnumerable DS { get; set; }
+    public AjaxRequest Request { get; set; }
+    public AjaxResponse Response { get; set; }
   }
 
   public class AjaxRequestEventArgs : CancelEventArgs {
-    public CAjaxRequest request { get; set; }
+    public AjaxRequest Request { get; set; }
   }
 
   public delegate void AjaxBeforeRequestDelegate(Object sender, AjaxRequestEventArgs args);
@@ -36,13 +31,13 @@ namespace Bio.Helpers.Common.Types {
   /// <summary>
   /// Конфиг. запроса
   /// </summary>
-  public class CAjaxRequest : ICloneable {
-    private const String csQParamName = "rqpckt";
+  public class AjaxRequest : ICloneable {
+    private const String CS_Q_PARAM_NAME = "rqpckt";
 
     /// <summary>
     /// количество секунд ожидания ответа сервера
     /// </summary>
-    public Int32 timeout { get; set; }
+    public Int32 Timeout { get; set; }
 
     /// <summary>
     /// Параметры запроса. 
@@ -50,31 +45,24 @@ namespace Bio.Helpers.Common.Types {
     /// К ним добавится системный параметр "rqpckt", в котором будет содержаться сам запрос в виде json-строки,
     /// при этом сериализованный объект запроса не содержит атрибут "prms".
     /// </summary>
-    public Params prms { get; set; }
-    ///// <summary>
-    ///// Ссылка на объект, вызвавший запрос
-    ///// </summary>
-    //public Object Sender { get; set; }
+    public Params Prms { get; set; }
 
     /// <summary>
     /// Не показывать окна с ошибками
     /// </summary>
-    public bool silent { get; set; }
+    public Boolean Silent { get; set; }
 
     /// <summary>
     /// Запрос
     /// </summary>
-    public String url { get; set; }
+    public String URL { get; set; }
 
-    public Object userToken { get; set; }
+    public Object UserToken { get; set; }
 
+    [JsonIgnore]
+    public AjaxRequestDelegate Callback { get; set; }
 
-    public AjaxRequestDelegate callback { get; set; }
-
-    //internal void buildFURL(String pServerUrl) {
-    //  this.FURL = ajaxUTL.BuildURL(pServerUrl);
-    //}
-    public CAjaxRequest() {
+    public AjaxRequest() {
       //this.async = true;
     }
 
@@ -91,8 +79,8 @@ namespace Bio.Helpers.Common.Types {
     /// <param name="jsonString"></param>
     /// <param name="converters">Массив конверторов</param>
     /// <returns></returns>
-    public static CAjaxRequest Decode(String jsonString, JsonConverter[] converters) {
-      return jsonUtl.decode<CAjaxRequest>(jsonString, converters);
+    public static AjaxRequest Decode(String jsonString, JsonConverter[] converters) {
+      return jsonUtl.decode<AjaxRequest>(jsonString, converters);
     }
 
     /// <summary>
@@ -101,44 +89,46 @@ namespace Bio.Helpers.Common.Types {
     /// <param name="converters">Массив конверторов</param>
     /// <returns></returns>
     public Params BuildQParams(JsonConverter[] converters) {
-      Params rslt = (this.prms == null) ? new Params() : (Params)this.prms.Clone();
-      CAjaxRequest rq = this.Clone() as CAjaxRequest;
-      rq.prms = null;
-      String vJsonStr = rq.Encode(converters);
-      rslt.Add(new Param() { Name = csQParamName, Value = vJsonStr });
+      var rslt = (this.Prms == null) ? new Params() : (Params)this.Prms.Clone();
+      var rq = this.Clone() as AjaxRequest;
+      String vJsonStr = null;
+      if (rq != null) {
+        rq.Prms = null;
+        vJsonStr = rq.Encode(converters);
+      }
+      rslt.Add(new Param { Name = CS_Q_PARAM_NAME, Value = vJsonStr });
       return rslt;
     }
 
-    public static CAjaxRequest ExtractFromQParams(Params p_prms, JsonConverter[] converters) {
-      var vJsonStr = Params.FindParamValue(p_prms, csQParamName) as String;
-      var rslt = CAjaxRequest.Decode(vJsonStr, converters);
+    public static AjaxRequest ExtractFromQParams(Params prms, JsonConverter[] converters) {
+      var vJsonStr = Params.FindParamValue(prms, CS_Q_PARAM_NAME) as String;
+      var rslt = Decode(vJsonStr, converters);
       return rslt;
     }
 
 #if !SILVERLIGHT
-    public static CAjaxRequest ExtractFromQParams(NameValueCollection prms, JsonConverter[] converters) {
+    public static AjaxRequest ExtractFromQParams(NameValueCollection prms, JsonConverter[] converters) {
       var v_prms = new Params(prms);
       return ExtractFromQParams(v_prms, converters);
     }
-    public static CAjaxRequest ExtractFromQParams(NameValueCollection prms) {
+    public static AjaxRequest ExtractFromQParams(NameValueCollection prms) {
       return ExtractFromQParams(prms, ajaxUTL.GetConverters());
     }
 #endif
 
-    protected virtual void copyThis(ref CAjaxRequest destObj) {
-      //destObj.async = this.async;
-      destObj.prms = (this.prms != null) ? (Params)this.prms.Clone() : null;
-      destObj.silent = this.silent;
-      destObj.url = this.url;
-      destObj.timeout = this.timeout;
-      destObj.callback = this.callback;
-      destObj.userToken = this.userToken;
+    protected virtual void copyThis(ref AjaxRequest destObj) {
+      destObj.Prms = (this.Prms != null) ? (Params)this.Prms.Clone() : null;
+      destObj.Silent = this.Silent;
+      destObj.URL = this.URL;
+      destObj.Timeout = this.Timeout;
+      destObj.Callback = this.Callback;
+      destObj.UserToken = this.UserToken;
     }
 
 
-    public static CAjaxRequest CreateObjOfAjaxRequest(Type rqType) {
-      ConstructorInfo ci = rqType.GetConstructor(new Type[0]);
-      CAjaxRequest vR = (CAjaxRequest)ci.Invoke(new Object[0]);
+    public static AjaxRequest CreateObjOfAjaxRequest(Type rqType) {
+      var ci = rqType.GetConstructor(new Type[0]);
+      var vR = (AjaxRequest)ci.Invoke(new Object[0]);
       return vR;
     }
 
@@ -146,7 +136,7 @@ namespace Bio.Helpers.Common.Types {
     #region ICloneable Members
 
     public object Clone() {
-      CAjaxRequest rslt = CreateObjOfAjaxRequest(this.GetType());
+      AjaxRequest rslt = CreateObjOfAjaxRequest(this.GetType());
       this.copyThis(ref rslt);
       return rslt;
     }

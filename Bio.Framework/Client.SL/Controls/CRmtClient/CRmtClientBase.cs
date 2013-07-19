@@ -10,8 +10,8 @@
   using Bio.Helpers.Ajax;
   using System.Linq;
 
-  public delegate void CRmtClientReadStateEventHandler(Object sender, CBioResponse response);
-  public delegate void CRmtClientFinishedEventHandler(Object sender, CBioResponse response);
+  public delegate void CRmtClientReadStateEventHandler(Object sender, BioResponse response);
+  public delegate void CRmtClientFinishedEventHandler(Object sender, BioResponse response);
 
   /// <summary>
   /// Предоставляет возможность запускать на сервере долгоиграющие отчеты.
@@ -83,59 +83,59 @@
         this._form.ShowDialog();
       //this._form.BringToFront();
       //this._form.doOnChangeState(RemoteProcState.Starting);
-      this._form.doOnChangeState(new CRemoteProcessStatePack { state = RemoteProcState.Starting });
+      this._form.doOnChangeState(new RemoteProcessStatePack { State = RemoteProcState.Starting });
       this._form.addLineToLog(enumHelper.GetFieldDesc(RemoteProcState.Starting) + "\n");
     }
 
     public event CRmtClientFinishedEventHandler OnFinished;
-    protected virtual void _doOnFinished(CBioResponse response) {
+    protected virtual void _doOnFinished(BioResponse response) {
       var v_eve = this.OnFinished;
       if (v_eve != null)
         v_eve(this, response);
     }
 
     private String _lastPipedLine = null;
-    private void _appentLastPipedLine(CRemoteProcessStatePack losp, ref String v_state) {
+    private void _appentLastPipedLine(RemoteProcessStatePack losp, ref String v_state) {
       if ((losp.lastPipedLines != null) && (losp.lastPipedLines.Length > 0))
         this._lastPipedLine = losp.lastPipedLines.LastOrDefault();
       v_state = v_state + (!String.IsNullOrEmpty(this._lastPipedLine) ? "\n" + this._lastPipedLine : null);
     }
     private String _resultFileReferece = null;
-    private void _doOnReadState(Object sender, CBioResponse response) {
+    private void _doOnReadState(Object sender, BioResponse response) {
       Boolean v_is_running = false;
       try {
-        var v_losp = response.rmtStatePacket;
-        this._lastState = v_losp.state;
-        if (v_losp != null) {
-          v_is_running = v_losp.isRunning();
+        var losp = response.RmtStatePacket;
+        this._lastState = losp.State;
+        if (losp != null) {
+          v_is_running = losp.IsRunning();
           if (this._form != null) {
             if (!this._isDone) {
-              this._isDone = v_losp.isFinished();
-              String v_curStateDesc = v_losp.stateDesc();
-              String v_duration = Utl.FormatDuration(v_losp.duration);
-              String v_state = v_curStateDesc;
-              if ((v_losp.state == RemoteProcState.Running) || this._isDone)
-                v_state = String.Format("{0} - [{1}]", v_curStateDesc, v_duration);
-              this._appentLastPipedLine(v_losp, ref v_state);
-              this._form.changeLastLogLine(v_state + "\n");
-              this._form.doOnChangeState(v_losp);
-              if (v_losp.state == RemoteProcState.Done) {
+              this._isDone = losp.IsFinished();
+              var curStateDesc = losp.StateDesc();
+              var duration = Utl.FormatDuration(losp.Duration);
+              var state = curStateDesc;
+              if ((losp.State == RemoteProcState.Running) || this._isDone)
+                state = String.Format("{0} - [{1}]", curStateDesc, duration);
+              this._appentLastPipedLine(losp, ref state);
+              this._form.changeLastLogLine(state + "\n");
+              this._form.doOnChangeState(losp);
+              if (losp.State == RemoteProcState.Done) {
                 this._form.addLineToLog("Выполнение успешно завершено.\n");
-                if (v_losp.hasResultFile) {
+                if (losp.HasResultFile) {
                   this._form.addLineToLog("Для просмотра результата нажмите кнопку \"Открыть результат\".");
 
-                  String prms = ajaxUTL.prepareRequestParams(new CRmtClientRequest {
-                    requestType = this._requestType,
-                    bioCode = this.bioCode,
+                  String prms = ajaxUTL.prepareRequestParams(new RmtClientRequest {
+                    RequestType = this._requestType,
+                    BioCode = this.bioCode,
                     cmd = RmtClientRequestCmd.GetResult
                   });
                   this._resultFileReferece = this.ajaxMng.Env.ServerUrl + "?" + prms;
 
                 }
-              } else if (v_losp.state == RemoteProcState.Breaked) {
+              } else if (losp.State == RemoteProcState.Breaked) {
                 this._form.addLineToLog("Прервано пользователем.\n");
-              } else if (v_losp.state == RemoteProcState.Error) {
-                this._form.addLineToLog(msgBx.formatError(v_losp.ex));
+              } else if (losp.State == RemoteProcState.Error) {
+                this._form.addLineToLog(msgBx.formatError(losp.Ex));
               }
               if (this._isDone)
                 this._doOnFinished(response);
@@ -146,11 +146,11 @@
             vEveRead(sender, response);
         } else {
 
-          if (response.success)
+          if (response.Success)
             throw new EBioException("Сервер не вернул ожидаемый ответ!");
           else {
-            if (response.ex != null)
-              throw response.ex;
+            if (response.Ex != null)
+              throw response.Ex;
             else
               throw new EBioException("Неизвестная ошибка на сервере!");
           }
@@ -174,39 +174,39 @@
     private void _gotoErrorState(String msg, Exception ex) {
       if (this._form != null) {
         //this._form.doOnChangeState(RemoteProcState.Error);
-        this._form.doOnChangeState(new CRemoteProcessStatePack { state = RemoteProcState.Error });
+        this._form.doOnChangeState(new RemoteProcessStatePack { State = RemoteProcState.Error });
         this._form.changeLastLogLine(msg + ":\n");
         this._form.addLineToLog(msgBx.formatError(EBioException.CreateIfNotEBio(ex)));
       }
     }
 
-    public CRmtStateReader stateReader {
+    public CRmtStateReader StateReader {
       get {
         return this._stateReader;
       }
     }
 
 
-    protected T creRequestOfClient<T>(RmtClientRequestCmd cmd, Params bioParams, Boolean silent, AjaxRequestDelegate callback) where T : CRmtClientRequest, new() {
+    protected T creRequestOfClient<T>(RmtClientRequestCmd cmd, Params bioParams, Boolean silent, AjaxRequestDelegate callback) where T : RmtClientRequest, new() {
       var rqst = new T {
-        requestType = this._requestType,
+        RequestType = this._requestType,
         title = this.title,
-        bioCode = this.bioCode,
-        bioParams = bioParams,
+        BioCode = this.bioCode,
+        BioParams = bioParams,
         cmd = cmd,
-        silent = silent,
-        callback = callback
+        Silent = silent,
+        Callback = callback
       };
       return rqst;
     }
 
-    internal virtual CRmtClientRequest createRequest(RmtClientRequestCmd cmd, Params bioParams, Boolean silent, AjaxRequestDelegate callback) {
-      return this.creRequestOfClient<CRmtClientRequest>(cmd, bioParams, silent, callback);
+    internal virtual RmtClientRequest createRequest(RmtClientRequestCmd cmd, Params bioParams, Boolean silent, AjaxRequestDelegate callback) {
+      return this.creRequestOfClient<RmtClientRequest>(cmd, bioParams, silent, callback);
     }
 
-    protected virtual void doOnRmtProcRunnedSuccess(CBioResponse response) { 
+    protected virtual void doOnRmtProcRunnedSuccess(BioResponse response) { 
     }
-    protected virtual void doOnRmtProcBeforeRun(CRmtClientRequest request) {
+    protected virtual void doOnRmtProcBeforeRun(RmtClientRequest request) {
     }
 
     public Boolean DebugThis { get { return false; } }
@@ -218,7 +218,7 @@
         if (this.ajaxMng == null)
           throw new ArgumentNullException("AjaxMng", "Свойство должно быть задано.");
         
-        if (rmtUtl.isRunning(this._lastState)) {
+        if (rmtUtl.IsRunning(this._lastState)) {
           if (cmd != RmtClientRequestCmd.Break) {
             if ((this._form != null) && (!this._form.IsVisible))
               this._form.ShowDialog();
@@ -228,12 +228,12 @@
         //this._form.addLineToLog(Utl.GetEnumFieldDesc<RemoteProcState>(cmd) + "\n");
         var rqst = this.createRequest(cmd, bioParams, true,
           new AjaxRequestDelegate((sndr, args) => {
-            var request = args.request as CRmtClientRequest;
-            var response = args.response as CBioResponse;
+            var request = args.Request as RmtClientRequest;
+            var response = args.Response as BioResponse;
 
             if (response != null) {
               if (request.cmd == RmtClientRequestCmd.Run) {
-                if (response.success) {
+                if (response.Success) {
                   if (this._form != null) {
                     this._form.changeLastLogLine("Запуск выполнен успешно.\n");
                     this._form.addLineToLog("Состояние: ");
@@ -244,11 +244,11 @@
                   if (!this.DebugThis)
                     delayedStarter.Do(1000, this._startMonitor);
                 } else {
-                  this._gotoErrorState("При запуске произошла ошибка", response.ex);
+                  this._gotoErrorState("При запуске произошла ошибка", response.Ex);
                 }
               }
             } else {
-              this._gotoErrorState("На сервере произошла непредвиденная ошибка", args.response.ex);
+              this._gotoErrorState("На сервере произошла непредвиденная ошибка", args.Response.Ex);
             }
 
 
@@ -274,7 +274,7 @@
     /// </summary>
     /// <param name="bioParams">Параметры запуска</param>
     /// <param name="callback">Вызывается по выполнении запуска</param>
-    public void runProc(Params bioParams, AjaxRequestDelegate callback) {
+    public void RunProc(Params bioParams, AjaxRequestDelegate callback) {
       if (!this.IsRunning) {
         this._lastBioParams = bioParams;
         this._doBeforeRun();
@@ -286,51 +286,51 @@
     /// Запуск
     /// </summary>
     /// <param name="callback">Вызывается по выполнении запуска</param>
-    public void runProc(AjaxRequestDelegate callback) {
-      this.runProc(null, callback);
+    public void RunProc(AjaxRequestDelegate callback) {
+      this.RunProc(null, callback);
     }
 
     /// <summary>
     /// Запуск
     /// </summary>
-    public void runProc() {
-      this.runProc(null, null);
+    public void RunProc() {
+      this.RunProc(null, null);
     }
 
     /// <summary>
     /// Перезапуск
     /// </summary>
     /// <param name="callback">Вызывается по выполнении перезапуска</param>
-    public void restartProc(AjaxRequestDelegate callback) {
-      this.runProc(this._lastBioParams, callback);
+    public void RestartProc(AjaxRequestDelegate callback) {
+      this.RunProc(this._lastBioParams, callback);
     }
 
     /// <summary>
     /// Перезапуск
     /// </summary>
-    public void restartProc() {
-      this.restartProc(null);
+    public void RestartProc() {
+      this.RestartProc(null);
     }
 
     /// <summary>
     /// Останов
     /// </summary>
     /// <param name="callback">Вызывается по выполнении останова</param>
-    public void breakProc(AjaxRequestDelegate callback) {
+    public void BreakProc(AjaxRequestDelegate callback) {
       this._sendCommand(RmtClientRequestCmd.Break, null, callback);
     }
 
     /// <summary>
     /// Останов
     /// </summary>
-    public void breakProc() {
-      this.breakProc(null);
+    public void BreakProc() {
+      this.BreakProc(null);
     }
 
     /// <summary>
     /// Загрузить результат выполнения
     /// </summary>
-    public void loadResult() {
+    public void LoadResult() {
       //Params vPrms = new Params();
       //vPrms.Add("cmd", Utl.NameOfEnumValue((Int32)CXLRptRequestCmdType.GetResult, typeof(CXLRptRequestCmdType), false));
       //Params vPrms = new Params(new Param("getResult", "true"));
@@ -354,7 +354,7 @@
       //this.doOnResultLoad(this);
     }
 
-    public void openResult(Action callback) {
+    public void OpenResult(Action callback) {
       browserUtl.loadFile(this._resultFileReferece, callback);
       //if(File.Exists(this.resultFileName)) {
         //Process proc = new Process();

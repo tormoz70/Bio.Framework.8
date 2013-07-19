@@ -31,18 +31,18 @@
       : this(null, null, null, null) {
     }
 
-    internal override CRmtClientRequest createRequest(RmtClientRequestCmd cmd, Params bioParams, Boolean silent, AjaxRequestDelegate callback) {
+    internal override RmtClientRequest createRequest(RmtClientRequestCmd cmd, Params bioParams, Boolean silent, AjaxRequestDelegate callback) {
       var rslt = this.creRequestOfClient<CDSFetchClientRequest>(cmd, bioParams, silent, callback);
       rslt.execBioCode = this.ExecBioCode;
       return rslt;
     }
 
-    protected override void doOnRmtProcRunnedSuccess(CBioResponse response) {
+    protected override void doOnRmtProcRunnedSuccess(BioResponse response) {
       //if (response.rmtStatePacket != null)
       //  this.SessionUID = response.rmtStatePacket.sessionUID;
     }
 
-    protected override void doOnRmtProcBeforeRun(CRmtClientRequest request) {
+    protected override void doOnRmtProcBeforeRun(RmtClientRequest request) {
       var v_request = request as CDSFetchClientRequest;
       v_request.selection = this.Selection;
       //v_request.execBioParams = this.ExecBioParams;
@@ -51,7 +51,7 @@
     public void runProc(Params bioParams, String selection, AjaxRequestDelegate callback) {
       this.Selection = selection;
       //this.ExecBioParams = execBioParams;
-      this.runProc(bioParams, callback);
+      this.RunProc(bioParams, callback);
     }
   }
 }

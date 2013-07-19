@@ -25,12 +25,12 @@ namespace Bio.Framework.Client.SL {
     public event EventHandler OnLoaded;
 
     public void loadData(Action<CachedDS> callback, LinkedListNode<CachedDS> next) {
-      var v_cli = new CJsonStoreClient {
+      var v_cli = new JsonStoreClient {
         AjaxMng = ajaxMng,
         BioCode = bioCode
       };
       v_cli.Load(bioParams, (s, a) => {
-        if (a.response.success) {
+        if (a.Response.Success) {
           if (v_cli.jsMetadata.fields.Count > 1) {
             this.metadata = v_cli.jsMetadata;
             this.data = v_cli.DS;

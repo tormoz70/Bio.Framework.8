@@ -3,16 +3,12 @@ namespace Bio.Framework.Server {
   using System;
 
   using System.Data;
-  using System.Data.Common;
-
-  using System.Collections.Specialized;
-  using System.Text;
   using System.Web;
   using System.Xml;
   using System.IO;
-  using Bio.Helpers.Common.Types;
+  using Helpers.Common.Types;
 
-  internal struct sFieldDefs {
+  internal struct FieldDefs {
     public String ID_FLD;
     public String TEXT_FLD;
     public String LEAF_FLD;
@@ -26,81 +22,16 @@ namespace Bio.Framework.Server {
   /// </summary>
   public class tmio_Tree:ABioHandlerBio {
 
-    public tmio_Tree(HttpContext pContext, CAjaxRequest pRequest)
-      : base(pContext, pRequest) {
+    public tmio_Tree(HttpContext context, AjaxRequest request)
+      : base(context, request) {
     }
 
-    //private void loadChildren(
-    //                DbConnection pConn,
-    //                XmlElement pDS,
-    //                sFieldDefs vFldDefs,
-    //                Boolean pFullLoad,
-    //                String pOrgUid, String pNodeUid,
-    //                LitJson_killd.JsonWriter jw) {
-    //  CSQLCursorBio vCursor = new CSQLCursorBio(pConn, pDS, this.bioCode);
-    //  Params vPrms = new Params(new Param("org_uid", pOrgUid), new Param("nodeid", pNodeUid));
-    //  vCursor.Init(vPrms);
-    //  vCursor.Open();
-    //  jw.WriteArrayStart();
-    //  try {
-    //    while(vCursor.Next()) {
-    //      jw.WriteObjectStart();
-    //      try {
-    //        Field vIdFld = vCursor.FieldByName(vFldDefs.ID_FLD);
-    //        Field vTxtFld = vCursor.FieldByName(vFldDefs.TEXT_FLD);
-    //        Field vLeafFld = vCursor.FieldByName(vFldDefs.LEAF_FLD);
-    //        Field vClsFld = vCursor.FieldByName(vFldDefs.CLS_FLD);
-    //        if(vIdFld == null)
-    //          throw new EBioException("В описании <store> объекта [" + this.bioCode + "] должно быть объявлено поле \"" + vFldDefs.ID_FLD + "\".");
-    //        if(vTxtFld == null)
-    //          throw new EBioException("В описании <store> объекта [" + this.bioCode + "] должно быть объявлено поле \"" + vFldDefs.TEXT_FLD + "\".");
-    //        if(vLeafFld == null)
-    //          throw new EBioException("В описании <store> объекта [" + this.bioCode + "] должно быть объявлено поле \"" + vFldDefs.LEAF_FLD + "\".");
-    //        if(vClsFld == null)
-    //          throw new EBioException("В описании <store> объекта [" + this.bioCode + "] должно быть объявлено поле \"" + vFldDefs.CLS_FLD + "\".");
-
-    //        jw.WritePropertyName("id").Write(vIdFld.AsString);
-    //        jw.WritePropertyName("text").Write(vTxtFld.AsString);
-    //        Boolean vLeaf = vLeafFld.AsInteger > 0;
-    //        jw.WritePropertyName("leaf").Write(vLeaf);
-    //        jw.WritePropertyName("cls").Write(vClsFld.AsString);
-    //        Field vDataFld = vCursor.FieldByName(vFldDefs.DATA_FLD);
-    //        if(vDataFld != null) {
-    //          String vJSO = vDataFld.AsString;
-    //          jw.WritePropertyName("data").Write(vJSO);
-    //        }
-    //        Field vIconFld = vCursor.FieldByName(vFldDefs.ICON_FLD);
-    //        if(vIconFld != null) {
-    //          String vIconData = vIconFld.AsString;
-    //          jw.WritePropertyName("icon").Write(this.CurIOLocalUrl + vIconData);
-    //        }
-    //        if(pFullLoad) {
-    //          //jw.WritePropertyName("attributes");
-    //          //jw.WriteObjectStart();
-    //          jw.WritePropertyName("children");
-    //          this.loadChildren(
-    //                pConn,
-    //                pDS,
-    //                vFldDefs,
-    //                pFullLoad,
-    //                pOrgUid, vIdFld.AsString,
-    //                jw);
-    //          //jw.WriteObjectEnd();
-    //        }
-    //      } finally {
-    //        jw.WriteObjectEnd();
-    //      }
-    //    }
-    //  } finally {
-    //    jw.WriteArrayEnd();
-    //  }
-    //}
 
     protected override void doExecute() {
       base.doExecute();
 
-      XmlElement vTree = (XmlElement)this.FBioDesc.DocumentElement;
-      sFieldDefs vFldDefs = new sFieldDefs()
+      var vTree = this.FBioDesc.DocumentElement;
+      var fldDefs = new FieldDefs()
       {
         ID_FLD = "f_uid",
         TEXT_FLD = "f_text",
@@ -111,15 +42,15 @@ namespace Bio.Framework.Server {
       };
       if(vTree != null) {
         if(vTree.HasAttribute("idField"))
-          vFldDefs.ID_FLD = vTree.GetAttribute("idField");
+          fldDefs.ID_FLD = vTree.GetAttribute("idField");
         if(vTree.HasAttribute("textField"))
-          vFldDefs.TEXT_FLD = vTree.GetAttribute("textField");
+          fldDefs.TEXT_FLD = vTree.GetAttribute("textField");
         if(vTree.HasAttribute("leafField"))
-          vFldDefs.LEAF_FLD = vTree.GetAttribute("leafField");
+          fldDefs.LEAF_FLD = vTree.GetAttribute("leafField");
         if(vTree.HasAttribute("clsField"))
-          vFldDefs.CLS_FLD = vTree.GetAttribute("clsField");
+          fldDefs.CLS_FLD = vTree.GetAttribute("clsField");
         if(vTree.HasAttribute("dataField"))
-          vFldDefs.DATA_FLD = vTree.GetAttribute("dataField");
+          fldDefs.DATA_FLD = vTree.GetAttribute("dataField");
       }
       XmlElement vDS = this.FBioDesc.DocumentElement;
       String vResult = null;

@@ -10,8 +10,8 @@ namespace Bio.Framework.Server {
 
   public class tm_asmb:ABioHandlerSys {
 
-    public tm_asmb(HttpContext pContext, CAjaxRequest pRequest)
-      : base(pContext, pRequest) {
+    public tm_asmb(HttpContext context, AjaxRequest request)
+      : base(context, request) {
     }
 
     private void _sendFileToClient(String modulePath) {
@@ -37,7 +37,7 @@ namespace Bio.Framework.Server {
       } else {
         var ai = Assembly.LoadFile(v_fileName);
         this.bioParams.SetValue("moduleVersion", ai.GetName().Version.ToString());
-        this.Context.Response.Write(new CBioResponse { success = true, bioParams = this.bioParams }.Encode());
+        this.Context.Response.Write(new BioResponse { Success = true, BioParams = this.bioParams }.Encode());
       }
     }
   }

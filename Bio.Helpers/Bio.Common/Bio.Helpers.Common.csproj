@@ -76,12 +76,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="types\AjaxRequest.cs" />
+    <Compile Include="types\AjaxResponse.cs" />
     <Compile Include="types\APool.cs" />
     <Compile Include="types\ASrvcInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="types\CAjaxRequest.cs" />
-    <Compile Include="types\CAjaxResponse.cs" />
     <Compile Include="types\BackgroundThreatBase.cs" />
     <Compile Include="types\CConfigBase.cs" />
     <Compile Include="types\IDBSessionFactory.cs" />

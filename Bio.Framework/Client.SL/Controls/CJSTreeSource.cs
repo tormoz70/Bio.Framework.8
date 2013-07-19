@@ -18,7 +18,7 @@ using System.ComponentModel;
 namespace Bio.Framework.Client.SL {
 
   public abstract class CJSTreeItemBase {
-    protected CJsonStoreClient _cli = null;
+    protected JsonStoreClient _cli = null;
     protected CJSTree _ownerTree { get; set; }
     protected IAjaxMng _ajaxMng { get; set; }
     public CJSTreeItemBase Parent { get; set; }
@@ -46,7 +46,7 @@ namespace Bio.Framework.Client.SL {
     public ObservableCollection<CJSTreeItemBase> Items { get; set; }
     
     public CJSTreeItemBase() {
-      this._cli = new CJsonStoreClient();
+      this._cli = new JsonStoreClient();
       this.Items = new ObservableCollection<CJSTreeItemBase>();
     }
     public CJSTreeItemBase(CJSTree ownerTree, IAjaxMng ajaxMng)
@@ -120,7 +120,7 @@ namespace Bio.Framework.Client.SL {
 
 
 
-    protected abstract CJSTreeItemBase doOnCreateNewChildItem(CJsonStoreMetadata metadata, CJsonStoreRow row);
+    protected abstract CJSTreeItemBase doOnCreateNewChildItem(CJsonStoreMetadata metadata, JsonStoreRow row);
 
     /// <summary>
     /// Тут можно проинициализировать параметры запроса загрузки дочерних элементов.
@@ -152,8 +152,8 @@ namespace Bio.Framework.Client.SL {
 
       this._cli.Load(args.Params, (s, a) => {
         //this.OwnerTreeView.Dispatcher.BeginInvoke(() => {
-        if (a.response.success) {
-          CJsonStoreResponse rsp = a.response as CJsonStoreResponse;
+        if (a.Response.Success) {
+          JsonStoreResponse rsp = a.Response as JsonStoreResponse;
           if (rsp != null) {
             this.Items.Clear();
             foreach (var r in rsp.packet.rows) {

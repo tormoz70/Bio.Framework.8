@@ -54,29 +54,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BioLoginRequest.cs" />
+    <Compile Include="BioRequest.cs" />
     <Compile Include="BioRequestType.cs" />
-    <Compile Include="CBioLoginRequest.cs" />
-    <Compile Include="CBioRequest.cs" />
-    <Compile Include="CBioRequestTyped.cs" />
-    <Compile Include="CBioSQLRequest.cs" />
+    <Compile Include="BioRequestTyped.cs" />
+    <Compile Include="BioResponse.cs" />
+    <Compile Include="BioSQLRequest.cs" />
     <Compile Include="CJsonStore\CDSFetchClientRequest.cs" />
     <Compile Include="CJsonStore\CJsonStoreAttrs.cs" />
     <Compile Include="CJsonStore\CJsonStoreData.cs" />
     <Compile Include="CJsonStore\CJsonStoreFilter.cs" />
     <Compile Include="CJsonStore\CJsonStoreMetadata.cs" />
-    <Compile Include="CJsonStore\CJsonStoreRequest.cs" />
-    <Compile Include="CJsonStore\CJsonStoreRequestGet.cs" />
-    <Compile Include="CJsonStore\CJsonStoreRequestPost.cs" />
-    <Compile Include="CJsonStore\CJsonStoreResponse.cs" />
-    <Compile Include="CJsonStore\CJsonStoreRows.cs" />
     <Compile Include="CGlobalCfgPack.cs" />
-    <Compile Include="CLongOpClientRequest.cs" />
+    <Compile Include="CJsonStore\JsonStoreRequest.cs" />
+    <Compile Include="CJsonStore\JsonStoreRequestGet.cs" />
+    <Compile Include="CJsonStore\JsonStoreRequestPost.cs" />
+    <Compile Include="CJsonStore\JsonStoreResponse.cs" />
+    <Compile Include="CJsonStore\JsonStoreRows.cs" />
     <Compile Include="CLongOpStatePack.cs" />
-    <Compile Include="CRemoteProcessStatePack.cs" />
-    <Compile Include="CBioResponse.cs" />
+    <Compile Include="RemoteProcessStatePack.cs" />
+    <Compile Include="LongOpClientRequest.cs" />
     <Compile Include="QueryParams.cs" />
-    <Compile Include="CRmtClientRequest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RmtClientRequest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Bio.Helpers\Bio.Common\Bio.Helpers.Common.csproj">

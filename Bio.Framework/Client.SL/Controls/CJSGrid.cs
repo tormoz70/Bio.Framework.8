@@ -1,28 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 using Bio.Helpers.Common.Types;
-using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Globalization;
 using Bio.Helpers.Common;
-using System.Reflection;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 using Bio.Framework.Packets;
 using System.Collections;
 using Bio.Helpers.Controls.SL;
 using System.Collections.ObjectModel;
-using System.Threading;
 using System.Windows.Threading;
+using PropertyMetadata = System.Windows.PropertyMetadata;
 
 namespace Bio.Framework.Client.SL {
 
@@ -39,28 +32,117 @@ namespace Bio.Framework.Client.SL {
   }
 
   public class CJSGrid : ContentControl, IDataControl {
-    internal CJsonStoreClient _jsClient = null;
+    internal JsonStoreClient _jsClient = null;
 
     public CJSGrid() {
       this.DefaultStyleKey = typeof(CJSGrid);
       this._multiselection = new VMultiSelection();
-      this._jsClient = new CJsonStoreClient();
+      this._jsClient = new JsonStoreClient();
       //this._jsClient.grid = this;
-      this._jsClient.OnBeforeLoadData += this._onBeforeLoadData;
-      this._jsClient.AfterLoadData += this._onAfterLoadData;
-      this._jsClient.OnRowPropertyChanging += this._jsClient_OnRowPropertyChanging;
-      this._jsClient.OnRowPropertyChanged += this._jsClient_OnRowPropertyChanged;
+      this._jsClient.OnBeforeLoadData += this._doOnBeforeLoadData;
+      this._jsClient.OnAfterLoadData += this._doOnAfterLoadData;
+      this._jsClient.OnJsonStoreResponseSuccess += this._doOnJsonStoreResponseSuccess;
+      this._jsClient.OnJsonStoreDSLoaded += this._doOnJsonStoreDSLoaded;
+      this._jsClient.OnRowPropertyChanging += this._doOnRowPropertyChanging;
+      this._jsClient.OnRowPropertyChanged += this._doOnRowPropertyChanged;
+    }
+
+    private void _doOnJsonStoreResponseSuccess(JsonStoreClient sender, AjaxResponseEventArgs args) {
+      var v_rsp = (JsonStoreResponse) args.Response;
+      if (v_rsp.packet.limit > 0) {
+        var curPageI = ((v_rsp.packet.start + v_rsp.packet.rows.Count) / v_rsp.packet.limit);
+        var curPageD = ((Double)(v_rsp.packet.start + v_rsp.packet.rows.Count) / (Double)v_rsp.packet.limit);
+        if (curPageI < curPageD)
+          this._curPage = (int)(curPageD + 1.0);
+        else
+          this._curPage = curPageI;
+        if (this._curPage < 1) this._curPage = 1;
+        if (v_rsp.packet.endReached && (v_rsp.packet.rows.Count > 0)) {
+          this._lastPage = this._curPage;
+          this._lastPageDetected = this._lastPage;
+        } else {
+          this._lastPage = this._curPage + 1;
+        }
+      }
+      if (this._dataGrid != null)
+        this._dataGrid.ItemsSource = null;
+    }
+
+    public String GroupDefinition { get; set; }
+
+    private PagedCollectionView _pcv;
+    private IEnumerable _creDSGrp(IEnumerable ds, CJsonStoreMetadata metadata) {
+      this._pcv = new PagedCollectionView(ds);
+      var flds = Utl.SplitString(this.GroupDefinition, new Char[] { ',', ';', ' ' });
+      foreach (var fldName in flds) {
+        var v_indx = metadata.indexOf(fldName);
+        if (v_indx == -1)
+          throw new EBioException("Группировка по полю {0} не возможна, т.к. поле не найдено в метаданных.");
+        var gd = new PropertyGroupDescription();
+        gd.PropertyName = metadata.fields[v_indx].name;
+        gd.StringComparison = StringComparison.CurrentCultureIgnoreCase;
+        gd.Converter = new GroupHeaderFormatter(gd);
+        this._pcv.GroupDescriptions.Add(gd);
+      }
+      return this._pcv;
+    }
+
+    private void _initGroupDef(CJsonStoreMetadata md) {
+      if (!String.IsNullOrEmpty(this.GroupDefinition))
+        return;
+      var groups = (new[] { new { indx = 0, field = "" } }).ToList();
+      groups.Clear();
+      foreach (var fld in md.fields) {
+        if (fld.group > 0) {
+          groups.Add(new { indx = fld.group, field = fld.name });
+        }
+      }
+      if (groups.Count > 0) {
+        groups.Sort((a, b) => {
+          if (a.indx == b.indx)
+            return 0;
+          if (a.indx > b.indx)
+            return 1;
+          return -1;
+        });
+        String grpDef = null;
+        foreach (var f in groups)
+          Utl.AppendStr(ref grpDef, f.field, ";");
+        this.GroupDefinition = grpDef;
+      }
+    }
+
+    private void _doOnJsonStoreDSLoaded(JsonStoreClient sender, JsonStoreDSLoadedEventArgs args) {
+      var rsp = (JsonStoreResponse)args.Response;
+      var rq = (JsonStoreRequest)args.Request;
+      if (this._dataGrid != null) {
+        this._initGroupDef(this._jsClient.jsMetadata);
+        this._dataGrid.disableColumnsChangedEvents();
+        if ((rsp.packet.limit == 0) && (!String.IsNullOrEmpty(this.GroupDefinition)))
+          this._dataGrid.ItemsSource = this._creDSGrp(args.DS, this.jsMetadata);
+        else
+          this._dataGrid.ItemsSource = args.DS;
+
+        this._dataGrid.enableColumnsChangedEvents();
+      }
+
+      if (rq.Packet.locate != null) {
+        this._lastLocatedRow = this._locateInternal(rq.Packet.locate);
+        this.SelectedItem = this._lastLocatedRow;
+      } else
+        this.SelectedIndex = this._curRowIndex;
+      this.CurrentColumnIndex = this._curColumnIndex;
     }
 
     public event JSClientEventHandler<JSClientRowPropertyChangingEventArgs> OnRowPropertyChanging;
     public event JSClientEventHandler<JSClientRowPropertyChangedEventArgs> OnRowPropertyChanged;
 
-    private void _jsClient_OnRowPropertyChanging(CJsonStoreClient sender, JSClientRowPropertyChangingEventArgs args) {
+    private void _doOnRowPropertyChanging(JsonStoreClient sender, JSClientRowPropertyChangingEventArgs args) {
       var eve = this.OnRowPropertyChanging;
       if (eve != null)
         eve(sender, args);
     }
-    private void _jsClient_OnRowPropertyChanged(CJsonStoreClient sender, JSClientRowPropertyChangedEventArgs args) {
+    private void _doOnRowPropertyChanged(JsonStoreClient sender, JSClientRowPropertyChangedEventArgs args) {
       var eve = this.OnRowPropertyChanged;
       if (eve != null)
         eve(sender, args);
@@ -86,7 +168,7 @@ namespace Bio.Framework.Client.SL {
         eve(this, args);
     }
 
-    internal CDataGrid _dataGrid = null;
+    private CDataGrid _dataGrid;
 
     private BusyIndicator _busyIndicator;
 
@@ -147,32 +229,27 @@ namespace Bio.Framework.Client.SL {
       });
     }
 
-    internal void updPosState(Int64 curPage, Int64 lastPage) {
-      TextBox tbx = this.GetTemplateChild("tbxPagePos") as TextBox;
+    internal void updPosState() {
+      var tbx = this.GetTemplateChild("tbxPagePos") as TextBox;
       if (tbx != null)
-        tbx.Text = "" + curPage;
-      TextBlock tblck = this.GetTemplateChild("tbxLastPage") as TextBlock;
+        tbx.Text = "" + this.PageCurrent;
+      var tblck = this.GetTemplateChild("tbxLastPage") as TextBlock;
       if (tblck != null)
-        tblck.Text = ((lastPage == -1) ? "?" : "" + lastPage);
+        tblck.Text = ((this.PageLast == -1) ? "?" : "" + this.PageLast);
     }
 
     private GridLength fPanelNavRowHeight = new GridLength(0);
+
     private void _updNavPanelVisibility() {
-      StackPanel pnl = this.GetTemplateChild("navPanel") as StackPanel;
-      if (pnl != null) {
-        if (this.pageSize == 0)
-          pnl.Visibility = System.Windows.Visibility.Collapsed;
-        else
-          pnl.Visibility = System.Windows.Visibility.Visible;
-      }
+      var pnl = this.GetTemplateChild("navPanel") as StackPanel;
+      if (pnl != null)
+        pnl.Visibility = this.PageSize == 0 ? Visibility.Collapsed : Visibility.Visible;
     }
 
     private void _updAutoRefreshPanelVisibility() {
       var pnl = this.GetTemplateChild("grdAutoRefresh") as Grid;
-      if (this.AutoRefreshEnabled)
-        pnl.Visibility = System.Windows.Visibility.Visible;
-      else
-        pnl.Visibility = System.Windows.Visibility.Collapsed;
+      if (pnl != null) 
+        pnl.Visibility = this.AutoRefreshEnabled ? Visibility.Visible : Visibility.Collapsed;
       var cbx = this.GetTemplateChild("cbxAutoRefresh") as CheckBox;
       if (cbx != null) {
         cbx.Checked += this.cbxAutoRefresh_Checked;
@@ -193,7 +270,7 @@ namespace Bio.Framework.Client.SL {
     }
 
     private void cbxAutoRefresh_Checked(Object sender, RoutedEventArgs e) {
-      if ((sender as CheckBox).IsChecked == true)
+      if (((CheckBox)sender).IsChecked == true)
         this.AutoRefreshStart();
       else
         this.AutoRefreshStop();
@@ -241,33 +318,80 @@ namespace Bio.Framework.Client.SL {
       return rslt;
     }
 
+
+    private const Int32 ciLastPageUnassigned = -1;
+    private Int64 _curPage = 1;
+    public Int64 PageCurrent {
+      get {
+        return this._curPage;
+      }
+    }
+
+    /// <summary>
+    /// Это последняя страница, когда достигнута последняя страница
+    /// </summary>
+    private Int64 _lastPageDetected = ciLastPageUnassigned;
+    /// <summary>
+    /// Последняя страница пока не достигнута последняя страница
+    /// </summary>
+    private Int64 _lastPage = ciLastPageUnassigned;
+    public Int64 PageLast {
+      get {
+        return this._lastPageDetected;
+      }
+    }
+
     public void goPageFirst(AjaxRequestDelegate callback) {
-      if (this._jsClient.PageSize == this.pageSize)
-        this._jsClient.goPageFirst(callback);
-      else
+      if (this._jsClient.PageSize == this.PageSize) {
+        if (this._curPage > 1) 
+          this._goto(0, "к первой странице...", callback, null);
+        else {
+          if (callback != null)
+            callback(null, null);
+        }
+      } else
         this.Refresh(callback);
     }
     public void goPagePrev(AjaxRequestDelegate callback) {
-      if (this._jsClient.PageSize == this.pageSize)
-        this._jsClient.goPagePrev(callback);
-      else
+      if (this._jsClient.PageSize == this.PageSize) {
+        if (this._curPage > 1) {
+          this._curPage--;
+          var startFrom = (this._curPage - 1) * this.PageSize;
+          this._goto(startFrom, "к пред. странице...", callback, null);
+        } else {
+          if (callback != null)
+            callback(null, null);
+        }
+      } else
         this.Refresh(callback);
     }
     public void goPageNext(AjaxRequestDelegate callback) {
-      if (this._jsClient.PageSize == this.pageSize)
-        this._jsClient.goPageNext(callback);
-      else
+      if (this._jsClient.PageSize == this.PageSize) {
+        if (this._curPage < this._lastPage) {
+          this._curPage++;
+          var startFrom = (this._curPage - 1) * this.PageSize;
+          this._goto(startFrom, "к след. странице...", callback, null);
+        } else {
+          if (callback != null)
+            callback(null, null);
+        }
+      } else
         this.Refresh(callback);
     }
     public void goPageLast(AjaxRequestDelegate callback) {
-      if (this._jsClient.PageSize == this.pageSize)
-        this._jsClient.goPageLast(callback);
-      else
+      if (this._jsClient.PageSize == this.PageSize) {
+        if (this._curPage < this._lastPage) {
+          this._goto(Int64.MaxValue, "к последней странице...", callback, null);
+        } else {
+          if (callback != null)
+            callback(null, null);
+        }
+      } else
         this.Refresh(callback);
     }
     public void Refresh(AjaxRequestDelegate callback) {
       this._setBtnVisibility("btnRefreshFirst", Visibility.Collapsed);
-      this._jsClient.Refresh(callback);
+      this._goto(null, "Обновление...", callback, null);
     }
 
     public Boolean AutoRefreshEnabled { get; set; }
@@ -293,12 +417,12 @@ namespace Bio.Framework.Client.SL {
       }));
       this._addBtnEvent("btnExp", new RoutedEventHandler((s, a) => {
         if (this._exporter == null) {
-          this._exporter = new CExpClient(this.ajaxMng, this.bioCode, this.Title ?? "Экспорт");
+          this._exporter = new CExpClient(this.ajaxMng, this.BioCode, this.Title ?? "Экспорт");
         } else
-          this._exporter.bioCode = this.bioCode;
+          this._exporter.bioCode = this.BioCode;
         this._exporter.title = this.Title;
-        this.bioParams.SetValue("dataGridOnClientHeaders", this._getColumnHeaderList());
-        this._exporter.runProc(this.bioParams, null);
+        this.BioParams.SetValue("dataGridOnClientHeaders", this._getColumnHeaderList());
+        this._exporter.RunProc(this.BioParams, null);
 
       }));
       this._addBtnEvent("btnCfg", new RoutedEventHandler((s, a) => {
@@ -335,7 +459,7 @@ namespace Bio.Framework.Client.SL {
           v_prnt = Utl.FindParentElem1<FloatableWindow>(this);
         v_prnt_typeName = (v_prnt != null) ? v_prnt.GetType().FullName : this.GetType().Name;
       });
-      var v_rslt = v_prnt_typeName + "-[" + this.bioCode + "]";
+      var v_rslt = v_prnt_typeName + "-[" + this.BioCode + "]";
       return v_rslt;
     }
 
@@ -409,52 +533,6 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    public event JSClientEventHandler<CancelEventArgs> OnBeforeLoadData;
-    private void _onBeforeLoadData(CJsonStoreClient sender, CancelEventArgs args) {
-      this._dataIsLoaded = false;
-      if (this.OnBeforeLoadData != null) {
-        this.OnBeforeLoadData(sender, args);
-      }
-    }
-
-    private Boolean _dataIsLoaded = false;
-    public event JSClientEventHandler<AjaxResponseEventArgs> OnAfterLoadData;
-    void _onAfterLoadData(CJsonStoreClient sender, AjaxResponseEventArgs e) {
-      // Все эти "танцы с бубном", чтобы на событии "AfterLoadData" грид уже содержал колонки загруженных данных
-      this._forward_sender = sender;
-      this._forward_args = e;
-      if (this._dataGrid != null) {
-        this._dataGrid.LayoutUpdated += this._dataGrid_LayoutUpdated;
-      } else {
-        this._prepareGridAfterLoadData();
-      }
-      this._dataIsLoaded = true;
-    }
-
-    public Boolean DataIsLoaded {
-      get {
-        return this._dataIsLoaded;
-      }
-    }
-
-    private CJsonStoreClient _forward_sender = null;
-    private AjaxResponseEventArgs _forward_args = null;
-    void _dataGrid_LayoutUpdated(object sender, EventArgs e) {
-      this._dataGrid.LayoutUpdated -= this._dataGrid_LayoutUpdated;
-      this._prepareGridAfterLoadData();
-    }
-
-    private void _prepareGridAfterLoadData() {
-      //if(this.Columns.Count != this._cfg.columnDefs.Count)
-      //  this._cfg.refresh(this);
-      //else
-      this._applyCfgToGrid();
-      var handler = this.OnAfterLoadData;
-      if (handler != null) {
-        handler(this._forward_sender, this._forward_args);
-      }
-    }
-
     private CJSGridConfig _cfg = null;
     private void _restoreCfg() {
       var uid = this._generateGridUID();
@@ -498,13 +576,13 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    public Int64 pageSize {
+    public Int64 PageSize {
       get {
         return (this.SuppressPaging) ? 0 : (((this._cfg != null) && (this._cfg.pageSize != null)) ? (Int64)this._cfg.pageSize : this.DefaultPageSize);
       }
     }
 
-    public String bioCode {
+    public String BioCode {
       get {
         return this._jsClient.BioCode;
       }
@@ -523,7 +601,7 @@ namespace Bio.Framework.Client.SL {
         this._jsClient.AjaxMng = value;
       }
     }
-    public Params bioParams {
+    public Params BioParams {
       get {
         return this._jsClient.BioParams;
       }
@@ -739,8 +817,7 @@ namespace Bio.Framework.Client.SL {
       get {
         if (this._dataGrid != null)
           return this._dataGrid.Columns;
-        else
-          return null;
+        return null;
       }
     }
 
@@ -748,23 +825,20 @@ namespace Bio.Framework.Client.SL {
       DataGridBoundColumn col = column as DataGridBoundColumn;
       if ((col.Binding != null) && (col.Binding.Path != null))
         return col.Binding.Path.Path;
-      else
-        return null;
+      return null;
     }
 
     public DataGridColumn ColumnByBindingPath(String bindingPath) {
       if (this.Columns != null)
         return this.Columns.Where((c) => { return String.Equals(GetDataGridColumnName(c), bindingPath, StringComparison.CurrentCultureIgnoreCase); }).FirstOrDefault();
-      else
-        return null;
+      return null;
     }
 
     public String CurrentColumnName {
       get {
-        if (this._dataGrid != null) {
+        if (this._dataGrid != null) 
           return GetDataGridColumnName(this._dataGrid.CurrentColumn);
-        } else
-          return null;
+        return null;
       }
       set {
         var col = ColumnByBindingPath(value);
@@ -794,53 +868,166 @@ namespace Bio.Framework.Client.SL {
     }
 
     private class LoadParams<T> {
-      public Params bioParams { get; set; }
-      public T callback { get; set; }
-      public CJsonStoreFilter locate { get; set; }
+      public Params BioParams { get; set; }
+      public T Callback { get; set; }
+      public CJsonStoreFilter Locate { get; set; }
     };
-    private LoadParams<AjaxRequestDelegate> _suspendLoadParams = null;
+    private LoadParams<AjaxRequestDelegate> _suspendLoadParams;
     private Boolean _isFirstLoading = true;
     public void Load(Params bioParams, AjaxRequestDelegate callback, CJsonStoreFilter locate) {
       if (this.SuspendFirstLoad && this._isFirstLoading) {
         this._suspendLoadParams = new LoadParams<AjaxRequestDelegate> {
-          bioParams = (bioParams != null) ? (Params)bioParams.Clone() : null,
-          callback = callback,
-          locate = (locate != null) ? (CJsonStoreFilter)locate.Clone() : null
+          BioParams = (bioParams != null) ? (Params)bioParams.Clone() : null,
+          Callback = callback,
+          Locate = (locate != null) ? (CJsonStoreFilter)locate.Clone() : null
         };
         this._setBtnVisibility("btnRefreshFirst", Visibility.Visible);
         this._isFirstLoading = false;
       } else {
         this._setBtnVisibility("btnRefreshFirst", Visibility.Collapsed);
         var loadParams = this._suspendLoadParams ?? new LoadParams<AjaxRequestDelegate> {
-          bioParams = (bioParams != null) ? (Params)bioParams.Clone() : null,
-          callback = callback,
-          locate = (locate != null) ? (CJsonStoreFilter)locate.Clone() : null
+          BioParams = (bioParams != null) ? (Params)bioParams.Clone() : null,
+          Callback = callback,
+          Locate = (locate != null) ? (CJsonStoreFilter)locate.Clone() : null
         };
         this._suspendLoadParams = null;
-        this._callOnShowDelaied(() => {
-          
-          try {
-            this._jsClient.Load(loadParams.bioParams, (sndr, a) => {
-              this.hideBusyIndicator();
+        this._callOnShowDelaied(() => this._goto((this.PageCurrent - 1)*this.PageSize, "Загрузка...",
+                                                 (sndr, a) => {
+                                                   this.hideBusyIndicator();
 
-              if (a.response.success) {
-                var rsp = (a.response as CJsonStoreResponse);
-                if (rsp != null) {
+                                                   if (a.Response.Success) {
+                                                     var rsp = (a.Response as JsonStoreResponse);
+                                                     if (rsp != null) {
+                                                       if (this._dataGrid != null)
+                                                         this._dataGrid.UpdateLayout();
+                                                       this.updPosState();
+                                                       if (loadParams.Callback != null)
+                                                         loadParams.Callback(sndr, a);
+                                                     }
+                                                   }
+                                                 }, loadParams.Locate));
+      }
+    }
 
-                  if (this._dataGrid != null)
-                    this._dataGrid.UpdateLayout();
-
-                  this.updPosState(((CJsonStoreClient)sndr).PageCurrent, ((CJsonStoreClient)sndr).PageLast);
-                  if (loadParams.callback != null)
-                    loadParams.callback(sndr, a);
-                }
-              }
-            }, loadParams.locate, this.pageSize);
-          } catch {
-            this.hideBusyIndicator();
-            throw;
+    private void _doOnLocation(CRTObject row, EBioException exception, EventHandler<OnSelectEventArgs> callback) {
+      if (row != null) {
+          this.SelectedItem = row;
+      } else {
+        if (this._dataGrid.ItemsSource != null) {
+          var venumr = this._dataGrid.ItemsSource.GetEnumerator();
+          if (venumr != null) {
+            venumr.Reset();
+            if (venumr.MoveNext()) {
+              this.SelectedItem = venumr.Current as CRTObject;
+              row = this.SelectedItem;
+            }
           }
+        }
+      }
+      if (callback != null) {
+        callback(this, new OnSelectEventArgs {
+          ex = exception,
+          selection = new VSingleSelection { ValueRow = row }
         });
+      }
+    }
+
+    public event EventHandler<CancelEventArgs> OnBeforeLoadData;
+    private void _doOnBeforeLoadData(JsonStoreClient sender, CancelEventArgs args) {
+      this.DataIsLoaded = false;
+      if (this.OnBeforeLoadData != null) {
+        //Utl.UiThreadInvoke(() => {
+          this.OnBeforeLoadData(this, args);
+        //});
+      }
+    }
+
+    public bool DataIsLoaded { get; private set; }
+
+    private JsonStoreClient _forwardSender;
+    private AjaxResponseEventArgs _forwardArgs;
+    void _dataGrid_LayoutUpdated(object sender, EventArgs e) {
+      this._dataGrid.LayoutUpdated -= this._dataGrid_LayoutUpdated;
+      this._prepareGridAfterLoadData();
+    }
+
+    private void _prepareGridAfterLoadData() {
+      this._applyCfgToGrid();
+      var handler = this.OnAfterLoadData;
+      if (handler != null) {
+        handler(this._forwardSender, this._forwardArgs);
+      }
+    }
+
+
+    public event JSClientEventHandler<AjaxResponseEventArgs> OnAfterLoadData;
+    void _doOnAfterLoadData(JsonStoreClient sender, AjaxResponseEventArgs e) {
+      // Все эти "танцы с бубном", чтобы на событии "OnAfterLoadData" грид уже содержал колонки загруженных данных
+      this._forwardSender = sender;
+      this._forwardArgs = e;
+      if (this._dataGrid != null) {
+        this._dataGrid.LayoutUpdated += this._dataGrid_LayoutUpdated;
+      } else {
+        this._prepareGridAfterLoadData();
+      }
+      this.DataIsLoaded = true;
+    }
+
+    private Int32 _curRowIndex = -1;
+    private Int32 _curColumnIndex = -1;
+    private void _goto(Int64? startFrom, String waitMsg, AjaxRequestDelegate callback, CJsonStoreFilter locate) {
+      this.showBusyIndicator(waitMsg);
+      try {
+        this._curColumnIndex = this.CurrentColumnIndex;
+        this._curRowIndex = this.SelectedIndex;
+        this._jsClient.Load(null, (s, a) => {
+          this.hideBusyIndicator();
+          this.updPosState();
+          if (callback != null)
+            callback(s, a);
+        }, locate, this.PageSize, startFrom);
+      } catch {
+        this.hideBusyIndicator();
+        throw;
+      }
+    }
+
+    private static Boolean _checkFilter(CRTObject row, Int64 rowPos, CJsonStoreFilter filter) {
+      if ((row != null) && (filter != null)) {
+        return rowPos >= filter.fromPosition && filter.check(row);
+      }
+      return false;
+    }
+
+    private CRTObject _locateInternal(CJsonStoreFilter locate) {
+      if (this.ItemsSource != null) {
+        var rows = this.ItemsSource.Cast<CRTObject>().ToArray();
+        for (var i = 0; i < rows.Length; i++) {
+          var rowPos = i + (this.PageCurrent * this.PageSize);
+          if (_checkFilter(rows[i], rowPos, locate)) {
+            locate.fromPosition = rowPos + 1;
+            return rows[i];
+          }
+        }
+      }
+      return null;
+    }
+
+    private CRTObject _lastLocatedRow = null;
+    private void _locate(CJsonStoreFilter locate, EventHandler<OnSelectEventArgs> callback, Boolean forceRemote = false) {
+      CRTObject v_row = null;
+      if(!forceRemote)
+        v_row = this._locateInternal(locate);
+      if (v_row != null)
+        this._doOnLocation(v_row, null, callback);
+      else {
+        this._goto(0, "Поиск...", (s, a) => {
+          if (a.Response.Success)
+            this._doOnLocation(this._lastLocatedRow, null, callback);
+          else
+            this._doOnLocation(null, a.Response.Ex, callback);
+
+        }, locate);
       }
     }
 
@@ -849,21 +1036,21 @@ namespace Bio.Framework.Client.SL {
       this._callOnShowDelaied(() => {
         if (this.SuspendFirstLoad && this._isFirstLoading) {
           this._suspendLocateParams = new LoadParams<EventHandler<OnSelectEventArgs>> {
-            bioParams = null,
-            callback = callback,
-            locate = (locate != null) ? (CJsonStoreFilter)locate.Clone() : null
+            BioParams = null,
+            Callback = callback,
+            Locate = (locate != null) ? (CJsonStoreFilter)locate.Clone() : null
           };
           this._setBtnVisibility("btnRefreshFirst", Visibility.Visible);
           this._isFirstLoading = false;
         } else {
           this._setBtnVisibility("btnRefreshFirst", Visibility.Collapsed);
           var locateParams = this._suspendLocateParams ?? new LoadParams<EventHandler<OnSelectEventArgs>> {
-            bioParams = null,
-            callback = callback,
-            locate = (locate != null) ? (CJsonStoreFilter)locate.Clone() : null
+            BioParams = null,
+            Callback = callback,
+            Locate = (locate != null) ? (CJsonStoreFilter)locate.Clone() : null
           };
           this._suspendLocateParams = null;
-          this._jsClient.Locate(locateParams.locate, locateParams.callback, forceRemote);
+          this._locate(locateParams.Locate, locateParams.Callback, forceRemote);
         }
       });
     }
@@ -1002,7 +1189,7 @@ namespace Bio.Framework.Client.SL {
     /// <param name="callback">Выполняется по завершении запроса</param>
     /// <param name="trunsactionID">ID транзакции</param>
     /// <param name="cmd">Команда для транзакции</param>
-    public void SaveData(AjaxRequestDelegate callback, String trunsactionID, CSQLTransactionCmd cmd) {
+    public void SaveData(AjaxRequestDelegate callback, String trunsactionID, SQLTransactionCmd cmd) {
       this.showBusyIndicator("сохранение изменений...");
       try {
         this._jsClient.Post((s, a) => {
@@ -1021,7 +1208,7 @@ namespace Bio.Framework.Client.SL {
     /// </summary>
     /// <param name="callback">Выполняется по завершении запроса</param>
     public void SaveData(AjaxRequestDelegate callback) {
-      this.SaveData(callback, null, CSQLTransactionCmd.Nop);
+      this.SaveData(callback, null, SQLTransactionCmd.Nop);
     }
 
     /// <summary>
@@ -1077,7 +1264,7 @@ namespace Bio.Framework.Client.SL {
     private void _autoRefreshTimer_Tick(Object sender, EventArgs e) {
       if (!this._autorefreshing) {
         this._autorefreshing = true;
-        this._jsClient.Refresh((s, a) => {
+        this._jsClient.Load((s, a) => {
           this._autorefreshing = false;
         });
       }
@@ -1159,7 +1346,7 @@ namespace Bio.Framework.Client.SL {
     }
 
     private void _doOnAnColumnResized(Object sender, EventArgs args) {
-      if (this._dataIsLoaded)
+      if (this.DataIsLoaded)
         this._storeCfg();
     }
 
@@ -1204,14 +1391,14 @@ namespace Bio.Framework.Client.SL {
     }
 
     public static List<T> GetChildrenByType<T>(this UIElement element, Func<T, bool> condition) where T : UIElement {
-      List<T> results = new List<T>();
-      GetChildrenByType<T>(element, condition, results);
+      var results = new List<T>();
+      _getChildrenByType<T>(element, condition, results);
       return results;
     }
 
-    private static void GetChildrenByType<T>(UIElement element, Func<T, bool> condition, List<T> results) where T : UIElement {
-      for (int i = 0; i < VisualTreeHelper.GetChildrenCount(element); i++) {
-        UIElement child = VisualTreeHelper.GetChild(element, i) as UIElement;
+    private static void _getChildrenByType<T>(UIElement element, Func<T, bool> condition, List<T> results) where T : UIElement {
+      for (var i = 0; i < VisualTreeHelper.GetChildrenCount(element); i++) {
+        var child = VisualTreeHelper.GetChild(element, i) as UIElement;
         if (child != null) {
           T t = child as T;
           if (t != null) {
@@ -1221,7 +1408,7 @@ namespace Bio.Framework.Client.SL {
               results.Add(t);
             }
           }
-          GetChildrenByType<T>(child, condition, results);
+          _getChildrenByType<T>(child, condition, results);
         }
       }
     }
@@ -1238,27 +1425,27 @@ namespace Bio.Framework.Client.SL {
   }
 
   public class GridRowEnumerator : IEnumerator<DataGridRow> {
-    private DataGrid m_Grid;
+    private DataGrid _grid;
 
-    private IEnumerator m_Enumerator;
+    private IEnumerator _enumerator;
 
     public GridRowEnumerator(DataGrid grid) {
-      m_Grid = grid;
+      _grid = grid;
 
-      m_Enumerator = m_Grid.ItemsSource.GetEnumerator();
+      _enumerator = _grid.ItemsSource.GetEnumerator();
     }
 
     #region IEnumerator<DataGridRow> Members
 
     public DataGridRow Current {
       get {
-        var rowItem = m_Enumerator.Current;
+        var rowItem = _enumerator.Current;
 
         // Ensures that all rows are loaded. 
-        m_Grid.ScrollIntoView(rowItem, m_Grid.Columns.Last());
+        _grid.ScrollIntoView(rowItem, _grid.Columns.Last());
 
         // Get the content of the cell. 
-        FrameworkElement el = m_Grid.Columns.Last().GetCellContent(rowItem);
+        FrameworkElement el = _grid.Columns.Last().GetCellContent(rowItem);
 
         // Retrieve the row which is parent of given element. 
         //DataGridRow row = DataGridRow.GetRowContainingElement(el); 
@@ -1287,11 +1474,11 @@ namespace Bio.Framework.Client.SL {
     }
 
     public bool MoveNext() {
-      return m_Enumerator.MoveNext();
+      return _enumerator.MoveNext();
     }
 
     public void Reset() {
-      m_Enumerator.Reset();
+      _enumerator.Reset();
     }
 
     #endregion
@@ -1299,7 +1486,7 @@ namespace Bio.Framework.Client.SL {
 
   public class MyConverter : IValueConverter {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
-      return "[" + (value as CollectionViewGroup).Items.Count + "]";
+      return "[" + ((CollectionViewGroup) value).Items.Count + "]";
     }
 
     public Object ConvertBack(Object value, Type targetType, Object parameter, CultureInfo culture) {
@@ -1314,6 +1501,59 @@ namespace Bio.Framework.Client.SL {
     }
     public Object Convert(Object value, Type targetType, Object parameter, CultureInfo culture) {
       return "[" + value + "]";
+    }
+
+    public Object ConvertBack(Object value, Type targetType, Object parameter, CultureInfo culture) {
+      throw new NotImplementedException();
+    }
+  }
+
+  public class CurrFormatter : IValueConverter {
+    private CJsonStoreMetadataFieldDef _fldDef;
+    private DataGridColumn _column;
+    public CurrFormatter(CJsonStoreMetadataFieldDef fldDef, DataGridColumn col) {
+      this._fldDef = fldDef;
+      this._column = col;
+    }
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+      if (!String.IsNullOrEmpty(this._fldDef.format)) {
+        if (value is Decimal) {
+          return ((Decimal)value).ToString(this._fldDef.format);
+        }
+        if (value is Double) {
+          return ((Double)value).ToString(this._fldDef.format);
+        }
+        if (value is Int64) {
+          return ((Int64)value).ToString(this._fldDef.format);
+        }
+        if ((value is DateTime) || (value is DateTime?) || (value is DateTimeOffset) || (value is DateTimeOffset?)) {
+          return ((DateTime)value).ToString(this._fldDef.format);
+        }
+        return value;
+      }
+      return value;
+    }
+
+    public Object ConvertBack(Object value, Type targetType, Object parameter, CultureInfo culture) {
+      try {
+        return Utl.Convert2Type(value, targetType);
+      } catch (Exception) {
+        if (Utl.TypeIsNumeric(targetType))
+          return 0;
+        if (targetType == typeof(DateTime))
+          return DateTime.MinValue;
+        return null;
+      }
+    }
+  }
+
+  public class GroupHeaderFormatter : IValueConverter {
+    private PropertyGroupDescription _grpDescr;
+    public GroupHeaderFormatter(PropertyGroupDescription grpDescr) {
+      this._grpDescr = grpDescr;
+    }
+    public object Convert(Object value, Type targetType, Object parameter, CultureInfo culture) {
+      return value;
     }
 
     public Object ConvertBack(Object value, Type targetType, Object parameter, CultureInfo culture) {
