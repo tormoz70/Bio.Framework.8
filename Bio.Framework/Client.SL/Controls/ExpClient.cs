@@ -9,7 +9,7 @@
   /// <summary>
   /// Предоставляет возможность запускать на сервере долгоиграющие отчеты.
   /// </summary>
-  public class CExpClient:CRmtClientBase {
+  public class ExpClient:RmtClientBase {
 
 
     /// <summary>
@@ -18,8 +18,8 @@
     /// <param name="ajaxMng">ссылка на AjaxMng</param>
     /// <param name="bioCode">Код</param>
     /// <param name="title">Заголовок</param>
-    public CExpClient(IAjaxMng ajaxMng, String bioCode, String title):base(ajaxMng, bioCode, title) {
-      this._requestType = RequestType.DS2XL;
+    public ExpClient(IAjaxMng ajaxMng, String bioCode, String title):base(ajaxMng, bioCode, title) {
+      this.requestType = RequestType.DS2XL;
     }
 
 

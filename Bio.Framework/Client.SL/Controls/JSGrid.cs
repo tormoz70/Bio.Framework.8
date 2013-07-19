@@ -23,19 +23,18 @@ namespace Bio.Framework.Client.SL {
     public String PropertyName { get; private set; }
     public DataGridColumn Column { get; private set; }
     public CJsonStoreMetadataFieldDef Field { get; private set; }
-    public CJSGridAfterGenColumnEventArgs(String propertyName, DataGridColumn column, CJsonStoreMetadataFieldDef field)
-      : base() {
+    public CJSGridAfterGenColumnEventArgs(String propertyName, DataGridColumn column, CJsonStoreMetadataFieldDef field) {
       this.PropertyName = propertyName;
       this.Column = column;
       this.Field = field;
     }
   }
 
-  public class CJSGrid : ContentControl, IDataControl {
-    internal JsonStoreClient _jsClient = null;
+  public class JSGrid : ContentControl, IDataControl {
+    private JsonStoreClient _jsClient = null;
 
-    public CJSGrid() {
-      this.DefaultStyleKey = typeof(CJSGrid);
+    public JSGrid() {
+      this.DefaultStyleKey = typeof(JSGrid);
       this._multiselection = new VMultiSelection();
       this._jsClient = new JsonStoreClient();
       //this._jsClient.grid = this;
@@ -116,7 +115,7 @@ namespace Bio.Framework.Client.SL {
       var rsp = (JsonStoreResponse)args.Response;
       var rq = (JsonStoreRequest)args.Request;
       if (this._dataGrid != null) {
-        this._initGroupDef(this._jsClient.jsMetadata);
+        this._initGroupDef(this._jsClient.JSMetadata);
         this._dataGrid.disableColumnsChangedEvents();
         if ((rsp.packet.limit == 0) && (!String.IsNullOrEmpty(this.GroupDefinition)))
           this._dataGrid.ItemsSource = this._creDSGrp(args.DS, this.jsMetadata);
@@ -291,7 +290,7 @@ namespace Bio.Framework.Client.SL {
       });
     }
 
-    private CExpClient _exporter = null;
+    private ExpClient _exporter = null;
     //private CJSGridCols _cfgEditor = null;
 
     internal Boolean _alternatingRowBackgroundIsDefault = true;
@@ -417,10 +416,10 @@ namespace Bio.Framework.Client.SL {
       }));
       this._addBtnEvent("btnExp", new RoutedEventHandler((s, a) => {
         if (this._exporter == null) {
-          this._exporter = new CExpClient(this.ajaxMng, this.BioCode, this.Title ?? "Экспорт");
+          this._exporter = new ExpClient(this.ajaxMng, this.BioCode, this.Title ?? "Экспорт");
         } else
-          this._exporter.bioCode = this.BioCode;
-        this._exporter.title = this.Title;
+          this._exporter.BioCode = this.BioCode;
+        this._exporter.Title = this.Title;
         this.BioParams.SetValue("dataGridOnClientHeaders", this._getColumnHeaderList());
         this._exporter.RunProc(this.BioParams, null);
 
@@ -533,20 +532,20 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    private CJSGridConfig _cfg = null;
+    private JSGridConfig _cfg = null;
     private void _restoreCfg() {
       var uid = this._generateGridUID();
-      this._cfg = CJSGridConfig.restore(uid, null);
+      this._cfg = JSGridConfig.Restore(uid, null);
       if (this._cfg == null)
         this._cfg = this._creCfg();
     }
 
     private void _storeCfg(Boolean skipRefresh) {
       if (this._cfg != null) {
-        Utl.UiThreadInvoke(new Action<CJSGrid>((grd) => {
+        Utl.UiThreadInvoke(new Action<JSGrid>((grd) => {
           if (!skipRefresh)
-            grd._cfg.refresh(grd);
-          grd._cfg.store(grd._generateGridUID());
+            grd._cfg.Refresh(grd);
+          grd._cfg.Store(grd._generateGridUID());
         }), this);
       }
     }
@@ -578,7 +577,7 @@ namespace Bio.Framework.Client.SL {
 
     public Int64 PageSize {
       get {
-        return (this.SuppressPaging) ? 0 : (((this._cfg != null) && (this._cfg.pageSize != null)) ? (Int64)this._cfg.pageSize : this.DefaultPageSize);
+        return (this.SuppressPaging) ? 0 : (((this._cfg != null) && (this._cfg.PageSize != null)) ? (Int64)this._cfg.PageSize : this.DefaultPageSize);
       }
     }
 
@@ -619,37 +618,37 @@ namespace Bio.Framework.Client.SL {
     //  }
     //}
 
-    //public static DependencyProperty HeadersVisibilityProperty = DependencyProperty.Register("HeadersVisibility", typeof(DataGridHeadersVisibility), typeof(CJSGrid), new PropertyMetadata(DataGridHeadersVisibility.All));
+    //public static DependencyProperty HeadersVisibilityProperty = DependencyProperty.Register("HeadersVisibility", typeof(DataGridHeadersVisibility), typeof(JSGrid), new PropertyMetadata(DataGridHeadersVisibility.All));
     //public DataGridHeadersVisibility HeadersVisibility {
     //  get { return (DataGridHeadersVisibility)this.GetValue(HeadersVisibilityProperty); }
     //  set { this.SetValue(HeadersVisibilityProperty, value); }
     //}
 
-    public static DependencyProperty ColumnResizedProperty = DependencyProperty.Register("ColumnResized", typeof(SizeChangedEventHandler), typeof(CJSGrid), new PropertyMetadata(null));
+    public static DependencyProperty ColumnResizedProperty = DependencyProperty.Register("ColumnResized", typeof(SizeChangedEventHandler), typeof(JSGrid), new PropertyMetadata(null));
     public SizeChangedEventHandler ColumnResized {
       get { return (SizeChangedEventHandler)this.GetValue(ColumnResizedProperty); }
       set { this.SetValue(ColumnResizedProperty, value); }
     }
 
-    public static DependencyProperty TestTxtProperty = DependencyProperty.Register("TestTxt", typeof(String), typeof(CJSGrid), new PropertyMetadata(String.Empty));
+    public static DependencyProperty TestTxtProperty = DependencyProperty.Register("TestTxt", typeof(String), typeof(JSGrid), new PropertyMetadata(String.Empty));
     public String TestTxt {
       get { return (String)this.GetValue(TestTxtProperty); }
       set { this.SetValue(TestTxtProperty, value); }
     }
 
-    public static DependencyProperty HeadersVisibilityProperty = DependencyProperty.Register("HeadersVisibility", typeof(DataGridHeadersVisibility), typeof(CJSGrid), new PropertyMetadata(DataGridHeadersVisibility.All));
+    public static DependencyProperty HeadersVisibilityProperty = DependencyProperty.Register("HeadersVisibility", typeof(DataGridHeadersVisibility), typeof(JSGrid), new PropertyMetadata(DataGridHeadersVisibility.All));
     public DataGridHeadersVisibility HeadersVisibility {
       get { return (DataGridHeadersVisibility)this.GetValue(HeadersVisibilityProperty); }
       set { this.SetValue(HeadersVisibilityProperty, value); }
     }
 
-    public static DependencyProperty RowHeaderWidthProperty = DependencyProperty.Register("RowHeaderWidth", typeof(Int32), typeof(CJSGrid), new PropertyMetadata(40));
+    public static DependencyProperty RowHeaderWidthProperty = DependencyProperty.Register("RowHeaderWidth", typeof(Int32), typeof(JSGrid), new PropertyMetadata(40));
     public Int32 RowHeaderWidth {
       get { return (Int32)this.GetValue(RowHeaderWidthProperty); }
       set { this.SetValue(RowHeaderWidthProperty, value); }
     }
 
-    //public static DependencyProperty SelectedIndexProperty = DependencyProperty.Register("SelectedIndex", typeof(Int32), typeof(CJSGrid), new PropertyMetadata(-1));
+    //public static DependencyProperty SelectedIndexProperty = DependencyProperty.Register("SelectedIndex", typeof(Int32), typeof(JSGrid), new PropertyMetadata(-1));
     public Int32 SelectedIndex {
       get { return this._selectedIndex; }
       set {
@@ -744,7 +743,7 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    //public static DependencyProperty SelectedItemProperty = DependencyProperty.Register("SelectedItem", typeof(Object), typeof(CJSGrid), new PropertyMetadata(null));
+    //public static DependencyProperty SelectedItemProperty = DependencyProperty.Register("SelectedItem", typeof(Object), typeof(JSGrid), new PropertyMetadata(null));
     public CRTObject SelectedItem {
       get { return this._selectedItem; }
       set {
@@ -802,7 +801,7 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    //public static DependencyProperty ItemsSourceProperty = DependencyProperty.Register("ItemsSource", typeof(IEnumerable), typeof(CJSGrid), new PropertyMetadata(null));
+    //public static DependencyProperty ItemsSourceProperty = DependencyProperty.Register("ItemsSource", typeof(IEnumerable), typeof(JSGrid), new PropertyMetadata(null));
     public IEnumerable ItemsSource {
       get {
         return (this._dataGrid != null) ? this._dataGrid.ItemsSource : null;
@@ -861,7 +860,7 @@ namespace Bio.Framework.Client.SL {
       get { return this._selectedItems; }
     }
 
-    public static DependencyProperty SelectionModeProperty = DependencyProperty.Register("SelectionMode", typeof(DataGridSelectionMode), typeof(CJSGrid), new PropertyMetadata(DataGridSelectionMode.Single));
+    public static DependencyProperty SelectionModeProperty = DependencyProperty.Register("SelectionMode", typeof(DataGridSelectionMode), typeof(JSGrid), new PropertyMetadata(DataGridSelectionMode.Single));
     public DataGridSelectionMode SelectionMode {
       get { return (DataGridSelectionMode)this.GetValue(SelectionModeProperty); }
       set { this.SetValue(SelectionModeProperty, value); }
@@ -959,6 +958,17 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
+    public IEnumerable<CRTObject> DS {
+      get { return this._jsClient.DS; }
+    }
+
+    public Boolean Multiselection {
+      get { return this._jsClient.JSMetadata.multiselection; }
+    }
+
+    public CJsonStoreMetadataFieldDef FieldDefByName(String fieldName) {
+      return this._jsClient.FieldDefByName(fieldName);
+    }
 
     public event JSClientEventHandler<AjaxResponseEventArgs> OnAfterLoadData;
     void _doOnAfterLoadData(JsonStoreClient sender, AjaxResponseEventArgs e) {
@@ -971,6 +981,13 @@ namespace Bio.Framework.Client.SL {
         this._prepareGridAfterLoadData();
       }
       this.DataIsLoaded = true;
+
+      if (this._jsClient.JSMetadata != null) {
+        var v_pk_fld = this._jsClient.JSMetadata.getPKFields().FirstOrDefault();
+        if (v_pk_fld != null)
+          this._multiselection.ValueField = v_pk_fld.name;
+      }
+
     }
 
     private Int32 _curRowIndex = -1;
@@ -1223,7 +1240,7 @@ namespace Bio.Framework.Client.SL {
     /// </summary>
     public CJsonStoreMetadata jsMetadata {
       get {
-        return this._jsClient.jsMetadata;
+        return this._jsClient.JSMetadata;
       }
     }
 
@@ -1290,16 +1307,16 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    private CJSGridConfig _creCfg() {
-      var v_rslt = new CJSGridConfig();
+    private JSGridConfig _creCfg() {
+      var v_rslt = new JSGridConfig();
       if (this._jsClient != null)
-        v_rslt.pageSize = this.DefaultPageSize;
-      v_rslt.refresh(this);
+        v_rslt.PageSize = this.DefaultPageSize;
+      v_rslt.Refresh(this);
       return v_rslt;
     }
 
     private void _editCfg() {
-      var v_cfgEditor = new CJSGridProps();
+      var v_cfgEditor = new JSGridProps();
       v_cfgEditor.Title = "Выбор колонок таблицы";
       v_cfgEditor.Closed += new EventHandler((Object sender, EventArgs e) => {
         if (((FloatableWindow)sender).DialogResult == true) {
@@ -1317,10 +1334,10 @@ namespace Bio.Framework.Client.SL {
     private void _applyCfgToGrid() {
       this._dataGrid.disableColumnsChangedEvents();
       try {
-        if ((this._cfg == null) || !String.Equals(this._generateGridUID(), this._cfg.uid))
+        if ((this._cfg == null) || !String.Equals(this._generateGridUID(), this._cfg.UID))
           this._restoreCfg();
         if (this._cfg != null) {
-          foreach (var c in this._cfg.columnDefs) {
+          foreach (var c in this._cfg.ColumnDefs) {
             var v_col = this.Columns.Where((cc) => {
               return String.Equals(((DataGridBoundColumn)cc).Binding.Path.Path, c.FieldName, StringComparison.CurrentCultureIgnoreCase);
             }).FirstOrDefault();
@@ -1495,8 +1512,8 @@ namespace Bio.Framework.Client.SL {
   }
 
   public class RHConverter : IValueConverter {
-    private CJSGrid _owner = null;
-    public RHConverter(CJSGrid owner) {
+    private JSGrid _owner = null;
+    public RHConverter(JSGrid owner) {
       this._owner = owner;
     }
     public Object Convert(Object value, Type targetType, Object parameter, CultureInfo culture) {

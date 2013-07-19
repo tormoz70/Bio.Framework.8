@@ -9,7 +9,7 @@
   /// <summary>
   /// Предоставляет возможность запускать на сервере долгоиграющие отчеты.
   /// </summary>
-  public class CRptClient:CRmtClientBase {
+  public class RptClient:RmtClientBase {
 
 
     /// <summary>
@@ -18,9 +18,9 @@
     /// <param name="ajaxMng">ссылка на AjaxMng</param>
     /// <param name="bioCode">Код</param>
     /// <param name="title">Заголовок</param>
-    public CRptClient(IAjaxMng ajaxMng, String bioCode, String title)
+    public RptClient(IAjaxMng ajaxMng, String bioCode, String title)
       : base(ajaxMng, bioCode, title) {
-      this._requestType = RequestType.Rpt;
+      this.requestType = RequestType.Rpt;
     }
 
 

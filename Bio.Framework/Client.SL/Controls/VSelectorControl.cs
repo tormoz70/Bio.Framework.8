@@ -1,27 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using Bio.Helpers.Common.Types;
-using System.ComponentModel;
-using System.Threading;
 using Bio.Framework.Client.SL.JSPropertyGrid;
 using Bio.Helpers.Common;
 using PropertyMetadata = System.Windows.PropertyMetadata;
 
 namespace Bio.Framework.Client.SL {
-  public class CVSelectorControl : ASelectorValueControl {
+  public class VSelectorControl : ASelectorValueControl {
 
 
-    public CVSelectorControl() {
-      this.DefaultStyleKey = typeof(CVSelectorControl);
+    public VSelectorControl() {
+      this.DefaultStyleKey = typeof(VSelectorControl);
     }
 
     protected override void _onSelectionChanged() {
@@ -36,25 +27,22 @@ namespace Bio.Framework.Client.SL {
         if (view == null) {
           throw new EBioException("[view] not found. Parent form mast implement IPluginComponent interface!");
         }
-        this._ownerPlugin = (view as IPluginComponent).ownerPlugin;
-        //this._selection = new VSingleSelection();
+        this._ownerPlugin = ((IPluginComponent) view).ownerPlugin;
 
         this._txt = this.GetTemplateChild("tbxText") as TextBox;
         if (this._txt != null) {
-          this._txt.KeyDown += new KeyEventHandler((s, e) => {
+          this._txt.KeyDown += (s, e) => {
             if ((e.Key == Key.Delete) || (e.Key == Key.Back)) {
               this.Value = null;
             }
-          });
+          };
         }
 
         var btn = this.GetTemplateChild("btnSelect") as Button;
         if (btn != null)
-          btn.Click += new RoutedEventHandler((s, a) => {
-            this._showSelector();
-          });
+          btn.Click += (s, a) => this._showSelector();
 
-        this._get_selector((selector) => {
+        this._get_selector(selector => {
           if (this.IsMultiselector) {
             this._selection = new VMultiSelection {
               Value = this.Value
@@ -75,19 +63,19 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    public static DependencyProperty SelectorPluginProperty = DependencyProperty.Register("SelectorPlugin", typeof(String), typeof(CVSelectorControl), new PropertyMetadata(String.Empty));
+    public static DependencyProperty SelectorPluginProperty = DependencyProperty.Register("SelectorPlugin", typeof(String), typeof(VSelectorControl), new PropertyMetadata(String.Empty));
     public override String SelectorPlugin {
       get { return (String)this.GetValue(SelectorPluginProperty); }
       set { this.SetValue(SelectorPluginProperty, value); }
     }
 
-    public static DependencyProperty IsMultiselectorProperty = DependencyProperty.Register("IsMultiselector", typeof(Boolean), typeof(CVSelectorControl), new PropertyMetadata(false));
+    public static DependencyProperty IsMultiselectorProperty = DependencyProperty.Register("IsMultiselector", typeof(Boolean), typeof(VSelectorControl), new PropertyMetadata(false));
     public override Boolean IsMultiselector {
       get { return (Boolean)this.GetValue(IsMultiselectorProperty); }
       set { this.SetValue(IsMultiselectorProperty, value); }
     }
 
-    public static DependencyProperty ValueFieldProperty = DependencyProperty.Register("ValueField", typeof(String), typeof(CVSelectorControl), new PropertyMetadata(String.Empty));
+    public static DependencyProperty ValueFieldProperty = DependencyProperty.Register("ValueField", typeof(String), typeof(VSelectorControl), new PropertyMetadata(String.Empty));
     public override String ValueField {
       get { return (String)this.GetValue(ValueFieldProperty); }
       set {
@@ -97,7 +85,7 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    public static DependencyProperty DisplayFieldProperty = DependencyProperty.Register("DisplayField", typeof(String), typeof(CVSelectorControl), new PropertyMetadata(String.Empty));
+    public static DependencyProperty DisplayFieldProperty = DependencyProperty.Register("DisplayField", typeof(String), typeof(VSelectorControl), new PropertyMetadata(String.Empty));
     public override String DisplayField {
       get { return (String)this.GetValue(DisplayFieldProperty); }
       set {
@@ -107,13 +95,13 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    public static DependencyProperty OwnerPluginProperty = DependencyProperty.Register("OwnerPlugin", typeof(IPlugin), typeof(CVSelectorControl), new PropertyMetadata(default(IPlugin)));
+    public static DependencyProperty OwnerPluginProperty = DependencyProperty.Register("OwnerPlugin", typeof(IPlugin), typeof(VSelectorControl), new PropertyMetadata(default(IPlugin)));
     public IPlugin OwnerPlugin {
       get { return (IPlugin)this.GetValue(OwnerPluginProperty); }
       set { this.SetValue(OwnerPluginProperty, value); }
     }
 
-    public static readonly DependencyProperty ValueProperty = DependencyProperty.Register("Value", typeof(Object), typeof(CVSelectorControl), new PropertyMetadata(default(Object), ValuePropertyChangedCallback));
+    public static readonly DependencyProperty ValueProperty = DependencyProperty.Register("Value", typeof(Object), typeof(VSelectorControl), new PropertyMetadata(default(Object), ValuePropertyChangedCallback));
     public override Object Value {
       get {
         return this.GetValue(ValueProperty);
@@ -134,7 +122,7 @@ namespace Bio.Framework.Client.SL {
     }
 
     private static void ValuePropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-      ((CVSelectorControl)d)._doOnValuePropertyChanged(e);
+      ((VSelectorControl)d)._doOnValuePropertyChanged(e);
     }
 
   }

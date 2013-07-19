@@ -11,21 +11,21 @@
     <ResourceDictionary Source="/Bio.Framework.Client.SL.Controls;component/Themes/CFilterTemplate.xaml"/>
   </ResourceDictionary.MergedDictionaries>
 
-  <Style TargetType="local:CJSGrid">
+  <Style TargetType="local:JSGrid">
     <Setter Property="Cursor" Value="Hand"/>
     <Setter Property="Template" Value="{StaticResource CJSGridControlTemplate}"/>
   </Style>
 
-  <Style TargetType="local:CJSTree">
+  <Style TargetType="local:JSTree">
     <Setter Property="Template" Value="{StaticResource CJSTreeControlTemplate}" />
     <!--<Setter Property="ItemTemplate" Value="{StaticResource CTreeItemTemplate}" />-->
   </Style>
 
-  <Style TargetType="local:CVSelectorControl">
+  <Style TargetType="local:VSelectorControl">
     <Setter Property="Template" Value="{StaticResource CVSelectorControlTemplate}"/>
   </Style>
 
-  <Style TargetType="local:CFilterControl">
+  <Style TargetType="local:FilterControl">
     <Setter Property="Template" Value="{StaticResource CFilterControlTemplate}"/>
   </Style>
 

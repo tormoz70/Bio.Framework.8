@@ -16,7 +16,7 @@
     <TextBlock Text="{Binding Name}" Cursor="Hand" />
   </common:HierarchicalDataTemplate>
 
-  <ControlTemplate x:Key="CJSTreeControlTemplate" TargetType="local:CJSTree">
+  <ControlTemplate x:Key="CJSTreeControlTemplate" TargetType="local:JSTree">
       <local:CTreeView x:Name="treeView" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
                        ItemsSource="{TemplateBinding ItemsSource}" 
                        ItemTemplate="{StaticResource CTreeItemTemplate}" />

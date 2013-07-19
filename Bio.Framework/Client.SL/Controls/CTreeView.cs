@@ -1,15 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
-using Bio.Helpers.Common.Types;
 
 namespace Bio.Framework.Client.SL {
 
@@ -24,10 +15,10 @@ namespace Bio.Framework.Client.SL {
     }
 
     protected override void PrepareContainerForItemOverride(DependencyObject element, Object item) {
-      CTreeViewItem treeViewItemExtended = (CTreeViewItem)element;
+      var treeViewItemExtended = (CTreeViewItem)element;
       treeViewItemExtended.ParentTreeView = this;
-      if (item is CJSTreeItemBase)
-        (item as CJSTreeItemBase).Container = (CTreeViewItem)element;
+      if (item is JSTreeItemBase)
+        (item as JSTreeItemBase).Container = (CTreeViewItem)element;
       base.PrepareContainerForItemOverride(element, item);
     }
 
@@ -47,24 +38,14 @@ namespace Bio.Framework.Client.SL {
       if (collapsed != null) collapsed(sender, e);
     }
 
-    //internal void InvokeBeforeLoadItemChildren(object sender, BeforeLoadItemChildrenEventArgs e) {
-    //  EventHandler<BeforeLoadItemChildrenEventArgs> eve = this.BeforeLoadItemChildren;
-    //  if (eve != null) eve(sender, e);
-    //}
   }
   public class CTreeViewItem : TreeViewItem {
 
-    //public event EventHandler<BeforeLoadItemChildrenEventArgs> BeforeLoadChildren;
 
     public CTreeViewItem() {
-      this.Expanded += new RoutedEventHandler(CTreeViewItem_Expanded);
-      this.Collapsed += new RoutedEventHandler(CTreeViewItem_Collapsed);
-      //this.BeforeLoadChildren += new EventHandler<BeforeLoadItemChildrenEventArgs>(CTreeViewItem_BeforeLoadChildren);
+      this.Expanded += CTreeViewItem_Expanded;
+      this.Collapsed += CTreeViewItem_Collapsed;
     }
-
-    //void CTreeViewItem_BeforeLoadChildren(object sender, BeforeLoadItemChildrenEventArgs e) {
-    //  this.ParentTreeView.InvokeBeforeLoadItemChildren(sender, e);
-    //}
 
     void CTreeViewItem_Collapsed(object sender, RoutedEventArgs e) {
       this.ParentTreeView.InvokeContainerCollapsed(sender, e);
@@ -86,10 +67,10 @@ namespace Bio.Framework.Client.SL {
     public CTreeView ParentTreeView { set; get; }
 
     protected override void PrepareContainerForItemOverride(DependencyObject element, object item) {
-      CTreeViewItem treeViewItemExtended = (CTreeViewItem)element;
+      var treeViewItemExtended = (CTreeViewItem)element;
       treeViewItemExtended.ParentTreeView = this.ParentTreeView;
-      if (item is CJSTreeItemBase)
-        (item as CJSTreeItemBase).Container = (CTreeViewItem)element;
+      if (item is JSTreeItemBase)
+        (item as JSTreeItemBase).Container = (CTreeViewItem)element;
       base.PrepareContainerForItemOverride(element, item);
     }
 

@@ -1,25 +1,13 @@
 ﻿using System;
-using System.Net;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Ink;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 using Bio.Helpers.Common.Types;
 using System.Collections.ObjectModel;
 using Bio.Framework.Packets;
-using System.Windows.Threading;
-using Bio.Helpers.Common;
-using System.ComponentModel;
 
 namespace Bio.Framework.Client.SL.Old {
 
   public class CTreeSourceItemBase {
-    internal CJSTree _ownerTree { get; set; }
-    internal IAjaxMng _ajaxMng { get; set; }
+    internal JSTree ownerTree { get; set; }
+    internal IAjaxMng ajaxMng { get; set; }
     public CTreeSourceItemBase Parent { get; set; }
     public Object ID { get; set; }
     public String Name { get; set; }
@@ -32,49 +20,46 @@ namespace Bio.Framework.Client.SL.Old {
     }
     public CTreeSourceItemBase(IAjaxMng ajaxMng)
       : this() {
-      this._ajaxMng = ajaxMng;
+      this.ajaxMng = ajaxMng;
     }
   }
 
   public class CTreeSourceItem<T> : CTreeSourceItemBase where T : CTreeSourceItemBase, new() {
-    private JsonStoreClient _cli = null;
+    private readonly JsonStoreClient _cli;
 
-    public CTreeSourceItem() : base() {
+    public CTreeSourceItem() {
       this._cli = new JsonStoreClient();
     }
 
-    public CTreeSourceItem(CJSTree ownerTree)
+    public CTreeSourceItem(JSTree ownerTree)
       : this() {
       this.OwnerTreeView = ownerTree;
     }
 
     public IAjaxMng AjaxMng { 
       get {
-        T v_root = this._getRoot(this as T);
-        return v_root._ajaxMng;
+        var v_root = this._getRoot(this as T);
+        return v_root.ajaxMng;
       }
       set {
-        T v_root = this._getRoot(this as T);
-        v_root._ajaxMng = value;
+        var v_root = this._getRoot(this as T);
+        v_root.ajaxMng = value;
       }
     }
 
-    public CJSTree OwnerTreeView {
+    public JSTree OwnerTreeView {
       get {
         T v_root = this._getRoot(this as T);
-        return v_root._ownerTree;
+        return v_root.ownerTree;
       }
       set {
         T v_root = this._getRoot(this as T);
-        v_root._ownerTree = value;
+        v_root.ownerTree = value;
       }
     }
 
     private T _getRoot(T item) {
-      if (item.Parent == null)
-        return item as T;
-      else
-        return this._getRoot(item.Parent as T);
+      return item.Parent == null ? item : this._getRoot(item.Parent as T);
     }
 
     public T RootItem {
@@ -84,10 +69,7 @@ namespace Bio.Framework.Client.SL.Old {
     }
 
     private Int32 _calcLevel(T parent, Int32 level) {
-      if (parent == null)
-        return level;
-      else
-        return this._calcLevel(parent.Parent as T, level + 1);
+      return parent == null ? level : this._calcLevel(parent.Parent as T, level + 1);
     }
 
     public Int32 Level {
@@ -97,7 +79,7 @@ namespace Bio.Framework.Client.SL.Old {
     }
 
     public T Add(Object id, String name, params T[] items) {
-      T newItem = new T() {
+      var newItem = new T {
         Loaded = false,
         Parent = this,
         ID = id,
@@ -107,17 +89,17 @@ namespace Bio.Framework.Client.SL.Old {
         item.Parent = this;
         newItem.Items.Add(item);
 
-      };
+      }
       this.Items.Add(newItem);
       return newItem;
     }
 
     protected virtual T doOnLoadItem(CJsonStoreMetadata metadata, JsonStoreRow row) {
-      int bgnIndx = 0;
+      var bgnIndx = 0;
       if(metadata.PKDefined)
         bgnIndx = 1;
-      Object vID = row.Values[bgnIndx];
-      T item = this.Add(vID, row.Values[bgnIndx + 1] as String);
+      var vID = row.Values[bgnIndx];
+      var item = this.Add(vID, row.Values[bgnIndx + 1] as String);
       item.BioCode = this.BioCode;
       return item;
     }
@@ -138,17 +120,16 @@ namespace Bio.Framework.Client.SL.Old {
 
       this.doOnBeforeLoadItem(ref prms);
 
-      BeforeLoadItemChildrenEventArgs args = new BeforeLoadItemChildrenEventArgs {
+      var args = new BeforeLoadItemChildrenEventArgs {
         Params = prms
       };
-      //this.OwnerTreeView.processBeforeLoadItemChildren(this, args);
       if (args.Cancel)
         return;
 
       this._cli.Load(args.Params, (s, a) => {
         //this.OwnerTreeView.Dispatcher.BeginInvoke(() => {
         if (a.Response.Success) {
-          JsonStoreResponse rsp = a.Response as JsonStoreResponse;
+          var rsp = a.Response as JsonStoreResponse;
           if (rsp != null) {
             this.Items.Clear();
             foreach (var r in rsp.packet.rows) {

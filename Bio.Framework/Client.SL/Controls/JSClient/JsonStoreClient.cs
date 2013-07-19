@@ -69,7 +69,7 @@ namespace Bio.Framework.Client.SL {
 
   public class JsonStoreClient {
 
-    //private CJSGrid _grid { get; set; }
+    //private JSGrid _grid { get; set; }
 
     public event JSClientEventHandler<JSClientBeforeMonRowEventArgs> OnBeforeInsertRow;
     public event JSClientEventHandler<JSClientAfterMonRowEventArgs> OnAfterInsertRow;
@@ -163,7 +163,7 @@ namespace Bio.Framework.Client.SL {
     public List<JSChangedRow> Changes { get { return this._dsChanges; } }
     //public String GroupDefinition { get; set; }
 
-    //public CJSGrid grid {
+    //public JSGrid grid {
     //  get {
     //    return this._grid;
     //  }
@@ -852,9 +852,9 @@ namespace Bio.Framework.Client.SL {
       if (this.DS0 != null) {
         var rows = this.DS0.Cast<CRTObject>().ToArray();
         for (var i = 0; i < rows.Length; i++) {
-          var v_rowPos = i + this.StartFrom;
-          if (_checkFilter(rows[i], v_rowPos, locate)) {
-            locate.fromPosition = v_rowPos + 1;
+          var rowPos = i + this.StartFrom;
+          if (_checkFilter(rows[i], rowPos, locate)) {
+            locate.fromPosition = rowPos + 1;
             return rows[i];
           }
         }
@@ -888,7 +888,7 @@ namespace Bio.Framework.Client.SL {
     //  }
     //}
 
-    private CRTObject _lastLocatedRow = null;
+    private CRTObject _lastLocatedRow;
     public void Locate(Params bioPrms, EventHandler<OnSelectEventArgs> callback, CJsonStoreFilter locate, Boolean forceRemote = false) {
       CRTObject v_row = null;
       if (!forceRemote)
@@ -950,10 +950,10 @@ namespace Bio.Framework.Client.SL {
     //}
 
     public event JSClientEventHandler<CancelEventArgs> BeforePostData;
-    private void doBeforPostData(ref Boolean cancel) {
+    private void _doBeforPostData(ref Boolean cancel) {
       var handler = this.BeforePostData;
       if (handler != null) {
-        CancelEventArgs args = new CancelEventArgs {
+        var args = new CancelEventArgs {
           Cancel = cancel
         };
         handler(this, args);
@@ -962,7 +962,7 @@ namespace Bio.Framework.Client.SL {
     }
 
     public event JSClientEventHandler<AjaxResponseEventArgs> AfterPostData;
-    private void doAfterPostData(AjaxResponseEventArgs args) {
+    private void _doAfterPostData(AjaxResponseEventArgs args) {
       var handler = this.AfterPostData;
       if (handler != null)
         handler(this, args);
@@ -974,7 +974,7 @@ namespace Bio.Framework.Client.SL {
           return String.Equals((String)TypeFactory.GetValueOfPropertyOfObject(itm, CS_INTERNAL_ROWUID_FIELD_NAME), row.InternalROWUID);
         });
         if (v_ds_row != null) {
-          for (int i = 0; i < packet.metaData.fields.Count; i++) {
+          for (var i = 0; i < packet.metaData.fields.Count; i++) {
             var fd = packet.metaData.fields[i];
             var v_value = row.Values[i];
             var v_prop = TypeFactory.FindPropertyOfObject(v_ds_row, fd.name);
@@ -1033,24 +1033,25 @@ namespace Bio.Framework.Client.SL {
 
     private JsonStoreRow _rowAsJSRow(JSChangedRow row) {
       if (row != null) {
-        String v_intRowUID = TypeFactory.GetValueOfPropertyOfObject(row.CurRow, CS_INTERNAL_ROWUID_FIELD_NAME) as String;
-        var v_rslt = new JsonStoreRow() { InternalROWUID = v_intRowUID, ChangeType = row.State };
+        var intRowUID = TypeFactory.GetValueOfPropertyOfObject(row.CurRow, CS_INTERNAL_ROWUID_FIELD_NAME) as String;
+        var v_rslt = new JsonStoreRow { InternalROWUID = intRowUID, ChangeType = row.State };
         foreach (var fd in this._metadata.fields) {
-          Object v_value = TypeFactory.GetValueOfPropertyOfObject(row.CurRow, fd.name);
+          var v_value = TypeFactory.GetValueOfPropertyOfObject(row.CurRow, fd.name);
           v_rslt.Values.Add(v_value);
         }
         return v_rslt;
-      } else
-        return null;
+      }
+      return null;
     }
+
     private JsonStoreRows _getChangesAsJSRows() {
-      JsonStoreRows v_rows = new JsonStoreRows();
+      var rows = new JsonStoreRows();
       foreach (var c in this._dsChanges) {
         var v_row = this._rowAsJSRow(c);
         if (v_row != null)
-          v_rows.Add(v_row);
+          rows.Add(v_row);
       }
-      return v_rows;
+      return rows;
     }
 
     private void _post(AjaxRequestDelegate callback, String trunsactionID, SQLTransactionCmd cmd) {
@@ -1059,8 +1060,8 @@ namespace Bio.Framework.Client.SL {
       if (String.IsNullOrEmpty(this.BioCode))
         throw new EBioException("Свойство \"bioCode\" должно быть определено!");
 
-      Boolean cancel = false;
-      this.doBeforPostData(ref cancel);
+      var cancel = false;
+      this._doBeforPostData(ref cancel);
       if (cancel) {
         return;
       }
@@ -1068,7 +1069,7 @@ namespace Bio.Framework.Client.SL {
       if (this.BioParams == null)
         this.BioParams = new Params();
 
-      JsonStoreRows v_rows = this._getChangesAsJSRows();
+      var v_rows = this._getChangesAsJSRows();
       if (v_rows.Count > 0) {
         JsonStoreRequest reqst = new JsonStoreRequestPost {
           BioCode = this.BioCode,
@@ -1082,8 +1083,8 @@ namespace Bio.Framework.Client.SL {
           },
           Callback = (sndr, args) => {
             if (args.Response.Success) {
-              JsonStoreRequest rqst = args.Request as JsonStoreRequest;
-              JsonStoreResponse rsp = args.Response as JsonStoreResponse;
+              var rqst = args.Request as JsonStoreRequest;
+              var rsp = args.Response as JsonStoreResponse;
               if (rsp != null)
                 this._lastReturnedParams = (rsp.BioParams != null) ? rsp.BioParams.Clone() as Params : null;
               if ((rsp != null) && (rsp.packet != null)) {
@@ -1092,14 +1093,14 @@ namespace Bio.Framework.Client.SL {
               this._clearChanges();
             }
             if (callback != null) callback(this, args);
-            this.doAfterPostData(args);
+            this._doAfterPostData(args);
           }
         };
         this.AjaxMng.Request(reqst);
       } else {
-        var v_args = new AjaxResponseEventArgs() {
+        var v_args = new AjaxResponseEventArgs {
           Request = null,
-          Response = new AjaxResponse() {
+          Response = new AjaxResponse {
             Ex = null,
             Success = true,
             ResponseText = String.Empty
@@ -1107,7 +1108,7 @@ namespace Bio.Framework.Client.SL {
           Stream = null
         };
         if (callback != null) callback(this, v_args);
-        this.doAfterPostData(v_args);
+        this._doAfterPostData(v_args);
       }
     }
 
@@ -1121,7 +1122,7 @@ namespace Bio.Framework.Client.SL {
       this._post(callback, null, SQLTransactionCmd.Nop);
     }
 
-    public CJsonStoreMetadata jsMetadata {
+    public CJsonStoreMetadata JSMetadata {
       get {
         return this._metadata;
       }

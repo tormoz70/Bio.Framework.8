@@ -1,13 +1,10 @@
 ﻿namespace Bio.Framework.Client.SL {
   using System;
-  using Bio.Framework.Packets;
+  using Packets;
   using System.ComponentModel;
-  using Bio.Helpers.Common.Types;
-  using System.IO;
-  using Bio.Helpers.Common;
-  using System.Windows;
-  using Bio.Helpers.Controls.SL;
-  using Bio.Helpers.Ajax;
+  using Helpers.Common.Types;
+  using Helpers.Common;
+  using Helpers.Controls.SL;
   using System.Linq;
 
   public delegate void CRmtClientReadStateEventHandler(Object sender, BioResponse response);
@@ -16,10 +13,10 @@
   /// <summary>
   /// Предоставляет возможность запускать на сервере долгоиграющие отчеты.
   /// </summary>
-  public class CRmtClientBase {
+  public class RmtClientBase {
 
-    internal RequestType _requestType;
-    private CRmtStateReader _stateReader = null;
+    internal RequestType requestType;
+    private readonly RmtStateReader _stateReader;
 
     /// <summary>
     /// Если True, то отчет еще выполняется
@@ -32,35 +29,35 @@
     /// <param name="ajaxMng">ссылка на AjaxMng</param>
     /// <param name="bioCode">Код</param>
     /// <param name="title">Заголовок</param>
-    public CRmtClientBase(IAjaxMng ajaxMng, String bioCode, String title) {
+    public RmtClientBase(IAjaxMng ajaxMng, String bioCode, String title) {
       //this.Parent = pParen;
-      this.ajaxMng = ajaxMng;
-      this.bioCode = bioCode;
-      this.title = title;
-      this._stateReader = new CRmtStateReader(this);
+      this.AjaxMng = ajaxMng;
+      this.BioCode = bioCode;
+      this.Title = title;
+      this._stateReader = new RmtStateReader(this);
       this._stateReader.OnRead += this.doOnReadState;
     }
 
     /// <summary>
     /// Код 
     /// </summary>
-    public String bioCode { get; set; }
+    public String BioCode { get; set; }
     /// <summary>
     /// Заголовок 
     /// </summary>
-    public String title { get; set; }
+    public String Title { get; set; }
     /// <summary>
     /// Имя и путь к файлу результата
     /// </summary>
-    public String resultFileName { get; set; }
+    public String ResultFileName { get; set; }
 
     /// <summary>
     /// Ссылка на менеджер асинхронных запросов.
     /// </summary>
-    public IAjaxMng ajaxMng { get; set; }
+    public IAjaxMng AjaxMng { get; set; }
 
     private RemoteProcState _lastState = RemoteProcState.Redy;
-    private Boolean _isDone = false;
+    private Boolean _isDone;
     /// <summary>
     /// Запуск монитора
     /// </summary>
@@ -70,21 +67,19 @@
       }
     }
 
-    private CRmtClientView _form = null;
+    private RmtClientView _form;
     protected virtual void _doBeforeRun() {
       if (this._form == null) {
-        this._form = new CRmtClientView(this);
+        this._form = new RmtClientView(this);
       }
       this._isDone = false;
       this._lastPipedLine = null;
-      this._form.Title = this.title;
-      this._form.clearLog();
+      this._form.Title = this.Title;
+      this._form.ClearLog();
       if (!this._form.IsVisible)
         this._form.ShowDialog();
-      //this._form.BringToFront();
-      //this._form.doOnChangeState(RemoteProcState.Starting);
-      this._form.doOnChangeState(new RemoteProcessStatePack { State = RemoteProcState.Starting });
-      this._form.addLineToLog(enumHelper.GetFieldDesc(RemoteProcState.Starting) + "\n");
+      this._form.DoOnChangeState(new RemoteProcessStatePack { State = RemoteProcState.Starting });
+      this._form.AddLineToLog(enumHelper.GetFieldDesc(RemoteProcState.Starting) + "\n");
     }
 
     public event CRmtClientFinishedEventHandler OnFinished;
@@ -94,11 +89,11 @@
         v_eve(this, response);
     }
 
-    private String _lastPipedLine = null;
-    private void _appentLastPipedLine(RemoteProcessStatePack losp, ref String v_state) {
+    private String _lastPipedLine;
+    private void _appentLastPipedLine(RemoteProcessStatePack losp, ref String state) {
       if ((losp.lastPipedLines != null) && (losp.lastPipedLines.Length > 0))
         this._lastPipedLine = losp.lastPipedLines.LastOrDefault();
-      v_state = v_state + (!String.IsNullOrEmpty(this._lastPipedLine) ? "\n" + this._lastPipedLine : null);
+      state = state + (!String.IsNullOrEmpty(this._lastPipedLine) ? "\n" + this._lastPipedLine : null);
     }
     private String _resultFileReferece = null;
     private void _doOnReadState(Object sender, BioResponse response) {
@@ -117,25 +112,25 @@
               if ((losp.State == RemoteProcState.Running) || this._isDone)
                 state = String.Format("{0} - [{1}]", curStateDesc, duration);
               this._appentLastPipedLine(losp, ref state);
-              this._form.changeLastLogLine(state + "\n");
-              this._form.doOnChangeState(losp);
+              this._form.ChangeLastLogLine(state + "\n");
+              this._form.DoOnChangeState(losp);
               if (losp.State == RemoteProcState.Done) {
-                this._form.addLineToLog("Выполнение успешно завершено.\n");
+                this._form.AddLineToLog("Выполнение успешно завершено.\n");
                 if (losp.HasResultFile) {
-                  this._form.addLineToLog("Для просмотра результата нажмите кнопку \"Открыть результат\".");
+                  this._form.AddLineToLog("Для просмотра результата нажмите кнопку \"Открыть результат\".");
 
                   String prms = ajaxUTL.prepareRequestParams(new RmtClientRequest {
-                    RequestType = this._requestType,
-                    BioCode = this.bioCode,
+                    RequestType = this.requestType,
+                    BioCode = this.BioCode,
                     cmd = RmtClientRequestCmd.GetResult
                   });
-                  this._resultFileReferece = this.ajaxMng.Env.ServerUrl + "?" + prms;
+                  this._resultFileReferece = this.AjaxMng.Env.ServerUrl + "?" + prms;
 
                 }
               } else if (losp.State == RemoteProcState.Breaked) {
-                this._form.addLineToLog("Прервано пользователем.\n");
+                this._form.AddLineToLog("Прервано пользователем.\n");
               } else if (losp.State == RemoteProcState.Error) {
-                this._form.addLineToLog(msgBx.formatError(losp.Ex));
+                this._form.AddLineToLog(msgBx.formatError(losp.Ex));
               }
               if (this._isDone)
                 this._doOnFinished(response);
@@ -145,15 +140,11 @@
           if (vEveRead != null)
             vEveRead(sender, response);
         } else {
-
           if (response.Success)
             throw new EBioException("Сервер не вернул ожидаемый ответ!");
-          else {
-            if (response.Ex != null)
-              throw response.Ex;
-            else
-              throw new EBioException("Неизвестная ошибка на сервере!");
-          }
+          if (response.Ex != null)
+            throw response.Ex;
+          throw new EBioException("Неизвестная ошибка на сервере!");
         }
       } catch (Exception ex) {
         this._gotoErrorState("Ошибка при обработке ответа на запуск", ex);
@@ -163,24 +154,20 @@
     }
 
     public event CRmtClientReadStateEventHandler OnReadState;
-    protected virtual void doOnReadState(Object sender, CRmtStateReaderEventArgs args) {
-      this._doOnReadState(sender, args.response);
-      if (!this.IsRunning) {
-        args.cmd = RmtMonitorCommand.Break;
-      } else
-        args.cmd = RmtMonitorCommand.Continue;
+    protected virtual void doOnReadState(Object sender, RmtStateReaderEventArgs args) {
+      this._doOnReadState(sender, args.Response);
+      args.Cmd = !this.IsRunning ? RmtMonitorCommand.Break : RmtMonitorCommand.Continue;
     }
 
     private void _gotoErrorState(String msg, Exception ex) {
       if (this._form != null) {
-        //this._form.doOnChangeState(RemoteProcState.Error);
-        this._form.doOnChangeState(new RemoteProcessStatePack { State = RemoteProcState.Error });
-        this._form.changeLastLogLine(msg + ":\n");
-        this._form.addLineToLog(msgBx.formatError(EBioException.CreateIfNotEBio(ex)));
+        this._form.DoOnChangeState(new RemoteProcessStatePack { State = RemoteProcState.Error });
+        this._form.ChangeLastLogLine(msg + ":\n");
+        this._form.AddLineToLog(msgBx.formatError(EBioException.CreateIfNotEBio(ex)));
       }
     }
 
-    public CRmtStateReader StateReader {
+    public RmtStateReader StateReader {
       get {
         return this._stateReader;
       }
@@ -189,9 +176,9 @@
 
     protected T creRequestOfClient<T>(RmtClientRequestCmd cmd, Params bioParams, Boolean silent, AjaxRequestDelegate callback) where T : RmtClientRequest, new() {
       var rqst = new T {
-        RequestType = this._requestType,
-        title = this.title,
-        BioCode = this.bioCode,
+        RequestType = this.requestType,
+        title = this.Title,
+        BioCode = this.BioCode,
         BioParams = bioParams,
         cmd = cmd,
         Silent = silent,
@@ -215,7 +202,7 @@
     /// </summary>
     internal void _sendCommand(RmtClientRequestCmd cmd, Params bioParams, AjaxRequestDelegate callback) {
       try {
-        if (this.ajaxMng == null)
+        if (this.AjaxMng == null)
           throw new ArgumentNullException("AjaxMng", "Свойство должно быть задано.");
         
         if (rmtUtl.IsRunning(this._lastState)) {
@@ -225,9 +212,8 @@
             return;
           }
         }
-        //this._form.addLineToLog(Utl.GetEnumFieldDesc<RemoteProcState>(cmd) + "\n");
         var rqst = this.createRequest(cmd, bioParams, true,
-          new AjaxRequestDelegate((sndr, args) => {
+          (sndr, args) => {
             var request = args.Request as RmtClientRequest;
             var response = args.Response as BioResponse;
 
@@ -235,9 +221,9 @@
               if (request.cmd == RmtClientRequestCmd.Run) {
                 if (response.Success) {
                   if (this._form != null) {
-                    this._form.changeLastLogLine("Запуск выполнен успешно.\n");
-                    this._form.addLineToLog("Состояние: ");
-                    this._form.addLineToLog("Запрос...");
+                    this._form.ChangeLastLogLine("Запуск выполнен успешно.\n");
+                    this._form.AddLineToLog("Состояние: ");
+                    this._form.AddLineToLog("Запрос...");
                     this._doOnReadState(sndr, response);
                   }
                   this.doOnRmtProcRunnedSuccess(response);
@@ -254,13 +240,13 @@
 
             if (callback != null)
               callback(sndr, args);
-          })
+          }
       );
 
         //this._form.changeLastLogLine("Запрос...");
         if (cmd == RmtClientRequestCmd.Run)
           this.doOnRmtProcBeforeRun(rqst);
-        this.ajaxMng.Request(rqst);
+        this.AjaxMng.Request(rqst);
       } catch (Exception ex) {
         this._gotoErrorState("Неизвестная ошибка при отправке команды", ex);
 
@@ -268,7 +254,7 @@
     }
 
 
-    private Params _lastBioParams = null;
+    private Params _lastBioParams;
     /// <summary>
     /// Запуск
     /// </summary>

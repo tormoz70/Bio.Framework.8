@@ -9,7 +9,7 @@
   /// <summary>
   /// Предоставляет возможность запускать на сервере долгоиграющие процессы.
   /// </summary>
-  public class CLongOpClient:CRmtClientBase {
+  public class LongOpClient:RmtClientBase {
 
     public String PipeName { get; set; }
     public String SessionUID { get; set; }
@@ -21,12 +21,12 @@
     /// <param name="ajaxMng">ссылка на AjaxMng</param>
     /// <param name="bioCode">Код</param>
     /// <param name="title">Заголовок</param>
-    public CLongOpClient(IAjaxMng ajaxMng, String bioCode, String title)
+    public LongOpClient(IAjaxMng ajaxMng, String bioCode, String title)
       : base(ajaxMng, bioCode, title) {
-      this._requestType = RequestType.srvLongOp;
+      this.requestType = RequestType.srvLongOp;
     }
 
-    public CLongOpClient()
+    public LongOpClient()
       : this(null, null, null) {
     }
 

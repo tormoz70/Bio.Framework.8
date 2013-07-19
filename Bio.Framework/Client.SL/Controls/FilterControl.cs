@@ -1,47 +1,37 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using Bio.Helpers.Common.Types;
-using System.ComponentModel;
 using System.Threading;
-using System.Linq;
 using Bio.Helpers.Common;
 using PropertyMetadata = System.Windows.PropertyMetadata;
 
 namespace Bio.Framework.Client.SL {
-  public class CFilterControl : Control {
+  public class FilterControl : Control {
 
-    public CFilterControl() {
-      this.DefaultStyleKey = typeof(CFilterControl);
+    public FilterControl() {
+      this.DefaultStyleKey = typeof(FilterControl);
     }
 
-    public static DependencyProperty FilterFieldsProperty = DependencyProperty.Register("FilterFields", typeof(String), typeof(CFilterControl), new PropertyMetadata(String.Empty));
+    public static DependencyProperty FilterFieldsProperty = DependencyProperty.Register("FilterFields", typeof(String), typeof(FilterControl), new PropertyMetadata(String.Empty));
     public String FilterFields {
       get { return (String)this.GetValue(FilterFieldsProperty); }
       set { this.SetValue(FilterFieldsProperty, value); }
     }
 
-    public static DependencyProperty FilterCaptionsProperty = DependencyProperty.Register("FilterCaptions", typeof(String), typeof(CFilterControl), new PropertyMetadata(String.Empty));
+    public static DependencyProperty FilterCaptionsProperty = DependencyProperty.Register("FilterCaptions", typeof(String), typeof(FilterControl), new PropertyMetadata(String.Empty));
     public String FilterCaptions {
       get { return (String)this.GetValue(FilterCaptionsProperty); }
       set { this.SetValue(FilterCaptionsProperty, value); }
     }
 
-    public static DependencyProperty FilterValsProperty = DependencyProperty.Register("FilterVals", typeof(String), typeof(CFilterControl), new PropertyMetadata(String.Empty));
+    public static DependencyProperty FilterValsProperty = DependencyProperty.Register("FilterVals", typeof(String), typeof(FilterControl), new PropertyMetadata(String.Empty));
     public String FilterVals {
       get { 
         return this._bldVals();
       }
       set { 
-        var v_vals = Utl.SplitString(value, ccPathDelimeter);
+        var v_vals = Utl.SplitString(value, CC_PATH_DELIMETER);
         if ((this._vals != null) && (v_vals != null)) {
           for (int i = 0; i < this._vals.Length; i++) {
             if (i < v_vals.Length)
@@ -66,9 +56,9 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    private const String csHintFmt = "В фильтре можно задавать текстовые значения разделенные символом '/'.\n"+
+    private const String CS_HINT_FMT = "В фильтре можно задавать текстовые значения разделенные символом '/'.\n"+
                   "При этом фильтроваться будут соответствующие колонки таблицы в порядке их следования.\n{0}";
-    private const String ccPathDelimeter = "/";
+    private const String CC_PATH_DELIMETER = "/";
 
     private static String _fmtMskItm(String itm) {
       return "{" + itm + "}";
@@ -81,28 +71,28 @@ namespace Bio.Framework.Client.SL {
         line += delimiter + (str ?? String.Empty);
     }
     
-    private String[] _flds = null;
-    private String[] _capts = null;
-    private String[] _vals = null;
+    private String[] _flds;
+    private String[] _capts;
+    private String[] _vals;
     private String _bldVals() {
-      String v_lst = null;
-      for (int i = 0; i < this._vals.Length; i++) 
-        _appendStr(ref v_lst, this._vals[i], ccPathDelimeter);
-      return v_lst;
+      String lst = null;
+      foreach (var t in this._vals)
+        _appendStr(ref lst, t, CC_PATH_DELIMETER);
+      return lst;
     }
     private String _bldMask() {
-      String v_lst = null;
-      for (int i = 0; i < this._capts.Length; i++ ){
+      String lst = null;
+      for (var i = 0; i < this._capts.Length; i++ ){
         var v_itm = String.IsNullOrEmpty(this._vals[i]) ? _fmtMskItm(this._capts[i]) : this._vals[i];
-        _appendStr(ref v_lst, v_itm, ccPathDelimeter);
+        _appendStr(ref lst, v_itm, CC_PATH_DELIMETER);
       }
-      return v_lst;
+      return lst;
     }
     private String _bldMaskWithVals() {
-      String v_lst = null;
-      for (int i = 0; i < this._vals.Length; i++)
-        _appendStr(ref v_lst, String.IsNullOrEmpty(this._vals[i]) ? _fmtMskItm(this._capts[i]) : this._vals[i], ccPathDelimeter);
-      return v_lst;
+      String lst = null;
+      for (var i = 0; i < this._vals.Length; i++)
+        _appendStr(ref lst, String.IsNullOrEmpty(this._vals[i]) ? _fmtMskItm(this._capts[i]) : this._vals[i], CC_PATH_DELIMETER);
+      return lst;
     }
 
     private String _bldHint(String txt, int pos) {
@@ -110,10 +100,10 @@ namespace Bio.Framework.Client.SL {
       if(v_indx == -1){
         String v_lst = null;
         foreach (var s in this._capts)
-          _appendStr(ref v_lst, _fmtMskItm(s), ccPathDelimeter);
-        return String.Format(csHintFmt, v_lst);
-      }else
-        return String.Format("{0}", this._capts[v_indx]);
+          _appendStr(ref v_lst, _fmtMskItm(s), CC_PATH_DELIMETER);
+        return String.Format(CS_HINT_FMT, v_lst);
+      }
+      return String.Format("{0}", this._capts[v_indx]);
     }
     /// <summary>
     /// Определяет индекс поля по позиции курсора
@@ -121,66 +111,66 @@ namespace Bio.Framework.Client.SL {
     /// <param name="txt"></param>
     /// <param name="pos"></param>
     /// <returns></returns>
-    private int _detectIndex(String txt, int pos) {
+    private static int _detectIndex(String txt, int pos) {
       if (String.IsNullOrEmpty(txt))
         return -1;
-      else {
-        var v_rslt = -1;
-        if ((pos >= 0) && (pos <= txt.Length)) {
-          v_rslt = 0;
-          for (int i = 0; i < txt.Length; i++) {
-            if (i >= pos) break;
-            if (txt[i] == ccPathDelimeter[0])
-              v_rslt++;
-          }
+      var v_rslt = -1;
+      if ((pos >= 0) && (pos <= txt.Length)) {
+        v_rslt = 0;
+        for (var i = 0; i < txt.Length; i++) {
+          if (i >= pos) break;
+          if (txt[i] == CC_PATH_DELIMETER[0])
+            v_rslt++;
         }
-        return v_rslt;
       }
+      return v_rslt;
     }
-    private int _posBack(String txt, Char fnd, int pos) {
+    private static int _posBack(String txt, Char fnd, int pos) {
       if ((pos >= 0) && (pos <= txt.Length)) {
         for (int i = Math.Min(txt.Length-1, pos); i > 0; i--) 
           if((txt[i] == fnd) && (i < pos))
             return i;
         return 0;
-      }else
-        return -1;
+      }
+      return -1;
     }
-    private int _posFrwrd(String txt, Char fnd, int pos, int cnt) {
+
+    private static int _posFrwrd(String txt, Char fnd, int pos, int cnt) {
       if ((pos >= 0) && (pos <= txt.Length)) {
         if (pos == txt.Length)
           return txt.Length;
         var v_cnt = 0;
-        for (int i = Math.Min(txt.Length - 1, pos); i < txt.Length; i++)
+        for (var i = Math.Min(txt.Length - 1, pos); i < txt.Length; i++)
           if (txt[i] == fnd) {
             v_cnt++;
             if (v_cnt >= cnt)
               return i;
           }
         return txt.Length;
-      }else
-        return -1;
+      }
+      return -1;
     }
-    private int _posFrwrd(String txt, Char fnd, int pos) { 
+
+    private static int _posFrwrd(String txt, Char fnd, int pos) { 
       return _posFrwrd(txt, fnd, pos, 0);
     }
 
 
-    private TextBox _tbx = null;
-    private TextBlock _hnt = null;
+    private TextBox _tbx;
+    private TextBlock _hnt;
     public override void OnApplyTemplate() {
       base.OnApplyTemplate();
       this._tbx = this.GetTemplateChild("tbxText") as TextBox;
       if (this._tbx != null) {
-        this._flds = Utl.SplitString(this.FilterFields, ccPathDelimeter);
-        this._capts = Utl.SplitString(this.FilterCaptions, ccPathDelimeter);
+        this._flds = Utl.SplitString(this.FilterFields, CC_PATH_DELIMETER);
+        this._capts = Utl.SplitString(this.FilterCaptions, CC_PATH_DELIMETER);
         this._vals = new String[this._flds.Length];
         this._tbx.Text = this._bldMask();
         this._prevTxt = this._tbx.Text;
-        this._tbx.SelectionChanged += new RoutedEventHandler(tbx_SelectionChanged);
-        this._tbx.KeyDown += new KeyEventHandler(tbx_KeyDown);
-        this._tbx.TextChanged += new TextChangedEventHandler(_tbx_TextChanged);
-        this._tbx.GotFocus += new RoutedEventHandler(_tbx_GotFocus);
+        this._tbx.SelectionChanged += tbx_SelectionChanged;
+        this._tbx.KeyDown += tbx_KeyDown;
+        this._tbx.TextChanged += _tbx_TextChanged;
+        this._tbx.GotFocus += _tbx_GotFocus;
         //this._tbx.TextInputStart += new TextCompositionEventHandler(tbx_TextInputStart);
       }
       this._hnt = this.GetTemplateChild("fltrHint") as TextBlock;
@@ -204,7 +194,7 @@ namespace Bio.Framework.Client.SL {
     private void _valAtPos(String txt, int pos, out String val, out int selStrt, out int selEnd) {
       val = null; selStrt = -1; selEnd = -1;
       if (!String.IsNullOrEmpty(txt)) {
-        this._detectSelBounds(txt, pos, ref selStrt, ref selEnd);
+        _detectSelBounds(txt, pos, ref selStrt, ref selEnd);
         if (selEnd >= selStrt) {
           val = txt.Substring(selStrt, selEnd - selStrt);
         }
@@ -216,7 +206,7 @@ namespace Bio.Framework.Client.SL {
     /// </summary>
     private void _selByIndx(int indx) {
       var v_txt = this._tbx.Text;
-      var v_pos = this._posFrwrd(v_txt, ccPathDelimeter[0], 0, indx + 1);
+      var v_pos = _posFrwrd(v_txt, CC_PATH_DELIMETER[0], 0, indx + 1);
       if (v_pos >= 0) 
         this._tbx.SelectionStart = v_pos;
       else
@@ -226,13 +216,13 @@ namespace Bio.Framework.Client.SL {
     }
 
     private Boolean _checkStructOfTxt(String txt) {
-      var v_actVals = Utl.SplitString(txt, ccPathDelimeter);
-      return v_actVals.Length == this._vals.Length;
+      var actVals = Utl.SplitString(txt, CC_PATH_DELIMETER);
+      return actVals.Length == this._vals.Length;
     }
 
-    private Boolean _skipTbxTextChanged = false;
-    private String _prevTxt = null;
-    private int _prevPos = 0;
+    private Boolean _skipTbxTextChanged;
+    private String _prevTxt;
+    private int _prevPos;
     void _tbx_TextChanged(object sender, TextChangedEventArgs e) {
       try {
         if (this._skipTbxTextChanged) {
@@ -246,19 +236,19 @@ namespace Bio.Framework.Client.SL {
             v_txt = this._bldMaskWithVals();
             this._skipTbxTextChanged = true;
             this._tbx.Text = v_txt;
-            var v_prev_indx = this._detectIndex(this._prevTxt, this._prevPos);
+            var v_prev_indx = _detectIndex(this._prevTxt, this._prevPos);
             this._selByIndx(v_prev_indx);
             return;
           }
 
-          String v_val; int v_selStrt; int v_selEnd;
-          this._valAtPos(v_txt, v_pos, out v_val, out v_selStrt, out v_selEnd);
-          var v_indx = this._detectIndex(this._tbx.Text, v_pos);
-          this._vals[v_indx] = String.Equals(v_val, _fmtMskItm(this._capts[v_indx])) ? null : v_val;
-          if (String.IsNullOrEmpty(v_val)) {
+          String val; int selStrt; int selEnd;
+          this._valAtPos(v_txt, v_pos, out val, out selStrt, out selEnd);
+          var v_indx = _detectIndex(this._tbx.Text, v_pos);
+          this._vals[v_indx] = String.Equals(val, _fmtMskItm(this._capts[v_indx])) ? null : val;
+          if (String.IsNullOrEmpty(val)) {
             this._skipTbxTextChanged = true;
             //if (v_selEnd)
-            this._tbx.Text = v_txt.Substring(0, v_selStrt) + _fmtMskItm(this._capts[v_indx]) + v_txt.Substring(v_selEnd);
+            this._tbx.Text = v_txt.Substring(0, selStrt) + _fmtMskItm(this._capts[v_indx]) + v_txt.Substring(selEnd);
             //this._tbx.SelectionStart = v_selStrt;
             this._selByIndx(v_indx);
           }
@@ -268,10 +258,10 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    private void _detectSelBounds(String txt, int pos, ref int selStrt, ref int selEnd) {
-      selStrt = this._posBack(txt, ccPathDelimeter[0], pos);
+    private static void _detectSelBounds(String txt, int pos, ref int selStrt, ref int selEnd) {
+      selStrt = _posBack(txt, CC_PATH_DELIMETER[0], pos);
       if (selStrt > 0) selStrt++;
-      selEnd = this._posFrwrd(txt, ccPathDelimeter[0], pos);
+      selEnd = _posFrwrd(txt, CC_PATH_DELIMETER[0], pos);
     }
 
     private void _selNextField(int indx) {
@@ -293,30 +283,30 @@ namespace Bio.Framework.Client.SL {
         if (this._tbx != null) {
           var v_txt = this._tbx.Text;
           var v_pos = this._tbx.SelectionStart;
-          var v_indx = this._detectIndex(this._tbx.Text, v_pos);
-          String v_val; int v_selStrt; int v_selEnd;
-          this._valAtPos(v_txt, v_pos, out v_val, out v_selStrt, out v_selEnd);
+          var v_indx = _detectIndex(this._tbx.Text, v_pos);
+          String val; int selStrt; int selEnd;
+          this._valAtPos(v_txt, v_pos, out val, out selStrt, out selEnd);
           if (this._prevSeldIndx != v_indx) {
             this._prevSeldIndx = v_indx;
             //var v_selStrt = -1; var v_selEnd = -1;
             //this._detectSelBounds(v_txt, v_pos, ref v_selStrt, ref v_selEnd);
-            this._tbx.SelectionStart = v_selStrt;
-            if (v_selEnd > v_selStrt)
-              this._tbx.SelectionLength = v_selEnd - v_selStrt;
+            this._tbx.SelectionStart = selStrt;
+            if (selEnd > selStrt)
+              this._tbx.SelectionLength = selEnd - selStrt;
           } else {
-            if (String.Equals(v_val, _fmtMskItm(this._capts[v_indx])) && (v_pos == 1) && (this._prevPos == 0)) {
+            if (String.Equals(val, _fmtMskItm(this._capts[v_indx])) && (v_pos == 1) && (this._prevPos == 0)) {
               this._selByIndx(0);
               return;
             }
-            if (String.Equals(v_val, _fmtMskItm(this._capts[v_indx])) && (v_pos == v_txt.Length-1) && (this._prevPos == v_txt.Length)) {
+            if (String.Equals(val, _fmtMskItm(this._capts[v_indx])) && (v_pos == v_txt.Length-1) && (this._prevPos == v_txt.Length)) {
               this._selByIndx(this._vals.Length - 1);
               return;
             }
-            if (String.Equals(v_val, _fmtMskItm(this._capts[v_indx])) && (v_pos > this._prevPos)) {
+            if (String.Equals(val, _fmtMskItm(this._capts[v_indx])) && (v_pos > this._prevPos)) {
               this._selNextField(v_indx);
               return;
             }
-            if (String.Equals(v_val, _fmtMskItm(this._capts[v_indx])) && (v_pos < this._prevPos)) {
+            if (String.Equals(val, _fmtMskItm(this._capts[v_indx])) && (v_pos < this._prevPos)) {
               this._selPrevField(v_indx);
               return;
             }
@@ -361,7 +351,7 @@ namespace Bio.Framework.Client.SL {
     //  }
     //}
 
-    //public static readonly DependencyProperty ValueProperty = DependencyProperty.Register("Value", typeof(Object), typeof(CFilterControl), new PropertyMetadata(default(Object), ValuePropertyChangedCallback));
+    //public static readonly DependencyProperty ValueProperty = DependencyProperty.Register("Value", typeof(Object), typeof(FilterControl), new PropertyMetadata(default(Object), ValuePropertyChangedCallback));
     //public Object Value {
     //  get {
     //    return this.GetValue(ValueProperty);
@@ -380,8 +370,8 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    private static void ValuePropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-      ((CFilterControl)d)._doOnValuePropertyChanged(e);
+    private static void _valuePropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e) {
+      ((FilterControl)d)._doOnValuePropertyChanged(e);
     }
 
 

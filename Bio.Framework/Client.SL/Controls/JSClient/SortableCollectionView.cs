@@ -1,19 +1,8 @@
 ﻿using System;
-using System.Net;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Ink;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Collections.Specialized;
-using System.Threading;
-using Bio.Framework.Packets;
 using Bio.Helpers.Common;
 
 
@@ -28,8 +17,8 @@ namespace Bio.Framework.Client.SL {
     /// Initializes a new instance of the <see cref="SortableCollectionView&lt;T&gt;"/> class.
     /// </summary>
     public SortableCollectionView(EventHandler<RefreshEventArgs> onRefreshEveHandler) {
-      this._currentItem = null;
-      this._currentPosition = -1;
+      this.CurrentItem = null;
+      this.CurrentPosition = -1;
       if (onRefreshEveHandler != null)
         this.OnRefresh += onRefreshEveHandler;
     }
@@ -45,9 +34,9 @@ namespace Bio.Framework.Client.SL {
       //    return;
       //}
       base.InsertItem(index, item);
-      if (0 == index || null == this._currentItem) {
-        _currentItem = item;
-        _currentPosition = index;
+      if (0 == index || null == this.CurrentItem) {
+        CurrentItem = item;
+        CurrentPosition = index;
       }
     }
 
@@ -132,12 +121,12 @@ namespace Bio.Framework.Client.SL {
     /// <returns>
     /// The culture information to use during culture-sensitive operations.
     /// </returns>
-    public System.Globalization.CultureInfo Culture {
+    public CultureInfo Culture {
       get {
         return this._culture;
       }
       set {
-        if (this._culture != value) {
+        if (Equals(this._culture, value)) {
           this._culture = value;
           this.OnPropertyChanged(new PropertyChangedEventArgs("Culture"));
         }
@@ -155,8 +144,6 @@ namespace Bio.Framework.Client.SL {
     /// </summary>
     public event CurrentChangingEventHandler CurrentChanging;
 
-    private object _currentItem;
-
     /// <summary>
     /// Gets the current item in the view.
     /// </summary>
@@ -164,11 +151,7 @@ namespace Bio.Framework.Client.SL {
     /// <returns>
     /// The current item in the view or null if there is no current item.
     /// </returns>
-    public object CurrentItem {
-      get { return this._currentItem; }
-    }
-
-    private int _currentPosition;
+    public object CurrentItem { get; private set; }
 
     /// <summary>
     /// Gets the ordinal position of the <see cref="P:System.ComponentModel.ICollectionView.CurrentItem"/> in the view.
@@ -177,29 +160,14 @@ namespace Bio.Framework.Client.SL {
     /// <returns>
     /// The ordinal position of the <see cref="P:System.ComponentModel.ICollectionView.CurrentItem"/> in the view.
     /// </returns>
-    public int CurrentPosition {
-      get {
-        return this._currentPosition;
-      }
-    }
+    public int CurrentPosition { get; private set; }
 
     public IDisposable DeferRefresh() {
       //throw new NotImplementedException();
       return null;
     }
 
-    private Predicate<object> _filter;
-
-    public Predicate<object> Filter {
-      get {
-        return _filter;
-      }
-      set {
-        //if (value == _filter) return;
-        _filter = value;
-        //this.Refresh();
-      }
-    }
+    public Predicate<object> Filter { get; set; }
 
     public ObservableCollection<GroupDescription> GroupDescriptions {
       get { throw new NotImplementedException(); }
@@ -289,7 +257,7 @@ namespace Bio.Framework.Client.SL {
       if (!IsValidType(item)) {
         return false;
       }
-      if (object.Equals(this.CurrentItem, item) && ((item != null) || this.IsCurrentInView)) {
+      if (Equals(this.CurrentItem, item) && ((item != null) || this.IsCurrentInView)) {
         return this.IsCurrentInView;
       }
       int index = this.IndexOf((T)item);
@@ -347,19 +315,19 @@ namespace Bio.Framework.Client.SL {
       if ((position < -1) || (position > this.Count)) {
         throw new ArgumentOutOfRangeException("position");
       }
-      if (((position != this.CurrentPosition) || !this.IsCurrentInSync) && this.IsOKToChangeCurrent()) {
+      if (((position != this.CurrentPosition) || !this.IsCurrentInSync) && this.isOkToChangeCurrent()) {
         bool isCurrentAfterLast = this.IsCurrentAfterLast;
         bool isCurrentBeforeFirst = this.IsCurrentBeforeFirst;
-        ChangeCurrentToPosition(position);
+        _changeCurrentToPosition(position);
         OnCurrentChanged();
         if (this.IsCurrentAfterLast != isCurrentAfterLast) {
-          this.OnPropertyChanged("IsCurrentAfterLast");
+          this._doOnPropertyChanged("IsCurrentAfterLast");
         }
         if (this.IsCurrentBeforeFirst != isCurrentBeforeFirst) {
-          this.OnPropertyChanged("IsCurrentBeforeFirst");
+          this._doOnPropertyChanged("IsCurrentBeforeFirst");
         }
-        this.OnPropertyChanged("CurrentPosition");
-        this.OnPropertyChanged("CurrentItem");
+        this._doOnPropertyChanged("CurrentPosition");
+        this._doOnPropertyChanged("CurrentItem");
       }
       return this.IsCurrentInView;
     }
@@ -368,16 +336,16 @@ namespace Bio.Framework.Client.SL {
     /// Changes the current to position.
     /// </summary>
     /// <param name="position">The position.</param>
-    private void ChangeCurrentToPosition(int position) {
+    private void _changeCurrentToPosition(int position) {
       if (position < 0) {
-        this._currentItem = null;
-        this._currentPosition = -1;
+        this.CurrentItem = null;
+        this.CurrentPosition = -1;
       } else if (position >= this.Count) {
-        this._currentItem = null;
-        this._currentPosition = this.Count;
+        this.CurrentItem = null;
+        this.CurrentPosition = this.Count;
       } else {
-        this._currentItem = this[position];
-        this._currentPosition = position;
+        this.CurrentItem = this[position];
+        this.CurrentPosition = position;
       }
     }
 
@@ -387,8 +355,8 @@ namespace Bio.Framework.Client.SL {
     /// <returns>
     /// 	<c>true</c> if is OK to change current item; otherwise, <c>false</c>.
     /// </returns>
-    protected bool IsOKToChangeCurrent() {
-      CurrentChangingEventArgs args = new CurrentChangingEventArgs();
+    protected bool isOkToChangeCurrent() {
+      var args = new CurrentChangingEventArgs();
       this.OnCurrentChanging(args);
       return !args.Cancel;
     }
@@ -403,7 +371,7 @@ namespace Bio.Framework.Client.SL {
     }
 
     /// <summary>
-    /// Raises the <see cref="E:CurrentChanging"/> event.
+    /// Raises the <see><cref>E:CurrentChanging</cref></see> event.
     /// </summary>
     /// <param name="args">The <see cref="System.ComponentModel.CurrentChangingEventArgs"/> instance containing the event data.</param>
     protected virtual void OnCurrentChanging(CurrentChangingEventArgs args) {
@@ -419,7 +387,7 @@ namespace Bio.Framework.Client.SL {
     /// Called when the current item is changing.
     /// </summary>
     protected void OnCurrentChanging() {
-      this._currentPosition = -1;
+      this.CurrentPosition = -1;
       this.OnCurrentChanging(new CurrentChangingEventArgs(false));
     }
 
@@ -435,7 +403,7 @@ namespace Bio.Framework.Client.SL {
     /// Called when a property has changed.
     /// </summary>
     /// <param name="propertyName">Name of the property.</param>
-    private void OnPropertyChanged(string propertyName) {
+    private void _doOnPropertyChanged(string propertyName) {
       this.OnPropertyChanged(new PropertyChangedEventArgs(propertyName));
     }
 
@@ -450,9 +418,7 @@ namespace Bio.Framework.Client.SL {
     public void Refresh() {
       // sort and refersh
       if (null != OnRefresh) {
-        delayedStarter.Do(1000, () => {
-          this.OnRefresh(this, new RefreshEventArgs() { SortDescriptions = SortDescriptions });
-        });
+        delayedStarter.Do(1000, () => this.OnRefresh(this, new RefreshEventArgs { SortDescriptions = SortDescriptions }));
       }
       //this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
     }
@@ -469,7 +435,7 @@ namespace Bio.Framework.Client.SL {
     public SortDescriptionCollection SortDescriptions {
       get {
         if (this._sort == null) {
-          this.SetSortDescriptions(new CustomSortDescriptionCollection());
+          this._setSortDescriptions(new CustomSortDescriptionCollection());
         }
         return this._sort;
       }
@@ -479,13 +445,13 @@ namespace Bio.Framework.Client.SL {
     /// Sets the sort descriptions.
     /// </summary>
     /// <param name="descriptions">The descriptions.</param>
-    private void SetSortDescriptions(CustomSortDescriptionCollection descriptions) {
+    private void _setSortDescriptions(CustomSortDescriptionCollection descriptions) {
       if (this._sort != null) {
-        this._sort.MyCollectionChanged -= new NotifyCollectionChangedEventHandler(this.SortDescriptionsChanged);
+        this._sort.MyCollectionChanged -= this._sortDescriptionsChanged;
       }
       this._sort = descriptions;
       if (this._sort != null) {
-        this._sort.MyCollectionChanged += new NotifyCollectionChangedEventHandler(this.SortDescriptionsChanged);
+        this._sort.MyCollectionChanged += this._sortDescriptionsChanged;
       }
     }
 
@@ -494,7 +460,7 @@ namespace Bio.Framework.Client.SL {
     /// </summary>
     /// <param name="sender">The sender.</param>
     /// <param name="e">The <see cref="System.Collections.Specialized.NotifyCollectionChangedEventArgs"/> instance containing the event data.</param>
-    private void SortDescriptionsChanged(object sender, NotifyCollectionChangedEventArgs e) {
+    private void _sortDescriptionsChanged(object sender, NotifyCollectionChangedEventArgs e) {
       if (e.Action == NotifyCollectionChangedAction.Remove && e.NewStartingIndex == -1 && SortDescriptions.Count > 0) {
         return;
       }

@@ -101,63 +101,63 @@
     <Reference Include="System.Windows.Browser" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CJSGridPropsCols.xaml.cs">
-      <DependentUpon>CJSGridPropsCols.xaml</DependentUpon>
+    <Compile Include="JSGridPropsCols.xaml.cs">
+      <DependentUpon>JSGridPropsCols.xaml</DependentUpon>
     </Compile>
     <Compile Include="CDataGrid.cs" />
-    <Compile Include="CExpClient.cs" />
-    <Compile Include="CJSClient\CEditorBase.cs" />
+    <Compile Include="ExpClient.cs" />
+    <Compile Include="JSClient\EditorBase.cs" />
     <Compile Include="CJSPropertyGrid\ComboBoxRmtEditor.cs" />
     <Compile Include="CJSPropertyGrid\ComboBoxRmtEditorAttribute.cs" />
     <Compile Include="CJSPropertyGrid\CJSPropertyGrid.cs" />
     <Compile Include="CJSPropertyGrid\ASelectorValueControl.cs" />
     <Compile Include="CJSPropertyGrid\SelectValueEditor1.cs" />
     <Compile Include="CJSPropertyGrid\SelectValueEditorAttribute.cs" />
-    <Compile Include="CJSTreeSource.cs" />
-    <Compile Include="CLongOpClient.cs" />
-    <Compile Include="CDSFetchClient.cs" />
+    <Compile Include="JSTreeSource.cs" />
+    <Compile Include="LongOpClient.cs" />
+    <Compile Include="DSFetchClient.cs" />
     <Compile Include="JSComboBox.cs" />
-    <Compile Include="CJSListBox.cs" />
-    <Compile Include="CFilterControl.cs" />
-    <Compile Include="CJSGridProps.xaml.cs">
-      <DependentUpon>CJSGridProps.xaml</DependentUpon>
+    <Compile Include="JSListBox.cs" />
+    <Compile Include="FilterControl.cs" />
+    <Compile Include="JSGridProps.xaml.cs">
+      <DependentUpon>JSGridProps.xaml</DependentUpon>
     </Compile>
-    <Compile Include="CJSGridPropsNav.xaml.cs">
-      <DependentUpon>CJSGridPropsNav.xaml</DependentUpon>
+    <Compile Include="JSGridPropsNav.xaml.cs">
+      <DependentUpon>JSGridPropsNav.xaml</DependentUpon>
     </Compile>
-    <Compile Include="CVSelectorControl.cs" />
-    <Compile Include="CWebDBClient.cs" />
-    <Compile Include="CRptClient.cs" />
-    <Compile Include="CRmtClient\CRmtClientBase.cs" />
-    <Compile Include="CRmtClient\CRmtClientView.xaml.cs">
-      <DependentUpon>CRmtClientView.xaml</DependentUpon>
+    <Compile Include="VSelectorControl.cs" />
+    <Compile Include="WebDBClient.cs" />
+    <Compile Include="RptClient.cs" />
+    <Compile Include="RmtClient\RmtClientBase.cs" />
+    <Compile Include="RmtClient\RmtClientView.xaml.cs">
+      <DependentUpon>RmtClientView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="CRmtClient\CRmtStateReader.cs" />
-    <Compile Include="CSQLRClient.cs" />
-    <Compile Include="CJSClient\CustomSortDescriptionCollection.cs" />
-    <Compile Include="CJSClient\RefreshEventArgs.cs" />
-    <Compile Include="CJSClient\SortableCollectionView.cs" />
-    <Compile Include="CJSGrid.cs" />
-    <Compile Include="CJSClient\JsonStoreClient.cs" />
-    <Compile Include="CJSTree.cs" />
+    <Compile Include="RmtClient\RmtStateReader.cs" />
+    <Compile Include="SQLRClient.cs" />
+    <Compile Include="JSClient\CustomSortDescriptionCollection.cs" />
+    <Compile Include="JSClient\RefreshEventArgs.cs" />
+    <Compile Include="JSClient\SortableCollectionView.cs" />
+    <Compile Include="JSGrid.cs" />
+    <Compile Include="JSClient\JsonStoreClient.cs" />
+    <Compile Include="JSTree.cs" />
     <Compile Include="CTreeSource.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CTreeView.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="CJSGridPropsCols.xaml">
+    <Page Include="JSGridPropsCols.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="CJSGridProps.xaml">
+    <Page Include="JSGridProps.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="CJSGridPropsNav.xaml">
+    <Page Include="JSGridPropsNav.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="CRmtClient\CRmtClientView.xaml">
+    <Page Include="RmtClient\RmtClientView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

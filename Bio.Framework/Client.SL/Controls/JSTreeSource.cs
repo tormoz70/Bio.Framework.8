@@ -1,40 +1,21 @@
 ﻿using System;
-using System.Net;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Ink;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 using Bio.Helpers.Common.Types;
 using System.Collections.ObjectModel;
 using Bio.Framework.Packets;
-using System.Windows.Threading;
-using Bio.Helpers.Common;
-using System.ComponentModel;
 
 namespace Bio.Framework.Client.SL {
 
-  public abstract class CJSTreeItemBase {
+  public abstract class JSTreeItemBase {
     protected JsonStoreClient _cli = null;
-    protected CJSTree _ownerTree { get; set; }
+    protected JSTree _ownerTree { get; set; }
     protected IAjaxMng _ajaxMng { get; set; }
-    public CJSTreeItemBase Parent { get; set; }
+    public JSTreeItemBase Parent { get; set; }
     public CTreeViewItem Container { get; internal set; }
     public Object ID { get; set; }
-    public String _name = null;
-    public virtual String Name { 
-      get {
-        return this._name;
-      }
-      set {
-        this._name = value;
-      }
-    }
+    public virtual string Name { get; set; }
+
     public Boolean Loaded { get; internal set; }
-    private String _bioCode = null;
+    private String _bioCode;
     public String BioCode { 
       get {
         return this._bioCode ?? this.RootItem.BioCode;
@@ -43,23 +24,23 @@ namespace Bio.Framework.Client.SL {
         this._bioCode = value;
       } 
     }
-    public ObservableCollection<CJSTreeItemBase> Items { get; set; }
-    
-    public CJSTreeItemBase() {
+    public ObservableCollection<JSTreeItemBase> Items { get; set; }
+
+    protected JSTreeItemBase() {
       this._cli = new JsonStoreClient();
-      this.Items = new ObservableCollection<CJSTreeItemBase>();
+      this.Items = new ObservableCollection<JSTreeItemBase>();
     }
-    public CJSTreeItemBase(CJSTree ownerTree, IAjaxMng ajaxMng)
+
+    protected JSTreeItemBase(JSTree ownerTree, IAjaxMng ajaxMng)
       : this() {
         this._ownerTree = ownerTree;
       this._ajaxMng = ajaxMng;
     }
 
-    private CJSTreeItemBase _getRoot(CJSTreeItemBase item) {
+    private JSTreeItemBase _getRoot(JSTreeItemBase item) {
       if (item.Parent == null)
         return item;
-      else
-        return this._getRoot(item.Parent);
+      return this._getRoot(item.Parent);
     }
 
     public IAjaxMng AjaxMng {
@@ -68,22 +49,21 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    public CJSTree OwnerTreeView {
+    public JSTree OwnerTreeView {
       get {
         return this.RootItem._ownerTree;
       }
     }
 
-    public CJSTreeItemBase RootItem {
+    public JSTreeItemBase RootItem {
       get {
         return this._getRoot(this);
       }
     }
-    private Int32 _calcLevel(CJSTreeItemBase parent, Int32 level) {
+    private Int32 _calcLevel(JSTreeItemBase parent, Int32 level) {
       if (parent == null)
         return level;
-      else
-        return this._calcLevel(parent.Parent, level + 1);
+      return this._calcLevel(parent.Parent, level + 1);
     }
 
     public Int32 Level {
@@ -92,13 +72,11 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    private String _getPathID(CJSTreeItemBase parent, String path) {
+    private String _getPathID(JSTreeItemBase parent, String path) {
       if (parent == null)
         return path;
-      else {
-        var v_path = parent.ID + (String.IsNullOrEmpty(path) ? null : "/" + path);
-        return this._getPathID(parent.Parent, path);
-      }
+      var v_path = parent.ID + (String.IsNullOrEmpty(path) ? null : "/" + path);
+      return this._getPathID(parent.Parent, v_path);
     }
 
     public String PathID {
@@ -107,8 +85,8 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    public T CreateNewChildItem<T>(Object id, String name) where T : CJSTreeItemBase, new() {
-      T newItem = new T() {
+    public T CreateNewChildItem<T>(Object id, String name) where T : JSTreeItemBase, new() {
+      var newItem = new T {
         Loaded = false,
         Parent = this,
         ID = id,
@@ -120,7 +98,7 @@ namespace Bio.Framework.Client.SL {
 
 
 
-    protected abstract CJSTreeItemBase doOnCreateNewChildItem(CJsonStoreMetadata metadata, JsonStoreRow row);
+    protected abstract JSTreeItemBase doOnCreateNewChildItem(CJsonStoreMetadata metadata, JsonStoreRow row);
 
     /// <summary>
     /// Тут можно проинициализировать параметры запроса загрузки дочерних элементов.
@@ -131,19 +109,19 @@ namespace Bio.Framework.Client.SL {
     }
 
     public static String csDefaultParentIDParameterName = "parent_id";
-    public void Load(Action<CJSTreeItemBase> actOnItem, AjaxRequestDelegate callback) {
+    public void Load(Action<JSTreeItemBase> actOnItem, AjaxRequestDelegate callback) {
       if (this.OwnerTreeView == null)
         throw new Exception("Не определен атрибут OwnerTreeView в корневом элементе!");
       this._cli.AjaxMng = this.AjaxMng;
       this._cli.BioCode = this.BioCode;
-      Params prms = new Params();
+      var prms = new Params();
       if (!this.Equals(this.RootItem)) {
         prms.Add(csDefaultParentIDParameterName, this.ID);
       }
 
       this.doOnBeforeLoadItem(ref prms);
 
-      BeforeLoadItemChildrenEventArgs args = new BeforeLoadItemChildrenEventArgs {
+      var args = new BeforeLoadItemChildrenEventArgs {
         Params = prms
       };
       this.OwnerTreeView.processBeforeLoadItemChildren(this, args);
@@ -153,11 +131,11 @@ namespace Bio.Framework.Client.SL {
       this._cli.Load(args.Params, (s, a) => {
         //this.OwnerTreeView.Dispatcher.BeginInvoke(() => {
         if (a.Response.Success) {
-          JsonStoreResponse rsp = a.Response as JsonStoreResponse;
+          var rsp = a.Response as JsonStoreResponse;
           if (rsp != null) {
             this.Items.Clear();
             foreach (var r in rsp.packet.rows) {
-              CJSTreeItemBase item = this.doOnCreateNewChildItem(rsp.packet.metaData, r);
+              JSTreeItemBase item = this.doOnCreateNewChildItem(rsp.packet.metaData, r);
               if (actOnItem != null) actOnItem(item);
               //this.Items.Add(item);
             }

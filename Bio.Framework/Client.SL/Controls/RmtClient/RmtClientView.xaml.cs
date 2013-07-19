@@ -1,32 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
-using Bio.Helpers.Controls.SL;
 using Bio.Helpers.Common;
-using Bio.Helpers.Common.Types;
 using Bio.Framework.Packets;
 
 namespace Bio.Framework.Client.SL {
-  public partial class CRmtClientView : FloatableWindow {
-    private CRmtClientBase _owner = null;
+  public partial class RmtClientView {
+    private readonly RmtClientBase _owner;
 
-    public CRmtClientView(CRmtClientBase owner) {
+    public RmtClientView(RmtClientBase owner) {
       this._owner = owner;
       InitializeComponent();
-      this.Title = this._owner.title;
+      this.Title = this._owner.Title;
       if (!this._owner.DebugThis)
-        this.btnReadState.Visibility = System.Windows.Visibility.Collapsed;
-      this.Closing += new EventHandler<System.ComponentModel.CancelEventArgs>(CRmtClientView_Closing);
+        this.btnReadState.Visibility = Visibility.Collapsed;
+      this.Closing += this.RmtClientView_Closing;
     }
 
+    /// <summary>
     /// Последняя строка добавленная в лог
     /// </summary>
     public String LastAddedLine { get; private set; }
@@ -34,7 +24,7 @@ namespace Bio.Framework.Client.SL {
     /// Добавляет строку в лог
     /// </summary>
     /// <param name="line"></param>
-    public void addLineToLog(String line) {
+    public void AddLineToLog(String line) {
       if (String.IsNullOrEmpty(this.tbxLog.Text))
         this.tbxLog.Text = line;
       else
@@ -45,13 +35,13 @@ namespace Bio.Framework.Client.SL {
     /// <summary>
     /// Удалает последнюю строку из лога
     /// </summary>
-    private void removeLastAddedLineFromLog() {
-      Int32 vCutLineLength = String.IsNullOrEmpty(this.LastAddedLine) ? 0 : this.LastAddedLine.Length;
+    private void _removeLastAddedLineFromLog() {
+      var vCutLineLength = String.IsNullOrEmpty(this.LastAddedLine) ? 0 : this.LastAddedLine.Length;
       if (!String.IsNullOrEmpty(this.tbxLog.Text) && (this.tbxLog.Text.Length >= vCutLineLength))
         this.tbxLog.Text = this.tbxLog.Text.Remove(this.tbxLog.Text.Length - vCutLineLength);
     }
 
-    public void clearLog() {
+    public void ClearLog() {
       this.tbxLog.Text = String.Empty;
     }
 
@@ -59,27 +49,18 @@ namespace Bio.Framework.Client.SL {
     /// Изменяет последнюю строку в логе
     /// </summary>
     /// <param name="line"></param>
-    public void changeLastLogLine(String line) {
-      this.removeLastAddedLineFromLog();
-      this.addLineToLog(line);
+    public void ChangeLastLogLine(String line) {
+      this._removeLastAddedLineFromLog();
+      this.AddLineToLog(line);
     }
 
-    void CRmtClientView_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
+    void RmtClientView_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
       if (this._owner.IsRunning) {
-        //this.IsVisible = false;
         e.Cancel = true;
         if (MessageBox.Show("Остановить построение отчета?", "Останов", MessageBoxButton.OKCancel) == MessageBoxResult.OK) {
           this._owner.BreakProc();
           MessageBox.Show("Построение отчета остановлено. Дождитесь завершения.", "Останов", MessageBoxButton.OK);
         }
-        //this._owner.breakProc((s, a) => {
-        //  if (a.response.success) {
-        //    //this._owner.stateReader.ForceStop();
-        //  } else {
-        //    this.addLineToLog(msgBx.formatError(a.response.ex));
-        //    e.Cancel = true;
-        //  }
-        //});
       } else {
         if (this._owner.StateReader != null)
           this._owner.StateReader.ForceStop();
@@ -87,23 +68,10 @@ namespace Bio.Framework.Client.SL {
     }
 
     private void btnClose_Click(object sender, RoutedEventArgs e) {
-      //if (this._owner.IsRunning) {
-      //  this._owner.breakProc((s, a) => {
-      //    if (a.response.success) {
-      //      this._owner.stateReader.ForceStop();
-      //      this.DialogResult = true;
-      //    } else
-      //      this.addLineToLog(msgBx.formatError(a.response.ex));
-      //  });
-      //} else {
-      //  if (this._owner.stateReader != null)
-      //    this._owner.stateReader.ForceStop();
-      //  this.DialogResult = true;
-      //}
       this.DialogResult = true;
     }
 
-    private RemoteProcState? _prevState = null;
+    private RemoteProcState? _prevState;
     private void _doOnChangeState(RemoteProcessStatePack packet) {
       if ((this._prevState == null) || (this._prevState != packet.State)) {
         this._prevState = packet.State;
@@ -121,17 +89,9 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    public void doOnChangeState(RemoteProcessStatePack packet) {
+    public void DoOnChangeState(RemoteProcessStatePack packet) {
       this._doOnChangeState(packet);
     }
-
-    //private void _doOnRsltFileLoaded() {
-    //  this.btnOpen.IsEnabled = true;
-    //}
-
-    //public void doOnRsltFileLoaded() {
-    //  this._doOnRsltFileLoaded();
-    //}
 
     private void btnRun_Click(object sender, RoutedEventArgs e) {
       this._owner.RestartProc();
@@ -142,14 +102,13 @@ namespace Bio.Framework.Client.SL {
     }
 
     private void btnOpen_Click(object sender, RoutedEventArgs e) {
-      //this.btnOpen.IsEnabled = false;
       this._owner.OpenResult(() => {
         //this.btnOpen.IsEnabled = true;
       });
     }
 
     private void btnReadState_Click(object sender, RoutedEventArgs e) {
-      this._owner.StateReader.readState(null);
+      this._owner.StateReader.ReadState(null);
     }
 
   }

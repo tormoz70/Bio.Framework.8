@@ -31,8 +31,8 @@ namespace Bio.Framework.Client.SL {
       };
       v_cli.Load(bioParams, (s, a) => {
         if (a.Response.Success) {
-          if (v_cli.jsMetadata.fields.Count > 1) {
-            this.metadata = v_cli.jsMetadata;
+          if (v_cli.JSMetadata.fields.Count > 1) {
+            this.metadata = v_cli.JSMetadata;
             this.data = v_cli.DS;
           }
           

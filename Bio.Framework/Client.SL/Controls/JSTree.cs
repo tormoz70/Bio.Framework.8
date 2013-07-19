@@ -1,35 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 using Bio.Helpers.Common.Types;
-using System.Windows.Controls.Primitives;
-using System.Windows.Data;
-using System.Globalization;
-using Bio.Helpers.Common;
-using System.Reflection;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
-using Bio.Framework.Packets;
 using System.Collections;
 using PropertyMetadata = System.Windows.PropertyMetadata;
 
 namespace Bio.Framework.Client.SL {
 
-  //public delegate void CJSTreeLoadChildrenDelegate(CJSTreeItemBase item);
-  public class CJSTree : ContentControl, IDataControl {
-    //private JsonStoreClient _jsClient = null;
+  public class JSTree : ContentControl, IDataControl {
 
-
-    public CJSTree() {
-      this.DefaultStyleKey = typeof(CJSTree);
+    public JSTree() {
+      this.DefaultStyleKey = typeof(JSTree);
     }
 
     private CTreeView _treeView;
@@ -54,13 +37,13 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    //public static DependencyProperty ItemTemplateProperty = DependencyProperty.Register("ItemTemplate", typeof(DataTemplate), typeof(CJSTree), new PropertyMetadata(null));
+    //public static DependencyProperty ItemTemplateProperty = DependencyProperty.Register("ItemTemplate", typeof(DataTemplate), typeof(JSTree), new PropertyMetadata(null));
     //public DataTemplate ItemTemplate {
     //  get { return (DataTemplate)this.GetValue(ItemTemplateProperty); }
     //  set { this.SetValue(ItemTemplateProperty, value); }
     //}
 
-    public static DependencyProperty ItemsSourceProperty = DependencyProperty.Register("ItemsSource", typeof(IEnumerable), typeof(CJSTree), new PropertyMetadata(null));
+    public static DependencyProperty ItemsSourceProperty = DependencyProperty.Register("ItemsSource", typeof(IEnumerable), typeof(JSTree), new PropertyMetadata(null));
     public IEnumerable ItemsSource {
       get { return (IEnumerable)this.GetValue(ItemsSourceProperty); }
       set { this.SetValue(ItemsSourceProperty, value); }
@@ -90,7 +73,7 @@ namespace Bio.Framework.Client.SL {
     }
 
     public event EventHandler<BeforeLoadItemChildrenEventArgs> BeforeLoadItemChildren;
-    internal void processBeforeLoadItemChildren(CJSTreeItemBase sender, BeforeLoadItemChildrenEventArgs args) {
+    internal void processBeforeLoadItemChildren(JSTreeItemBase sender, BeforeLoadItemChildrenEventArgs args) {
       EventHandler<BeforeLoadItemChildrenEventArgs> eve = this.BeforeLoadItemChildren;
       if (eve != null) {
         eve(sender, args);
@@ -111,11 +94,11 @@ namespace Bio.Framework.Client.SL {
 
     public String SelectedPath {
       get {
-        String v_rslt = "/ " + this.ItemsSource.Cast<CJSTreeItemBase>().FirstOrDefault().Name;
+        String v_rslt = "/ " + this.ItemsSource.Cast<JSTreeItemBase>().FirstOrDefault().Name;
         var v_path = this._treeView.GetSelectedPath();
         foreach (var itm in v_path)
-          if ((itm.Key as CJSTreeItemBase).Parent != null)
-            v_rslt = v_rslt + ((v_rslt.Trim().Length == 1) ? String.Empty : " / ") + (itm.Key as CJSTreeItemBase).Name;
+          if ((itm.Key as JSTreeItemBase).Parent != null)
+            v_rslt = v_rslt + ((v_rslt.Trim().Length == 1) ? String.Empty : " / ") + (itm.Key as JSTreeItemBase).Name;
         return v_rslt;
       }
     }
@@ -124,9 +107,9 @@ namespace Bio.Framework.Client.SL {
 
     public void ClearData() {
 
-      CJSTreeItemBase v_rootItem = null;
+      JSTreeItemBase v_rootItem = null;
       foreach (var itm in this.ItemsSource) {
-        v_rootItem = itm as CJSTreeItemBase;
+        v_rootItem = itm as JSTreeItemBase;
         break;
       }
       if (v_rootItem != null) {

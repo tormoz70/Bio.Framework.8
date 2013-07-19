@@ -9,7 +9,7 @@
   /// <summary>
   /// Предоставляет возможность запускать на сервере долгоиграющие процессы.
   /// </summary>
-  public class CDSFetchClient:CRmtClientBase {
+  public class DSFetchClient:RmtClientBase {
     public String Selection { get; set; }
     public Params ExecBioParams { get; set; }
     public String ExecBioCode { get; set; }
@@ -21,13 +21,13 @@
     /// <param name="bioCode">Код объекта - описание курсора</param>
     /// <param name="execBioCode">Код объекта - описание скрипта</param>
     /// <param name="title">Заголовок</param>
-    public CDSFetchClient(IAjaxMng ajaxMng, String bioCode, String execBioCode, String title)
+    public DSFetchClient(IAjaxMng ajaxMng, String bioCode, String execBioCode, String title)
       : base(ajaxMng, bioCode, title) {
-      this._requestType = RequestType.DSFetch;
+      this.requestType = RequestType.DSFetch;
       this.ExecBioCode = execBioCode;
     }
 
-    public CDSFetchClient()
+    public DSFetchClient()
       : this(null, null, null, null) {
     }
 

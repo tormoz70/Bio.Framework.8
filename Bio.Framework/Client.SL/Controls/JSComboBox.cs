@@ -72,7 +72,7 @@ namespace Bio.Framework.Client.SL {
       } else {
         v_cli.Load(bioParams, (s, a) => {
           if (a.Response.Success) {
-            var cbxitems = new CbxItems {metadata = v_cli.jsMetadata, ds = v_cli.DS};
+            var cbxitems = new CbxItems {metadata = v_cli.JSMetadata, ds = v_cli.DS};
             if (useCache)
               _storeItems(bioCode, cbxitems);
             _loadItems(cbx, cbxitems, addNullItem);

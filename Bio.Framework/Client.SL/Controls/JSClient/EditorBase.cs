@@ -1,21 +1,10 @@
 ﻿using System;
-using System.Net;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Ink;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 using Bio.Framework.Packets;
 using Bio.Helpers.Common;
 using System.Reflection;
 using Bio.Helpers.Common.Types;
-using System.Reflection.Emit;
 using System.Collections.Generic;
 using System.Linq;
-using Bio.Helpers.Controls.SL;
 using Newtonsoft.Json;
 using System.ComponentModel;
 
@@ -33,42 +22,40 @@ namespace Bio.Framework.Client.SL {
     }
   }
 
-  public class CEditorBase : INotifyPropertyChanged {
+  public class EditorBase : INotifyPropertyChanged {
     private Object _getValue(JsonStoreRow row, CJsonStoreMetadata metaData, String fieldName) {
-      int indx = metaData.indexOf(fieldName);
+      var indx = metaData.indexOf(fieldName);
       if ((indx >= 0) && (indx < row.Values.Count))
         return row.Values[indx];
-      else
-        return null;
+      return null;
     }
     private String _getHeader(CJsonStoreMetadata metaData, String fieldName) {
-      int indx = metaData.indexOf(fieldName);
+      var indx = metaData.indexOf(fieldName);
       if (indx >= 0)
         return metaData.fields[indx].header;
-      else
-        return null;
+      return null;
     }
-    private Dictionary<String, String> _headers = null;
+    private Dictionary<String, String> _headers;
     /// <summary>
     /// Присваивает значения из row в свойства данного класса.
     /// Имена свойств (либо атрибут DataFieldMapping) должны соответствовать именам полей в metaData.
     /// </summary>
     /// <param name="row"></param>
     /// <param name="metaData"></param>
-    public void assignRow(JsonStoreRow row, CJsonStoreMetadata metaData) {
+    public void AssignRow(JsonStoreRow row, CJsonStoreMetadata metaData) {
       if ((row != null) && (metaData != null)) {
         this._headers = new Dictionary<String, String>();
-        PropertyInfo[] props = this.GetType().GetProperties();
+        var props = this.GetType().GetProperties();
         foreach (var prop in props) {
           if (prop.CanWrite) {
             //var attrIgnore = Utl.GetPropertyAttr<JsonIgnoreAttribute>(prop);
             //if (attrIgnore == null) {
             var attr = Utl.GetPropertyAttr<DataFieldMappingAttribute>(prop);
-            String fieldName = (attr != null) ? attr.DataField : prop.Name;
-            Object value = this._getValue(row, metaData, fieldName);
+            var fieldName = (attr != null) ? attr.DataField : prop.Name;
+            var value = this._getValue(row, metaData, fieldName);
             prop.SetValue(this, value, null);
             var hcAttr = Utl.GetPropertyAttr<HeaderContentAttribute>(prop);
-            String vHeader = (hcAttr != null) ? hcAttr.Text : this._getHeader(metaData, fieldName);
+            var vHeader = (hcAttr != null) ? hcAttr.Text : this._getHeader(metaData, fieldName);
             this._headers.Add(prop.Name, vHeader);
             //}
           }
@@ -76,9 +63,9 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    public static T CreRec<T>(JsonStoreRow row, CJsonStoreMetadata metaData) where T : CEditorBase, new() {
+    public static T CreRec<T>(JsonStoreRow row, CJsonStoreMetadata metaData) where T : EditorBase, new() {
       var v_result = new T();
-      v_result.assignRow(row, metaData);
+      v_result.AssignRow(row, metaData);
       return v_result;
     }
     /// <summary>
@@ -86,24 +73,24 @@ namespace Bio.Framework.Client.SL {
     /// </summary>
     /// <param name="fieldName"></param>
     /// <returns></returns>
-    public String getHeader(String fieldName) {
-      var hdr = this._headers.Where((a) => { return a.Key.Equals(fieldName, StringComparison.CurrentCultureIgnoreCase); });
-      return (hdr.Count() > 0) ? hdr.First().Value : null;
+    public String GetHeader(String fieldName) {
+      var hdr = this._headers.Where(a => a.Key.Equals(fieldName, StringComparison.CurrentCultureIgnoreCase));
+      return (hdr.Any()) ? hdr.First().Value : null;
     }
     /// <summary>
     /// Возвращает значения свойств класса в виде Params
     /// </summary>
     /// <returns></returns>
-    public Params getAsParams() {
-      Params rslt = new Params();
-      PropertyInfo[] props = this.GetType().GetProperties();
+    public Params GetAsParams() {
+      var rslt = new Params();
+      var props = this.GetType().GetProperties();
       foreach (var prop in props) {
         var attrIgnore = Utl.GetPropertyAttr<JsonIgnoreAttribute>(prop);
         if (attrIgnore == null) {
           var attr = Utl.GetPropertyAttr<DataFieldMappingAttribute>(prop);
-          String fieldName = (attr != null) ? attr.DataField : prop.Name;
+          var fieldName = (attr != null) ? attr.DataField : prop.Name;
           //Object value = this._getValue(row, metaData, fieldName);
-          Object value = prop.GetValue(this, null);
+          var value = prop.GetValue(this, null);
           Params valueAdditionalParams = null;
           if (value is VSelection) {
             valueAdditionalParams = ((VSelection)value).filterParams;
@@ -117,14 +104,14 @@ namespace Bio.Framework.Client.SL {
       return rslt;
     }
 
-    public void assignFrom(Object src) {
+    public void AssignFrom(Object src) {
       if ((src != null) && src.GetType().IsClass) {
         this._headers = new Dictionary<String, String>();
-        PropertyInfo[] props = this.GetType().GetProperties();
+        var props = this.GetType().GetProperties();
         foreach (var prop in props) {
           if (prop.CanWrite) {
 
-            Object value = Utl.GetPropertyValue(src, prop.Name);
+            var value = Utl.GetPropertyValue(src, prop.Name);
             prop.SetValue(this, value, null);
             this.doPropertyChanged(prop.Name);
             var hcAttr = Utl.GetPropertyAttr<HeaderContentAttribute>(prop);

@@ -1,36 +1,27 @@
 ﻿using System;
-using System.Net;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Ink;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 using System.Threading;
 using System.Linq;
 using Bio.Helpers.Common.Types;
 using Bio.Framework.Packets;
-using System.Windows.Controls.Primitives;
-using Bio.Helpers.Controls.SL;
 using Bio.Helpers.Common;
 
 namespace Bio.Framework.Client.SL {
 
   public class CDataGrid : DataGrid {
-    private CJSGrid _owner = null;
-    public CDataGrid()
-      : base() {
-      this.LayoutUpdated += new EventHandler(this._layoutUpdated);
+    private JSGrid _owner;
+    public CDataGrid() {
+      this.LayoutUpdated += this._layoutUpdated;
     }
 
     public override void OnApplyTemplate() {
       base.OnApplyTemplate();
 
-      this._owner = this.FindParentOfType<CJSGrid>();
+      this._owner = this.FindParentOfType<JSGrid>();
       if (this._owner != null) {
-        this._owner._jsClient.OnAfterLoadData += new JSClientEventHandler<AjaxResponseEventArgs>(_jsClient_AfterLoadData);
+        //this._owner._jsClient.OnAfterLoadData += this._jsClient_AfterLoadData;
         this._owner._doOnDataGridAssigned(this);
 
         if (this._owner.delaidAssignPopupMenu != null) {
@@ -57,15 +48,15 @@ namespace Bio.Framework.Client.SL {
       base.OnDrop(e);
     }
 
-    void _jsClient_AfterLoadData(JsonStoreClient sender, AjaxResponseEventArgs args) {
-      if ((this._owner != null) &&
-            (this._owner._jsClient != null) &&
-              (this._owner._jsClient.jsMetadata != null)) {
-        var v_pk_fld = this._owner._jsClient.jsMetadata.getPKFields().FirstOrDefault();
-        if (v_pk_fld != null)
-          this._owner._multiselection.ValueField = v_pk_fld.name;
-      }
-    }
+    //void _jsClient_AfterLoadData(JsonStoreClient sender, AjaxResponseEventArgs args) {
+    //  if ((this._owner != null) &&
+    //        (this._owner._jsClient != null) &&
+    //          (this._owner._jsClient.jsMetadata != null)) {
+    //    var v_pk_fld = this._owner._jsClient.jsMetadata.getPKFields().FirstOrDefault();
+    //    if (v_pk_fld != null)
+    //      this._owner._multiselection.ValueField = v_pk_fld.name;
+    //  }
+    //}
 
 
     protected Boolean _defaultHotKeysEnabled = true;
@@ -131,13 +122,13 @@ namespace Bio.Framework.Client.SL {
           //if (row.Header == null) {
           Int32 v_row_index = row.GetIndex();
           Int64 v_start_row = 0;
-          if (this._owner._jsClient.PageSize > 0)
-            v_start_row = (this._owner.PageCurrent - 1) * this._owner._jsClient.PageSize;
-          var maxRownum = "" + (v_start_row + ((this._owner._jsClient.PageSize > 0) ? this._owner._jsClient.PageSize : this._owner._jsClient.DS.Count()));
+          if (this._owner.PageSize > 0)
+            v_start_row = (this._owner.PageCurrent - 1) * this._owner.PageSize;
+          var maxRownum = "" + (v_start_row + ((this._owner.PageSize > 0) ? this._owner.PageSize : this._owner.DS.Count()));
           var maxRownumLen = maxRownum.Length;
           var numFmt = new String('0', maxRownumLen);
           var rnum = String.Format("{0:" + numFmt + "} ", v_start_row + v_row_index + 1);
-          if (!this._owner.SuppressMultiselection && this._owner._jsClient.jsMetadata.multiselection) {
+          if (!this._owner.SuppressMultiselection && this._owner.Multiselection) {
             var v_hpan = new StackPanel();
             v_hpan.HorizontalAlignment = HorizontalAlignment.Right;
             v_hpan.Orientation = Orientation.Horizontal;
@@ -207,7 +198,7 @@ namespace Bio.Framework.Client.SL {
     /// Оновление состояния выбранных строк при изменении выборки
     /// </summary>
     internal void _updateSelection() {
-      foreach (var r in this._owner._jsClient.DS) {
+      foreach (var r in this._owner.DS) {
         var v_cbx = r.ExtObject as CheckBox;
         if (v_cbx != null) {
           this._onRowCheckedChangedEnabled = false; // отключаем вызовы this._miltiselection.AddSelected и this._miltiselection.RemoveSelected
@@ -292,7 +283,7 @@ namespace Bio.Framework.Client.SL {
         this._owner._doOnBeforeGenColumn(e);
       if (!e.Cancel) {
 
-        CJsonStoreMetadataFieldDef fldDef = this._owner._jsClient.FieldDefByName(e.PropertyName);
+        CJsonStoreMetadataFieldDef fldDef = this._owner.FieldDefByName(e.PropertyName);
         e.Cancel = ((fldDef == null) || fldDef.hidden);
         if (!e.Cancel) {
           //e.Column.v
