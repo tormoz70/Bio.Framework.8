@@ -10,9 +10,9 @@
 #endif
 
   public class JsonStoreRequest : BioSQLRequest {
-    public CJsonStoreData Packet { get; set; }
-    public CJsonStoreSort Sort { get; set; }
-    public CJsonStoreFilter Filter { get; set; }
+    public JsonStoreData Packet { get; set; }
+    public JsonStoreSort Sort { get; set; }
+    public JsonStoreFilter Filter { get; set; }
 
     public JsonStoreRequest() {
       this.RequestType = RequestType.DS;
@@ -22,9 +22,9 @@
       base.copyThis(ref destObj);
       var dst = destObj as JsonStoreRequest;
       if (dst != null) {
-        dst.Packet = (this.Packet != null) ? (CJsonStoreData) this.Packet.Clone() : null;
-        dst.Sort = (this.Sort != null) ? (CJsonStoreSort) this.Sort.Clone() : null;
-        dst.Filter = (this.Filter != null) ? (CJsonStoreFilter) this.Filter.Clone() : null;
+        dst.Packet = (this.Packet != null) ? (JsonStoreData) this.Packet.Clone() : null;
+        dst.Sort = (this.Sort != null) ? (JsonStoreSort) this.Sort.Clone() : null;
+        dst.Filter = (this.Filter != null) ? (JsonStoreFilter) this.Filter.Clone() : null;
       }
     }
 

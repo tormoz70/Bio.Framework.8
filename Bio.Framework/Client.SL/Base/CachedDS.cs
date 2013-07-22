@@ -19,7 +19,7 @@ namespace Bio.Framework.Client.SL {
     public Params bioParams { get; set; }
     public Boolean addNullRow { get; set; }
     public DateTime lastLoaded { get; private set; }
-    public CJsonStoreMetadata metadata { get; private set; }
+    public JsonStoreMetadata metadata { get; private set; }
     public IEnumerable<CRTObject> data { get; private set; }
 
     public event EventHandler OnLoaded;
@@ -31,7 +31,7 @@ namespace Bio.Framework.Client.SL {
       };
       v_cli.Load(bioParams, (s, a) => {
         if (a.Response.Success) {
-          if (v_cli.JSMetadata.fields.Count > 1) {
+          if (v_cli.JSMetadata.Fields.Count > 1) {
             this.metadata = v_cli.JSMetadata;
             this.data = v_cli.DS;
           }

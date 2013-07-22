@@ -1,135 +1,125 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.ComponentModel;
 using Newtonsoft.Json;
 using Bio.Helpers.Common;
 using Bio.Helpers.Common.Types;
-using System.Collections;
-using System.Reflection.Emit;
-using System.Reflection;
 #if SILVERLIGHT
-using System.Windows.Controls;
+
 #endif
 
 namespace Bio.Framework.Packets {
-  public class CJsonStoreData : ICloneable {
+  public class JsonStoreData : ICloneable {
     /// <summary>
     /// Признак первого запроса на сервер данного типа. Используется в CJSGrid
     /// </summary>
-    public Boolean isFirstLoad { get; set; }
+    public Boolean IsFirstLoad { get; set; }
     /// <summary>
     /// Метаданные устарели. Используется в CJSGrid
     /// </summary>
-    public Boolean isMetadataObsolete { get; set; }
+    public Boolean IsMetadataObsolete { get; set; }
     /// <summary>
     /// Номер текущей страницы. Используется в CJSGrid
     /// </summary>
-    public Int64 start { get; set; }
+    public Int64 Start { get; set; }
     /// <summary>
     /// Кол-во записей на страницу. Используется в CJSGrid
     /// </summary>
-    public Int64 limit { get; set; }
+    public Int64 Limit { get; set; }
     /// <summary>
     /// Конец достигнут. Используется в CJSGrid
     /// </summary>
-    public Boolean endReached { get; set; }
+    public Boolean EndReached { get; set; }
     /// <summary>
     /// Записей всего. Используется в CJSGrid
     /// </summary>
-    public Int64 totalCount { get; set; }
+    public Int64 TotalCount { get; set; }
     /// <summary>
     /// Метаданные пакета
     /// </summary>
-    public CJsonStoreMetadata metaData { get; set; }
+    public JsonStoreMetadata MetaData { get; set; }
     /// <summary>
     /// Коллекция строк
     /// </summary>
-    public JsonStoreRows rows { get; set; }
+    public JsonStoreRows Rows { get; set; }
     /// <summary>
     /// пока не используется
     /// </summary>
-    public CJsonStoreFilter locate { get; set; }
+    public JsonStoreFilter Locate { get; set; }
 
-    public CJsonStoreData() {
-      this.isFirstLoad = true;
-      this.isMetadataObsolete = true;
-      this.start = 0;
-      this.limit = 0;
-      this.endReached = false;
-      this.totalCount = 0;
+    public JsonStoreData() {
+      this.IsFirstLoad = true;
+      this.IsMetadataObsolete = true;
+      this.Start = 0;
+      this.Limit = 0;
+      this.EndReached = false;
+      this.TotalCount = 0;
     }
 
-    public JsonStoreRow addRow() {
-      if (this.metaData == null)
+    public JsonStoreRow AddRow() {
+      if (this.MetaData == null)
         throw new EBioException("Для добавления данных в пакет необходимо определить метаданные!!!");
-      if (this.rows == null)
-        this.rows = new JsonStoreRows();
-      var newRow = this.metaData.CreateNewRow();
-      this.rows.Add(newRow);
+      if (this.Rows == null)
+        this.Rows = new JsonStoreRows();
+      var newRow = this.MetaData.CreateNewRow();
+      this.Rows.Add(newRow);
       return newRow;
     }
 
-    public CJsonStoreMetadataFieldDef fieldDefByName(String fieldName) { 
-      int indx = this.metaData.indexOf(fieldName);
-      if ((indx >= 0) && (indx < this.metaData.fields.Count))
-        return this.metaData.fields[indx];
+    public JsonStoreMetadataFieldDef FieldDefByName(String fieldName) { 
+      int indx = this.MetaData.IndexOf(fieldName);
+      if ((indx >= 0) && (indx < this.MetaData.Fields.Count))
+        return this.MetaData.Fields[indx];
       return null;
     }
 
-    public static Object getValue(CJsonStoreMetadata metaData, JsonStoreRow row, String fieldName, Type asType) {
-      int indx = metaData.indexOf(fieldName);
+    public static Object GetValue(JsonStoreMetadata metaData, JsonStoreRow row, String fieldName, Type asType) {
+      var indx = metaData.IndexOf(fieldName);
       if ((indx >= 0) && (indx < row.Values.Count))
         return Utl.Convert2Type(row.Values[indx], asType);
-      else
-        return null;
+      return null;
     }
 
-    public static T getValue<T>(CJsonStoreMetadata metaData, JsonStoreRow row, String fieldName) {
-      var rslt = getValue(metaData, row, fieldName, typeof(T));
+    public static T GetValue<T>(JsonStoreMetadata metaData, JsonStoreRow row, String fieldName) {
+      var rslt = GetValue(metaData, row, fieldName, typeof(T));
       if (rslt == null)
         return default(T);
-      else
-        return (T)rslt;
+      return (T)rslt;
     }
 
 
-    public T getValue<T>(JsonStoreRow row, String fieldName) {
-      return getValue<T>(this.metaData, row, fieldName);
+    public T GetValue<T>(JsonStoreRow row, String fieldName) {
+      return GetValue<T>(this.MetaData, row, fieldName);
     }
 
-    public Object getValue(JsonStoreRow row, String fieldName, Type asType) {
-      return getValue(this.metaData, row, fieldName, asType);
+    public Object GetValue(JsonStoreRow row, String fieldName, Type asType) {
+      return GetValue(this.MetaData, row, fieldName, asType);
     }
 
-    public Object getValue(JsonStoreRow row, String fieldName) {
-      var fd = this.fieldDefByName(fieldName);
+    public Object GetValue(JsonStoreRow row, String fieldName) {
+      var fd = this.FieldDefByName(fieldName);
       if (fd != null)
-        return getValue(row, fieldName, fd.GetDotNetType());
-      else
-        return null;
+        return GetValue(row, fieldName, fd.GetDotNetType());
+      return null;
     }
 
-    public static CJsonStoreData decode(String pJsonString) {
-      return jsonUtl.decode<CJsonStoreData>(pJsonString, new JsonConverter[] { new EBioExceptionConverter()/*t12, new CJsonStoreRowConverter() */});
+    public static JsonStoreData Decode(String pJsonString) {
+      return jsonUtl.decode<JsonStoreData>(pJsonString, new JsonConverter[] { new EBioExceptionConverter()/*t12, new CJsonStoreRowConverter() */});
     }
 
-    public String encode() {
+    public String Encode() {
       return jsonUtl.encode(this, new JsonConverter[] { new EBioExceptionConverter()/*t12, new CJsonStoreRowConverter() */});
     }
 
     public object Clone() {
-      return new CJsonStoreData() {
-        isFirstLoad = this.isFirstLoad,
-        isMetadataObsolete = this.isMetadataObsolete,
-        start = this.start,
-        limit = this.limit,
-        endReached = this.endReached,
-        totalCount = this.totalCount,
-        metaData = (this.metaData != null) ? (CJsonStoreMetadata)this.metaData.Clone() : null,
-        rows = (this.rows != null) ? (JsonStoreRows)this.rows.Clone() : null,
-        locate = (this.locate != null) ? (CJsonStoreFilter)this.locate.Clone() : null
+      return new JsonStoreData() {
+        IsFirstLoad = this.IsFirstLoad,
+        IsMetadataObsolete = this.IsMetadataObsolete,
+        Start = this.Start,
+        Limit = this.Limit,
+        EndReached = this.EndReached,
+        TotalCount = this.TotalCount,
+        MetaData = (this.MetaData != null) ? (JsonStoreMetadata)this.MetaData.Clone() : null,
+        Rows = (this.Rows != null) ? (JsonStoreRows)this.Rows.Clone() : null,
+        Locate = (this.Locate != null) ? (JsonStoreFilter)this.Locate.Clone() : null
       };
     }
 
@@ -139,7 +129,7 @@ namespace Bio.Framework.Packets {
 
     private String _getTypeSigniture() {
       StringBuilder sb = new StringBuilder();
-      foreach (CJsonStoreMetadataFieldDef fld in this.metaData.fields) {
+      foreach (JsonStoreMetadataFieldDef fld in this.metaData.fields) {
         sb.AppendFormat("_{0}_{1}", fld.name, fld.GetDotNetType());
       }
       return sb.ToString().GetHashCode().ToString().Replace("-", "Minus");
@@ -188,7 +178,7 @@ namespace Bio.Framework.Packets {
 
       foreach (JsonStoreRow r in this.rows) {
         var row = Activator.CreateInstance(objectType);
-        foreach (CJsonStoreMetadataFieldDef fld in this.metaData.fields) {
+        foreach (JsonStoreMetadataFieldDef fld in this.metaData.fields) {
             PropertyInfo property = objectType.GetProperty(fld.name);
             var value = r[this.metaData.indexOf(fld.name)];
             value = Utl.Convert2Type(value, property.PropertyType);
@@ -234,7 +224,7 @@ namespace Bio.Framework.Packets {
                                 MethodAttributes.Public |
                                 MethodAttributes.SpecialName |
                                 MethodAttributes.RTSpecialName);
-        foreach (CJsonStoreMetadataFieldDef fld in this.metaData.fields) {
+        foreach (JsonStoreMetadataFieldDef fld in this.metaData.fields) {
           this._createProperty(tb, fld.name, fld.GetDotNetType());
         }
         objectType = tb.CreateType();
@@ -256,7 +246,7 @@ namespace Bio.Framework.Packets {
 
     void _dataGrid_AutoGeneratingColumn(object sender, DataGridAutoGeneratingColumnEventArgs e) {
       Int32 fldIndx = this.metaData.indexOf(e.PropertyName);
-      CJsonStoreMetadataFieldDef fldDef = (fldIndx >= 0) ? this.metaData.fields[fldIndx] : null;
+      JsonStoreMetadataFieldDef fldDef = (fldIndx >= 0) ? this.metaData.fields[fldIndx] : null;
       e.Cancel = e.PropertyName.Equals("PK_VALUE") || ((fldDef != null) && fldDef.hidden);
       if (!e.Cancel) {
         if (fldDef != null) {

@@ -88,17 +88,17 @@ namespace Bio.Helpers.Common {
       return v_rslt;
     }
 
-    public static FieldType detectFieldType(String typeName) {
-      FieldType rslt = ftypeHelper.ConvertStrToFieldType(typeName);
+    public static JSFieldType detectFieldType(String typeName) {
+      JSFieldType rslt = ftypeHelper.ConvertStrToFieldType(typeName);
       return rslt;
     }
 
-    public static CJSAlignment detectAlignment(FieldType fldType, String alignName) {
+    public static CJSAlignment detectAlignment(JSFieldType fldType, String alignName) {
       if (!String.IsNullOrEmpty(alignName)) {
         CJSAlignment rslt = enumHelper.GetFieldValueByDescAttr<CJSAlignment>(alignName, StringComparison.CurrentCulture);
         return rslt;
       } else {
-        if (new FieldType[] {FieldType.Currency, FieldType.Int, FieldType.Currency}.Contains(fldType))
+        if (new JSFieldType[] {JSFieldType.Currency, JSFieldType.Int, JSFieldType.Currency}.Contains(fldType))
           return CJSAlignment.Right;
         else
           return CJSAlignment.Left;

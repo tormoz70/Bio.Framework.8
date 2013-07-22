@@ -19,11 +19,11 @@ using PropertyMetadata = System.Windows.PropertyMetadata;
 
 namespace Bio.Framework.Client.SL {
 
-  public class CJSGridAfterGenColumnEventArgs : EventArgs {
+  public class JSGridAfterGenColumnEventArgs : EventArgs {
     public String PropertyName { get; private set; }
     public DataGridColumn Column { get; private set; }
-    public CJsonStoreMetadataFieldDef Field { get; private set; }
-    public CJSGridAfterGenColumnEventArgs(String propertyName, DataGridColumn column, CJsonStoreMetadataFieldDef field) {
+    public JsonStoreMetadataFieldDef Field { get; private set; }
+    public JSGridAfterGenColumnEventArgs(String propertyName, DataGridColumn column, JsonStoreMetadataFieldDef field) {
       this.PropertyName = propertyName;
       this.Column = column;
       this.Field = field;
@@ -31,13 +31,12 @@ namespace Bio.Framework.Client.SL {
   }
 
   public class JSGrid : ContentControl, IDataControl {
-    private JsonStoreClient _jsClient = null;
+    private readonly JsonStoreClient _jsClient;
 
     public JSGrid() {
       this.DefaultStyleKey = typeof(JSGrid);
-      this._multiselection = new VMultiSelection();
+      this._selection = new VMultiSelection();
       this._jsClient = new JsonStoreClient();
-      //this._jsClient.grid = this;
       this._jsClient.OnBeforeLoadData += this._doOnBeforeLoadData;
       this._jsClient.OnAfterLoadData += this._doOnAfterLoadData;
       this._jsClient.OnJsonStoreResponseSuccess += this._doOnJsonStoreResponseSuccess;
@@ -48,15 +47,15 @@ namespace Bio.Framework.Client.SL {
 
     private void _doOnJsonStoreResponseSuccess(JsonStoreClient sender, AjaxResponseEventArgs args) {
       var v_rsp = (JsonStoreResponse) args.Response;
-      if (v_rsp.packet.limit > 0) {
-        var curPageI = ((v_rsp.packet.start + v_rsp.packet.rows.Count) / v_rsp.packet.limit);
-        var curPageD = ((Double)(v_rsp.packet.start + v_rsp.packet.rows.Count) / (Double)v_rsp.packet.limit);
+      if (v_rsp.packet.Limit > 0) {
+        var curPageI = ((v_rsp.packet.Start + v_rsp.packet.Rows.Count) / v_rsp.packet.Limit);
+        var curPageD = ((Double)(v_rsp.packet.Start + v_rsp.packet.Rows.Count) / v_rsp.packet.Limit);
         if (curPageI < curPageD)
           this._curPage = (int)(curPageD + 1.0);
         else
           this._curPage = curPageI;
         if (this._curPage < 1) this._curPage = 1;
-        if (v_rsp.packet.endReached && (v_rsp.packet.rows.Count > 0)) {
+        if (v_rsp.packet.EndReached && (v_rsp.packet.Rows.Count > 0)) {
           this._lastPage = this._curPage;
           this._lastPageDetected = this._lastPage;
         } else {
@@ -70,15 +69,15 @@ namespace Bio.Framework.Client.SL {
     public String GroupDefinition { get; set; }
 
     private PagedCollectionView _pcv;
-    private IEnumerable _creDSGrp(IEnumerable ds, CJsonStoreMetadata metadata) {
+    private IEnumerable _creDSGrp(IEnumerable ds, JsonStoreMetadata metadata) {
       this._pcv = new PagedCollectionView(ds);
-      var flds = Utl.SplitString(this.GroupDefinition, new Char[] { ',', ';', ' ' });
+      var flds = Utl.SplitString(this.GroupDefinition, new[] { ',', ';', ' ' });
       foreach (var fldName in flds) {
-        var v_indx = metadata.indexOf(fldName);
+        var v_indx = metadata.IndexOf(fldName);
         if (v_indx == -1)
           throw new EBioException("Группировка по полю {0} не возможна, т.к. поле не найдено в метаданных.");
         var gd = new PropertyGroupDescription();
-        gd.PropertyName = metadata.fields[v_indx].name;
+        gd.PropertyName = metadata.Fields[v_indx].Name;
         gd.StringComparison = StringComparison.CurrentCultureIgnoreCase;
         gd.Converter = new GroupHeaderFormatter(gd);
         this._pcv.GroupDescriptions.Add(gd);
@@ -86,14 +85,14 @@ namespace Bio.Framework.Client.SL {
       return this._pcv;
     }
 
-    private void _initGroupDef(CJsonStoreMetadata md) {
+    private void _initGroupDef(JsonStoreMetadata md) {
       if (!String.IsNullOrEmpty(this.GroupDefinition))
         return;
       var groups = (new[] { new { indx = 0, field = "" } }).ToList();
       groups.Clear();
-      foreach (var fld in md.fields) {
-        if (fld.group > 0) {
-          groups.Add(new { indx = fld.group, field = fld.name });
+      foreach (var fld in md.Fields) {
+        if (fld.Group > 0) {
+          groups.Add(new { indx = fld.Group, field = fld.Name });
         }
       }
       if (groups.Count > 0) {
@@ -116,17 +115,17 @@ namespace Bio.Framework.Client.SL {
       var rq = (JsonStoreRequest)args.Request;
       if (this._dataGrid != null) {
         this._initGroupDef(this._jsClient.JSMetadata);
-        this._dataGrid.disableColumnsChangedEvents();
-        if ((rsp.packet.limit == 0) && (!String.IsNullOrEmpty(this.GroupDefinition)))
-          this._dataGrid.ItemsSource = this._creDSGrp(args.DS, this.jsMetadata);
+        this._dataGrid.DisableColumnsChangedEvents();
+        if ((rsp.packet.Limit == 0) && (!String.IsNullOrEmpty(this.GroupDefinition)))
+          this._dataGrid.ItemsSource = this._creDSGrp(args.DS, this.JSMetadata);
         else
           this._dataGrid.ItemsSource = args.DS;
 
-        this._dataGrid.enableColumnsChangedEvents();
+        this._dataGrid.EnableColumnsChangedEvents();
       }
 
-      if (rq.Packet.locate != null) {
-        this._lastLocatedRow = this._locateInternal(rq.Packet.locate);
+      if (rq.Packet.Locate != null) {
+        this._lastLocatedRow = this._locateInternal(rq.Packet.Locate);
         this.SelectedItem = this._lastLocatedRow;
       } else
         this.SelectedIndex = this._curRowIndex;
@@ -154,14 +153,14 @@ namespace Bio.Framework.Client.SL {
     /// </summary>
     public event EventHandler OnShow;
     public event EventHandler<DataGridAutoGeneratingColumnEventArgs> OnBeforeGenColumn;
-    public event EventHandler<CJSGridAfterGenColumnEventArgs> OnAfterGenColumn;
+    public event EventHandler<JSGridAfterGenColumnEventArgs> OnAfterGenColumn;
 
     internal void _doOnBeforeGenColumn(DataGridAutoGeneratingColumnEventArgs args) {
       var eve = this.OnBeforeGenColumn;
       if (eve != null)
         eve(this, args);
     }
-    internal void _doOnAfterGenColumn(CJSGridAfterGenColumnEventArgs args) {
+    internal void _doOnAfterGenColumn(JSGridAfterGenColumnEventArgs args) {
       var eve = this.OnAfterGenColumn;
       if (eve != null)
         eve(this, args);
@@ -171,23 +170,17 @@ namespace Bio.Framework.Client.SL {
 
     private BusyIndicator _busyIndicator;
 
-    private BusyIndicator busyIndicator {
-      get {
-        if (this._busyIndicator == null) {
-          this._busyIndicator = this.GetTemplateChild("busyIndicator") as BusyIndicator;
-        }
-        return this._busyIndicator;
-      }
+    private BusyIndicator BusyIndicator {
+      get { return this._busyIndicator ?? (this._busyIndicator = this.GetTemplateChild("busyIndicator") as BusyIndicator); }
     }
 
-    internal VMultiSelection _multiselection = null;
+    private VMultiSelection _selection;
     /// <summary>
     /// Возвращает текущую выборку при включенном атрибуте "miltiselection"
     /// </summary>
     public VMultiSelection Selection {
-      get {
-        return this._multiselection;
-      }
+      get { return this._selection; }
+      internal set { this._selection = value; }
     }
 
     public void BeginEdit() {
@@ -197,7 +190,7 @@ namespace Bio.Framework.Client.SL {
 
     public void SetSelection(VMultiSelection selection) {
       if (selection != null) {
-        selection.ApplyTo(this._multiselection);
+        selection.ApplyTo(this._selection);
         if (this._dataGrid != null)
           this._dataGrid._updateSelection();
       }
@@ -212,7 +205,7 @@ namespace Bio.Framework.Client.SL {
 
     private void _addBtnEvent(String btnName, RoutedEventHandler onClick) {
       if (onClick != null) {
-        Button btn = this.GetTemplateChild(btnName) as Button;
+        var btn = this.GetTemplateChild(btnName) as Button;
         if (btn != null)
           btn.Click += onClick;
       }
@@ -237,8 +230,6 @@ namespace Bio.Framework.Client.SL {
         tblck.Text = ((this.PageLast == -1) ? "?" : "" + this.PageLast);
     }
 
-    private GridLength fPanelNavRowHeight = new GridLength(0);
-
     private void _updNavPanelVisibility() {
       var pnl = this.GetTemplateChild("navPanel") as StackPanel;
       if (pnl != null)
@@ -260,7 +251,7 @@ namespace Bio.Framework.Client.SL {
         nud.Maximum = 60;
         nud.Increment = 5;
         nud.Value = this._autoRefreshPeriodSecs;
-        nud.ValueChanged += new RoutedPropertyChangedEventHandler<Double>(nud_ValueChanged);
+        nud.ValueChanged += this.nud_ValueChanged;
       }
     }
 
@@ -275,38 +266,37 @@ namespace Bio.Framework.Client.SL {
         this.AutoRefreshStop();
     }
 
-    public void showBusyIndicator(String text) {
+    public void ShowBusyIndicator(String text) {
       Utl.UiThreadInvoke(() => {
-        if (this.busyIndicator != null) {
-          this.busyIndicator.BusyContent = text;
-          this.busyIndicator.IsBusy = true;
+        if (this.BusyIndicator != null) {
+          this.BusyIndicator.BusyContent = text;
+          this.BusyIndicator.IsBusy = true;
         }
       });
     }
-    public void hideBusyIndicator() {
+    public void HideBusyIndicator() {
       Utl.UiThreadInvoke(() => {
-        if (this.busyIndicator != null)
-          this.busyIndicator.IsBusy = false;
+        if (this.BusyIndicator != null)
+          this.BusyIndicator.IsBusy = false;
       });
     }
 
-    private ExpClient _exporter = null;
+    private ExpClient _exporter;
     //private CJSGridCols _cfgEditor = null;
 
-    internal Boolean _alternatingRowBackgroundIsDefault = true;
-    internal Brush _alternatingRowBackground = null;
+    internal Boolean alternatingRowBackgroundIsDefault = true;
+    internal Brush alternatingRowBackground = null;
     public Brush AlternatingRowBackground {
       get {
         if (this._dataGrid != null)
           return this._dataGrid.AlternatingRowBackground;
-        else
-          return this._alternatingRowBackground;
+        return this.alternatingRowBackground;
       }
       set {
-        this._alternatingRowBackground = value;
-        this._alternatingRowBackgroundIsDefault = false;
+        this.alternatingRowBackground = value;
+        this.alternatingRowBackgroundIsDefault = false;
         if (this._dataGrid != null)
-          this._dataGrid.AlternatingRowBackground = this._alternatingRowBackground;
+          this._dataGrid.AlternatingRowBackground = this.alternatingRowBackground;
       }
     }
 
@@ -318,7 +308,7 @@ namespace Bio.Framework.Client.SL {
     }
 
 
-    private const Int32 ciLastPageUnassigned = -1;
+    private const Int32 CI_LAST_PAGE_UNASSIGNED = -1;
     private Int64 _curPage = 1;
     public Int64 PageCurrent {
       get {
@@ -329,21 +319,21 @@ namespace Bio.Framework.Client.SL {
     /// <summary>
     /// Это последняя страница, когда достигнута последняя страница
     /// </summary>
-    private Int64 _lastPageDetected = ciLastPageUnassigned;
+    private Int64 _lastPageDetected = CI_LAST_PAGE_UNASSIGNED;
     /// <summary>
     /// Последняя страница пока не достигнута последняя страница
     /// </summary>
-    private Int64 _lastPage = ciLastPageUnassigned;
+    private Int64 _lastPage = CI_LAST_PAGE_UNASSIGNED;
     public Int64 PageLast {
       get {
         return this._lastPageDetected;
       }
     }
 
-    public void goPageFirst(AjaxRequestDelegate callback) {
+    public void GoPageFirst(AjaxRequestDelegate callback) {
       if (this._jsClient.PageSize == this.PageSize) {
         if (this._curPage > 1) 
-          this._goto(0, "к первой странице...", callback, null);
+          this._goto(null, 0, "к первой странице...", callback, null);
         else {
           if (callback != null)
             callback(null, null);
@@ -351,12 +341,12 @@ namespace Bio.Framework.Client.SL {
       } else
         this.Refresh(callback);
     }
-    public void goPagePrev(AjaxRequestDelegate callback) {
+    public void GoPagePrev(AjaxRequestDelegate callback) {
       if (this._jsClient.PageSize == this.PageSize) {
         if (this._curPage > 1) {
           this._curPage--;
           var startFrom = (this._curPage - 1) * this.PageSize;
-          this._goto(startFrom, "к пред. странице...", callback, null);
+          this._goto(null, startFrom, "к пред. странице...", callback, null);
         } else {
           if (callback != null)
             callback(null, null);
@@ -364,12 +354,12 @@ namespace Bio.Framework.Client.SL {
       } else
         this.Refresh(callback);
     }
-    public void goPageNext(AjaxRequestDelegate callback) {
+    public void GoPageNext(AjaxRequestDelegate callback) {
       if (this._jsClient.PageSize == this.PageSize) {
         if (this._curPage < this._lastPage) {
           this._curPage++;
           var startFrom = (this._curPage - 1) * this.PageSize;
-          this._goto(startFrom, "к след. странице...", callback, null);
+          this._goto(null, startFrom, "к след. странице...", callback, null);
         } else {
           if (callback != null)
             callback(null, null);
@@ -377,10 +367,10 @@ namespace Bio.Framework.Client.SL {
       } else
         this.Refresh(callback);
     }
-    public void goPageLast(AjaxRequestDelegate callback) {
+    public void GoPageLast(AjaxRequestDelegate callback) {
       if (this._jsClient.PageSize == this.PageSize) {
         if (this._curPage < this._lastPage) {
-          this._goto(Int64.MaxValue, "к последней странице...", callback, null);
+          this._goto(null, Int64.MaxValue, "к последней странице...", callback, null);
         } else {
           if (callback != null)
             callback(null, null);
@@ -390,43 +380,43 @@ namespace Bio.Framework.Client.SL {
     }
     public void Refresh(AjaxRequestDelegate callback) {
       this._setBtnVisibility("btnRefreshFirst", Visibility.Collapsed);
-      this._goto(null, "Обновление...", callback, null);
+      this._goto(null, null, "Обновление...", callback, null);
     }
 
     public Boolean AutoRefreshEnabled { get; set; }
     public override void OnApplyTemplate() {
       base.OnApplyTemplate();
-      this._addBtnEvent("btnFirst", new RoutedEventHandler((s, a) => {
-        this.goPageFirst(null);
-      }));
-      this._addBtnEvent("btnPrev", new RoutedEventHandler((s, a) => {
-        this.goPagePrev(null);
-      }));
-      this._addBtnEvent("btnNext", new RoutedEventHandler((s, a) => {
-        this.goPageNext(null);
-      }));
-      this._addBtnEvent("btnLast", new RoutedEventHandler((s, a) => {
-        this.goPageLast(null);
-      }));
-      this._addBtnEvent("btnRefresh", new RoutedEventHandler((s, a) => {
+      this._addBtnEvent("btnFirst", (s, a) => {
+        this.GoPageFirst(null);
+      });
+      this._addBtnEvent("btnPrev", (s, a) => {
+        this.GoPagePrev(null);
+      });
+      this._addBtnEvent("btnNext", (s, a) => {
+        this.GoPageNext(null);
+      });
+      this._addBtnEvent("btnLast", (s, a) => {
+        this.GoPageLast(null);
+      });
+      this._addBtnEvent("btnRefresh", (s, a) => {
         this.Refresh(null);
-      }));
-      this._addBtnEvent("btnRefreshFirst", new RoutedEventHandler((s, a) => {
+      });
+      this._addBtnEvent("btnRefreshFirst", (s, a) => {
         this.Load();
-      }));
-      this._addBtnEvent("btnExp", new RoutedEventHandler((s, a) => {
+      });
+      this._addBtnEvent("btnExp", (s, a) => {
         if (this._exporter == null) {
-          this._exporter = new ExpClient(this.ajaxMng, this.BioCode, this.Title ?? "Экспорт");
+          this._exporter = new ExpClient(this.AjaxMng, this.BioCode, this.Title ?? "Экспорт");
         } else
           this._exporter.BioCode = this.BioCode;
         this._exporter.Title = this.Title;
         this.BioParams.SetValue("dataGridOnClientHeaders", this._getColumnHeaderList());
         this._exporter.RunProc(this.BioParams, null);
 
-      }));
-      this._addBtnEvent("btnCfg", new RoutedEventHandler((s, a) => {
+      });
+      this._addBtnEvent("btnCfg", (s, a) => {
         this._editCfg();
-      }));
+      });
 
       this._updNavPanelVisibility();
       this._updAutoRefreshPanelVisibility();
@@ -438,11 +428,11 @@ namespace Bio.Framework.Client.SL {
       this._dataGrid.OnAnColumnResized += this._doOnAnColumnResized;
     }
 
-    private Boolean _isShown = false;
+    private Boolean _isShown;
     private void _doOnShow() {
       if (!this._isShown) {
         this._isShown = true;
-        this._callOnShowDelaiedHandler(this, new EventArgs());
+        this._callOnShowDelaiedHandler();
         var eve = this.OnShow;
         if (eve != null)
           eve(this, new EventArgs());
@@ -451,15 +441,10 @@ namespace Bio.Framework.Client.SL {
     //public void 
 
     private String _generateGridUID() {
-      String v_prnt_typeName = null;
-      Utl.UiThreadInvoke(() => {
-        var v_prnt = Utl.FindParentElem1<UserControl>(this);
-        if (v_prnt == null)
-          v_prnt = Utl.FindParentElem1<FloatableWindow>(this);
-        v_prnt_typeName = (v_prnt != null) ? v_prnt.GetType().FullName : this.GetType().Name;
-      });
-      var v_rslt = v_prnt_typeName + "-[" + this.BioCode + "]";
-      return v_rslt;
+      var prnt = Utl.FindParentElem1<UserControl>(this) ?? Utl.FindParentElem1<FloatableWindow>(this);
+      var prntTypeName = (prnt != null) ? prnt.GetType().FullName : this.GetType().Name;
+      var rslt = prntTypeName + "-[" + this.BioCode + "]";
+      return rslt;
     }
 
     /// <summary>
@@ -467,9 +452,9 @@ namespace Bio.Framework.Client.SL {
     /// </summary>
     public String Title { get; set; }
 
-    private Int32 _selectedIndex = 0;
-    private CRTObject _selectedItem = null;
-    private IList _selectedItems = null;
+    private Int32 _selectedIndex;
+    private CRTObject _selectedItem;
+    private IList _selectedItems;
     public event SelectionChangedEventHandler SelectedChanged;
     internal void _onSelectionChanged(SelectionChangedEventArgs e) {
       if (this._dataGrid != null) {
@@ -532,25 +517,18 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    private JSGridConfig _cfg = null;
+    private JSGridConfig _cfg;
     private void _restoreCfg() {
       var uid = this._generateGridUID();
-      this._cfg = JSGridConfig.Restore(uid, null);
-      if (this._cfg == null)
-        this._cfg = this._creCfg();
+      this._cfg = JSGridConfig.Restore(uid, null) ?? this._creCfg();
     }
 
-    private void _storeCfg(Boolean skipRefresh) {
+    private void _storeCfg(Boolean skipRefresh = false) {
       if (this._cfg != null) {
-        Utl.UiThreadInvoke(new Action<JSGrid>((grd) => {
-          if (!skipRefresh)
-            grd._cfg.Refresh(grd);
-          grd._cfg.Store(grd._generateGridUID());
-        }), this);
+        if (!skipRefresh)
+          this._cfg.Refresh(this);
+        this._cfg.Store(this._generateGridUID());
       }
-    }
-    private void _storeCfg() {
-      this._storeCfg(false);
     }
 
     private Int64 _defaultPageSize = 30;
@@ -564,7 +542,7 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    private Boolean _suppressPaging = false;
+    private Boolean _suppressPaging;
     public Boolean SuppressPaging {
       get {
         return this._suppressPaging;
@@ -592,7 +570,7 @@ namespace Bio.Framework.Client.SL {
           this._restoreCfg();
       }
     }
-    public IAjaxMng ajaxMng {
+    public IAjaxMng AjaxMng {
       get {
         return this._jsClient.AjaxMng;
       }
@@ -624,28 +602,28 @@ namespace Bio.Framework.Client.SL {
     //  set { this.SetValue(HeadersVisibilityProperty, value); }
     //}
 
-    public static DependencyProperty ColumnResizedProperty = DependencyProperty.Register("ColumnResized", typeof(SizeChangedEventHandler), typeof(JSGrid), new PropertyMetadata(null));
+    public static DependencyProperty columnResizedProperty = DependencyProperty.Register("ColumnResized", typeof(SizeChangedEventHandler), typeof(JSGrid), new PropertyMetadata(null));
     public SizeChangedEventHandler ColumnResized {
-      get { return (SizeChangedEventHandler)this.GetValue(ColumnResizedProperty); }
-      set { this.SetValue(ColumnResizedProperty, value); }
+      get { return (SizeChangedEventHandler)this.GetValue(columnResizedProperty); }
+      set { this.SetValue(columnResizedProperty, value); }
     }
 
-    public static DependencyProperty TestTxtProperty = DependencyProperty.Register("TestTxt", typeof(String), typeof(JSGrid), new PropertyMetadata(String.Empty));
+    public static DependencyProperty testTxtProperty = DependencyProperty.Register("TestTxt", typeof(String), typeof(JSGrid), new PropertyMetadata(String.Empty));
     public String TestTxt {
-      get { return (String)this.GetValue(TestTxtProperty); }
-      set { this.SetValue(TestTxtProperty, value); }
+      get { return (String)this.GetValue(testTxtProperty); }
+      set { this.SetValue(testTxtProperty, value); }
     }
 
-    public static DependencyProperty HeadersVisibilityProperty = DependencyProperty.Register("HeadersVisibility", typeof(DataGridHeadersVisibility), typeof(JSGrid), new PropertyMetadata(DataGridHeadersVisibility.All));
+    public static DependencyProperty headersVisibilityProperty = DependencyProperty.Register("HeadersVisibility", typeof(DataGridHeadersVisibility), typeof(JSGrid), new PropertyMetadata(DataGridHeadersVisibility.All));
     public DataGridHeadersVisibility HeadersVisibility {
-      get { return (DataGridHeadersVisibility)this.GetValue(HeadersVisibilityProperty); }
-      set { this.SetValue(HeadersVisibilityProperty, value); }
+      get { return (DataGridHeadersVisibility)this.GetValue(headersVisibilityProperty); }
+      set { this.SetValue(headersVisibilityProperty, value); }
     }
 
-    public static DependencyProperty RowHeaderWidthProperty = DependencyProperty.Register("RowHeaderWidth", typeof(Int32), typeof(JSGrid), new PropertyMetadata(40));
+    public static DependencyProperty rowHeaderWidthProperty = DependencyProperty.Register("RowHeaderWidth", typeof(Int32), typeof(JSGrid), new PropertyMetadata(40));
     public Int32 RowHeaderWidth {
-      get { return (Int32)this.GetValue(RowHeaderWidthProperty); }
-      set { this.SetValue(RowHeaderWidthProperty, value); }
+      get { return (Int32)this.GetValue(rowHeaderWidthProperty); }
+      set { this.SetValue(rowHeaderWidthProperty, value); }
     }
 
     //public static DependencyProperty SelectedIndexProperty = DependencyProperty.Register("SelectedIndex", typeof(Int32), typeof(JSGrid), new PropertyMetadata(-1));
@@ -679,9 +657,9 @@ namespace Bio.Framework.Client.SL {
         return true;
       }
 
-      var v_storeSelectedIndex = this.SelectedIndex;
+      var storeSelectedIndex = this.SelectedIndex;
       this.SelectedIndex++;
-      return v_storeSelectedIndex < this.SelectedIndex;
+      return storeSelectedIndex < this.SelectedIndex;
     }
 
     /// <summary>
@@ -694,9 +672,9 @@ namespace Bio.Framework.Client.SL {
         return true;
       }
 
-      var v_storeSelectedIndex = this.SelectedIndex;
+      var storeSelectedIndex = this.SelectedIndex;
       this.SelectedIndex--;
-      return v_storeSelectedIndex > this.SelectedIndex;
+      return storeSelectedIndex > this.SelectedIndex;
     }
 
     /// <summary>
@@ -719,8 +697,8 @@ namespace Bio.Framework.Client.SL {
       return this._jsClient.DS.ElementAtOrDefault(this.SelectedIndex - 1);
     }
 
-    private Queue<Action> _callOnShowDelaiedCallback = new Queue<Action>();
-    private void _callOnShowDelaiedHandler(Object sender, EventArgs e) {
+    private readonly Queue<Action> _callOnShowDelaiedCallback = new Queue<Action>();
+    private void _callOnShowDelaiedHandler() {
       while (this._callOnShowDelaiedCallback.Count > 0) {
         var v_act = this._callOnShowDelaiedCallback.Dequeue();
         if (v_act != null)
@@ -753,7 +731,9 @@ namespace Bio.Framework.Client.SL {
             Utl.UiThreadInvoke(() => {
               try {
                 this._dataGrid.ScrollIntoView(this._dataGrid.SelectedItem, this._dataGrid.Columns.FirstOrDefault());
+// ReSharper disable EmptyGeneralCatchClause
               } catch { }
+// ReSharper restore EmptyGeneralCatchClause
             });
           }
         }
@@ -768,7 +748,7 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    private Boolean _refreshCurColumnEnabled = false;
+    private Boolean _refreshCurColumnEnabled;
     private void _enableRefreshCurColumn() {
       this._refreshCurColumnEnabled = true;
     }
@@ -778,9 +758,9 @@ namespace Bio.Framework.Client.SL {
     internal void _refreshCurColumn() {
       if (this._refreshCurColumnEnabled) {
         this._disableRefreshCurColumn();
-        if ((this._dataGrid != null) && (this._dataGrid.SelectedItem != null) && (this._jsClient.DS.Count() > 0)) {
+        if ((this._dataGrid != null) && (this._dataGrid.SelectedItem != null) && (this._jsClient.DS.Any())) {
           Utl.UiThreadInvoke(() => {
-            var v_col = this._dataGrid.Columns.Where((c) => { return c.DisplayIndex == this._currentColumnIndex; }).FirstOrDefault();
+            var v_col = this._dataGrid.Columns.Where(c => { return c.DisplayIndex == this._currentColumnIndex; }).FirstOrDefault();
             if (v_col != null) {
               this._dataGrid.CurrentColumn = v_col;
               this._dataGrid.ScrollIntoView(this._dataGrid.SelectedItem, this._dataGrid.CurrentColumn);
@@ -821,7 +801,7 @@ namespace Bio.Framework.Client.SL {
     }
 
     public static String GetDataGridColumnName(DataGridColumn column) {
-      DataGridBoundColumn col = column as DataGridBoundColumn;
+      var col = (DataGridBoundColumn)column;
       if ((col.Binding != null) && (col.Binding.Path != null))
         return col.Binding.Path.Path;
       return null;
@@ -829,7 +809,7 @@ namespace Bio.Framework.Client.SL {
 
     public DataGridColumn ColumnByBindingPath(String bindingPath) {
       if (this.Columns != null)
-        return this.Columns.Where((c) => { return String.Equals(GetDataGridColumnName(c), bindingPath, StringComparison.CurrentCultureIgnoreCase); }).FirstOrDefault();
+        return this.Columns.Where(c => { return String.Equals(GetDataGridColumnName(c), bindingPath, StringComparison.CurrentCultureIgnoreCase); }).FirstOrDefault();
       return null;
     }
 
@@ -851,8 +831,7 @@ namespace Bio.Framework.Client.SL {
       get {
         if ((this._dataGrid != null) && (this._dataGrid.SelectedItem != null))
           return Utl.GetPropertyValue<String>(this._dataGrid.SelectedItem, this.CurrentColumnName);
-        else
-          return null;
+        return null;
       }
     }
 
@@ -860,25 +839,25 @@ namespace Bio.Framework.Client.SL {
       get { return this._selectedItems; }
     }
 
-    public static DependencyProperty SelectionModeProperty = DependencyProperty.Register("SelectionMode", typeof(DataGridSelectionMode), typeof(JSGrid), new PropertyMetadata(DataGridSelectionMode.Single));
+    public static DependencyProperty selectionModeProperty = DependencyProperty.Register("SelectionMode", typeof(DataGridSelectionMode), typeof(JSGrid), new PropertyMetadata(DataGridSelectionMode.Single));
     public DataGridSelectionMode SelectionMode {
-      get { return (DataGridSelectionMode)this.GetValue(SelectionModeProperty); }
-      set { this.SetValue(SelectionModeProperty, value); }
+      get { return (DataGridSelectionMode)this.GetValue(selectionModeProperty); }
+      set { this.SetValue(selectionModeProperty, value); }
     }
 
     private class LoadParams<T> {
       public Params BioParams { get; set; }
       public T Callback { get; set; }
-      public CJsonStoreFilter Locate { get; set; }
+      public JsonStoreFilter Locate { get; set; }
     };
     private LoadParams<AjaxRequestDelegate> _suspendLoadParams;
     private Boolean _isFirstLoading = true;
-    public void Load(Params bioParams, AjaxRequestDelegate callback, CJsonStoreFilter locate) {
+    public void Load(Params bioParams, AjaxRequestDelegate callback, JsonStoreFilter locate) {
       if (this.SuspendFirstLoad && this._isFirstLoading) {
         this._suspendLoadParams = new LoadParams<AjaxRequestDelegate> {
           BioParams = (bioParams != null) ? (Params)bioParams.Clone() : null,
           Callback = callback,
-          Locate = (locate != null) ? (CJsonStoreFilter)locate.Clone() : null
+          Locate = (locate != null) ? (JsonStoreFilter)locate.Clone() : null
         };
         this._setBtnVisibility("btnRefreshFirst", Visibility.Visible);
         this._isFirstLoading = false;
@@ -887,12 +866,12 @@ namespace Bio.Framework.Client.SL {
         var loadParams = this._suspendLoadParams ?? new LoadParams<AjaxRequestDelegate> {
           BioParams = (bioParams != null) ? (Params)bioParams.Clone() : null,
           Callback = callback,
-          Locate = (locate != null) ? (CJsonStoreFilter)locate.Clone() : null
+          Locate = (locate != null) ? (JsonStoreFilter)locate.Clone() : null
         };
         this._suspendLoadParams = null;
-        this._callOnShowDelaied(() => this._goto((this.PageCurrent - 1)*this.PageSize, "Загрузка...",
+        this._callOnShowDelaied(() => this._goto(loadParams.BioParams, (this.PageCurrent - 1) * this.PageSize, "Загрузка...",
                                                  (sndr, a) => {
-                                                   this.hideBusyIndicator();
+                                                   this.HideBusyIndicator();
 
                                                    if (a.Response.Success) {
                                                      var rsp = (a.Response as JsonStoreResponse);
@@ -963,10 +942,10 @@ namespace Bio.Framework.Client.SL {
     }
 
     public Boolean Multiselection {
-      get { return this._jsClient.JSMetadata.multiselection; }
+      get { return this._jsClient.JSMetadata.Multiselection; }
     }
 
-    public CJsonStoreMetadataFieldDef FieldDefByName(String fieldName) {
+    public JsonStoreMetadataFieldDef FieldDefByName(String fieldName) {
       return this._jsClient.FieldDefByName(fieldName);
     }
 
@@ -983,46 +962,46 @@ namespace Bio.Framework.Client.SL {
       this.DataIsLoaded = true;
 
       if (this._jsClient.JSMetadata != null) {
-        var v_pk_fld = this._jsClient.JSMetadata.getPKFields().FirstOrDefault();
+        var v_pk_fld = this._jsClient.JSMetadata.GetPKFields().FirstOrDefault();
         if (v_pk_fld != null)
-          this._multiselection.ValueField = v_pk_fld.name;
+          this._selection.ValueField = v_pk_fld.Name;
       }
 
     }
 
     private Int32 _curRowIndex = -1;
     private Int32 _curColumnIndex = -1;
-    private void _goto(Int64? startFrom, String waitMsg, AjaxRequestDelegate callback, CJsonStoreFilter locate) {
-      this.showBusyIndicator(waitMsg);
+    private void _goto(Params bioParams, Int64? startFrom, String waitMsg, AjaxRequestDelegate callback, JsonStoreFilter locate) {
+      this.ShowBusyIndicator(waitMsg);
       try {
         this._curColumnIndex = this.CurrentColumnIndex;
         this._curRowIndex = this.SelectedIndex;
-        this._jsClient.Load(null, (s, a) => {
-          this.hideBusyIndicator();
+        this._jsClient.Load(bioParams, (s, a) => {
+          this.HideBusyIndicator();
           this.updPosState();
           if (callback != null)
             callback(s, a);
         }, locate, this.PageSize, startFrom);
       } catch {
-        this.hideBusyIndicator();
+        this.HideBusyIndicator();
         throw;
       }
     }
 
-    private static Boolean _checkFilter(CRTObject row, Int64 rowPos, CJsonStoreFilter filter) {
+    private static Boolean _checkFilter(CRTObject row, Int64 rowPos, JsonStoreFilter filter) {
       if ((row != null) && (filter != null)) {
-        return rowPos >= filter.fromPosition && filter.check(row);
+        return rowPos >= filter.FromPosition && filter.Check(row);
       }
       return false;
     }
 
-    private CRTObject _locateInternal(CJsonStoreFilter locate) {
+    private CRTObject _locateInternal(JsonStoreFilter locate) {
       if (this.ItemsSource != null) {
         var rows = this.ItemsSource.Cast<CRTObject>().ToArray();
         for (var i = 0; i < rows.Length; i++) {
           var rowPos = i + (this.PageCurrent * this.PageSize);
           if (_checkFilter(rows[i], rowPos, locate)) {
-            locate.fromPosition = rowPos + 1;
+            locate.FromPosition = rowPos + 1;
             return rows[i];
           }
         }
@@ -1030,15 +1009,15 @@ namespace Bio.Framework.Client.SL {
       return null;
     }
 
-    private CRTObject _lastLocatedRow = null;
-    private void _locate(CJsonStoreFilter locate, EventHandler<OnSelectEventArgs> callback, Boolean forceRemote = false) {
+    private CRTObject _lastLocatedRow;
+    private void _locate(Params bioParams, JsonStoreFilter locate, EventHandler<OnSelectEventArgs> callback, Boolean forceRemote = false) {
       CRTObject v_row = null;
       if(!forceRemote)
         v_row = this._locateInternal(locate);
       if (v_row != null)
         this._doOnLocation(v_row, null, callback);
       else {
-        this._goto(0, "Поиск...", (s, a) => {
+        this._goto(bioParams, 0, "Поиск...", (s, a) => {
           if (a.Response.Success)
             this._doOnLocation(this._lastLocatedRow, null, callback);
           else
@@ -1048,14 +1027,14 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    private LoadParams<EventHandler<OnSelectEventArgs>> _suspendLocateParams = null;
-    public void Locate(CJsonStoreFilter locate, EventHandler<OnSelectEventArgs> callback, Boolean forceRemote) {
+    private LoadParams<EventHandler<OnSelectEventArgs>> _suspendLocateParams;
+    public void Locate(JsonStoreFilter locate, EventHandler<OnSelectEventArgs> callback, Boolean forceRemote) {
       this._callOnShowDelaied(() => {
         if (this.SuspendFirstLoad && this._isFirstLoading) {
           this._suspendLocateParams = new LoadParams<EventHandler<OnSelectEventArgs>> {
             BioParams = null,
             Callback = callback,
-            Locate = (locate != null) ? (CJsonStoreFilter)locate.Clone() : null
+            Locate = (locate != null) ? (JsonStoreFilter)locate.Clone() : null
           };
           this._setBtnVisibility("btnRefreshFirst", Visibility.Visible);
           this._isFirstLoading = false;
@@ -1064,23 +1043,23 @@ namespace Bio.Framework.Client.SL {
           var locateParams = this._suspendLocateParams ?? new LoadParams<EventHandler<OnSelectEventArgs>> {
             BioParams = null,
             Callback = callback,
-            Locate = (locate != null) ? (CJsonStoreFilter)locate.Clone() : null
+            Locate = (locate != null) ? (JsonStoreFilter)locate.Clone() : null
           };
           this._suspendLocateParams = null;
-          this._locate(locateParams.Locate, locateParams.Callback, forceRemote);
+          this._locate(locateParams.BioParams, locateParams.Locate, locateParams.Callback, forceRemote);
         }
       });
     }
 
-    public void Locate(CJsonStoreFilter locate, EventHandler<OnSelectEventArgs> callback) {
+    public void Locate(JsonStoreFilter locate, EventHandler<OnSelectEventArgs> callback) {
       this.Locate(locate, callback, false);
     }
 
-    public void Locate(CJsonStoreFilter locate, Boolean forceRemote) {
+    public void Locate(JsonStoreFilter locate, Boolean forceRemote) {
       this.Locate(locate, null, forceRemote);
     }
 
-    public void Locate(CJsonStoreFilter locate) {
+    public void Locate(JsonStoreFilter locate) {
       this.Locate(locate, null, false);
     }
 
@@ -1142,10 +1121,12 @@ namespace Bio.Framework.Client.SL {
       var row = this._jsClient.NewRow();
       return row;
     }
+
     /// <summary>
     /// Вставляет строку в позицию
     /// </summary>
     /// <param name="index"></param>
+    /// <param name="row"></param>
     /// <returns></returns>
     public void InsertRow(Int32 index, CRTObject row) {
       this._jsClient.InsertRow(index, row);
@@ -1196,7 +1177,7 @@ namespace Bio.Framework.Client.SL {
       foreach (var r in this._dataGrid.SelectedItems)
         v_seld.Add(r as CRTObject);
       foreach (var r in v_seld)
-        this._jsClient.RemoveRow(r as CRTObject);
+        this._jsClient.RemoveRow(r);
       this.SelectedIndex = v_seld_indx;
     }
 
@@ -1207,15 +1188,15 @@ namespace Bio.Framework.Client.SL {
     /// <param name="trunsactionID">ID транзакции</param>
     /// <param name="cmd">Команда для транзакции</param>
     public void SaveData(AjaxRequestDelegate callback, String trunsactionID, SQLTransactionCmd cmd) {
-      this.showBusyIndicator("сохранение изменений...");
+      this.ShowBusyIndicator("сохранение изменений...");
       try {
         this._jsClient.Post((s, a) => {
-          this.hideBusyIndicator();
+          this.HideBusyIndicator();
           if (callback != null)
             callback(s, a);
         }, trunsactionID, cmd);
       } catch {
-        this.hideBusyIndicator();
+        this.HideBusyIndicator();
         throw;
       }
     }
@@ -1238,17 +1219,14 @@ namespace Bio.Framework.Client.SL {
     /// <summary>
     /// Метаданные набора данных
     /// </summary>
-    public CJsonStoreMetadata jsMetadata {
+    public JsonStoreMetadata JSMetadata {
       get {
         return this._jsClient.JSMetadata;
       }
     }
 
     public IEnumerator<DataGridRow> GetEnumerator() {
-      if (this._dataGrid != null)
-        return this._dataGrid.GetRowsEnumerator();
-      else
-        return null;
+      return this._dataGrid != null ? this._dataGrid.GetRowsEnumerator() : null;
     }
 
     private Int32 _autoRefreshPeriodSecs = 20;
@@ -1262,7 +1240,7 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    private DispatcherTimer _autoRefreshTimer = null;
+    private DispatcherTimer _autoRefreshTimer;
     public void AutoRefreshStart(Int32 periodSecs) {
       if (periodSecs > 0)
         this._autoRefreshPeriodSecs = periodSecs;
@@ -1277,7 +1255,7 @@ namespace Bio.Framework.Client.SL {
       this.AutoRefreshStart(0);
     }
 
-    private Boolean _autorefreshing = false;
+    private Boolean _autorefreshing;
     private void _autoRefreshTimer_Tick(Object sender, EventArgs e) {
       if (!this._autorefreshing) {
         this._autorefreshing = true;
@@ -1308,52 +1286,53 @@ namespace Bio.Framework.Client.SL {
     }
 
     private JSGridConfig _creCfg() {
-      var v_rslt = new JSGridConfig();
+      var rslt = new JSGridConfig();
       if (this._jsClient != null)
-        v_rslt.PageSize = this.DefaultPageSize;
-      v_rslt.Refresh(this);
-      return v_rslt;
+        rslt.PageSize = this.DefaultPageSize;
+      rslt.Refresh(this);
+      return rslt;
     }
 
     private void _editCfg() {
-      var v_cfgEditor = new JSGridProps();
-      v_cfgEditor.Title = "Выбор колонок таблицы";
-      v_cfgEditor.Closed += new EventHandler((Object sender, EventArgs e) => {
+      var cfgEditor = new JSGridProps();
+      cfgEditor.Title = "Выбор колонок таблицы";
+      cfgEditor.Closed += (sender, e) => {
         if (((FloatableWindow)sender).DialogResult == true) {
           this._applyCfgToGrid();
           this._storeCfg(true);
           this._updNavPanelVisibility();
           this.Refresh(null);
         }
-      });
+      };
       if (this._cfg == null)
         this._restoreCfg();
-      v_cfgEditor.ShowDialog(this._cfg);
+      cfgEditor.ShowDialog(this._cfg);
     }
 
     private void _applyCfgToGrid() {
-      this._dataGrid.disableColumnsChangedEvents();
+      this._dataGrid.DisableColumnsChangedEvents();
       try {
         if ((this._cfg == null) || !String.Equals(this._generateGridUID(), this._cfg.UID))
           this._restoreCfg();
         if (this._cfg != null) {
           foreach (var c in this._cfg.ColumnDefs) {
-            var v_col = this.Columns.Where((cc) => {
-              return String.Equals(((DataGridBoundColumn)cc).Binding.Path.Path, c.FieldName, StringComparison.CurrentCultureIgnoreCase);
+            var c1 = c;
+            var col = this.Columns.Where(cc => {
+              return String.Equals(((DataGridBoundColumn)cc).Binding.Path.Path, c1.FieldName, StringComparison.CurrentCultureIgnoreCase);
             }).FirstOrDefault();
-            if (v_col != null) {
+            if (col != null) {
               if ((c.Index >= 0) && (c.Index < this.Columns.Count))
-                v_col.DisplayIndex = c.Index;
+                col.DisplayIndex = c.Index;
               if (BioGlobal.Debug) {
                 if (c.Width > 5.0D)
-                  v_col.Width = new DataGridLength(c.Width);
+                  col.Width = new DataGridLength(c.Width);
               }
-              v_col.Visibility = (c.IsChecked ? Visibility.Visible : Visibility.Collapsed);
+              col.Visibility = (c.IsChecked ? Visibility.Visible : Visibility.Collapsed);
             }
           }
         }
       } finally {
-        this._dataGrid.enableColumnsChangedEvents();
+        this._dataGrid.EnableColumnsChangedEvents();
       }
     }
 
@@ -1409,15 +1388,15 @@ namespace Bio.Framework.Client.SL {
 
     public static List<T> GetChildrenByType<T>(this UIElement element, Func<T, bool> condition) where T : UIElement {
       var results = new List<T>();
-      _getChildrenByType<T>(element, condition, results);
+      _getChildrenByType(element, condition, results);
       return results;
     }
 
-    private static void _getChildrenByType<T>(UIElement element, Func<T, bool> condition, List<T> results) where T : UIElement {
+    private static void _getChildrenByType<T>(DependencyObject element, Func<T, bool> condition, ICollection<T> results) where T : UIElement {
       for (var i = 0; i < VisualTreeHelper.GetChildrenCount(element); i++) {
         var child = VisualTreeHelper.GetChild(element, i) as UIElement;
         if (child != null) {
-          T t = child as T;
+          var t = child as T;
           if (t != null) {
             if (condition == null) {
               results.Add(t);
@@ -1425,13 +1404,13 @@ namespace Bio.Framework.Client.SL {
               results.Add(t);
             }
           }
-          _getChildrenByType<T>(child, condition, results);
+          _getChildrenByType(child, condition, results);
         }
       }
     }
 
     public static bool HasChildrenByType<T>(this UIElement element, Func<T, bool> condition) where T : UIElement {
-      return (element.GetChildrenByType<T>(condition).Count != 0);
+      return (element.GetChildrenByType(condition).Count != 0);
     }
 
     public static IEnumerator<DataGridRow> GetRowsEnumerator(this DataGrid grid) {
@@ -1442,9 +1421,9 @@ namespace Bio.Framework.Client.SL {
   }
 
   public class GridRowEnumerator : IEnumerator<DataGridRow> {
-    private DataGrid _grid;
+    private readonly DataGrid _grid;
 
-    private IEnumerator _enumerator;
+    private readonly IEnumerator _enumerator;
 
     public GridRowEnumerator(DataGrid grid) {
       _grid = grid;
@@ -1512,7 +1491,9 @@ namespace Bio.Framework.Client.SL {
   }
 
   public class RHConverter : IValueConverter {
-    private JSGrid _owner = null;
+// ReSharper disable NotAccessedField.Local
+    private JSGrid _owner;
+// ReSharper restore NotAccessedField.Local
     public RHConverter(JSGrid owner) {
       this._owner = owner;
     }
@@ -1526,25 +1507,29 @@ namespace Bio.Framework.Client.SL {
   }
 
   public class CurrFormatter : IValueConverter {
-    private CJsonStoreMetadataFieldDef _fldDef;
-    private DataGridColumn _column;
-    public CurrFormatter(CJsonStoreMetadataFieldDef fldDef, DataGridColumn col) {
+    private readonly JsonStoreMetadataFieldDef _fldDef;
+// ReSharper disable NotAccessedField.Local
+    private readonly DataGridColumn _column;
+// ReSharper restore NotAccessedField.Local
+    public CurrFormatter(JsonStoreMetadataFieldDef fldDef, DataGridColumn col) {
       this._fldDef = fldDef;
       this._column = col;
     }
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
-      if (!String.IsNullOrEmpty(this._fldDef.format)) {
+      if (!String.IsNullOrEmpty(this._fldDef.Format)) {
         if (value is Decimal) {
-          return ((Decimal)value).ToString(this._fldDef.format);
+          return ((Decimal)value).ToString(this._fldDef.Format);
         }
         if (value is Double) {
-          return ((Double)value).ToString(this._fldDef.format);
+          return ((Double)value).ToString(this._fldDef.Format);
         }
         if (value is Int64) {
-          return ((Int64)value).ToString(this._fldDef.format);
+          return ((Int64)value).ToString(this._fldDef.Format);
         }
+// ReSharper disable ConditionIsAlwaysTrueOrFalse
         if ((value is DateTime) || (value is DateTime?) || (value is DateTimeOffset) || (value is DateTimeOffset?)) {
-          return ((DateTime)value).ToString(this._fldDef.format);
+// ReSharper restore ConditionIsAlwaysTrueOrFalse
+          return ((DateTime)value).ToString(this._fldDef.Format);
         }
         return value;
       }
@@ -1565,7 +1550,9 @@ namespace Bio.Framework.Client.SL {
   }
 
   public class GroupHeaderFormatter : IValueConverter {
-    private PropertyGroupDescription _grpDescr;
+// ReSharper disable NotAccessedField.Local
+    private readonly PropertyGroupDescription _grpDescr;
+// ReSharper restore NotAccessedField.Local
     public GroupHeaderFormatter(PropertyGroupDescription grpDescr) {
       this._grpDescr = grpDescr;
     }

@@ -18,7 +18,7 @@ namespace Bio.Helpers.Common {
   /// <summary>
   /// Тип поля данных
   /// </summary>
-  public enum FieldType {
+  public enum JSFieldType {
 
     [Mapping("string", typeof(String), null)]
     String      = 0x0000,
@@ -67,7 +67,7 @@ namespace Bio.Helpers.Common {
     /// <exception cref="ArgumentException">Возбуждается, если тип не может быть преобразован.</exception>
     public static Type ConvertStrToType(String xmlName) {
       if (!String.IsNullOrEmpty(xmlName)) {
-        foreach(var fi in typeof(FieldType).GetFields()) {
+        foreach(var fi in typeof(JSFieldType).GetFields()) {
           var attr = enumHelper.GetAttributeByInfo<MappingAttribute>(fi);
           if((attr != null) && (attr.XmlName.Equals(xmlName)))
             return attr.ToNetType;
@@ -85,7 +85,7 @@ namespace Bio.Helpers.Common {
     public static String ConvertTypeToStr(Type type) {
 
       if (type != null) {
-        foreach (var fi in typeof(FieldType).GetFields()) {
+        foreach (var fi in typeof(JSFieldType).GetFields()) {
           var attr = enumHelper.GetAttributeByInfo<MappingAttribute>(fi);
           if (attr != null) {
             if (((attr.FromNetTypes != null) && attr.FromNetTypes.Any(t => t.Equals(type))) ||
@@ -103,12 +103,12 @@ namespace Bio.Helpers.Common {
     /// <param name="xmlName"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public static FieldType ConvertStrToFieldType(String xmlName) {
+    public static JSFieldType ConvertStrToFieldType(String xmlName) {
       if (!String.IsNullOrEmpty(xmlName)) {
-        foreach (var fi in typeof(FieldType).GetFields()) {
+        foreach (var fi in typeof(JSFieldType).GetFields()) {
           var attr = enumHelper.GetAttributeByInfo<MappingAttribute>(fi);
           if ((attr != null) && (attr.XmlName.Equals(xmlName)))
-            return (FieldType)fi.GetValue(null);
+            return (JSFieldType)fi.GetValue(null);
         }
       }
       throw new ArgumentException("Невозможно преобразовать тип \"" + xmlName + "\".", "xmlName");
@@ -136,7 +136,7 @@ namespace Bio.Helpers.Common {
     /// <param name="type">Имя типа.</param>
     /// <returns>Объект, соответствующий входному имени типа.</returns>
     /// <exception cref="ArgumentException">Возбуждается, если тип не может быть преобразован.</exception>
-    public static Type ConvertFTypeToType(FieldType type) {
+    public static Type ConvertFTypeToType(JSFieldType type) {
       return enumHelper.GetAttributeByValue<MappingAttribute>(type).ToNetType;
     }
 
@@ -145,7 +145,7 @@ namespace Bio.Helpers.Common {
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
-    public static FieldType ConvertTypeToFType(Type type) {
+    public static JSFieldType ConvertTypeToFType(Type type) {
       return ConvertStrToFieldType(ConvertTypeToStr(type));
     }
 

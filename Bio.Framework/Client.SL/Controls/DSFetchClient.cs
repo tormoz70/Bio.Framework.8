@@ -32,8 +32,8 @@
     }
 
     internal override RmtClientRequest createRequest(RmtClientRequestCmd cmd, Params bioParams, Boolean silent, AjaxRequestDelegate callback) {
-      var rslt = this.creRequestOfClient<CDSFetchClientRequest>(cmd, bioParams, silent, callback);
-      rslt.execBioCode = this.ExecBioCode;
+      var rslt = this.creRequestOfClient<DSFetchClientRequest>(cmd, bioParams, silent, callback);
+      rslt.ExecBioCode = this.ExecBioCode;
       return rslt;
     }
 
@@ -43,8 +43,8 @@
     }
 
     protected override void doOnRmtProcBeforeRun(RmtClientRequest request) {
-      var v_request = request as CDSFetchClientRequest;
-      v_request.selection = this.Selection;
+      var v_request = request as DSFetchClientRequest;
+      v_request.Selection = this.Selection;
       //v_request.execBioParams = this.ExecBioParams;
     }
 

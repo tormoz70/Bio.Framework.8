@@ -21,7 +21,6 @@ namespace Bio.Framework.Client.SL {
 
       this._owner = this.FindParentOfType<JSGrid>();
       if (this._owner != null) {
-        //this._owner._jsClient.OnAfterLoadData += this._jsClient_AfterLoadData;
         this._owner._doOnDataGridAssigned(this);
 
         if (this._owner.delaidAssignPopupMenu != null) {
@@ -29,14 +28,9 @@ namespace Bio.Framework.Client.SL {
           this._owner.delaidAssignPopupMenu = null;
         }
 
-        if (!this._owner._alternatingRowBackgroundIsDefault)
-          this.AlternatingRowBackground = this._owner._alternatingRowBackground;
+        if (!this._owner.alternatingRowBackgroundIsDefault)
+          this.AlternatingRowBackground = this._owner.alternatingRowBackground;
       }
-    }
-
-    void CDataGrid_SizeChanged(object sender, SizeChangedEventArgs e) {
-      //throw new NotImplementedException();
-      Thread.Sleep(1);
     }
 
     protected override void OnColumnReordered(DataGridColumnEventArgs e) {
@@ -44,38 +38,23 @@ namespace Bio.Framework.Client.SL {
       this._owner._onColumnReordered(e);
     }
 
-    protected override void OnDrop(DragEventArgs e) {
-      base.OnDrop(e);
-    }
-
-    //void _jsClient_AfterLoadData(JsonStoreClient sender, AjaxResponseEventArgs args) {
-    //  if ((this._owner != null) &&
-    //        (this._owner._jsClient != null) &&
-    //          (this._owner._jsClient.jsMetadata != null)) {
-    //    var v_pk_fld = this._owner._jsClient.jsMetadata.getPKFields().FirstOrDefault();
-    //    if (v_pk_fld != null)
-    //      this._owner._multiselection.ValueField = v_pk_fld.name;
-    //  }
-    //}
-
-
-    protected Boolean _defaultHotKeysEnabled = true;
+    protected Boolean defaultHotKeysEnabled = true;
 
     protected override void OnKeyDown(KeyEventArgs e) {
       if (this._owner != null) {
-        if (this._defaultHotKeysEnabled) {
+        if (this.defaultHotKeysEnabled) {
           if ((e.Key == Key.R) && (Keyboard.Modifiers == ModifierKeys.Shift)) {
             this._owner.Load(null, null);
             e.Handled = true;
           }
           if ((e.Key == Key.A) && (Keyboard.Modifiers == ModifierKeys.Shift)) {
-            this._owner._multiselection.Values.Clear();
-            this._owner._multiselection.Inversion = !this._owner._multiselection.Inversion;
+            this._owner.Selection.Values.Clear();
+            this._owner.Selection.Inversion = !this._owner.Selection.Inversion;
             this._updateSelection();
             e.Handled = true;
           }
           if ((e.Key == Key.S) && (Keyboard.Modifiers == ModifierKeys.Shift)) {
-            this._owner._multiselection.Inversion = !this._owner._multiselection.Inversion;
+            this._owner.Selection.Inversion = !this._owner.Selection.Inversion;
             this._updateSelection();
             e.Handled = true;
           }
@@ -91,19 +70,18 @@ namespace Bio.Framework.Client.SL {
             e.Handled = true;
           }
           if ((e.Key == Key.O) && (Keyboard.Modifiers == ModifierKeys.Shift)) {
-            this._owner.goPageFirst(null);
+            this._owner.GoPageFirst(null);
           }
           if ((e.Key == Key.Z) && (Keyboard.Modifiers == ModifierKeys.Shift)) {
-            this._owner.goPagePrev(null);
+            this._owner.GoPagePrev(null);
           }
           if ((e.Key == Key.X) && (Keyboard.Modifiers == ModifierKeys.Shift)) {
-            this._owner.goPageNext(null);
+            this._owner.GoPageNext(null);
           }
           if ((e.Key == Key.P) && (Keyboard.Modifiers == ModifierKeys.Shift)) {
-            this._owner.goPageLast(null);
+            this._owner.GoPageLast(null);
           }
         }
-        //MessageBox.Show("" + e.Key);
         this._owner._onKeyDown(e);
       }
       base.OnKeyDown(e);
@@ -119,15 +97,16 @@ namespace Bio.Framework.Client.SL {
     private void _buildRowHeader(DataGridRow row) {
       if (this._owner != null) {
         if ((this.HeadersVisibility & DataGridHeadersVisibility.Row) == DataGridHeadersVisibility.Row) {
-          //if (row.Header == null) {
-          Int32 v_row_index = row.GetIndex();
-          Int64 v_start_row = 0;
+          var rowIndex = row.GetIndex();
+          Int64 startRow = 0;
           if (this._owner.PageSize > 0)
-            v_start_row = (this._owner.PageCurrent - 1) * this._owner.PageSize;
-          var maxRownum = "" + (v_start_row + ((this._owner.PageSize > 0) ? this._owner.PageSize : this._owner.DS.Count()));
+            startRow = (this._owner.PageCurrent - 1) * this._owner.PageSize;
+          var maxRownum = "" + (startRow + ((this._owner.PageSize > 0) ? this._owner.PageSize : this._owner.DS.Count()));
           var maxRownumLen = maxRownum.Length;
           var numFmt = new String('0', maxRownumLen);
-          var rnum = String.Format("{0:" + numFmt + "} ", v_start_row + v_row_index + 1);
+// ReSharper disable FormatStringProblem
+          var rnum = String.Format("{0:" + numFmt + "} ", startRow + rowIndex + 1);
+// ReSharper restore FormatStringProblem
           if (!this._owner.SuppressMultiselection && this._owner.Multiselection) {
             var v_hpan = new StackPanel();
             v_hpan.HorizontalAlignment = HorizontalAlignment.Right;
@@ -138,10 +117,10 @@ namespace Bio.Framework.Client.SL {
             v_htxt.Text = rnum;
             v_hpan.Children.Add(v_htxt);
 
-            var rowData = row.DataContext as CRTObject;
+            var rowData = (CRTObject)row.DataContext;
             var v_hcbx = new CheckBox();
-            var v_is_selected = this._owner._multiselection.CheckSelected(rowData);
-            if (this._owner._multiselection.Inversion)
+            var v_is_selected = this._owner.Selection.CheckSelected(rowData);
+            if (this._owner.Selection.Inversion)
               v_hcbx.IsChecked = !v_is_selected;
             else
               v_hcbx.IsChecked = v_is_selected;
@@ -180,15 +159,15 @@ namespace Bio.Framework.Client.SL {
       if (this._onRowCheckedChangedEnabled) {
         this._onRowCheckedChangedEnabled = false;
         if (chked) {
-          if (!this._owner._multiselection.Inversion)
-            this._owner._multiselection.AddSelected(row, false);
+          if (!this._owner.Selection.Inversion)
+            this._owner.Selection.AddSelected(row, false);
           else
-            this._owner._multiselection.RemoveSelected(row, false);
+            this._owner.Selection.RemoveSelected(row, false);
         } else {
-          if (this._owner._multiselection.Inversion)
-            this._owner._multiselection.AddSelected(row, false);
+          if (this._owner.Selection.Inversion)
+            this._owner.Selection.AddSelected(row, false);
           else
-            this._owner._multiselection.RemoveSelected(row, false);
+            this._owner.Selection.RemoveSelected(row, false);
         }
         this._onRowCheckedChangedEnabled = true;
       }
@@ -203,10 +182,10 @@ namespace Bio.Framework.Client.SL {
         if (v_cbx != null) {
           this._onRowCheckedChangedEnabled = false; // отключаем вызовы this._miltiselection.AddSelected и this._miltiselection.RemoveSelected
           // при изменении состояния чекбокса
-          if (this._owner._multiselection.CheckSelected(r))
-            v_cbx.IsChecked = !this._owner._multiselection.Inversion;
+          if (this._owner.Selection.CheckSelected(r))
+            v_cbx.IsChecked = !this._owner.Selection.Inversion;
           else
-            v_cbx.IsChecked = this._owner._multiselection.Inversion;
+            v_cbx.IsChecked = this._owner.Selection.Inversion;
           this._onRowCheckedChangedEnabled = true;
           v_cbx.UpdateLayout();
         }
@@ -216,19 +195,9 @@ namespace Bio.Framework.Client.SL {
     protected override void OnLoadingRow(DataGridRowEventArgs e) {
       if (this._owner != null) {
         this._buildRowHeader(e.Row);
-        //e.Row.Loaded += this._row_Loaded;
         this._owner._onLoadingRow(e);
       }
       base.OnLoadingRow(e);
-    }
-
-    void _row_Loaded(Object sender, RoutedEventArgs e) {
-      var row = sender as DataGridRow;
-      if (row != null) {
-        row.Loaded -= this._row_Loaded;
-        this._buildRowHeader(row);
-      }
-      //Thread.Sleep(100);
     }
 
     protected override void OnUnloadingRow(DataGridRowEventArgs e) {
@@ -248,10 +217,10 @@ namespace Bio.Framework.Client.SL {
     public event EventHandler OnAnColumnResized;
 
     private Boolean _colChangedEventsEnabled = true;
-    public void disableColumnsChangedEvents() {
+    public void DisableColumnsChangedEvents() {
       this._colChangedEventsEnabled = false;
     }
-    public void enableColumnsChangedEvents() {
+    public void EnableColumnsChangedEvents() {
       this._colChangedEventsEnabled = true;
     }
     protected override Size ArrangeOverride(Size finalSize) {
@@ -274,7 +243,7 @@ namespace Bio.Framework.Client.SL {
     protected override void OnAutoGeneratingColumn(DataGridAutoGeneratingColumnEventArgs e) {
       base.OnAutoGeneratingColumn(e);
 
-      DataGridBoundColumn c = this.Columns.Cast<DataGridBoundColumn>().Where((col) => {
+      DataGridBoundColumn c = this.Columns.Cast<DataGridBoundColumn>().Where(col => {
         return String.Equals(col.Binding.Path.Path, e.PropertyName, StringComparison.CurrentCultureIgnoreCase);
       }).FirstOrDefault();
       e.Cancel = c != null;
@@ -283,37 +252,33 @@ namespace Bio.Framework.Client.SL {
         this._owner._doOnBeforeGenColumn(e);
       if (!e.Cancel) {
 
-        CJsonStoreMetadataFieldDef fldDef = this._owner.FieldDefByName(e.PropertyName);
-        e.Cancel = ((fldDef == null) || fldDef.hidden);
+        JsonStoreMetadataFieldDef fldDef = this._owner.FieldDefByName(e.PropertyName);
+        e.Cancel = ((fldDef == null) || fldDef.Hidden);
         if (!e.Cancel) {
           //e.Column.v
           if (fldDef != null) {
-            e.Column.IsReadOnly = fldDef.readOnly;
-            this._defaultHotKeysEnabled = this._defaultHotKeysEnabled && e.Column.IsReadOnly;
-            if (fldDef.width > 0) {
-              //Double vWidth = new Double(fldDef.width);
-              e.Column.Width = new DataGridLength(fldDef.width);
-            } else {
-              //e.Column.Width = new DataGridLength(e.Column.Width.Value);
+            e.Column.IsReadOnly = fldDef.ReadOnly;
+            this.defaultHotKeysEnabled = this.defaultHotKeysEnabled && e.Column.IsReadOnly;
+            if (fldDef.Width > 0) {
+              e.Column.Width = new DataGridLength(fldDef.Width);
             }
-            String headerStr = fldDef.header;
+            var headerStr = fldDef.Header;
             if (!String.IsNullOrEmpty(headerStr))
               e.Column.Header = headerStr;
             if (e.Column is DataGridTextColumn) {
               (e.Column as DataGridBoundColumn).Binding.Converter = new CurrFormatter(fldDef, e.Column);
               (e.Column as DataGridBoundColumn).Binding.ValidatesOnDataErrors = true;
-              HorizontalAlignment v_alignment = fldDef.GetHorAlignment();
-              Style st = new Style(typeof(TextBlock));
-              st.Setters.Add(new Setter { Property = TextBlock.HorizontalAlignmentProperty, Value = v_alignment });
+              var v_alignment = fldDef.GetHorAlignment();
+              var st = new Style(typeof(TextBlock));
+              st.Setters.Add(new Setter { Property = HorizontalAlignmentProperty, Value = v_alignment });
               (e.Column as DataGridBoundColumn).ElementStyle = st;
             }
 
             if (e.Column is DataGridCheckBoxColumn) {
               Thread.Sleep(100);
-              //(e.Column as DataGridCheckBoxColumn).
             }
 
-            this._owner._doOnAfterGenColumn(new CJSGridAfterGenColumnEventArgs(e.PropertyName, e.Column, fldDef));
+            this._owner._doOnAfterGenColumn(new JSGridAfterGenColumnEventArgs(e.PropertyName, e.Column, fldDef));
           }
         }
       }

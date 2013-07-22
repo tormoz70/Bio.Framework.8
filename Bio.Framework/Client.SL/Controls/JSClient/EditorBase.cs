@@ -1,7 +1,6 @@
 ﻿using System;
 using Bio.Framework.Packets;
 using Bio.Helpers.Common;
-using System.Reflection;
 using Bio.Helpers.Common.Types;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,16 +22,10 @@ namespace Bio.Framework.Client.SL {
   }
 
   public class EditorBase : INotifyPropertyChanged {
-    private Object _getValue(JsonStoreRow row, CJsonStoreMetadata metaData, String fieldName) {
-      var indx = metaData.indexOf(fieldName);
-      if ((indx >= 0) && (indx < row.Values.Count))
-        return row.Values[indx];
-      return null;
-    }
-    private String _getHeader(CJsonStoreMetadata metaData, String fieldName) {
-      var indx = metaData.indexOf(fieldName);
+    private String _getHeader(JsonStoreMetadata metaData, String fieldName) {
+      var indx = metaData.IndexOf(fieldName);
       if (indx >= 0)
-        return metaData.fields[indx].header;
+        return metaData.Fields[indx].Header;
       return null;
     }
     private Dictionary<String, String> _headers;
@@ -42,28 +35,25 @@ namespace Bio.Framework.Client.SL {
     /// </summary>
     /// <param name="row"></param>
     /// <param name="metaData"></param>
-    public void AssignRow(JsonStoreRow row, CJsonStoreMetadata metaData) {
+    public void AssignRow(CRTObject row, JsonStoreMetadata metaData) {
       if ((row != null) && (metaData != null)) {
         this._headers = new Dictionary<String, String>();
         var props = this.GetType().GetProperties();
         foreach (var prop in props) {
           if (prop.CanWrite) {
-            //var attrIgnore = Utl.GetPropertyAttr<JsonIgnoreAttribute>(prop);
-            //if (attrIgnore == null) {
             var attr = Utl.GetPropertyAttr<DataFieldMappingAttribute>(prop);
             var fieldName = (attr != null) ? attr.DataField : prop.Name;
-            var value = this._getValue(row, metaData, fieldName);
+            var value = row.GetValue(fieldName);
             prop.SetValue(this, value, null);
             var hcAttr = Utl.GetPropertyAttr<HeaderContentAttribute>(prop);
             var vHeader = (hcAttr != null) ? hcAttr.Text : this._getHeader(metaData, fieldName);
             this._headers.Add(prop.Name, vHeader);
-            //}
           }
         }
       }
     }
 
-    public static T CreRec<T>(JsonStoreRow row, CJsonStoreMetadata metaData) where T : EditorBase, new() {
+    public static T CreRec<T>(CRTObject row, JsonStoreMetadata metaData) where T : EditorBase, new() {
       var v_result = new T();
       v_result.AssignRow(row, metaData);
       return v_result;

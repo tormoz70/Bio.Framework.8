@@ -394,7 +394,7 @@ namespace Newtonsoft.Json.Bson
       if (value.Length != 12)
         throw new Exception("An object id must be 12 bytes");
 
-      // hack to update the writer state
+      // hack1 to update the writer state
       AutoComplete(JsonToken.Undefined);
       AddValue(value, BsonType.Oid);
     }
@@ -408,7 +408,7 @@ namespace Newtonsoft.Json.Bson
     {
       ValidationUtils.ArgumentNotNull(pattern, "pattern");
 
-      // hack to update the writer state
+      // hack1 to update the writer state
       AutoComplete(JsonToken.Undefined);
       AddToken(new BsonRegex(pattern, options));
     }

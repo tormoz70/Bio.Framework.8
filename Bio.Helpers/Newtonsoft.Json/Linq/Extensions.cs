@@ -51,14 +51,6 @@ namespace Newtonsoft.Json.Linq
       return source.SelectMany(j => j.Ancestors()).AsJEnumerable();
     }
 
-    //TODO
-    //public static IEnumerable<JObject> AncestorsAndSelf<T>(this IEnumerable<T> source) where T : JObject
-    //{
-    //  ValidationUtils.ArgumentNotNull(source, "source");
-
-    //  return source.SelectMany(j => j.AncestorsAndSelf());
-    //}
-
     /// <summary>
     /// Returns a collection of tokens that contains the descendants of every token in the source collection.
     /// </summary>
@@ -72,7 +64,7 @@ namespace Newtonsoft.Json.Linq
       return source.SelectMany(j => j.Descendants()).AsJEnumerable();
     }
 
-    //TODO
+    //TODO1
     //public static IEnumerable<JObject> DescendantsAndSelf<T>(this IEnumerable<T> source) where T : JContainer
     //{
     //  ValidationUtils.ArgumentNotNull(source, "source");
@@ -197,7 +189,7 @@ namespace Newtonsoft.Json.Linq
       yield break;
     }
 
-    //TODO
+    //TODO1
     //public static IEnumerable<T> InDocumentOrder<T>(this IEnumerable<T> source) where T : JObject;
 
     //public static IEnumerable<JToken> Children<T>(this IEnumerable<T> source) where T : JToken
@@ -255,7 +247,7 @@ namespace Newtonsoft.Json.Linq
     {
       if (cast)
       {
-        // HACK
+        // HACK1
         return (U)(object)token;
       }
       else
@@ -281,7 +273,7 @@ namespace Newtonsoft.Json.Linq
       }
     }
 
-    //TODO
+    //TODO1
     //public static void Remove<T>(this IEnumerable<T> source) where T : JContainer;
 
     /// <summary>

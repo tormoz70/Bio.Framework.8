@@ -64,16 +64,16 @@ namespace Bio.Framework.Server {
         throw new EBioException("В документе инициализации [" + pIOCode + "] не найден раздел <store>.");
     }
 
-    private CJsonStoreData _creJSData() {
-      return new CJsonStoreData {
-        endReached = true,
-        isFirstLoad = true,
-        limit = 0,
-        metaData = CJsonStoreMetadata.ConstructMetadata(this.bioCode, this.CursorIniDoc),
-        rows = null,
-        start = 1,
-        totalCount = 0,
-        locate = null
+    private JsonStoreData _creJSData() {
+      return new JsonStoreData {
+        EndReached = true,
+        IsFirstLoad = true,
+        Limit = 0,
+        MetaData = JsonStoreMetadata.ConstructMetadata(this.bioCode, this.CursorIniDoc),
+        Rows = null,
+        Start = 1,
+        TotalCount = 0,
+        Locate = null
       };
     }
 
@@ -112,12 +112,12 @@ namespace Bio.Framework.Server {
     /// Шаблон запроса для подсчёта общего числа записей
     /// </summary>
     private const string csTotalCountSQLTemplate = "SELECT COUNT(1) FROM ({0})";
-    private void _applyPagging(CJsonStoreData pckt, Boolean decompositEnabled, ref Params bioParams, ref String vSQL, Int32 timeout) {
+    private void _applyPagging(JsonStoreData pckt, Boolean decompositEnabled, ref Params bioParams, ref String vSQL, Int32 timeout) {
       if (bioParams == null)
         bioParams = new Params();
       // разбиваем на страницы
-      Int64 vPgStart = pckt.start;
-      if (pckt.limit > 0 || vPgStart == Int32.MaxValue && pckt.limit > 0) {
+      Int64 vPgStart = pckt.Start;
+      if (pckt.Limit > 0 || vPgStart == Int32.MaxValue && pckt.Limit > 0) {
 
         String vPreparedSQLLevel0 = vSQL;
         String vPreparedSQLLevel1 = null;
@@ -135,11 +135,11 @@ namespace Bio.Framework.Server {
           vPgnSQLTemplate = csPgnSQLTemplateGoToLast;
           String vSQLStr = String.Format(csTotalCountSQLTemplate, vPreparedSQLLevel0);
           //string vSQLStr = String.Format(C_TotalCountSQLTemplate, this.preparedSQL);
-          pckt.totalCount = Convert.ToInt32(SQLCmd.ExecuteScalarSQL(this.Connection, vSQLStr, bioParams, timeout));
-          vPgStart = ((pckt.totalCount - 1L) / pckt.limit) * pckt.limit;
-          pckt.start = vPgStart;
+          pckt.TotalCount = Convert.ToInt32(SQLCmd.ExecuteScalarSQL(this.Connection, vSQLStr, bioParams, timeout));
+          vPgStart = ((pckt.TotalCount - 1L) / pckt.Limit) * pckt.Limit;
+          pckt.Start = vPgStart;
         }
-        Int64 vPgEnd = vPgStart + pckt.limit;
+        Int64 vPgEnd = vPgStart + pckt.Limit;
 
 
         vPreparedSQLLevel0 = String.Format(vPgnSQLTemplate, vPreparedSQLLevel0);
@@ -160,12 +160,12 @@ namespace Bio.Framework.Server {
     /// Шаблон запроса для наложения фильтра
     /// </summary>
     private const string csFltrSQLTemplate = "SELECT * FROM ({0}) WHERE {1}";
-    private Boolean _applyFilter(CJsonStoreFilter filter, ref Params bioParams, ref String vSQL) {
+    private Boolean _applyFilter(JsonStoreFilter filter, ref Params bioParams, ref String vSQL) {
       // фильтруем
       String vCondition = null;
       if (filter != null) {
         var v_prms = new Params(); 
-        filter.buildSQLConditions(ref vCondition, v_prms);
+        filter.BuildSQLConditions(ref vCondition, v_prms);
         bioParams = v_prms.Merge(bioParams, true);
       }
       Boolean vFilterIsDefined = !String.IsNullOrEmpty(vCondition);
@@ -180,7 +180,7 @@ namespace Bio.Framework.Server {
     /// Шаблон запроса для сортировки
     /// </summary>
     private const string csSortSQLTemplate = "SELECT * FROM ({0}) ORDER BY {1}{2}";
-    private Boolean _applySorter(CJsonStoreSort sort, ref String vSQL) {
+    private Boolean _applySorter(JsonStoreSort sort, ref String vSQL) {
       // сортируем
       String vSort = (sort != null) ? sort.GetSQL() : null;
       //String vSortDir = (rq.sort != null) ? Utl.NameOfEnumValue<CJsonStoreSortOrder>(rq.sort.direction, false).ToUpper() : null;
@@ -239,17 +239,17 @@ namespace Bio.Framework.Server {
 
 
     //private CJsonStoreData _rq_packet = null;
-    public CJsonStoreData rqPacket { get; private set; }
-    private Params _rq_bioParams = null;
+    public JsonStoreData rqPacket { get; private set; }
+    private Params _rq_bioParams;
     public Params rqBioParams { get { return _rq_bioParams; } }
-    private CJsonStoreFilter _rq_filter = null;
-    private CJsonStoreSort _rq_sorter = null;
-    private String _rq_selection = null;
+    private JsonStoreFilter _rq_filter;
+    private JsonStoreSort _rq_sorter;
+    private String _rq_selection;
     public void Init(
-      CJsonStoreData packet,
+      JsonStoreData packet,
       Params bioParams,
-      CJsonStoreFilter filter,
-      CJsonStoreSort sorter,
+      JsonStoreFilter filter,
+      JsonStoreSort sorter,
       String selection,
       Int32 timeout
     ) {
@@ -273,21 +273,21 @@ namespace Bio.Framework.Server {
       Boolean v_sorterIsDefined = this._applySorter(this._rq_sorter, ref vSQL);
 
       if (String.IsNullOrEmpty(this._rq_selection)) {
-        CJsonStoreFilter vLocate = (this.rqPacket != null) ? this.rqPacket.locate : null;
+        JsonStoreFilter vLocate = (this.rqPacket != null) ? this.rqPacket.Locate : null;
         if (vLocate != null) {
           // ищем запрошенную запись
-          var v_min_start = vLocate.fromPosition;
+          var v_min_start = vLocate.FromPosition;
           String vSQLStr = null;
           var v_lprms = new Params();
-          vLocate.buildSQLConditions(ref vSQLStr, v_lprms);
+          vLocate.BuildSQLConditions(ref vSQLStr, v_lprms);
           if (!String.IsNullOrEmpty(vSQLStr))
             vSQLStr = vSQLStr + " AND";
           v_lprms = v_lprms.Merge(this.rqBioParams, true);
           v_lprms.SetValue("loc_start_from", v_min_start);
           vSQLStr = String.Format(csLocateNextSQLTemplate, vSQL, vSQLStr);
           int rnum = Convert.ToInt32(SQLCmd.ExecuteScalarSQL(this.Connection, vSQLStr, v_lprms, timeout));
-          if (this.rqPacket.limit > 0)
-            this.rqPacket.start = Math.Max(((rnum - 1) / this.rqPacket.limit) * this.rqPacket.limit, 0);
+          if (this.rqPacket.Limit > 0)
+            this.rqPacket.Start = Math.Max(((rnum - 1) / this.rqPacket.Limit) * this.rqPacket.Limit, 0);
         }
         this._applyPagging(this.rqPacket, !v_filterIsDefined && !v_sorterIsDefined, ref this._rq_bioParams, ref vSQL, timeout);
       } else {
@@ -434,19 +434,19 @@ namespace Bio.Framework.Server {
     }
     */
 
-    private Params _buildPostParams(CJsonStoreMetadata metadata, JsonStoreRow row, Params bioParams) {
+    private Params _buildPostParams(JsonStoreMetadata metadata, JsonStoreRow row, Params bioParams) {
       Params v_rslt = new Params();
-      for (int i = 0; i < metadata.fields.Count; i++)
-        v_rslt.Add(metadata.fields[i].name.ToLower(), row.Values[i]);
+      for (int i = 0; i < metadata.Fields.Count; i++)
+        v_rslt.Add(metadata.Fields[i].Name.ToLower(), row.Values[i]);
       v_rslt = v_rslt.Merge(bioParams, false);
       return v_rslt;
 
     }
 
-    private void _returnParamsToRow(CJsonStoreMetadata metadata, JsonStoreRow row, Params bioParams) {
+    private void _returnParamsToRow(JsonStoreMetadata metadata, JsonStoreRow row, Params bioParams) {
       var v_out_params = bioParams.Where(p => { return (p.ParamDir != ParamDirection.Input)/* || String.Equals(p.Name, CJsonStoreMetadata.csPKFieldName)*/; });
       foreach (var p in v_out_params)
-        row.Values[metadata.indexOf(p.Name)] = p.Value;
+        row.Values[metadata.IndexOf(p.Name)] = p.Value;
     }
 
     /// <summary>
@@ -456,7 +456,7 @@ namespace Bio.Framework.Server {
     /// <param name="row"></param>
     /// <param name="bioParams"></param>
     /// <param name="timeout"/>
-    public void DoProcessRowPost(CJsonStoreMetadata metadata, JsonStoreRow row, Params bioParams, Int32 timeout) {
+    public void DoProcessRowPost(JsonStoreMetadata metadata, JsonStoreRow row, Params bioParams, Int32 timeout) {
       var v_params = this._buildPostParams(metadata, row, bioParams);
       if ((row.ChangeType == JsonStoreRowChangeType.Added) ||
           (row.ChangeType == JsonStoreRowChangeType.Modified)) {
@@ -481,7 +481,7 @@ namespace Bio.Framework.Server {
     /// <param name="row"></param>
     /// <param name="bioParams"></param>
     /// <param name="timeout"/>
-    public void DoExecuteSQL(CJsonStoreMetadata metadata, JsonStoreRow row, Params bioParams, Int32 timeout) {
+    public void DoExecuteSQL(JsonStoreMetadata metadata, JsonStoreRow row, Params bioParams, Int32 timeout) {
       var v_params = this._buildPostParams(metadata, row, bioParams);
       this._doExecute(v_params, "execute", timeout);
     }

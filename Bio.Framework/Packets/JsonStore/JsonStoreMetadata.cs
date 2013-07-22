@@ -1,40 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.ComponentModel;
-using System.Xml;
 #if !SILVERLIGHT
 using System.Data;
+using System.Xml;
+#else
+using System.Windows;
 #endif
+using System.Linq;
 using Bio.Helpers.Common;
 using Bio.Helpers.Common.Types;
-using System.Xml.XPath;
-using System.Windows;
 
 namespace Bio.Framework.Packets {
 
-  public class CJsonStoreMetadataFieldDef {
-    public String name { get; set; }
-    public String format { get; set; }
-    public CJSAlignment align { get; set; }
-    public String header { get; set; }
-    public Boolean hidden { get; set; }
-    public Boolean readOnly { get; set; }
-    public Int32 pk { get; set; }
-    public FieldType type { get; set; }
-    public Int32 width { get; set; }
-    //public String dateFormat { get; set; }
-    public String boolVals { get; set; }
-    public Object defaultVal { get; set; }
-    public Int32 group { get; set; }
-    public String group_aggr { get; set; }
+  public class JsonStoreMetadataFieldDef {
+    public String Name { get; set; }
+    public String Format { get; set; }
+    public CJSAlignment Align { get; set; }
+    public String Header { get; set; }
+    public Boolean Hidden { get; set; }
+    public Boolean ReadOnly { get; set; }
+    public Int32 PK { get; set; }
+    public JSFieldType Type { get; set; }
+    public Int32 Width { get; set; }
+    public String BoolVals { get; set; }
+    public Object DefaultVal { get; set; }
+    public Int32 Group { get; set; }
+    public String GroupAggr { get; set; }
     public Type GetDotNetType() {
-      return ftypeHelper.ConvertFTypeToType(this.type);
+      return ftypeHelper.ConvertFTypeToType(this.Type);
     }
 #if SILVERLIGHT
     public HorizontalAlignment GetHorAlignment() {
-      switch (this.align) {
+      switch (this.Align) {
         case CJSAlignment.Left: return HorizontalAlignment.Left;
         case CJSAlignment.Center: return HorizontalAlignment.Center;
         case CJSAlignment.Right: return HorizontalAlignment.Right;
@@ -45,40 +42,40 @@ namespace Bio.Framework.Packets {
 #endif
   }
 
-  public class CJsonStoreMetadata:ICloneable {
+  public class JsonStoreMetadata:ICloneable {
     //public const String csPKFieldName = "pk_value";
     //public const String csRowNumberFieldName = "DATAROWNUMBER";
     //public const String csRowNumberHeader = "№ пп";
     /// <summary>
     /// 
     /// </summary>
-    public String id { get; set; }
+    public String ID { get; set; }
     //public Boolean RowNumberIsVirtual { get; set; }
 
     /// <summary>
     /// Набор данных только для чтения.
     /// Все колонки будут readonly, кроме тех у которых явно стоит readOnly = false.
     /// </summary>
-    public Boolean readOnly { get; set; }
+    public Boolean ReadOnly { get; set; }
 
     /// <summary>
     /// Добавляет в начало колонку с чекбоксами и позволяет выбирать несколько строк на разных страницах
     /// </summary>
-    public Boolean multiselection { get; set; }
+    public Boolean Multiselection { get; set; }
 
     /// <summary>
     /// Описание полей
     /// </summary>
-    public List<CJsonStoreMetadataFieldDef> fields { get; set; }
+    public List<JsonStoreMetadataFieldDef> Fields { get; set; }
     /// <summary>
     /// Возвращает индекс поля по имени
     /// </summary>
     /// <param name="fieldName">Имя поля</param>
     /// <returns></returns>
-    public int indexOf(String fieldName) {
-      if (this.fields != null) {
-        for (int i = 0; i < this.fields.Count; i++) {
-          if (String.Equals(this.fields[i].name, fieldName, StringComparison.CurrentCultureIgnoreCase))
+    public int IndexOf(String fieldName) {
+      if (this.Fields != null) {
+        for (var i = 0; i < this.Fields.Count; i++) {
+          if (String.Equals(this.Fields[i].Name, fieldName, StringComparison.CurrentCultureIgnoreCase))
             return i;
         }
       }
@@ -89,7 +86,7 @@ namespace Bio.Framework.Packets {
     /// </summary>
     public Boolean PKDefined {
       get {
-        return this.getPKFields().Length > 0;
+        return this.GetPKFields().Length > 0;
       }
     }
 
@@ -97,10 +94,10 @@ namespace Bio.Framework.Packets {
       return CreateNewRow(this);
     }
 
-    public static JsonStoreRow CreateNewRow(CJsonStoreMetadata metadata) {
-      var newRow = new JsonStoreRow() { InternalROWUID = Guid.NewGuid().ToString("N"), ChangeType = JsonStoreRowChangeType.Unchanged };
+    public static JsonStoreRow CreateNewRow(JsonStoreMetadata metadata) {
+      var newRow = new JsonStoreRow { InternalROWUID = Guid.NewGuid().ToString("N"), ChangeType = JsonStoreRowChangeType.Unchanged };
       if (metadata != null) {
-        foreach (var fd in metadata.fields)
+        foreach (var fd in metadata.Fields)
           newRow.Values.Add(null);
       }
       return newRow;
@@ -112,15 +109,15 @@ namespace Bio.Framework.Packets {
     /// </summary>
     /// <param name="row">Строка со значениями первичного ключа.</param>
     /// <returns></returns>
-    public Params getPK(CRTObject row) {
-      Params vParams = new Params();
-      var v_pkDef = this.getPKFields();
-      for (int i = 0; i < v_pkDef.Length; i++) {
-        var vType = v_pkDef[i].GetDotNetType();
-        var vValue = row.GetValue(v_pkDef[i].name, vType);
-        vParams.Add(new Param(v_pkDef[i].name, vValue, vType, ParamDirection.Input));
+    public Params GetPK(CRTObject row) {
+      var @params = new Params();
+      var pkDef = this.GetPKFields();
+      foreach (var t in pkDef) {
+        var vType = t.GetDotNetType();
+        var vValue = row.GetValue(t.Name, vType);
+        @params.Add(new Param(t.Name, vValue, vType, ParamDirection.Input));
       }
-      return vParams;
+      return @params;
     }
 #else
     /// <summary>
@@ -129,13 +126,13 @@ namespace Bio.Framework.Packets {
     /// <param name="data"></param>
     /// <param name="row"></param>
     /// <returns></returns>
-    public Params getPK(CJsonStoreData data, JsonStoreRow row) {
+    public Params getPK(JsonStoreData data, JsonStoreRow row) {
       Params vParams = new Params();
-      var v_pkDef = this.getPKFields();
+      var v_pkDef = this.GetPKFields();
       for (int i = 0; i < v_pkDef.Length; i++) {
         var vType = v_pkDef[i].GetDotNetType();
-        var vValue = data.getValue(row, v_pkDef[i].name);
-        vParams.Add(new Param(v_pkDef[i].name, vValue, vType, ParamDirection.Input));
+        var vValue = data.GetValue(row, v_pkDef[i].Name);
+        vParams.Add(new Param(v_pkDef[i].Name, vValue, vType, ParamDirection.Input));
       }
       return vParams;
     }
@@ -144,12 +141,12 @@ namespace Bio.Framework.Packets {
     /// <summary>
     /// Описание полей первичного ключа
     /// </summary>
-    public CJsonStoreMetadataFieldDef[] getPKFields() {
-      if (this.fields != null) {
-        var v_result = this.fields.Where(f => f.pk > 0).OrderBy(f => f.pk).ToArray();
+    public JsonStoreMetadataFieldDef[] GetPKFields() {
+      if (this.Fields != null) {
+        var v_result = this.Fields.Where(f => f.PK > 0).OrderBy(f => f.PK).ToArray();
         return v_result;
-      } else
-        return new CJsonStoreMetadataFieldDef[0];
+      }
+      return new JsonStoreMetadataFieldDef[0];
     }
 
 #if !SILVERLIGHT
@@ -158,67 +155,67 @@ namespace Bio.Framework.Packets {
     /// </summary>
     /// <param name="bioCode"/>
     /// <param name="cursorDef">XML-описание курсора.</param>
-    public static CJsonStoreMetadata ConstructMetadata(String bioCode, XmlNode cursorDef) {
-      CJsonStoreMetadata vResult = new CJsonStoreMetadata();
-      vResult.fields = new List<CJsonStoreMetadataFieldDef>();
-      vResult.readOnly = Xml.getAttribute<Boolean>(cursorDef as XmlElement, "readOnly", true);
-      vResult.multiselection = Xml.getAttribute<Boolean>(cursorDef as XmlElement, "multiselection", false);
+    public static JsonStoreMetadata ConstructMetadata(String bioCode, XmlNode cursorDef) {
+      JsonStoreMetadata vResult = new JsonStoreMetadata();
+      vResult.Fields = new List<JsonStoreMetadataFieldDef>();
+      vResult.ReadOnly = Xml.getAttribute<Boolean>(cursorDef as XmlElement, "readOnly", true);
+      vResult.Multiselection = Xml.getAttribute<Boolean>(cursorDef as XmlElement, "multiselection", false);
       XmlNodeList xmlFields = cursorDef.SelectNodes("fields/field[not(@generate) or (@generate='true')]");
       if (xmlFields == null || xmlFields.Count <= 0)
         return vResult;
 
       foreach (XmlElement xmlEl in xmlFields) {
         String v_field_name = xmlEl.GetAttribute("name");
-        if (vResult.indexOf(v_field_name) >= 0)
+        if (vResult.IndexOf(v_field_name) >= 0)
           throw new EBioException(String.Format("В описании объекта {0} поле {1} определено более 1 раза.", bioCode, v_field_name));
-        CJsonStoreMetadataFieldDef fldDef = new CJsonStoreMetadataFieldDef();
+        JsonStoreMetadataFieldDef fldDef = new JsonStoreMetadataFieldDef();
         if (xmlEl.HasAttribute("generate") && xmlEl.GetAttribute("generate") != "true")
           continue;
 
-        fldDef.name = v_field_name;
-        if (String.IsNullOrEmpty(fldDef.name))
+        fldDef.Name = v_field_name;
+        if (String.IsNullOrEmpty(fldDef.Name))
           continue;
 
-        fldDef.header = xmlEl.GetAttribute("header");
-        if (!String.IsNullOrEmpty(fldDef.header))
-          fldDef.header = fldDef.header.Replace("\\n", "\n");
-        fldDef.hidden = Xml.getAttribute<Boolean>(xmlEl, "hidden", false);
-        fldDef.readOnly = Xml.getAttribute<Boolean>(xmlEl, "readOnly", vResult.readOnly);
-        fldDef.type = jsonUtl.detectFieldType(xmlEl.GetAttribute("type"));
-        fldDef.width = Xml.getAttribute<Int32>(xmlEl, "width", 0);
-        fldDef.format = Xml.getAttribute<String>(xmlEl, "format", null);
-        if (String.IsNullOrEmpty(fldDef.format)) {
-          if ((fldDef.type == FieldType.Date) || (fldDef.type == FieldType.DateUTC))
-            fldDef.format = "dd.MM.yyyy HH:mm:ss";
-          if (fldDef.type == FieldType.Int)
-            fldDef.format = "0";
-          if (fldDef.type == FieldType.Currency)
-            fldDef.format = "#,##0.00 р";
+        fldDef.Header = xmlEl.GetAttribute("header");
+        if (!String.IsNullOrEmpty(fldDef.Header))
+          fldDef.Header = fldDef.Header.Replace("\\n", "\n");
+        fldDef.Hidden = Xml.getAttribute<Boolean>(xmlEl, "hidden", false);
+        fldDef.ReadOnly = Xml.getAttribute<Boolean>(xmlEl, "readOnly", vResult.ReadOnly);
+        fldDef.Type = jsonUtl.detectFieldType(xmlEl.GetAttribute("type"));
+        fldDef.Width = Xml.getAttribute<Int32>(xmlEl, "width", 0);
+        fldDef.Format = Xml.getAttribute<String>(xmlEl, "format", null);
+        if (String.IsNullOrEmpty(fldDef.Format)) {
+          if ((fldDef.Type == JSFieldType.Date) || (fldDef.Type == JSFieldType.DateUTC))
+            fldDef.Format = "dd.MM.yyyy HH:mm:ss";
+          if (fldDef.Type == JSFieldType.Int)
+            fldDef.Format = "0";
+          if (fldDef.Type == JSFieldType.Currency)
+            fldDef.Format = "#,##0.00 р";
         }
-        fldDef.align = jsonUtl.detectAlignment(fldDef.type, xmlEl.GetAttribute("align"));
-        fldDef.group = Xml.getAttribute<Int32>(xmlEl, "group", -1);
-        fldDef.group_aggr = xmlEl.GetAttribute("group_aggr");
+        fldDef.Align = jsonUtl.detectAlignment(fldDef.Type, xmlEl.GetAttribute("align"));
+        fldDef.Group = Xml.getAttribute<Int32>(xmlEl, "group", -1);
+        fldDef.GroupAggr = xmlEl.GetAttribute("group_aggr");
         Int32 pkIndx = Xml.getAttribute<Int32>(xmlEl, "pk", 0);
         String boolVals = xmlEl.GetAttribute("boolVals");
         String defaultVal = xmlEl.GetAttribute("defaultVal");
         //if (fldDef.type == "currency") fldDef.Type = "float";
         if (pkIndx > 0)
-          fldDef.pk = pkIndx;
+          fldDef.PK = pkIndx;
         //if (fldDef.type == CJsonStoreMetadataFieldType.ftDate)
         //  fldDef.dateFormat = "Y-m-d\\TH:i:s";
-        else if (fldDef.type == FieldType.Boolean && !String.IsNullOrEmpty(boolVals))
-          fldDef.boolVals = boolVals;
-        if (!String.IsNullOrEmpty(defaultVal) && fldDef.type != FieldType.Date)
-          if (fldDef.type == FieldType.Boolean)
-            fldDef.defaultVal = Utl.Convert2Type<Boolean>(defaultVal);
-          else if (fldDef.type == FieldType.String)
-            fldDef.defaultVal = defaultVal;
+        else if (fldDef.Type == JSFieldType.Boolean && !String.IsNullOrEmpty(boolVals))
+          fldDef.BoolVals = boolVals;
+        if (!String.IsNullOrEmpty(defaultVal) && fldDef.Type != JSFieldType.Date)
+          if (fldDef.Type == JSFieldType.Boolean)
+            fldDef.DefaultVal = Utl.Convert2Type<Boolean>(defaultVal);
+          else if (fldDef.Type == JSFieldType.String)
+            fldDef.DefaultVal = defaultVal;
           else
-            fldDef.defaultVal = Utl.Convert2Type<Double>(defaultVal);
-        vResult.fields.Add(fldDef);
+            fldDef.DefaultVal = Utl.Convert2Type<Double>(defaultVal);
+        vResult.Fields.Add(fldDef);
       }
-      if (vResult.multiselection) {
-        var v_pks = vResult.getPKFields();
+      if (vResult.Multiselection) {
+        var v_pks = vResult.GetPKFields();
         if ((v_pks == null) || (v_pks.Length != 1))
           throw new Exception(String.Format("Для режима multiselection, необходимо чтобы для ио [{0}] был определен первичный ключь(не составной).", bioCode));
       }
@@ -231,15 +228,15 @@ namespace Bio.Framework.Packets {
     /// </summary>
     /// <param name="pCursorDef">XML-описание курсора.</param>
     /// <param name="jw">Объект LisJson.JsonWriter, в который запишутся метаданные.</param>
-    public static CJsonStoreMetadata ConstructMetadata(XPathNavigator cursorDef) {
-      CJsonStoreMetadata vResult = new CJsonStoreMetadata();
-      vResult.fields = new List<CJsonStoreMetadataFieldDef>();
+    public static JsonStoreMetadata ConstructMetadata(XPathNavigator cursorDef) {
+      JsonStoreMetadata vResult = new JsonStoreMetadata();
+      vResult.fields = new List<JsonStoreMetadataFieldDef>();
       XPathNodeIterator xmlFields = cursorDef.Select("fields/field[not(@generate) or (@generate='true')]");
       if (xmlFields == null || xmlFields.Count <= 0)
         return vResult;
        
       if (cursorDef.SelectSingleNode("fields/field/@pk") != null) {
-        vResult.fields.Add(new CJsonStoreMetadataFieldDef() {
+        vResult.fields.Add(new JsonStoreMetadataFieldDef() {
           name = csPKFieldName,
           type = CJsonStoreMetadataFieldType.ftString,
           hidden = true
@@ -247,7 +244,7 @@ namespace Bio.Framework.Packets {
       }
       while (xmlFields.MoveNext()){
         XPathNavigator curNode = xmlFields.Current;
-        CJsonStoreMetadataFieldDef fldDef = new CJsonStoreMetadataFieldDef();
+        JsonStoreMetadataFieldDef fldDef = new JsonStoreMetadataFieldDef();
         fldDef.name = Xml.getAttribute(curNode, "name");
         if (String.IsNullOrEmpty(fldDef.name))
           continue;
@@ -286,58 +283,57 @@ namespace Bio.Framework.Packets {
     /// Формирует описание структуры JSON-ответа для клиентского JsonStore из объекта System.Data.DataTable.
     /// </summary>
     /// <param name="table">Объект System.Data.DataTable, из которого нужно взять структуру.</param>
-    public static CJsonStoreMetadata ConstructMetadata(DataTable table) {
-      CJsonStoreMetadata vResult = new CJsonStoreMetadata();
-      vResult.fields = new List<CJsonStoreMetadataFieldDef>();
+    public static JsonStoreMetadata ConstructMetadata(DataTable table) {
+      JsonStoreMetadata vResult = new JsonStoreMetadata();
+      vResult.Fields = new List<JsonStoreMetadataFieldDef>();
       if (table == null || table.Columns.Count <= 0)
         return vResult;
       foreach (DataColumn col in table.Columns) {
         //if (col.ColumnName == CExParams.C_RowNumberFieldName)
         //  continue;
-        CJsonStoreMetadataFieldDef fldDef = new CJsonStoreMetadataFieldDef();
-        fldDef.name = col.ColumnName.ToUpper();
-        fldDef.type = jsonUtl.detectFieldType(ftypeHelper.ConvertTypeToStr(col.DataType).ToLower());
-        String boolVals = (col.ExtendedProperties.ContainsKey("boolVals")) ? (String)col.ExtendedProperties["boolVals"] : null;
-        if (fldDef.type == FieldType.Date)
-          fldDef.format = "Y-m-d\\TH:i:s";
-        else if (fldDef.type == FieldType.Boolean && !String.IsNullOrEmpty(fldDef.boolVals))
-          fldDef.boolVals = boolVals;
-        if (col.DefaultValue != DBNull.Value && fldDef.type != FieldType.Date)
-          fldDef.defaultVal = col.DefaultValue;
-        vResult.fields.Add(fldDef);
+        JsonStoreMetadataFieldDef fldDef = new JsonStoreMetadataFieldDef();
+        fldDef.Name = col.ColumnName.ToUpper();
+        fldDef.Type = jsonUtl.detectFieldType(ftypeHelper.ConvertTypeToStr(col.DataType).ToLower());
+        var boolVals = (col.ExtendedProperties.ContainsKey("boolVals")) ? (String)col.ExtendedProperties["boolVals"] : null;
+        if (fldDef.Type == JSFieldType.Date)
+          fldDef.Format = "Y-m-d\\TH:i:s";
+        else if (fldDef.Type == JSFieldType.Boolean && !String.IsNullOrEmpty(fldDef.BoolVals))
+          fldDef.BoolVals = boolVals;
+        if (col.DefaultValue != DBNull.Value && fldDef.Type != JSFieldType.Date)
+          fldDef.DefaultVal = col.DefaultValue;
+        vResult.Fields.Add(fldDef);
       }
       return vResult;
     }
 #endif
 
-    public void CopyFrom(CJsonStoreMetadata mdata) {
-      //this.RowNumberIsVirtual = mdata.RowNumberIsVirtual;
-      this.id = mdata.id;
-      if (this.fields == null)
-        this.fields = new List<CJsonStoreMetadataFieldDef>();
-      this.fields.Clear();
-      foreach (CJsonStoreMetadataFieldDef fd in mdata.fields) {
-        CJsonStoreMetadataFieldDef newFld = new CJsonStoreMetadataFieldDef() {
-          name = fd.name,
-          type = fd.type,
-          pk = fd.pk,
-          defaultVal = fd.defaultVal,
-          format = fd.format,
-          align = fd.align,
-          boolVals = fd.boolVals,
-          hidden = fd.hidden,
-          header = fd.header,
-          group = fd.group,
-          group_aggr = fd.group_aggr,
-          readOnly = fd.readOnly,
-          width = fd.width
+    public void CopyFrom(JsonStoreMetadata mdata) {
+      this.ID = mdata.ID;
+      if (this.Fields == null)
+        this.Fields = new List<JsonStoreMetadataFieldDef>();
+      this.Fields.Clear();
+      foreach (JsonStoreMetadataFieldDef fd in mdata.Fields) {
+        var newFld = new JsonStoreMetadataFieldDef() {
+          Name = fd.Name,
+          Type = fd.Type,
+          PK = fd.PK,
+          DefaultVal = fd.DefaultVal,
+          Format = fd.Format,
+          Align = fd.Align,
+          BoolVals = fd.BoolVals,
+          Hidden = fd.Hidden,
+          Header = fd.Header,
+          Group = fd.Group,
+          GroupAggr = fd.GroupAggr,
+          ReadOnly = fd.ReadOnly,
+          Width = fd.Width
         };
-        this.fields.Add(newFld);
+        this.Fields.Add(newFld);
       }
     }
 
     public object Clone() {
-      CJsonStoreMetadata rslt = new CJsonStoreMetadata();
+      var rslt = new JsonStoreMetadata();
       rslt.CopyFrom(this);
       return rslt;
     }

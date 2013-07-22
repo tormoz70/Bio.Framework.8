@@ -13,8 +13,8 @@
   public class CJSONtoSQL {
     public void Process(IDbConnection conn, XmlElement cursorDef, JsonStoreRequest request, Params bioParams, String bioCode) {
       var vCommand = new CJSCursor(conn, cursorDef, bioCode);
-      foreach (var row in request.Packet.rows) {
-        vCommand.DoProcessRowPost(request.Packet.metaData, row, bioParams, request.Timeout);
+      foreach (var row in request.Packet.Rows) {
+        vCommand.DoProcessRowPost(request.Packet.MetaData, row, bioParams, request.Timeout);
       }
     }
 

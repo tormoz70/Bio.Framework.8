@@ -21,7 +21,7 @@
         <ColumnDefinition/>
       </Grid.ColumnDefinitions>
       <TextBlock Grid.Column="0" TextWrapping="Wrap" TextAlignment="Right" HorizontalAlignment="Stretch" Margin="2">Количество записей на странице. (0-все записи на одной странице):</TextBlock>
-      <TextBox Grid.Column="1" x:Name="cbxPaceSize" Margin="2" Text="{Binding Path=pageSize, Mode=TwoWay}" VerticalAlignment="Center"/>
+      <TextBox Grid.Column="1" x:Name="cbxPaceSize" Margin="2" Text="{Binding Path=PageSize, Mode=TwoWay}" VerticalAlignment="Center"/>
     </Grid>
   </Grid>
 </UserControl>

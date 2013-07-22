@@ -15,7 +15,7 @@ namespace Bio.Framework.Server {
       } catch (EBioOk bex) {
         var rsp = new BioResponse() {
           Success = true,
-          GCfg = new CGlobalCfgPack {
+          GCfg = new GlobalCfgPack {
             Debug = this.BioSession.Cfg.Debug
           },
           Ex = bex

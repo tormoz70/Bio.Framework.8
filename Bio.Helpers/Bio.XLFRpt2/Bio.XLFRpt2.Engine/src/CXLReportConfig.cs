@@ -660,6 +660,6 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     public String format { get; set; }
     public CJSAlignment align { get; set; }
     public Int32 width { get; set; }
-    public FieldType type { get; set; }
+    public JSFieldType type { get; set; }
   }
 }

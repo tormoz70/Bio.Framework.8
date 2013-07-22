@@ -94,12 +94,12 @@ namespace Bio.Framework.Client.SL.Old {
       return newItem;
     }
 
-    protected virtual T doOnLoadItem(CJsonStoreMetadata metadata, JsonStoreRow row) {
+    protected virtual T doOnLoadItem(JsonStoreMetadata metadata, CRTObject row) {
       var bgnIndx = 0;
       if(metadata.PKDefined)
         bgnIndx = 1;
-      var vID = row.Values[bgnIndx];
-      var item = this.Add(vID, row.Values[bgnIndx + 1] as String);
+      var vID = row.GetValue(metadata.Fields[bgnIndx].Name);
+      var item = this.Add(vID, row.GetValue<String>(metadata.Fields[bgnIndx + 1].Name));
       item.BioCode = this.BioCode;
       return item;
     }
@@ -127,20 +127,18 @@ namespace Bio.Framework.Client.SL.Old {
         return;
 
       this._cli.Load(args.Params, (s, a) => {
-        //this.OwnerTreeView.Dispatcher.BeginInvoke(() => {
         if (a.Response.Success) {
           var rsp = a.Response as JsonStoreResponse;
           if (rsp != null) {
             this.Items.Clear();
-            foreach (var r in rsp.packet.rows) {
-              T item = this.doOnLoadItem(rsp.packet.metaData, r);
+            foreach (var r in ((JsonStoreClient) s).DS) {
+              var item = this.doOnLoadItem(rsp.packet.MetaData, r);
               if (actOnItem != null) actOnItem(item);
             }
             this.Loaded = true;
           }
         }
         if (callback != null) callback(s, a);
-        //});
       });
     }
   }

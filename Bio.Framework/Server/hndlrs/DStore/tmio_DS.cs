@@ -10,14 +10,11 @@ namespace Bio.Framework.Server {
   /// <summary>
   /// Обработчик запросов на отображение таблицы
   /// </summary>
+// ReSharper disable InconsistentNaming
   public class tmio_DS : ABioHandlerBioTransacted {
+// ReSharper restore InconsistentNaming
     public tmio_DS(HttpContext context, AjaxRequest request)
       : base(context, request) {
-    }
-
-    private void _write_log(String pMsg) {
-      //if (this.BioSession.Cfg.Debug)
-      //  this.write_log("tmio_DS-doExecute-Get", pMsg);
     }
 
     private JsonStoreRequest JSReq {
@@ -30,29 +27,33 @@ namespace Bio.Framework.Server {
       base.doExecute();
       if (this.FBioDesc == null)
         throw new EBioException("Описание IO:\"" + this.bioCode + "\" не найдено.");
-      var v_ds = this.FBioDesc.DocumentElement;
-      if (v_ds != null) {
+      var ds = this.FBioDesc.DocumentElement;
+      if (ds != null) {
         if (this.BioSession.Cfg.dbSession != null) {
-          var v_conn = this.AssignTransaction(v_ds, this.JSReq);
+          var conn = this.AssignTransaction(ds, this.JSReq);
           var transactionFinished = false;
           try {
             if (this.JSReq is JsonStoreRequestGet) {
-              var v_jsReqGet = (this.JSReq as JsonStoreRequestGet);
-              if (v_jsReqGet.getType == CJSRequestGetType.GetData)
-                this._doGet(v_conn, v_ds);
-              else if (v_jsReqGet.getType == CJSRequestGetType.GetSelectedPks)
-                this._doGetSelectionPks(v_conn, v_ds);
+              var jsReqGet = (this.JSReq as JsonStoreRequestGet);
+              switch (jsReqGet.getType) {
+                case CJSRequestGetType.GetData:
+                  this._doGet(conn, ds);
+                  break;
+                case CJSRequestGetType.GetSelectedPks:
+                  this._doGetSelectionPks(conn, ds);
+                  break;
+              }
             } else if (this.JSReq is JsonStoreRequestPost)
-              this._doPost(v_conn, v_ds);
+              this._doPost(conn, ds);
           } catch(Exception) {
             if (this.JSReq is JsonStoreRequestPost) {
-              this.FinishTransaction(v_conn, true, SQLTransactionCmd.Rollback);
+              this.FinishTransaction(conn, true, SQLTransactionCmd.Rollback);
               transactionFinished = true;
             }
             throw;
           } finally {
             if(!transactionFinished)
-              this.FinishTransaction(v_conn, (this.JSReq is JsonStoreRequestPost), this.JSReq.transactionCmd);
+              this.FinishTransaction(conn, (this.JSReq is JsonStoreRequestPost), this.JSReq.transactionCmd);
           }
 
         } else
@@ -62,16 +63,14 @@ namespace Bio.Framework.Server {
     }
 
     private void _doGet(IDbConnection conn, XmlElement ds) {
-      //throw new Exception("FTW!");
-      var v_cursor = new CJSCursor(conn, ds, this.bioCode);
-
+      var cursor = new CJSCursor(conn, ds, this.bioCode);
       var rqst = this.BioRequest<JsonStoreRequestGet>();
-      v_cursor.Init(rqst);
-      v_cursor.Open(rqst.Timeout);
+      cursor.Init(rqst);
+      cursor.Open(rqst.Timeout);
       try {
-        var v_sqlToJson = new CSQLtoJSON();
-        var packet = v_sqlToJson.Process(v_cursor);
-        var rsp = new JsonStoreResponse() {
+        var sqlToJson = new CSQLtoJSON();
+        var packet = sqlToJson.Process(cursor);
+        var rsp = new JsonStoreResponse {
           BioParams = this.bioParams,
           Ex = null,
           Success = true,
@@ -81,7 +80,7 @@ namespace Bio.Framework.Server {
 
         this.Context.Response.Write(rsp.Encode());
       } finally {
-        v_cursor.Close();
+        cursor.Close();
       }
     }
 

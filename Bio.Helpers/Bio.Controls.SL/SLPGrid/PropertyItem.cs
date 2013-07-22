@@ -136,7 +136,7 @@ namespace Bio.Helpers.Controls.SL.SLPropertyGrid {
       }
       //this.Value = selection;
     }
-    // TODO Тут надо все переделывать
+    // TODO: Тут надо все переделывать
     private Object _value;
     public Object Value {
       get { return this._value; }

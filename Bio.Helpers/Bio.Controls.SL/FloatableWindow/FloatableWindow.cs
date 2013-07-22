@@ -471,7 +471,7 @@ namespace Bio.Helpers.Controls.SL {
           this.UnSubscribeFromEvents();
           this.UnsubscribeFromTemplatePartEvents();
 
-          //TODO: See if this matters for FloatableWindow
+          //TODO1: See if this matters for FloatableWindow
           if (Application.Current.RootVisual != null) {
             Application.Current.RootVisual.GotFocus -= new RoutedEventHandler(this.RootVisual_GotFocus);
           }
@@ -542,9 +542,9 @@ namespace Bio.Helpers.Controls.SL {
       // If the ChildWindow loses focus but the popup is still open,
       // it means another popup is opened. To get the focus back when the
       // popup is closed, we handle GotFocus on the RootVisual
-      // TODO: Something else could get focus and handle the GotFocus event right.  
+      // TODO1: Something else could get focus and handle the GotFocus event right.  
       // Try listening to routed events that were Handled (new SL 3 feature)
-      //TODO: See if this matters for FloatableWindow
+      // TODO1: See if this matters for FloatableWindow
       if (this.IsOpen && Application.Current != null && Application.Current.RootVisual != null) {
         Application.Current.RootVisual.GotFocus += new RoutedEventHandler(this.RootVisual_GotFocus);
       }
@@ -646,7 +646,7 @@ namespace Bio.Helpers.Controls.SL {
                             select state.Storyboard).FirstOrDefault();
           }
         }
-        //TODO: Figure out why I can't wire up the event below in SubscribeToTemplatePartEvents
+        //TODO1: Figure out why I can't wire up the event below in SubscribeToTemplatePartEvents
         this._root.MouseLeftButtonDown += new MouseButtonEventHandler(this.ContentRoot_MouseLeftButtonDown);
 
         if (this.ResizeMode == ResizeMode.CanResize) {

@@ -98,7 +98,7 @@ namespace Bio.Framework.Client.SL {
 
 
 
-    protected abstract JSTreeItemBase doOnCreateNewChildItem(CJsonStoreMetadata metadata, JsonStoreRow row);
+    protected abstract JSTreeItemBase doOnCreateNewChildItem(JsonStoreMetadata metadata, CRTObject row);
 
     /// <summary>
     /// Тут можно проинициализировать параметры запроса загрузки дочерних элементов.
@@ -129,21 +129,18 @@ namespace Bio.Framework.Client.SL {
         return;
 
       this._cli.Load(args.Params, (s, a) => {
-        //this.OwnerTreeView.Dispatcher.BeginInvoke(() => {
         if (a.Response.Success) {
           var rsp = a.Response as JsonStoreResponse;
           if (rsp != null) {
             this.Items.Clear();
-            foreach (var r in rsp.packet.rows) {
-              JSTreeItemBase item = this.doOnCreateNewChildItem(rsp.packet.metaData, r);
+            foreach (var r in ((JsonStoreClient) s).DS) {
+              var item = this.doOnCreateNewChildItem(rsp.packet.MetaData, r);
               if (actOnItem != null) actOnItem(item);
-              //this.Items.Add(item);
             }
             this.Loaded = true;
           }
         }
         if (callback != null) callback(s, a);
-        //});
       });
     }
 

@@ -1,26 +1,20 @@
 ﻿namespace Bio.Framework.Packets {
   using System;
-  using System.Collections.Generic;
-  using System.Collections.Specialized;
-  using System.Text;
-  using System.ComponentModel;
   using Newtonsoft.Json;
-  using Newtonsoft.Json.Converters;
-  using System.Reflection;
-  using Bio.Helpers.Common.Types;
-  using Bio.Helpers.Common;
+  using Helpers.Common.Types;
+  using Helpers.Common;
 
   /// <summary>
   /// Глобальные настройки с сервера. То что прописано в config.xml
   /// </summary>
-  public class CGlobalCfgPack : ICloneable {
+  public class GlobalCfgPack : ICloneable {
     /// <summary>
     /// Система находится в режиме отладки
     /// </summary>
     public Boolean Debug { get; set; }
 
-    public static CGlobalCfgPack Decode(String pJsonString) {
-      return jsonUtl.decode<CGlobalCfgPack>(pJsonString, new JsonConverter[] { new EBioExceptionConverter() });
+    public static GlobalCfgPack Decode(String pJsonString) {
+      return jsonUtl.decode<GlobalCfgPack>(pJsonString, new JsonConverter[] { new EBioExceptionConverter() });
     }
 
     public String Encode() {
@@ -30,12 +24,12 @@
 
     #region ICloneable Members
 
-    protected virtual void copyThis(ref CGlobalCfgPack destObj) {
+    protected virtual void copyThis(ref GlobalCfgPack destObj) {
       destObj.Debug = this.Debug;
     }
 
     public object Clone() {
-      CGlobalCfgPack rslt = new CGlobalCfgPack();
+      GlobalCfgPack rslt = new GlobalCfgPack();
       this.copyThis(ref rslt);
       return rslt;
     }

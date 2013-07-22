@@ -58,7 +58,7 @@ namespace Bio.Helpers.XLFRpt2.DataFactory {
       }
     }
 
-    protected override IDictionary<String, FieldType> open(IDbConnection conn, CXLReportDSConfig dsCfg, Int32 timeout) {
+    protected override IDictionary<String, JSFieldType> open(IDbConnection conn, CXLReportDSConfig dsCfg, Int32 timeout) {
       this._cmd = new SqlCommand(dsCfg.sql);
       this._cmd.CommandType = dsCfg.commandType;
       this._cmd.Connection = conn as SqlConnection;
@@ -68,7 +68,7 @@ namespace Bio.Helpers.XLFRpt2.DataFactory {
           Utl.SaveStringToFile(dsCfg.owner.logPath + dsCfg.owner.extAttrs.shortCode + ".prdDS." + dsCfg.rangeName + ".sql", dsCfg.sql, null);
         _applayParams(this._cmd, dsCfg.owner.inPrms);
         this._dataReader = this._cmd.ExecuteReader();
-        IDictionary<String, FieldType> v_rslt = new Dictionary<String, FieldType>();
+        IDictionary<String, JSFieldType> v_rslt = new Dictionary<String, JSFieldType>();
         for (var i = 0; i < this._dataReader.FieldCount; i++) {
           v_rslt.Add(this._dataReader.GetName(i).ToUpper(),
                    ftypeHelper.ConvertTypeToFType(this._dataReader.GetFieldType(i)));

@@ -33,10 +33,10 @@ namespace Bio.Helpers.XLFRpt2.DataFactory {
       }
     }
 
-    protected override IDictionary<String, FieldType> open(IDbConnection conn, CXLReportDSConfig dsCfg, Int32 timeout) {
+    protected override IDictionary<String, JSFieldType> open(IDbConnection conn, CXLReportDSConfig dsCfg, Int32 timeout) {
 
 
-      IDictionary<String, FieldType> rslt = null;
+      IDictionary<String, JSFieldType> rslt = null;
 
       this.FCmd = new SQLCursor(conn);
       String vSQL = dsCfg.sql;
@@ -46,7 +46,7 @@ namespace Bio.Helpers.XLFRpt2.DataFactory {
           Utl.SaveStringToFile(dsCfg.owner.logPath + dsCfg.owner.extAttrs.shortCode + ".prdDS." + dsCfg.rangeName + ".sql", vSQL, null);
         this.FCmd.Open(timeout);
         //if (this.FDataReader.Next()) {
-          rslt = new Dictionary<String, FieldType>();
+          rslt = new Dictionary<String, JSFieldType>();
           for (int i = 0; i < this.FCmd.FieldsCount; i++) {
             rslt.Add(this.FCmd.Fields[i].FieldName,
                      this.FCmd.Fields[i].DataType);

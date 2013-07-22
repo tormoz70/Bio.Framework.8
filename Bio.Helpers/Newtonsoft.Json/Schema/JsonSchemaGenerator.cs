@@ -255,7 +255,7 @@ namespace Newtonsoft.Json.Schema
 
       if (converter != null)
       {
-        // todo: Add GetSchema to JsonConverter and use here?
+        // todo1: Add GetSchema to JsonConverter and use here?
         CurrentSchema.Type = JsonSchemaType.Any;
       }
       else if (contract is JsonDictionaryContract)

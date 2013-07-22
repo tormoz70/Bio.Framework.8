@@ -309,27 +309,27 @@ namespace Bio.Helpers.Common {
     /// <returns></returns>
     public static String[] SplitString(String str, String[] delimeter) {
       if (!String.IsNullOrEmpty(str)) {
-        var v_line = str;
-        String v_dlmtr;
+        var line = str;
+        String dlmtr;
         if (delimeter.Length > 1) {
           const String csDlmtrPG = "#inner_pg_delimeter_str#";
           foreach (var d in delimeter)
-            v_line = v_line.Replace(d, csDlmtrPG);
-          v_dlmtr = csDlmtrPG;
+            line = line.Replace(d, csDlmtrPG);
+          dlmtr = csDlmtrPG;
         } else
-          v_dlmtr = delimeter.FirstOrDefault();
-        if (v_dlmtr != null) {
-          IList<String> v_list = new List<String>();
-          var v_itemBgn = 0;
-          while (v_itemBgn <= v_line.Length) {
-            var v_dlmtrPos = v_line.IndexOf(v_dlmtr, v_itemBgn, StringComparison.Ordinal);
-            if (v_dlmtrPos == -1)
-              v_dlmtrPos = v_line.Length;
-            var v_line2Add = v_line.Substring(v_itemBgn, v_dlmtrPos - v_itemBgn);
-            v_list.Add(v_line2Add);
-            v_itemBgn += v_line2Add.Length + v_dlmtr.Length;
+          dlmtr = delimeter.FirstOrDefault();
+        if (dlmtr != null) {
+          IList<String> list = new List<String>();
+          var itemBgn = 0;
+          while (itemBgn <= line.Length) {
+            var dlmtrPos = line.IndexOf(dlmtr, itemBgn, StringComparison.Ordinal);
+            if (dlmtrPos == -1)
+              dlmtrPos = line.Length;
+            var line2Add = line.Substring(itemBgn, dlmtrPos - itemBgn);
+            list.Add(line2Add);
+            itemBgn += line2Add.Length + dlmtr.Length;
           }
-          return v_list.ToArray();
+          return list.ToArray();
         }
         return new String[0];
       }
@@ -369,7 +369,7 @@ namespace Bio.Helpers.Common {
       return x - (x / y) * y;
     }
 
-    private static readonly Mutex FMutexOfLogFile = new Mutex();
+    private static readonly Mutex _mutexOfLogFile = new Mutex();
     /// <summary>
     /// Добавляет строку line в файл fileName
     /// </summary>
@@ -378,7 +378,7 @@ namespace Bio.Helpers.Common {
     /// <param name="encoding">Кодировка для записи</param>
     /// <param name="createPath">Создать путь если не сужествует</param>
     public static void AppendStringToFile(String fileName, String line, Encoding encoding, Boolean createPath) {
-      FMutexOfLogFile.WaitOne();
+      _mutexOfLogFile.WaitOne();
       try {
         var v_dir = Path.GetDirectoryName(fileName);
         if (v_dir != null && (!Directory.Exists(v_dir) && createPath))
@@ -391,7 +391,7 @@ namespace Bio.Helpers.Common {
           sw.Close();
         }
       } finally {
-        FMutexOfLogFile.ReleaseMutex();
+        _mutexOfLogFile.ReleaseMutex();
       }
     }
 
@@ -438,15 +438,15 @@ namespace Bio.Helpers.Common {
     /// <param name="buffer"></param>
     public static void ReadBinStreamInBuffer(Stream stream, out Byte[] buffer) {
       buffer = new Byte[stream.Length];
-      var v_chunkPos = 0;
+      var chunkPos = 0;
       while (stream.Position > -1 && stream.Position < stream.Length) {
-        int v_chunkSize;
+        int chunkSize;
         if (stream.Length - stream.Position >= _CHUNKSIZE)
-          v_chunkSize = _CHUNKSIZE;
+          chunkSize = _CHUNKSIZE;
         else
-          v_chunkSize = (int)(stream.Length - stream.Position);
-        stream.Read(buffer, v_chunkPos, v_chunkSize);
-        v_chunkPos += v_chunkSize;
+          chunkSize = (int)(stream.Length - stream.Position);
+        stream.Read(buffer, chunkPos, chunkSize);
+        chunkPos += chunkSize;
       }
 
     }
@@ -471,12 +471,12 @@ namespace Bio.Helpers.Common {
     public static void WriteBuffer2BinFile(String fileName, Byte[] buffer) {
       if (File.Exists(fileName))
         File.Delete(fileName);
-      var v_fileStream = new FileStream(fileName, FileMode.CreateNew);
+      var fileStream = new FileStream(fileName, FileMode.CreateNew);
       try {
-        var v_binaryWriter = new BinaryWriter(v_fileStream);
-        v_binaryWriter.Write(buffer, 0, buffer.Length);
+        var binaryWriter = new BinaryWriter(fileStream);
+        binaryWriter.Write(buffer, 0, buffer.Length);
       } finally {
-        v_fileStream.Close();
+        fileStream.Close();
       }
     }
 
@@ -489,23 +489,28 @@ namespace Bio.Helpers.Common {
     public static long StrTimePeriodToMilliseconds(String period) {
       Int64 v_rslt = 0;
       if (period != null) {
-        var v_mult = 1;
-        var v_period = period.ToUpper();
-        var v_periodType = v_period[v_period.Length - 1];
-        if (v_periodType == 'S') {
-          v_mult = 1000;
-          v_period = v_period.Substring(0, v_period.Length - 1);
-        } else if (v_periodType == 'M') {
-          v_mult = 1000 * 60;
-          v_period = v_period.Substring(0, v_period.Length - 1);
-        } else if (v_periodType == 'H') {
-          v_mult = 1000 * 3600;
-          v_period = v_period.Substring(0, v_period.Length - 1);
-        } else if (v_periodType == 'D') {
-          v_mult = 1000 * 3600 * 24;
-          v_period = v_period.Substring(0, v_period.Length - 1);
+        var mult = 1;
+        var prd = period.ToUpper();
+        var periodType = prd[prd.Length - 1];
+        switch (periodType) {
+          case 'S':
+            mult = 1000;
+            prd = prd.Substring(0, prd.Length - 1);
+            break;
+          case 'M':
+            mult = 1000 * 60;
+            prd = prd.Substring(0, prd.Length - 1);
+            break;
+          case 'H':
+            mult = 1000 * 3600;
+            prd = prd.Substring(0, prd.Length - 1);
+            break;
+          case 'D':
+            mult = 1000 * 3600 * 24;
+            prd = prd.Substring(0, prd.Length - 1);
+            break;
         }
-        v_rslt = Int64.Parse(v_period) * v_mult;
+        v_rslt = Int64.Parse(prd) * mult;
       }
       return v_rslt;
     }
@@ -600,27 +605,27 @@ namespace Bio.Helpers.Common {
     /// <param name="delimeter"></param>
     /// <returns></returns>
     public static Boolean CheckRoles(String objRoles, String userRoles, Char[] delimeter) {
-      var v_objectRoles = objRoles;
-      if ((v_objectRoles == null) || (v_objectRoles.Equals("")))
-        v_objectRoles = "*";
+      var objectRoles = objRoles;
+      if ((objectRoles == null) || (objectRoles.Equals("")))
+        objectRoles = "*";
 
       // Проверяем наличие * в pObjectRoles
-      Boolean v_result = IsElementInDelimitedLine(v_objectRoles, "*", delimeter);
+      var result = IsElementInDelimitedLine(objectRoles, "*", delimeter);
 
-      if (!v_result) {
+      if (!result) {
         //* нет в pObjectRoles проверяем пересечение
-        v_result = DelimitedLineHasCommonTags(v_objectRoles, userRoles, delimeter);
+        result = DelimitedLineHasCommonTags(objectRoles, userRoles, delimeter);
       }
 
-      if (v_result) {
+      if (result) {
         //Проверяем наличие исключающих ролей
         var v_lst = userRoles.Split(delimeter);
         foreach (var t in v_lst)
-          if (IsElementInDelimitedLine(v_objectRoles, "!" + t, delimeter))
-            v_result = false;
+          if (IsElementInDelimitedLine(objectRoles, "!" + t, delimeter))
+            result = false;
       }
 
-      return v_result;
+      return result;
     }
 
     /// <summary>
@@ -703,8 +708,8 @@ namespace Bio.Helpers.Common {
     /// <param name="bioCode"></param>
     /// <returns></returns>
     public static String GenBioLocalPath(String bioCode) {
-      var v_fLstIndx = bioCode.LastIndexOf(".", StringComparison.Ordinal);
-      return v_fLstIndx >= 0 ? bioCode.Substring(0, v_fLstIndx + 1).Replace(".", "\\") : null;
+      var fLstIndx = bioCode.LastIndexOf(".", StringComparison.Ordinal);
+      return fLstIndx >= 0 ? bioCode.Substring(0, fLstIndx + 1).Replace(".", "\\") : null;
     }
 
     /// <summary>
@@ -714,14 +719,14 @@ namespace Bio.Helpers.Common {
     /// <param name="verRight"></param>
     /// <returns>[-1]-меньше; [0]-равно; [1]-больше</returns>
     public static int CompareVer(String verLeft, String verRight) {
-      var v_verLeft = SplitString(verLeft, '.');
-      var v_verRight = SplitString(verRight, '.');
-      var v_upIndex = Math.Max(v_verLeft.Length, v_verRight.Length);
-      for (var i = 0; i < v_upIndex; i++) {
-        var v_intLeft = (i < v_verLeft.Length) ? Int32.Parse(v_verLeft[i]) : 0;
-        var v_intRight = (i < v_verRight.Length) ? Int32.Parse(v_verRight[i]) : 0;
-        if (v_intLeft < v_intRight) return -1;
-        if (v_intLeft > v_intRight) return 1;
+      var verLeftArr = SplitString(verLeft, '.');
+      var verRightArr = SplitString(verRight, '.');
+      var upIndex = Math.Max(verLeftArr.Length, verRightArr.Length);
+      for (var i = 0; i < upIndex; i++) {
+        var intLeft = (i < verLeftArr.Length) ? Int32.Parse(verLeftArr[i]) : 0;
+        var intRight = (i < verRightArr.Length) ? Int32.Parse(verRightArr[i]) : 0;
+        if (intLeft < intRight) return -1;
+        if (intLeft > intRight) return 1;
       }
       return 0;
     }
@@ -736,7 +741,9 @@ namespace Bio.Helpers.Common {
         if (Directory.Exists(path))
           Directory.Delete(path, true);
         Directory.CreateDirectory(path);
+// ReSharper disable EmptyGeneralCatchClause
       } catch { }
+// ReSharper restore EmptyGeneralCatchClause
     }
 
     /// <summary>
@@ -854,9 +861,9 @@ namespace Bio.Helpers.Common {
     /// <returns></returns>
     public static String GetFncName(String eveName) {
       if (eveName != null) {
-        var v_fncNamEnd = eveName.IndexOf('(');
-        if (v_fncNamEnd >= 0)
-          return eveName.Substring(0, eveName.Length - (eveName.Length - v_fncNamEnd)).Trim();
+        var fncNamEnd = eveName.IndexOf('(');
+        if (fncNamEnd >= 0)
+          return eveName.Substring(0, eveName.Length - (eveName.Length - fncNamEnd)).Trim();
       }
       return null;
     }
@@ -1033,10 +1040,10 @@ namespace Bio.Helpers.Common {
     private static Object _convertFromNullable(Object value) {
       if (value == null)
         return null;
-      var v_conversionType = value.GetType();
-      if (v_conversionType.IsGenericType &&
-        v_conversionType.GetGenericTypeDefinition() == typeof(Nullable<>)) {
-        var v_type = Nullable.GetUnderlyingType(v_conversionType);
+      var conversionType = value.GetType();
+      if (conversionType.IsGenericType &&
+        conversionType.GetGenericTypeDefinition() == typeof(Nullable<>)) {
+        var v_type = Nullable.GetUnderlyingType(conversionType);
         if (v_type == typeof(Boolean)) return (Boolean)value;
         if (v_type == typeof(Int16)) return (Int16)value;
         if (v_type == typeof(Int32)) return (Int32)value;
@@ -1045,7 +1052,7 @@ namespace Bio.Helpers.Common {
         if (v_type == typeof(Double)) return (Double)value;
         if (v_type == typeof(Single)) return (Single)value;
         if (v_type == typeof(DateTime)) return (DateTime)value;
-        throw new Exception(String.Format("Невозможно конвертировать {0} в {1}", v_conversionType.Name, v_type.Name));
+        throw new Exception(String.Format("Невозможно конвертировать {0} в {1}", conversionType.Name, v_type.Name));
       }
       return value;
     }
@@ -1053,17 +1060,17 @@ namespace Bio.Helpers.Common {
     private static Object _convertToNullable(Object value) {
       if (value == null)
         return null;
-      var v_conversionType = value.GetType();
-      if (v_conversionType.IsGenericType &&
-        v_conversionType.GetGenericTypeDefinition() != typeof(Nullable<>)) {
-        if (v_conversionType == typeof(Boolean)) return (Boolean?)value;
-        if (v_conversionType == typeof(Int16)) return (Int16?)value;
-        if (v_conversionType == typeof(Int32)) return (Int32?)value;
-        if (v_conversionType == typeof(Int64)) return (Int64?)value;
-        if (v_conversionType == typeof(Decimal)) return (Decimal?)value;
-        if (v_conversionType == typeof(Double)) return (Double?)value;
-        if (v_conversionType == typeof(Single)) return (Single?)value;
-        if (v_conversionType == typeof(DateTime)) return (DateTime?)value;
+      var conversionType = value.GetType();
+      if (conversionType.IsGenericType &&
+        conversionType.GetGenericTypeDefinition() != typeof(Nullable<>)) {
+        if (conversionType == typeof(Boolean)) return (Boolean?)value;
+        if (conversionType == typeof(Int16)) return (Int16?)value;
+        if (conversionType == typeof(Int32)) return (Int32?)value;
+        if (conversionType == typeof(Int64)) return (Int64?)value;
+        if (conversionType == typeof(Decimal)) return (Decimal?)value;
+        if (conversionType == typeof(Double)) return (Double?)value;
+        if (conversionType == typeof(Single)) return (Single?)value;
+        if (conversionType == typeof(DateTime)) return (DateTime?)value;
         return value;
       }
       return value;
@@ -1079,93 +1086,93 @@ namespace Bio.Helpers.Common {
       if ((inValue != null) && (targetType != null) && inValue.GetType() == targetType)
         return inValue;
       if ((targetType != null) && (targetType != typeof(Object))) {
-        var v_tp = ((inValue == null) || (inValue == DBNull.Value)) ? null : inValue.GetType();
+        var tp = ((inValue == null) || (inValue == DBNull.Value)) ? null : inValue.GetType();
 
-        var v_outType = Nullable.GetUnderlyingType(targetType);
-        var v_outIsNullable = v_outType != null;
-        v_outType = v_outType ?? targetType;
-        var v_outIsClass = v_outType.IsClass;
-        if (v_tp == null) {
-          if (v_outIsNullable || v_outIsClass)
+        var outType = Nullable.GetUnderlyingType(targetType);
+        var outIsNullable = outType != null;
+        outType = outType ?? targetType;
+        var outIsClass = outType.IsClass;
+        if (tp == null) {
+          if (outIsNullable || outIsClass)
             return null;
-          if (v_outType == typeof(String) || v_outType == typeof(Object))
+          if (outType == typeof(String) || outType == typeof(Object))
             return null;
-          if (v_outType == typeof(DateTime))
+          if (outType == typeof(DateTime))
             return DateTime.MinValue;
-          if (v_outType == typeof(Boolean))
+          if (outType == typeof(Boolean))
             return false;
-          if (TypeIsNumeric(v_outType)) {
+          if (TypeIsNumeric(outType)) {
             IFormatProvider v_format = CultureInfo.CurrentCulture.NumberFormat;
-            return Convert.ChangeType(0, v_outType, v_format);
+            return Convert.ChangeType(0, outType, v_format);
           }
-          throw new Exception("Значение null не может быть представлено как " + v_outType.Name + "!!! ", null);
+          throw new Exception("Значение null не может быть представлено как " + outType.Name + "!!! ", null);
         }
 
-        var v_inType = Nullable.GetUnderlyingType(v_tp);
-        var v_inIsNullable = v_inType != null;
-        v_inType = v_inType ?? v_tp;
+        var inType = Nullable.GetUnderlyingType(tp);
+        var inIsNullable = inType != null;
+        inType = inType ?? tp;
 
-        if (v_inIsNullable)
+        if (inIsNullable)
           inValue = _convertFromNullable(inValue);
 
-        Object v_rslt = null;
-        if (v_outType == typeof(DateTime)) {
+        Object rslt = null;
+        if (outType == typeof(DateTime)) {
           if (inValue == null) {
-            v_rslt = DateTime.MinValue;
-          } else if (v_inType == typeof(DateTime)) {
-            v_rslt = inValue;
-          } else if (v_inType == typeof(String)) {
-            v_rslt = DateTimeParser.Instance.ParsDateTime((String)inValue);
+            rslt = DateTime.MinValue;
+          } else if (inType == typeof(DateTime)) {
+            rslt = inValue;
+          } else if (inType == typeof(String)) {
+            rslt = DateTimeParser.Instance.ParsDateTime((String)inValue);
           } else {
-            throw new Exception("Значение типа " + v_tp + " не может быть представлено как DateTime!!! ", null);
+            throw new Exception("Значение типа " + tp + " не может быть представлено как DateTime!!! ", null);
           }
 
-        } else if (v_outType == typeof(Boolean)) {
+        } else if (outType == typeof(Boolean)) {
           if (inValue == null)
-            v_rslt = false;
-          else if (v_inType == typeof(Boolean))
-            v_rslt = inValue;
-          else if (TypeIsNumeric(v_inType)) {
-            var v_invalDec = (Decimal)Convert.ChangeType(inValue, typeof(Decimal), CultureInfo.CurrentCulture.NumberFormat);
-            v_rslt = (!v_invalDec.Equals(new Decimal(0)));
-          } else if (v_inType == typeof(String)) {
-            var v_valStr = ((String)inValue).ToUpper();
-            v_rslt = (v_valStr.Equals("1") || v_valStr.Equals("Y") || v_valStr.Equals("T") || v_valStr.ToUpper().Equals("TRUE") || v_valStr.ToUpper().Equals("ON"));
+            rslt = false;
+          else if (inType == typeof(Boolean))
+            rslt = inValue;
+          else if (TypeIsNumeric(inType)) {
+            var invalDec = (Decimal)Convert.ChangeType(inValue, typeof(Decimal), CultureInfo.CurrentCulture.NumberFormat);
+            rslt = (!invalDec.Equals(new Decimal(0)));
+          } else if (inType == typeof(String)) {
+            var valStr = ((String)inValue).ToUpper();
+            rslt = (valStr.Equals("1") || valStr.Equals("Y") || valStr.Equals("T") || valStr.ToUpper().Equals("TRUE") || valStr.ToUpper().Equals("ON"));
           } else {
-            throw new Exception("Значение типа " + v_tp + " не может быть представлено как boolean!!! ", null);
+            throw new Exception("Значение типа " + tp + " не может быть представлено как boolean!!! ", null);
           }
-        } else if (TypeIsNumeric(v_outType)) {
-          IFormatProvider v_numberFormat = CultureInfo.CurrentCulture.NumberFormat;//new NumberFormatInfo();
+        } else if (TypeIsNumeric(outType)) {
+          IFormatProvider numberFormat = CultureInfo.CurrentCulture.NumberFormat;//new NumberFormatInfo();
           if (inValue == null)
-            v_rslt = Convert.ChangeType(0, v_outType, v_numberFormat);
+            rslt = Convert.ChangeType(0, outType, numberFormat);
           else {
-            if (TypeIsNumeric(v_inType)) {
-              v_rslt = Convert.ChangeType(inValue, v_outType, v_numberFormat);
-            } else if (v_inType == typeof (Boolean)) {
-              v_rslt = ((Boolean) inValue) ? 1 : 0;
-            } else if (v_inType == typeof (String)) {
-              var v_valStr = (String) inValue;
-              v_valStr = String.IsNullOrEmpty(v_valStr) ? "0" : v_valStr;
-              var v_decSep = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
-              v_valStr = v_valStr.Replace(",", v_decSep);
-              v_valStr = v_valStr.Replace(".", v_decSep);
+            if (TypeIsNumeric(inType)) {
+              rslt = Convert.ChangeType(inValue, outType, numberFormat);
+            } else if (inType == typeof (Boolean)) {
+              rslt = ((Boolean) inValue) ? 1 : 0;
+            } else if (inType == typeof (String)) {
+              var valStr = (String) inValue;
+              valStr = String.IsNullOrEmpty(valStr) ? "0" : valStr;
+              var decSep = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+              valStr = valStr.Replace(",", decSep);
+              valStr = valStr.Replace(".", decSep);
               try {
-                v_rslt = Convert.ChangeType(v_valStr, v_outType, v_numberFormat);
+                rslt = Convert.ChangeType(valStr, outType, numberFormat);
               } catch (Exception ex) {
-                throw new Exception("Значение [" + v_valStr + "] типа " + v_inType.Name + " не может быть представлено как Numeric!!! Сообщение: " + ex.Message, null);
+                throw new Exception("Значение [" + valStr + "] типа " + inType.Name + " не может быть представлено как Numeric!!! Сообщение: " + ex.Message, null);
               }
             } else {
-              throw new Exception("Значение [" + inValue + "] типа " + v_tp + " не может быть представлено как Numeric!!! ", null);
+              throw new Exception("Значение [" + inValue + "] типа " + tp + " не может быть представлено как Numeric!!! ", null);
             }
           }
-          if (v_outIsNullable)
-            v_rslt = _convertToNullable(v_rslt);
+          if (outIsNullable)
+            rslt = _convertToNullable(rslt);
 
-        } else if (v_outType == typeof(String)) {
-          v_rslt = _objectAsString(inValue);
+        } else if (outType == typeof(String)) {
+          rslt = _objectAsString(inValue);
         }
 
-        return v_rslt;
+        return rslt;
       }
 
       return inValue;
@@ -1649,8 +1656,8 @@ namespace Bio.Helpers.Common {
     public static String BuidQueryStrParams(Dictionary<String, String> prms) {
       String rslt = null;
       foreach (var k in prms.Keys) {
-        var v_paramStr = k + "=" + HttpUtility.UrlEncode(prms[k]);
-        AppendStr(ref rslt, v_paramStr, "&");
+        var paramStr = k + "=" + HttpUtility.UrlEncode(prms[k]);
+        AppendStr(ref rslt, paramStr, "&");
       }
       return rslt;
     }
@@ -1687,17 +1694,17 @@ namespace Bio.Helpers.Common {
       errCode = 0;
       errMsg = null;
       if (exMessage != null) {
-        var v_strtIndx = exMessage.IndexOf("ORA-2", StringComparison.Ordinal);
-        if (v_strtIndx >= 0) {
-          var v_endIndx = exMessage.IndexOf("ORA-", v_strtIndx + 5, StringComparison.Ordinal);
-          var v_len = v_endIndx - v_strtIndx;
-          if (v_len < 0)
-            v_len = exMessage.Length - v_strtIndx;
-          var v_msg = exMessage;
-          if (v_len > 0)
-            v_msg = exMessage.Substring(v_strtIndx, v_len);
-          errCode = Int32.Parse(v_msg.Substring(4, 5));
-          errMsg = v_msg.Substring(11);
+        var strtIndx = exMessage.IndexOf("ORA-2", StringComparison.Ordinal);
+        if (strtIndx >= 0) {
+          var endIndx = exMessage.IndexOf("ORA-", strtIndx + 5, StringComparison.Ordinal);
+          var len = endIndx - strtIndx;
+          if (len < 0)
+            len = exMessage.Length - strtIndx;
+          var msg = exMessage;
+          if (len > 0)
+            msg = exMessage.Substring(strtIndx, len);
+          errCode = Int32.Parse(msg.Substring(4, 5));
+          errMsg = msg.Substring(11);
         }
       }
     }
@@ -1828,25 +1835,25 @@ namespace Bio.Helpers.Common {
     public static void LoadRemoteAssembly(String xapName, Action<OpenReadCompletedEventArgs, Assembly> onLoadAction) {
       if (!String.IsNullOrEmpty(xapName)) {
         var wc = new WebClient();
-        wc.OpenReadCompleted += new OpenReadCompletedEventHandler((sndr, atrs) => {
-          var appManifest = new StreamReader(System.Windows.Application.GetResourceStream(new StreamResourceInfo(atrs.Result, null),
-                               new Uri("AppManifest.xaml", UriKind.Relative)).Stream).ReadToEnd();
+        wc.OpenReadCompleted += (sndr, atrs) => {
+          var appManifest = new StreamReader(Application.GetResourceStream(new StreamResourceInfo(atrs.Result, null),
+                                                                                          new Uri("AppManifest.xaml", UriKind.Relative)).Stream).ReadToEnd();
 
 
           var deploymentRoot = XDocument.Parse(appManifest).Root;
           var deploymentParts = (from assemblyParts in deploymentRoot.Elements().Elements()
-                                            select assemblyParts).ToList();
+                                 select assemblyParts).ToList();
           foreach (var xElement in deploymentParts.Reverse<XElement>()) {
             var source = xElement.Attribute("Source").Value;
-            var streamInfo = System.Windows.Application.GetResourceStream(new StreamResourceInfo(atrs.Result,
-                                              "application/binary"), new Uri(source, UriKind.Relative));
+            var streamInfo = Application.GetResourceStream(new StreamResourceInfo(atrs.Result,
+                                                                                                 "application/binary"), new Uri(source, UriKind.Relative));
 
-            var asmPart = new System.Windows.AssemblyPart();
+            var asmPart = new AssemblyPart();
             var asm = asmPart.Load(streamInfo.Stream);
             if (onLoadAction != null)
               onLoadAction(atrs, asm);
           }
-        });
+        };
         wc.OpenReadAsync(new Uri(xapName, UriKind.Relative));
       }
     }
@@ -1860,7 +1867,7 @@ namespace Bio.Helpers.Common {
       }
     }
 
-    private const String csCookieValTypeSplitter = "|value-type|";
+    private const String CS_COOKIE_VAL_TYPE_SPLITTER = "|value-type|";
 
     /// <summary>
     /// Сохраняет значение в Cookie
@@ -1873,7 +1880,7 @@ namespace Bio.Helpers.Common {
     public static void SetCookie(String key, Object value, Int32 expireDays, Boolean silent) {
       var expireDate = DateTime.Now + TimeSpan.FromDays(expireDays);
       var newCookieValueType = value != null ? value.GetType() : typeof(String);
-      var newCookieValue = value + csCookieValTypeSplitter + newCookieValueType.FullName;
+      var newCookieValue = value + CS_COOKIE_VAL_TYPE_SPLITTER + newCookieValueType.FullName;
       var newCookie = key.Trim() + "=" + newCookieValue + ";expires=" + expireDate.ToString("R");
       try {
         HtmlPage.Document.SetProperty("cookie", newCookie);
@@ -1905,15 +1912,15 @@ namespace Bio.Helpers.Common {
           if (keyValue.Length == 2) {
             if (String.Equals(keyValue[0], key)) {
               var valFullStr = keyValue[1];
-              var valueParts = Utl.SplitString(valFullStr, csCookieValTypeSplitter);
+              var valueParts = SplitString(valFullStr, CS_COOKIE_VAL_TYPE_SPLITTER);
               if (valueParts.Length == 2) {
                 var valStr = valueParts[0];
                 var valTypeName = valueParts[1];
                 var valType = Type.GetType(valTypeName);
-                var valObj = Utl.Convert2Type(valStr, valType);
+                var valObj = Convert2Type(valStr, valType);
                 return valObj;
-              } else
-                return null;
+              }
+              return null;
             }
           }
         }
@@ -1960,9 +1967,9 @@ namespace Bio.Helpers.Common {
     /// <returns></returns>
     public static T GetPropertyValue<T>(Object obj, String propertyName) {
       if (obj != null) {
-        var v_propertyRnum = GetPropertyInfo(obj.GetType(), propertyName, false);
-        if (v_propertyRnum != null) {
-          var v_val = v_propertyRnum.GetValue(obj, null);
+        var propertyRnum = GetPropertyInfo(obj.GetType(), propertyName, false);
+        if (propertyRnum != null) {
+          var v_val = propertyRnum.GetValue(obj, null);
           return Convert2Type<T>(v_val);
         }
         return default(T);
@@ -1978,9 +1985,9 @@ namespace Bio.Helpers.Common {
     /// <param name="value">Значение</param>
     public static void SetPropertyValue(Object obj, String propertyName, Object value) {
       if (obj != null) {
-        var v_propertyRnum = GetPropertyInfo(obj.GetType(), propertyName, false);
-        if (v_propertyRnum != null)
-          v_propertyRnum.SetValue(obj, value, null);
+        var propertyRnum = GetPropertyInfo(obj.GetType(), propertyName, false);
+        if (propertyRnum != null)
+          propertyRnum.SetValue(obj, value, null);
       }
     }
 
@@ -2008,10 +2015,10 @@ namespace Bio.Helpers.Common {
     /// <param name="date"></param>
     /// <returns></returns>
     public static Int32 DayOfWeekRu(DateTime date) {
-      var v_days = new[] { "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс" };
-      var v_dayStr = date.ToString("ddd", new CultureInfo("ru-RU"));
-      var v_dayInt = Array.IndexOf(v_days, v_dayStr);
-      return v_dayInt + 1;
+      var days = new[] { "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс" };
+      var dayStr = date.ToString("ddd", new CultureInfo("ru-RU"));
+      var dayInt = Array.IndexOf(days, dayStr);
+      return dayInt + 1;
     }
 
 #if SILVERLIGHT
@@ -2024,7 +2031,6 @@ namespace Bio.Helpers.Common {
           if (obj != null)
             userSettings.Add(objName, obj);
           userSettings.Save();
-          userSettings = null;
         } catch (IsolatedStorageException ex) {
           // Isolated storage not enabled or an error occurred
           throw new EBioException(String.Format("Ошибка при сохранении объекта {0} в IsolatedStorageSettings.ApplicationSettings, значение: {1}\n Сообщение: {2}", objName, "" + obj, ex.Message), ex);
@@ -2034,7 +2040,7 @@ namespace Bio.Helpers.Common {
 
     public static Int64 GetISQuota() {
       try {
-        using (IsolatedStorageFile isf = IsolatedStorageFile.GetUserStoreForApplication()) {
+        using (var isf = IsolatedStorageFile.GetUserStoreForApplication()) {
           return isf.Quota;
         }
       } catch (Exception ex) {
@@ -2050,14 +2056,12 @@ namespace Bio.Helpers.Common {
     }
 
     public static T RestoreUserObjectStrg<T>(String objName, T defObj) {
-      T rslt;
       try {
         var userSettings = IsolatedStorageSettings.ApplicationSettings;
-        if (userSettings.TryGetValue<T>(objName, out rslt))
+        T rslt;
+        if (userSettings.TryGetValue(objName, out rslt))
           return rslt;
-        userSettings = null;
       } catch (IsolatedStorageException ex) {
-        //return defObj;
         throw new EBioException(String.Format("Ошибка при восстановлении объекта {0} из IsolatedStorageSettings.ApplicationSettings.", objName), ex);
       }
       return defObj;
@@ -2071,20 +2075,20 @@ namespace Bio.Helpers.Common {
         } catch (Newtonsoft.Json.JsonSerializationException) {
           return defObj;
         }
-      } else
-        return defObj;
+      }
+      return defObj;
     }
 
     public static String GetAssemblyVersion(Assembly assembly) {
-      AssemblyName assemblyName = new AssemblyName(assembly.FullName);
+      var assemblyName = new AssemblyName(assembly.FullName);
       return assemblyName.Version.ToString();
     }
 
     public static void SetCurrentClientVersion(String version) {
-      Utl.StoreUserObjectStrg("BioMainClientAssemblyVersion", version);
+      StoreUserObjectStrg("BioMainClientAssemblyVersion", version);
     }
     public static String GetCurrentClientVersion() {
-      return Utl.RestoreUserObjectStrg<String>("BioMainClientAssemblyVersion", "0");
+      return RestoreUserObjectStrg("BioMainClientAssemblyVersion", "0");
     }
 #endif
 
@@ -2098,8 +2102,8 @@ namespace Bio.Helpers.Common {
       if (!String.IsNullOrEmpty(path)) {
         var v_nodes = SplitString(path, delimeter);
         if (v_nodes.Length > 0) {
-          var v_nodesNew = v_nodes.Where((v, i) => i > 0).ToArray();
-          path = CombineString(v_nodesNew, delimeter);
+          var nodesNew = v_nodes.Where((v, i) => i > 0).ToArray();
+          path = CombineString(nodesNew, delimeter);
         } else
           path = null;
         return (v_nodes.Length > 0) ? v_nodes[0] : null;
@@ -2115,13 +2119,13 @@ namespace Bio.Helpers.Common {
     /// <returns></returns>
     public static String PopLastItemFromList(ref String path, String delimeter) {
       if (!String.IsNullOrEmpty(path)) {
-        var v_nodes = SplitString(path, delimeter);
-        if (v_nodes.Length > 0) {
-          var v_nodesNew = v_nodes.Where((v, i) => i < v_nodes.Length - 1).ToArray();
-          path = CombineString(v_nodesNew, delimeter);
+        var nodes = SplitString(path, delimeter);
+        if (nodes.Length > 0) {
+          var nodesNew = nodes.Where((v, i) => i < nodes.Length - 1).ToArray();
+          path = CombineString(nodesNew, delimeter);
         } else
           path = null;
-        return (v_nodes.Length > 0) ? v_nodes[v_nodes.Length - 1] : null;
+        return (nodes.Length > 0) ? nodes[nodes.Length - 1] : null;
       }
       return null;
     }
@@ -2133,10 +2137,10 @@ namespace Bio.Helpers.Common {
     /// <param name="array2">Массив 2</param>
     /// <typeparam name="T">Тип элементов в массиве</typeparam>
     /// <returns></returns>
-    public static T[] combineArrays<T>(T[] array1, T[] array2) {
-      var v_array1OriginalLength = array1.Length;
-      Array.Resize(ref array1, v_array1OriginalLength + array2.Length);
-      Array.Copy(array2, 0, array1, v_array1OriginalLength, array2.Length);
+    public static T[] CombineArrays<T>(T[] array1, T[] array2) {
+      var array1OriginalLength = array1.Length;
+      Array.Resize(ref array1, array1OriginalLength + array2.Length);
+      Array.Copy(array2, 0, array1, array1OriginalLength, array2.Length);
       return array1;
     }
 
@@ -2145,19 +2149,18 @@ namespace Bio.Helpers.Common {
       if (elem != null) {
         if (elem.GetType().IsSubclassOf(typeof(T)) || (elem is T))
           return (T)elem;
-        else
-          return FindParentElem<T>(elem.Parent as FrameworkElement);
-      } else
-        return default(T);
+        return FindParentElem<T>(elem.Parent as FrameworkElement);
+      }
+      return default(T);
     }
+
     public static FrameworkElement FindParentElem1<T>(FrameworkElement elem) {
       if (elem != null) {
         if (elem.GetType().IsSubclassOf(typeof(T)) || (elem is T))
           return elem;
-        else
-          return FindParentElem1<T>(elem.Parent as FrameworkElement);
-      } else
-        return null;
+        return FindParentElem1<T>(elem.Parent as FrameworkElement);
+      }
+      return null;
     }
 #endif
 

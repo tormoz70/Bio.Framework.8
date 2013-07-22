@@ -8,7 +8,7 @@
     public String TransactionID { get; set; }
     public Params BioParams { get; set; }
 
-    public CGlobalCfgPack GCfg { get; set; }
+    public GlobalCfgPack GCfg { get; set; }
 
     public RemoteProcessStatePack RmtStatePacket { get; set; }
     public String TxtContent { get; set; }
@@ -19,7 +19,7 @@
       if (dst != null) {
         dst.TransactionID = this.TransactionID;
         dst.BioParams = (this.BioParams != null) ? (Params)this.BioParams.Clone() : null;
-        dst.GCfg = (this.GCfg != null) ? (CGlobalCfgPack)this.GCfg.Clone() : null;
+        dst.GCfg = (this.GCfg != null) ? (GlobalCfgPack)this.GCfg.Clone() : null;
         dst.RmtStatePacket = (this.RmtStatePacket != null) ? (RemoteProcessStatePack)this.RmtStatePacket.Clone() : null;
         dst.TxtContent = this.TxtContent;
       }

@@ -36,9 +36,9 @@ namespace Bio.Framework.Client.SL {
     }
 
     private static void _loadItems(ComboBox cbx, CbxItems items, Boolean addNullItem) {
-      if ((items != null) && (items.metadata.fields.Count > 1)) {
-        cbx.SelectedValuePath = items.metadata.fields[0].name;
-        cbx.DisplayMemberPath = items.metadata.fields[1].name;
+      if ((items != null) && (items.metadata.Fields.Count > 1)) {
+        cbx.SelectedValuePath = items.metadata.Fields[0].Name;
+        cbx.DisplayMemberPath = items.metadata.Fields[1].Name;
         if (addNullItem) {
           var v_NullRow = items.NewRow();
           v_NullRow.SetValue(cbx.SelectedValuePath, null);
@@ -93,7 +93,7 @@ namespace Bio.Framework.Client.SL {
   }
 
   public class CbxItems {
-    public CJsonStoreMetadata metadata = null;
+    public JsonStoreMetadata metadata = null;
     public IEnumerable<CRTObject> ds = null;
 
     public CRTObject NewRow() {

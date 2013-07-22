@@ -23,23 +23,23 @@ namespace Bio.Framework.Server {
     /// </summary>
     /// <param name="cursor">Созданный курсор.</param>
     /// <returns>CJsonStoreData</returns>
-    public CJsonStoreData Process(CJSCursor cursor) {
-      CJsonStoreData result = new CJsonStoreData() {
-        endReached = cursor.rqPacket.endReached,
-        start = 0
+    public JsonStoreData Process(CJSCursor cursor) {
+      JsonStoreData result = new JsonStoreData {
+        EndReached = cursor.rqPacket.EndReached,
+        Start = 0
       };
 
-      result.metaData = CJsonStoreMetadata.ConstructMetadata(cursor.bioCode, cursor.CursorIniDoc);
-      result.rows = new JsonStoreRows();
+      result.MetaData = JsonStoreMetadata.ConstructMetadata(cursor.bioCode, cursor.CursorIniDoc);
+      result.Rows = new JsonStoreRows();
       var v_rowCount = 0;
-      result.start = cursor.rqPacket.start;
-      result.limit = cursor.rqPacket.limit;
-      result.totalCount = cursor.rqPacket.totalCount;
+      result.Start = cursor.rqPacket.Start;
+      result.Limit = cursor.rqPacket.Limit;
+      result.TotalCount = cursor.rqPacket.TotalCount;
       // перебираем все записи в курсоре
       //throw new Exception("FTW!!!");
       while (cursor.Next()) {
-        if (result.limit == 0 || ++v_rowCount <= result.limit) {
-          var v_newRow = result.addRow();
+        if (result.Limit == 0 || ++v_rowCount <= result.Limit) {
+          var v_newRow = result.AddRow();
           // перебираем все поля одной записи
           foreach (var fld in cursor.Fields) {
             var v_fieldName = fld.FieldName;
@@ -48,14 +48,14 @@ namespace Bio.Framework.Server {
             if (this.ProcessField != null)
               process = this.ProcessField(ref v_fieldName, ref v_field);
             if (process) {
-              var v_doEncodeFromAnsi = (v_field.DataType == FieldType.Clob) && (v_field.Encoding == FieldEncoding.WINDOWS1251);
-              v_newRow.Values[result.metaData.indexOf(v_fieldName)] = v_doEncodeFromAnsi ? Utl.EncodeANSI2UTF(v_field.AsObject as String) : v_field.AsObject;
+              var v_doEncodeFromAnsi = (v_field.DataType == JSFieldType.Clob) && (v_field.Encoding == FieldEncoding.WINDOWS1251);
+              v_newRow.Values[result.MetaData.IndexOf(v_fieldName)] = v_doEncodeFromAnsi ? Utl.EncodeANSI2UTF(v_field.AsObject as String) : v_field.AsObject;
             }
           }
         }
       }
-      result.endReached = result.limit == 0 || v_rowCount <= result.limit;
-      result.totalCount = result.start + v_rowCount;
+      result.EndReached = result.Limit == 0 || v_rowCount <= result.Limit;
+      result.TotalCount = result.Start + v_rowCount;
       return result;
     }
 

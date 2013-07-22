@@ -23,7 +23,7 @@ namespace Bio.Helpers.DOA {
     /// <param name="header"></param>
     /// <param name="pkIndex"></param>
     /// <param name="fieldEncoding">Кодировка для CLOB полей</param>
-    public Field(SQLCursor owner, Int32 id, String name, FieldType type, String header, String pkIndex, FieldEncoding fieldEncoding = FieldEncoding.UTF8) {
+    public Field(SQLCursor owner, Int32 id, String name, JSFieldType type, String header, String pkIndex, FieldEncoding fieldEncoding = FieldEncoding.UTF8) {
 			this.FieldID = id;
       this._owner = owner;
       this.FieldName = name.ToUpper();
@@ -61,7 +61,7 @@ namespace Bio.Helpers.DOA {
     /// <summary>
     /// Тип поля по БД
     /// </summary>
-    public FieldType DataType { get; private set; }
+    public JSFieldType DataType { get; private set; }
 
     /// <summary>
     /// Кодировка строки в CLOB
@@ -187,7 +187,7 @@ namespace Bio.Helpers.DOA {
           throw new Exception(String.Format("InternalValueConvert_Exception! {0}: ({1})[{2}] -> ({3}). {4}", this.FieldName, v_valueType.Name, "" + v_value, v_type.Name, ex.Message), ex);
         }
       }
-      if ((v_type == typeof(DateTime) || v_type == typeof(DateTime?)) && (this.DataType == FieldType.DateUTC))
+      if ((v_type == typeof(DateTime) || v_type == typeof(DateTime?)) && (this.DataType == JSFieldType.DateUTC))
         v_value = DateTime.SpecifyKind((DateTime)v_value, DateTimeKind.Utc);
       return v_value;
     }

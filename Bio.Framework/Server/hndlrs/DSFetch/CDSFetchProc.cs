@@ -18,14 +18,14 @@ using System.Xml;
     private RemoteProcState _state = RemoteProcState.Redy;
     private Thread _thread = null;
     private EBioException _lastError = null;
-    private CDSFetchClientRequest _request = null;
+    private DSFetchClientRequest _request = null;
     private XmlElement _cursor_ds = null;
     private XmlElement _exec_ds = null;
 
     public String Owner { get; private set; }
     public IDBSession dbSess { get; private set; }
 
-    public CDSFetchProc(IDBSession dbSess, String owner, CDSFetchClientRequest request, XmlElement cursor_ds, XmlElement exec_ds) {
+    public CDSFetchProc(IDBSession dbSess, String owner, DSFetchClientRequest request, XmlElement cursor_ds, XmlElement exec_ds) {
       this.dbSess = dbSess;
       this.Owner = owner;
       this._request = request;
@@ -136,10 +136,10 @@ using System.Xml;
       return null;
     }
 
-    private void _doProcessRecord(CJsonStoreMetadata metadata, JsonStoreRow row) {
+    private void _doProcessRecord(JsonStoreMetadata metadata, JsonStoreRow row) {
       var conn = this.dbSess.GetConnection();
       try {
-        var vCmd = new CJSCursor(conn, this._exec_ds, this._request.execBioCode);
+        var vCmd = new CJSCursor(conn, this._exec_ds, this._request.ExecBioCode);
         vCmd.DoExecuteSQL(metadata, row, this._request.BioParams, 120);
       } finally {
         if (conn != null)
@@ -150,20 +150,20 @@ using System.Xml;
     private void _doProcessCursor() {
       var conn = this.dbSess.GetConnection();
       var vCursor = new CJSCursor(conn, this._cursor_ds, this.bioCode);
-      vCursor.Init(null, this._request.BioParams, this._request.filter, this._request.sort, this._request.selection, 120);
+      vCursor.Init(null, this._request.BioParams, this._request.Filter, this._request.Sort, this._request.Selection, 120);
       vCursor.Open(120);
       try {
         while (vCursor.Next()) {
           if (this._state == RemoteProcState.Breaking)
             break;
-          var newRow = vCursor.rqPacket.metaData.CreateNewRow();
+          var newRow = vCursor.rqPacket.MetaData.CreateNewRow();
           // перебираем все поля одной записи
           foreach (Field vCur in vCursor.Fields) {
             var vFName = vCur.FieldName;
             var vFVal = vCur;
-            newRow.Values[vCursor.rqPacket.metaData.indexOf(vFName)] = vCur.AsObject;
+            newRow.Values[vCursor.rqPacket.MetaData.IndexOf(vFName)] = vCur.AsObject;
           }
-          this._doProcessRecord(vCursor.rqPacket.metaData, newRow);
+          this._doProcessRecord(vCursor.rqPacket.MetaData, newRow);
         }
       } finally {
         vCursor.Close();

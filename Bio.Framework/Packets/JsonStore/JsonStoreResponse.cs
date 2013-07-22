@@ -12,15 +12,15 @@ namespace Bio.Framework.Packets {
     /// <summary>
     /// Пакет данных который возвращается при запросе к БД типа "select"
     /// </summary>
-    public CJsonStoreData packet { get; set; }
+    public JsonStoreData packet { get; set; }
     /// <summary>
     /// Сортировка, которая использовалясь при запросе к БД
     /// </summary>
-    public CJsonStoreSort sort { get; set; }
+    public JsonStoreSort sort { get; set; }
     /// <summary>
     /// Фильтрация, которая использовалясь при запросе к БД
     /// </summary>
-    public CJsonStoreFilter filter { get; set; }
+    public JsonStoreFilter filter { get; set; }
     //public CJsonStoreNav nav { get; set; }
 
     public String selectedPkList { get; set; }
@@ -40,10 +40,10 @@ namespace Bio.Framework.Packets {
     protected override void copyThis(ref AjaxResponse destObj) {
       base.copyThis(ref destObj);
       JsonStoreResponse dst = destObj as JsonStoreResponse;
-      dst.packet = (this.packet != null) ? (CJsonStoreData)this.packet.Clone() : null;
+      dst.packet = (this.packet != null) ? (JsonStoreData)this.packet.Clone() : null;
       //dst.cmd = this.cmd;
-      dst.sort = (this.sort != null) ? (CJsonStoreSort)this.sort.Clone() : null;
-      dst.filter = (this.filter != null) ? (CJsonStoreFilter)this.filter.Clone() : null;
+      dst.sort = (this.sort != null) ? (JsonStoreSort)this.sort.Clone() : null;
+      dst.filter = (this.filter != null) ? (JsonStoreFilter)this.filter.Clone() : null;
       dst.TransactionID = this.TransactionID;
       dst.selectedPkList = this.selectedPkList;
     }

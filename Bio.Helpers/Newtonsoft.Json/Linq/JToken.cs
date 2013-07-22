@@ -1101,11 +1101,11 @@ namespace Newtonsoft.Json.Linq
       if (reader.TokenType == JsonToken.StartConstructor)
         return JConstructor.Load(reader);
 
-      // hack. change to look at TokenType rather than using value
+      // hack1. change to look at TokenType rather than using value
       if (!JsonReader.IsStartToken(reader.TokenType))
         return new JValue(reader.Value);
 
-      // TODO: loading constructor and parameters?
+      // TODO1: loading constructor and parameters?
       throw new Exception("Error reading JToken from JsonReader. Unexpected token: {0}".FormatWith(CultureInfo.InvariantCulture, reader.TokenType));
     }
 

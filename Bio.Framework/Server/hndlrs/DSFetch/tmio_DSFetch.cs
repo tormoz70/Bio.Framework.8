@@ -35,9 +35,9 @@ namespace Bio.Framework.Server {
 
     private void _doOnRunEvent(CRmtThreadHandler sender, ref IRemoteProcInst instance) {
       if (instance == null) throw new ArgumentNullException("instance");
-      var rqst = this.BioRequest<CDSFetchClientRequest>();
+      var rqst = this.BioRequest<DSFetchClientRequest>();
       var cursorDS = this.FBioDesc.DocumentElement;
-      var execIo = CIObject.CreateIObject(rqst.execBioCode, this.BioSession);
+      var execIo = CIObject.CreateIObject(rqst.ExecBioCode, this.BioSession);
       var execDS = execIo.IniDocument.XmlDoc.DocumentElement;
       instance = new CDSFetchProc(
         this.BioSession.Cfg.dbSession, null, rqst, cursorDS, execDS);
