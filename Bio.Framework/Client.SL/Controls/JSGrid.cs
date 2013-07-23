@@ -922,7 +922,8 @@ namespace Bio.Framework.Client.SL {
       this.DataIsLoaded = false;
       var eve = this.OnBeforeLoadData;
       if (eve != null) {
-        if (!Utl.IsUiThread) {
+        var sc = SynchronizationContext.Current;
+        if (!Equals(sc, this._uiSynchronizationContext)) {
           this._uiSynchronizationContext.Send(s => {
             eve(this, args);
           }, this);
