@@ -1,3 +1,5 @@
+using System.Threading;
+
 namespace Bio.Helpers.Common {
   using System;
   using System.Text.RegularExpressions;

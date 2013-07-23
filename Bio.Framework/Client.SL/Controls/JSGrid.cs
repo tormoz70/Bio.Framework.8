@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -41,8 +42,13 @@ namespace Bio.Framework.Client.SL {
       this._jsClient.OnAfterLoadData += this._doOnAfterLoadData;
       this._jsClient.OnJsonStoreResponseSuccess += this._doOnJsonStoreResponseSuccess;
       this._jsClient.OnJsonStoreDSLoaded += this._doOnJsonStoreDSLoaded;
+      this._jsClient.OnDSRequestRefresh += this._doOnDSRequestRefresh;
       this._jsClient.OnRowPropertyChanging += this._doOnRowPropertyChanging;
       this._jsClient.OnRowPropertyChanged += this._doOnRowPropertyChanged;
+    }
+
+    void _doOnDSRequestRefresh(object sender, RefreshEventArgs e) {
+      this._goto(null, null, "Сортировка...", null, null);
     }
 
     private void _doOnJsonStoreResponseSuccess(JsonStoreClient sender, AjaxResponseEventArgs args) {
@@ -910,13 +916,18 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
+    private readonly SynchronizationContext _uiSynchronizationContext = SynchronizationContext.Current;
     public event EventHandler<CancelEventArgs> OnBeforeLoadData;
     private void _doOnBeforeLoadData(JsonStoreClient sender, CancelEventArgs args) {
       this.DataIsLoaded = false;
-      if (this.OnBeforeLoadData != null) {
-        //Utl.UiThreadInvoke(() => {
-          this.OnBeforeLoadData(this, args);
-        //});
+      var eve = this.OnBeforeLoadData;
+      if (eve != null) {
+        if (!Utl.IsUiThread) {
+          this._uiSynchronizationContext.Send(s => {
+            eve(this, args);
+          }, this);
+        } else 
+          eve(this, args);
       }
     }
 

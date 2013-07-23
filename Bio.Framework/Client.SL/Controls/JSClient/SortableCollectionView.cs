@@ -126,7 +126,7 @@ namespace Bio.Framework.Client.SL {
         return this._culture;
       }
       set {
-        if (Equals(this._culture, value)) {
+        if (this._culture != value) {
           this._culture = value;
           this.OnPropertyChanged(new PropertyChangedEventArgs("Culture"));
         }
@@ -260,7 +260,7 @@ namespace Bio.Framework.Client.SL {
       if (Equals(this.CurrentItem, item) && ((item != null) || this.IsCurrentInView)) {
         return this.IsCurrentInView;
       }
-      int index = this.IndexOf((T)item);
+      var index = this.IndexOf((T)item);
       return this.MoveCurrentToPosition(index);
     }
 
@@ -316,10 +316,10 @@ namespace Bio.Framework.Client.SL {
         throw new ArgumentOutOfRangeException("position");
       }
       if (((position != this.CurrentPosition) || !this.IsCurrentInSync) && this.isOkToChangeCurrent()) {
-        bool isCurrentAfterLast = this.IsCurrentAfterLast;
-        bool isCurrentBeforeFirst = this.IsCurrentBeforeFirst;
-        _changeCurrentToPosition(position);
-        OnCurrentChanged();
+        var isCurrentAfterLast = this.IsCurrentAfterLast;
+        var isCurrentBeforeFirst = this.IsCurrentBeforeFirst;
+        this._changeCurrentToPosition(position);
+        this.OnCurrentChanged();
         if (this.IsCurrentAfterLast != isCurrentAfterLast) {
           this._doOnPropertyChanged("IsCurrentAfterLast");
         }
@@ -417,9 +417,9 @@ namespace Bio.Framework.Client.SL {
     /// </summary>
     public void Refresh() {
       // sort and refersh
-      if (null != OnRefresh) {
-        delayedStarter.Do(1000, () => this.OnRefresh(this, new RefreshEventArgs { SortDescriptions = SortDescriptions }));
-      }
+      var eve = this.OnRefresh;
+      if (eve != null) 
+        delayedStarter.Do(1000, () => eve(this, new RefreshEventArgs { SortDescriptions = this.SortDescriptions }));
       //this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
     }
 

@@ -243,7 +243,7 @@ namespace Bio.Framework.Client.SL {
     protected override void OnAutoGeneratingColumn(DataGridAutoGeneratingColumnEventArgs e) {
       base.OnAutoGeneratingColumn(e);
 
-      DataGridBoundColumn c = this.Columns.Cast<DataGridBoundColumn>().Where(col => {
+      var c = this.Columns.Cast<DataGridBoundColumn>().Where(col => {
         return String.Equals(col.Binding.Path.Path, e.PropertyName, StringComparison.CurrentCultureIgnoreCase);
       }).FirstOrDefault();
       e.Cancel = c != null;
@@ -252,7 +252,7 @@ namespace Bio.Framework.Client.SL {
         this._owner._doOnBeforeGenColumn(e);
       if (!e.Cancel) {
 
-        JsonStoreMetadataFieldDef fldDef = this._owner.FieldDefByName(e.PropertyName);
+        var fldDef = this._owner.FieldDefByName(e.PropertyName);
         e.Cancel = ((fldDef == null) || fldDef.Hidden);
         if (!e.Cancel) {
           //e.Column.v
