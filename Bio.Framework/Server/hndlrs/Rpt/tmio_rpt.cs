@@ -27,7 +27,7 @@ namespace Bio.Framework.Server {
     protected override void doExecute() {
       base.doExecute();
 
-      var vBldr = new CRmtThreadHandler(
+      var vBldr = new RmtThreadHandler(
         this.BioSession,
         "application/octet-stream", //"application/vnd.ms-excel",
         "report[" + this.bioCode + "]");
@@ -35,7 +35,7 @@ namespace Bio.Framework.Server {
       vBldr.DoExecute(this.BioRequest<RmtClientRequest>().cmd, this.bioParams);
     }
 
-    private void _doOnRunEventXls(CRmtThreadHandler sender, ref IRemoteProcInst instance) {
+    private void _doOnRunEventXls(RmtThreadHandler sender, out IRemoteProcInst instance) {
       var rptCfg = CXLReportConfig.LoadFromFile(
         null,
         this.bioCode,

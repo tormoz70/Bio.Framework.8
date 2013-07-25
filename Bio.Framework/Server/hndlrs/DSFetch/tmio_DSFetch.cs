@@ -25,7 +25,7 @@ namespace Bio.Framework.Server {
     protected override void doExecute() {
       base.doExecute();
 
-      var vBldr = new CRmtThreadHandler(
+      var vBldr = new RmtThreadHandler(
         this.BioSession,
         "application/octet-stream", //"application/vnd.ms-excel",
         "dsfetch[" + this.bioCode + "]");
@@ -33,8 +33,7 @@ namespace Bio.Framework.Server {
       vBldr.DoExecute(this.BioRequest<RmtClientRequest>().cmd, this.bioParams);
     }
 
-    private void _doOnRunEvent(CRmtThreadHandler sender, ref IRemoteProcInst instance) {
-      if (instance == null) throw new ArgumentNullException("instance");
+    private void _doOnRunEvent(RmtThreadHandler sender, out IRemoteProcInst instance) {
       var rqst = this.BioRequest<DSFetchClientRequest>();
       var cursorDS = this.FBioDesc.DocumentElement;
       var execIo = CIObject.CreateIObject(rqst.ExecBioCode, this.BioSession);

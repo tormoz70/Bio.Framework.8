@@ -81,7 +81,7 @@
     <Compile Include="BioCfgBase.cs" />
     <Compile Include="CBioHandlerFactory.cs" />
     <Compile Include="IBioHandlerSelfAuth.cs" />
-    <Compile Include="CRmtThreadHandler.cs" />
+    <Compile Include="RmtThreadHandler.cs" />
     <Compile Include="login\tm_login_post.cs" />
     <Compile Include="login\tm_logout.cs" />
     <Compile Include="sess\CBioSession_acc.cs" />

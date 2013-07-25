@@ -10,11 +10,11 @@ namespace Bio.Framework.Server {
   using System.Threading;
 
 
-  public delegate void CRmtThreadOnRunEvent(CRmtThreadHandler sender, ref IRemoteProcInst inst);
+  public delegate void RmtThreadOnRunEvent(RmtThreadHandler sender, out IRemoteProcInst inst);
   /// <summary>
   /// Обработчик запросов от CRmtClientBase
   /// </summary>
-  public class CRmtThreadHandler {
+  public class RmtThreadHandler {
 
     public BioSession BioSess { get; private set; }
     public HttpContext Context { get; private set; }
@@ -25,7 +25,7 @@ namespace Bio.Framework.Server {
     public Params BioParams { get; private set; }
     public String InstanceUID { get; protected set; }
 
-    public CRmtThreadHandler(BioSession bioSess, String contentType, String instanceUID) {
+    public RmtThreadHandler(BioSession bioSess, String contentType, String instanceUID) {
       this.BioSess = bioSess;
       this.Context = this.BioSess.CurBioHandler.Context;
       this.ContentType = contentType;
@@ -71,19 +71,19 @@ namespace Bio.Framework.Server {
       }
     }
 
-    public event CRmtThreadOnRunEvent OnRunEvent;
+    public event RmtThreadOnRunEvent OnRunEvent;
 
     protected virtual void doJustAfterRun(IRemoteProcInst inst) { 
     }
 
 
     private void _doOnRun() {
-      var vEve = this.OnRunEvent;
-      if (vEve != null) {
-        IRemoteProcInst v_inst = null;
-        vEve(this, ref v_inst);
-        this.SetInstance(v_inst);
-        this.doJustAfterRun(v_inst);
+      var eve = this.OnRunEvent;
+      if (eve != null) {
+        IRemoteProcInst inst = null;
+        eve(this, out inst);
+        this.SetInstance(inst);
+        this.doJustAfterRun(inst);
       }
     }
     private void _run() {

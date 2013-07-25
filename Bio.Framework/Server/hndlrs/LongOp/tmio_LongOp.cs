@@ -25,15 +25,15 @@ namespace Bio.Framework.Server {
     protected override void doExecute() {
       base.doExecute();
 
-      var vBldr = new CRmtThreadHandler(
+      var vBldr = new RmtThreadHandler(
         this.BioSession,
         "application/octet-stream", //"application/vnd.ms-excel",
         "longop[" + this.bioCode + "]");
-      vBldr.OnRunEvent += new CRmtThreadOnRunEvent(this._doOnRunEvent);
+      vBldr.OnRunEvent += new RmtThreadOnRunEvent(this._doOnRunEvent);
       vBldr.DoExecute(this.BioRequest<RmtClientRequest>().cmd, this.bioParams);
     }
 
-    private void _doOnRunEvent(CRmtThreadHandler sender, ref IRemoteProcInst instance) {
+    private void _doOnRunEvent(RmtThreadHandler sender, out IRemoteProcInst instance) {
       var rqst = this.BioRequest<LongOpClientRequest>();
       instance = new CLongOpProc(this.BioSession.Cfg.dbSession, null, rqst, this._prepareCmdDelegate);
     }
