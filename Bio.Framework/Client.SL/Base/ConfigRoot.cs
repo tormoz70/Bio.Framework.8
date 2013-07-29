@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Browser;
 
 namespace Bio.Framework.Client.SL {
   /// <summary>

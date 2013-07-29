@@ -1,7 +1,5 @@
 namespace Bio.Framework.Client.SL {
   using System;
-  using System.ComponentModel;
-  using Bio.Helpers.Common.Types;
 
   /// <summary>
   /// Интерфейс root-плагинов

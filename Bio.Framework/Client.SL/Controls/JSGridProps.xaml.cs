@@ -100,8 +100,8 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    public void Store(String uid) {
-      Utl.StoreUserObjectStrg(uid, this);
+    public void Store() {
+      Utl.StoreUserObjectStrg(this.UID, this);
     }
     public static JSGridConfig Restore(String uid, JSGridConfig defaultCfg) {
       var rslt = Utl.RestoreUserObjectStrg<JSGridConfig>(uid, defaultCfg);

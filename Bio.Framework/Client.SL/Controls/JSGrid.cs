@@ -526,14 +526,14 @@ namespace Bio.Framework.Client.SL {
     private JSGridConfig _cfg;
     private void _restoreCfg() {
       var uid = this._generateGridUID();
-      this._cfg = JSGridConfig.Restore(uid, null) ?? this._creCfg();
+      this._cfg = JSGridConfig.Restore(uid, null) ?? this._creCfg(uid);
     }
 
     private void _storeCfg(Boolean skipRefresh = false) {
       if (this._cfg != null) {
         if (!skipRefresh)
           this._cfg.Refresh(this);
-        this._cfg.Store(this._generateGridUID());
+        this._cfg.Store();
       }
     }
 
@@ -942,6 +942,7 @@ namespace Bio.Framework.Client.SL {
     }
 
     private void _prepareGridAfterLoadData() {
+      this._restoreCfg();
       this._applyCfgToGrid();
       var handler = this.OnAfterLoadData;
       if (handler != null) {
@@ -1297,8 +1298,8 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    private JSGridConfig _creCfg() {
-      var rslt = new JSGridConfig();
+    private JSGridConfig _creCfg(String uid) {
+      var rslt = new JSGridConfig { UID = uid };
       if (this._jsClient != null)
         rslt.PageSize = this.DefaultPageSize;
       rslt.Refresh(this);
@@ -1324,8 +1325,8 @@ namespace Bio.Framework.Client.SL {
     private void _applyCfgToGrid() {
       this._dataGrid.DisableColumnsChangedEvents();
       try {
-        if ((this._cfg == null) || !String.Equals(this._generateGridUID(), this._cfg.UID))
-          this._restoreCfg();
+        //if ((this._cfg == null) || !String.Equals(this._generateGridUID(), this._cfg.UID))
+        //  this._restoreCfg();
         if (this._cfg != null) {
           foreach (var c in this._cfg.ColumnDefs) {
             var c1 = c;
