@@ -61,7 +61,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
             StrFile.SaveStringToFile(prdFileNameDebug, sql, null); 
           }
         }
-        this.FCurrentCmd = this.FOwner.DataFactory.PrepareCmd(this.FOwner.currentDbConnection, sql, this.Owner.RptDefinition.InParams, 60 * 15);
+        this.FCurrentCmd = this.FOwner.DataFactory.PrepareCmd(this.FOwner.currentDbConnection, sql, this.Owner.RptDefinition.InParams, 60 * 30);
         this.FOwner.DataFactory.ExecCmd(this.FCurrentCmd);
       } finally {
         this.Cancel();
