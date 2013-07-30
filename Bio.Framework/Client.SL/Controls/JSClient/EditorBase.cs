@@ -43,7 +43,7 @@ namespace Bio.Framework.Client.SL {
           if (prop.CanWrite) {
             var attr = Utl.GetPropertyAttr<DataFieldMappingAttribute>(prop);
             var fieldName = (attr != null) ? attr.DataField : prop.Name;
-            var value = row.GetValue(fieldName);
+            var value = Utl.Convert2Type(row.GetValue(fieldName), prop.PropertyType);
             prop.SetValue(this, value, null);
             var hcAttr = Utl.GetPropertyAttr<HeaderContentAttribute>(prop);
             var vHeader = (hcAttr != null) ? hcAttr.Text : this._getHeader(metaData, fieldName);

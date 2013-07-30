@@ -1143,6 +1143,28 @@ namespace Bio.Helpers.Common {
           } else {
             throw new Exception("Значение типа " + tp + " не может быть представлено как boolean!!! ", null);
           }
+        } else if (outType == typeof(Char)) {
+          if (inValue == null)
+            rslt = (Char)0;
+          else if (inType == typeof(Boolean))
+            rslt = (Boolean)inValue ? '1' : '0';
+          else if (inType == typeof (Int32)) {
+            var inval = (Int32) inValue;
+            if (inval < 256)
+              rslt = (Char) inval;
+            else
+              throw new Exception("Значение типа " + tp + " не может быть представлено как Char!!! ", null);
+          } else if (inType == typeof (Int64)) {
+            var inval = (Int64) inValue;
+            if (inval < 256L)
+              rslt = (Char) inval;
+            else
+              throw new Exception("Значение типа " + tp + " не может быть представлено как Char!!! ", null);
+          } else if (inType == typeof (String)) {
+            rslt = ((String)inValue)[0];
+          } else {
+            throw new Exception("Значение типа " + tp + " не может быть представлено как Boolean!!! ", null);
+          }
         } else if (TypeIsNumeric(outType)) {
           IFormatProvider numberFormat = CultureInfo.CurrentCulture.NumberFormat;//new NumberFormatInfo();
           if (inValue == null)
