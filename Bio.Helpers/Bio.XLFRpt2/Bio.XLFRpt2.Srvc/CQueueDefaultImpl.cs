@@ -267,20 +267,24 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
     private Queue<CXLRptItem> _getReportsList(String viewName) {
       var v_rslt = new Queue<CXLRptItem>();
       var v_cur = new SQLCmd(this.cfg.dbSession);
-      var v_sql = String.Format("SELECT a.rpt_uid, a.rpt_code, a.usr_uid FROM {0} a", viewName);
+      var v_sql = String.Format("SELECT a.rpt_uid, a.rpt_code, a.usr_uid, a.parent_obj_uid, a.cre_date FROM {0} a", viewName);
       v_cur.Init(v_sql, null);
       v_cur.Open(120);
       try {
         while (v_cur.Next()) {
-          var v_uid = v_cur.DataReader.GetValue(0) as String;
-          var v_code = v_cur.DataReader.GetValue(1) as String;
-          var v_usr = v_cur.DataReader.GetValue(2) as String;
+          var uid = v_cur.DataReader.GetValue(0) as String;
+          var code = v_cur.DataReader.GetValue(1) as String;
+          var usr = v_cur.DataReader.GetValue(2) as String;
+          var parentUID = v_cur.DataReader.GetValue(3) as String;
+          var created = (DateTime)v_cur.DataReader.GetValue(4);
 
           v_rslt.Enqueue(new CXLRptItem {
-            uid = v_uid,
-            code = v_code,
-            usr = v_usr,
-            prms = this._getRptParams(v_uid)
+            uid = uid,
+            code = code,
+            usr = usr,
+            prms = this._getRptParams(uid),
+            parentObjUID = parentUID,
+            creDate = created
           });
         }
       } finally {

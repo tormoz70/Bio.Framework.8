@@ -18,6 +18,8 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
     public String code { get; set; }
     public Params prms { get; set; }
     public String usr { get; set; }
+    public String parentObjUID { get; set; }
+    public DateTime creDate { get; set; }
   }
 
   public abstract class CQueue {
@@ -273,7 +275,10 @@ namespace Bio.Helpers.XLFRpt2.Srvc {
               break;
             if (v_rpts.Count > 0) {
               var v_item = v_rpts.Dequeue();
-              this.add_to_running(v_item.uid, v_item.code, v_item.prms, v_item.usr, 0);
+              var rptParams = (Params)v_item.prms.Clone();
+              rptParams.Add("parent_obj_uid", v_item.parentObjUID, true);
+              rptParams.Add("cre_date", v_item.creDate, true);
+              this.add_to_running(v_item.uid, v_item.code, rptParams, v_item.usr, 0);
             } else
               break;
           }
