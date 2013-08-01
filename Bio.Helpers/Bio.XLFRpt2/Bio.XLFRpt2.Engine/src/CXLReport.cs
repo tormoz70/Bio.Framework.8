@@ -1,20 +1,18 @@
 namespace Bio.Helpers.XLFRpt2.Engine {
 
   using System;
-  using System.Xml;
   using System.Web;
   using System.IO;
   using System.Threading;
   using System.Data;
-  using Bio.Helpers.Common.Types;
+  using Common.Types;
   using System.ComponentModel;
-  using Bio.Helpers.Common;
+  using Common;
 #if OFFICE12
   using Excel = Microsoft.Office.Interop.Excel;
   using System.Text;
   using System.Collections.Generic;
 #endif
-  using Bio.Helpers.XLFRpt2.Engine.XLRptParams;
 
   public delegate void DlgXLReportOnPrepareTemplate(Object opener, ref Excel.Workbook wb, CXLReport report);
   public delegate void DlgXLReportOnBeforeBuild(Object opener, CXLReport report);
@@ -253,19 +251,9 @@ namespace Bio.Helpers.XLFRpt2.Engine {
             }
 
           }
-        //} catch (ThreadAbortException ex) {
-        //  this.FLastErrorFile = this.RptDefinition.LogPath + this.RptDefinition.ShortCode + ".err";
-        //  this.writeLogLine("Ошибка: " + ex.ToString());
-        //  Utl.SaveStringToFile(this.FLastErrorFile, ex.ToString(), null);
-        //  this.State = RemoteProcState.Breaked;
-        //} catch (EBioSQLBreaked ex) {
-        //  this.FLastErrorFile = this.RptDefinition.LogPath + this.RptDefinition.ShortCode + ".err";
-        //  this.writeLogLine("Ошибка: " + ex.ToString());
-        //  Utl.SaveStringToFile(this.FLastErrorFile, ex.ToString(), null);
-        //  this.State = RemoteProcState.Breaked;
         } catch (Exception ex) {
           this.FLastErrorFile = this.RptDefinition.LogPath + this.RptDefinition.ShortCode + ".err";
-          this.writeLogLine("Ошибка: " + ex.ToString());
+          this.writeLogLine("Ошибка: " + ex);
           Utl.SaveStringToFile(this.FLastErrorFile, ex.ToString(), null);
           if ((ex is ThreadAbortException) || (ex is EBioSQLBreaked))
             this.State = RemoteProcState.Breaked;
@@ -299,7 +287,7 @@ namespace Bio.Helpers.XLFRpt2.Engine {
           try {
             this.writeLogLine("Запуск завершающего скрипта...");
             this.FCurrentSQLScript = new CXLRSQLScript(this);
-            String vPrdFileName = this.RptDefinition.LogPath + "sqlScriptAfter_prd.sql";
+            var vPrdFileName = this.RptDefinition.LogPath + "sqlScriptAfter_prd.sql";
             try {
               this.FCurrentSQLScript.Run(this.RptDefinition.SQLScriptAfter, vPrdFileName);
             } finally {

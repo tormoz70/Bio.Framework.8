@@ -1,18 +1,17 @@
 namespace Bio.Framework.Server {
   using System;
-  using System.Data.Common;
   using System.Web;
-  using System.Xml;
-  using Bio.Framework.Packets;
-  using Bio.Helpers.Common.Types;
-  using Bio.Helpers.DOA;
-  using Bio.Helpers.Common;
-  using System.Data;
+  using Packets;
+  using Helpers.Common.Types;
+  using Helpers.DOA;
+  using Helpers.Common;
 
   /// <summary>
   /// Обработчик запросов на отображение таблицы
   /// </summary>
+// ReSharper disable InconsistentNaming
   public class tmio_SQLR : ABioHandlerBioTransacted {
+// ReSharper restore InconsistentNaming
 
     public tmio_SQLR(HttpContext context, AjaxRequest request)
       : base(context, request) { }
@@ -39,7 +38,7 @@ namespace Bio.Framework.Server {
           try {
             vCursor.DoExecuteSQL(this.bioParams, rqst.Timeout);
             this.Context.Response.Write(
-              new BioResponse() {
+              new BioResponse {
                 Success = true,
                 TransactionID = !this.AutoCommitTransaction ? this.TransactionID : null,
                 BioParams = this.bioParams
@@ -56,7 +55,7 @@ namespace Bio.Framework.Server {
       } else
         ebioex = new EBioException("В описании объекта [" + this.bioCode + "] не найден раздел <store>.");
       if (ebioex != null) {
-        this.Context.Response.Write(new BioResponse() { Success = false, BioParams = this.bioParams, Ex = ebioex }.Encode());
+        this.Context.Response.Write(new BioResponse { Success = false, BioParams = this.bioParams, Ex = ebioex }.Encode());
       }
     }
 

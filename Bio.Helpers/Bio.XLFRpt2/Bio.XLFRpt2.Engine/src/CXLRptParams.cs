@@ -1,60 +1,51 @@
 namespace Bio.Helpers.XLFRpt2.Engine.XLRptParams {
 
 	using System;
-	using System.Xml;
-	using System.Collections;
-  using Bio.Helpers.Common.Types;
+	using Common.Types;
   using System.Text;
-  //using Oracle.DataAccess.Client;
-  //using Bio.Helpers.DOA;
 
 	/// <summary>
 	/// 
 	/// </summary>
 	public static class Exts{
-    //private CXLReportConfig _owner;
-		//public CXLRptParams(CXLReportConfig owner):base(){
-		//	this._owner = owner;
-		//}
 
-		private static String prepareParamValue(this Params prms, Params inParams, String pParamText){
-      String vRslt = pParamText;
-      for (int i = 0; i < inParams.Count; i++)
-        vRslt = vRslt.Replace("#" + inParams[i].Name + "#", inParams[i].ValueAsString());
-			return vRslt;
+		private static String _prepareParamValue(Params inParams, String paramText){
+      var rslt = paramText;
+      foreach (var t in inParams)
+        rslt = rslt.Replace("#" + t.Name + "#", t.ValueAsString());
+		  return rslt;
 		}
 
-    public static void mergeFromInParams(this Params prms, Params inParams) {
+    public static void MergeFromInParams(this Params prms, Params inParams) {
       foreach (var prm in inParams) {
         if (prms.IndexOf(prm.Name) == -1)
           prms.Add(prm.Name, prm.Value);
       }
     }
 
-    public static String getReportParameter(this Params prms, CXLReport report, String pName) {
-			String vResult = null;
-      Param vPrm = prms.ParamByName(pName);
-      if (vPrm != null) {
-        String vSQL = vPrm.ValueAsString();
-        String vType = (String)vPrm.InnerObject;
-        if (!String.IsNullOrEmpty(vType) && vType.Equals("sql") && report.RptDefinition.DBConnEnabled) {
+    public static String GetReportParameter(this Params prms, CXLReport report, String name) {
+			String result = null;
+      var prm = prms.ParamByName(name);
+      if (prm != null) {
+        var sql = prm.ValueAsString();
+        var type = (String)prm.InnerObject;
+        if (!String.IsNullOrEmpty(type) && type.Equals("sql") && report.RptDefinition.DBConnEnabled) {
           try {
-            vResult = "" + report.DataFactory.GetScalarValue(report.currentDbConnection, vSQL, report.RptDefinition.InParams, 120);
+            result = "" + report.DataFactory.GetScalarValue(report.currentDbConnection, sql, report.RptDefinition.InParams, 120);
           } catch (Exception ex) {
-            throw new EBioException("Ошибка инициализации параметра отчета :" + pName + ":. Сообщение: " + ex.Message + ". SQL: " + vSQL, ex);
-          } finally {
+            throw new EBioException("Ошибка инициализации параметра отчета :" + name + ":. Сообщение: " + ex.Message + ". SQL: " + sql, ex);
           }
         } else {
-          vResult = prms.prepareParamValue(report.RptDefinition.InParams, vSQL);
+          result = _prepareParamValue(report.RptDefinition.InParams, sql);
         }
       }
-			return vResult;
+			return result;
 		}
 
     public static String AsXMLText(this Params prms) {
-      StringBuilder rslt = new StringBuilder();
+      var rslt = new StringBuilder();
       rslt.AppendLine("<params>");
-      foreach (Param p in prms)
+      foreach (var p in prms)
         rslt.AppendLine(String.Format("<param name=\"{0}\"><![CDATA[{1}]]></param>", p.Name, p.ValueAsString()));
       rslt.AppendLine("</params>");
       return rslt.ToString();

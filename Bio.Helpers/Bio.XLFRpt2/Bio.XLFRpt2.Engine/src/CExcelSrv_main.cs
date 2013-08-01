@@ -200,94 +200,94 @@ retry_save:
       if(pName != null) {
         Object vArg1 = Type.Missing;
         if(pParams.Count > 0)
-          vArg1 = pParams.getReportParameter(rpt, pParams[0].Name);
+          vArg1 = pParams.GetReportParameter(rpt, pParams[0].Name);
         Object vArg2 = Type.Missing;
         if(pParams.Count > 1)
-          vArg2 = pParams.getReportParameter(rpt, pParams[1].Name);
+          vArg2 = pParams.GetReportParameter(rpt, pParams[1].Name);
         Object vArg3 = Type.Missing;
         if(pParams.Count > 2)
-          vArg3 = pParams.getReportParameter(rpt, pParams[2].Name);
+          vArg3 = pParams.GetReportParameter(rpt, pParams[2].Name);
         Object vArg4 = Type.Missing;
         if(pParams.Count > 3)
-          vArg3 = pParams.getReportParameter(rpt, pParams[3].Name);
+          vArg3 = pParams.GetReportParameter(rpt, pParams[3].Name);
         Object vArg5 = Type.Missing;
         if(pParams.Count > 4)
-          vArg5 = pParams.getReportParameter(rpt, pParams[4].Name);
+          vArg5 = pParams.GetReportParameter(rpt, pParams[4].Name);
         Object vArg6 = Type.Missing;
         if(pParams.Count > 5)
-          vArg6 = pParams.getReportParameter(rpt, pParams[5].Name);
+          vArg6 = pParams.GetReportParameter(rpt, pParams[5].Name);
         Object vArg7 = Type.Missing;
         if(pParams.Count > 6)
-          vArg7 = pParams.getReportParameter(rpt, pParams[6].Name);
+          vArg7 = pParams.GetReportParameter(rpt, pParams[6].Name);
         Object vArg8 = Type.Missing;
         if(pParams.Count > 7)
-          vArg8 = pParams.getReportParameter(rpt, pParams[7].Name);
+          vArg8 = pParams.GetReportParameter(rpt, pParams[7].Name);
         Object vArg9 = Type.Missing;
         if(pParams.Count > 8)
-          vArg9 = pParams.getReportParameter(rpt, pParams[8].Name);
+          vArg9 = pParams.GetReportParameter(rpt, pParams[8].Name);
         Object vArg10 = Type.Missing;
         if(pParams.Count > 9)
-          vArg10 = pParams.getReportParameter(rpt, pParams[9].Name);
+          vArg10 = pParams.GetReportParameter(rpt, pParams[9].Name);
         Object vArg11 = Type.Missing;
         if(pParams.Count > 10)
-          vArg11 = pParams.getReportParameter(rpt, pParams[10].Name);
+          vArg11 = pParams.GetReportParameter(rpt, pParams[10].Name);
         Object vArg12 = Type.Missing;
         if(pParams.Count > 11)
-          vArg12 = pParams.getReportParameter(rpt, pParams[11].Name);
+          vArg12 = pParams.GetReportParameter(rpt, pParams[11].Name);
         Object vArg13 = Type.Missing;
         if(pParams.Count > 12)
-          vArg13 = pParams.getReportParameter(rpt, pParams[12].Name);
+          vArg13 = pParams.GetReportParameter(rpt, pParams[12].Name);
         Object vArg14 = Type.Missing;
         if(pParams.Count > 13)
-          vArg14 = pParams.getReportParameter(rpt, pParams[13].Name);
+          vArg14 = pParams.GetReportParameter(rpt, pParams[13].Name);
         Object vArg15 = Type.Missing;
         if(pParams.Count > 14)
-          vArg15 = pParams.getReportParameter(rpt, pParams[14].Name);
+          vArg15 = pParams.GetReportParameter(rpt, pParams[14].Name);
         Object vArg16 = Type.Missing;
         if(pParams.Count > 15)
-          vArg16 = pParams.getReportParameter(rpt, pParams[15].Name);
+          vArg16 = pParams.GetReportParameter(rpt, pParams[15].Name);
         Object vArg17 = Type.Missing;
         if(pParams.Count > 16)
-          vArg17 = pParams.getReportParameter(rpt, pParams[16].Name);
+          vArg17 = pParams.GetReportParameter(rpt, pParams[16].Name);
         Object vArg18 = Type.Missing;
         if(pParams.Count > 17)
-          vArg18 = pParams.getReportParameter(rpt, pParams[17].Name);
+          vArg18 = pParams.GetReportParameter(rpt, pParams[17].Name);
         Object vArg19 = Type.Missing;
         if(pParams.Count > 18)
-          vArg19 = pParams.getReportParameter(rpt, pParams[18].Name);
+          vArg19 = pParams.GetReportParameter(rpt, pParams[18].Name);
         Object vArg20 = Type.Missing;
         if(pParams.Count > 19)
-          vArg20 = pParams.getReportParameter(rpt, pParams[19].Name);
+          vArg20 = pParams.GetReportParameter(rpt, pParams[19].Name);
         Object vArg21 = Type.Missing;
         if(pParams.Count > 20)
-          vArg21 = pParams.getReportParameter(rpt, pParams[20].Name);
+          vArg21 = pParams.GetReportParameter(rpt, pParams[20].Name);
         Object vArg22 = Type.Missing;
         if(pParams.Count > 21)
-          vArg22 = pParams.getReportParameter(rpt, pParams[21].Name);
+          vArg22 = pParams.GetReportParameter(rpt, pParams[21].Name);
         Object vArg23 = Type.Missing;
         if(pParams.Count > 22)
-          vArg23 = pParams.getReportParameter(rpt, pParams[22].Name);
+          vArg23 = pParams.GetReportParameter(rpt, pParams[22].Name);
         Object vArg24 = Type.Missing;
         if(pParams.Count > 23)
-          vArg24 = pParams.getReportParameter(rpt, pParams[23].Name);
+          vArg24 = pParams.GetReportParameter(rpt, pParams[23].Name);
         Object vArg25 = Type.Missing;
         if(pParams.Count > 24)
-          vArg25 = pParams.getReportParameter(rpt, pParams[24].Name);
+          vArg25 = pParams.GetReportParameter(rpt, pParams[24].Name);
         Object vArg26 = Type.Missing;
         if(pParams.Count > 25)
-          vArg26 = pParams.getReportParameter(rpt, pParams[25].Name);
+          vArg26 = pParams.GetReportParameter(rpt, pParams[25].Name);
         Object vArg27 = Type.Missing;
         if(pParams.Count > 26)
-          vArg27 = pParams.getReportParameter(rpt, pParams[26].Name);
+          vArg27 = pParams.GetReportParameter(rpt, pParams[26].Name);
         Object vArg28 = Type.Missing;
         if(pParams.Count > 27)
-          vArg28 = pParams.getReportParameter(rpt, pParams[27].Name);
+          vArg28 = pParams.GetReportParameter(rpt, pParams[27].Name);
         Object vArg29 = Type.Missing;
         if(pParams.Count > 28)
-          vArg29 = pParams.getReportParameter(rpt, pParams[28].Name);
+          vArg29 = pParams.GetReportParameter(rpt, pParams[28].Name);
         Object vArg30 = Type.Missing;
         if(pParams.Count > 29)
-          vArg30 = pParams.getReportParameter(rpt, pParams[29].Name);
+          vArg30 = pParams.GetReportParameter(rpt, pParams[29].Name);
         if(pParams.Count > 30)
           throw new EBioException("Количество входных параметров макроса не может быть больше 30");
         this.FWorkbook.Application.Run(pName,

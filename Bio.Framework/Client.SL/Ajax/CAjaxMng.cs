@@ -1,24 +1,19 @@
 ﻿namespace Bio.Framework.Client.SL {
   using System;
-  using Bio.Helpers.Common.Types;
-  using Bio.Helpers.Common;
-  using System.Diagnostics;
-  using Bio.Framework.Packets;
-  using Bio.Helpers.Ajax;
-  using System.Threading;
-  using System.ComponentModel;
+  using Helpers.Common.Types;
+  using Helpers.Common;
+  using Packets;
+  using Helpers.Ajax;
   using System.Collections.Generic;
-  using System.Windows.Controls;
-  using System.Windows;
-  using Bio.Helpers.Controls.SL;
+  using Helpers.Controls.SL;
 
   /// <summary>
   /// Менеджер запросов к серверу
   /// </summary>
   public class CAjaxMng : IAjaxMng {
-    private readonly Queue<BioRequest> _queue = null;
-    private readonly CAjaxCli _ajax = null;
-    private readonly CAjaxLogin _loginPrc = null;
+    private readonly Queue<BioRequest> _queue;
+    private readonly CAjaxCli _ajax;
+    private readonly CAjaxLogin _loginPrc;
 
     
     /// <summary>
@@ -29,7 +24,7 @@
       this.Env = env;
       this._queue = new Queue<BioRequest>();
       this._ajax = new CAjaxCli(env.AppVersion, env.UserAgentName, env.AppTitle);
-      this._loginPrc = new CAjaxLogin(this, this.doOnLogLine);
+      this._loginPrc = new CAjaxLogin(this, _doOnLogLine);
     }
 
     /// <summary>
@@ -53,7 +48,7 @@
       get { return this._ajax; }
     }
 
-    private void doOnLogLine(String pLine) {
+    private static void _doOnLogLine(String pLine) {
       try {
         //Trace.WriteLine(pLine);
       }catch(ObjectDisposedException){ }
@@ -78,18 +73,18 @@
 
     private void _processQueue() {
       if (this._queue.Count > 0) {
-        var v_deferredRequest = this._queue.Dequeue();
-        this.Request(v_deferredRequest);
+        var deferredRequest = this._queue.Dequeue();
+        this.Request(deferredRequest);
       }
     }
 
-    private BioRequest _currentRequest = null;
+    private BioRequest _currentRequest;
 
     private void _processCallback(AjaxRequestDelegate callback, Object sender, AjaxResponseEventArgs args) {
-      Utl.UiThreadInvoke(() => {
+      //Utl.UiThreadInvoke(() => {
         if (callback != null) callback(sender, args);
         this._processQueue();
-      });
+      //});
     }
 
     private void _request(BioRequest bioRequest) {
@@ -108,7 +103,7 @@
       var v_clbck = bioRequest.Callback;
       bioRequest.Callback = (sender, args) => {
           //Debug.WriteLine("Request:2 - bioRequest.callback - start");
-          BioResponse response = args.Response as BioResponse;
+          var response = args.Response as BioResponse;
           if ((response != null) && !response.Success) {
             //Debug.WriteLine("Request:3 - response.success:false");
             // Сервер вернул ошибку
@@ -271,9 +266,9 @@
         return this._connState;
       }
       private set {
-        var v_stateChanged = this._connState != value;
+        var stateChanged = this._connState != value;
         this._connState = value;
-        if (v_stateChanged)
+        if (stateChanged)
           this.doOnStateChanged();
       }
     }
