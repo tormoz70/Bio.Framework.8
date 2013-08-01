@@ -62,37 +62,36 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     }
 
     private static void _setParam(Excel.Worksheet ws, String param, String value) {
-      var v_buffStr = value;
-      if(!String.IsNullOrEmpty(v_buffStr))
-        try {
-          ws.Cells.Replace(param, (String.IsNullOrEmpty(v_buffStr) ? String.Empty : (v_buffStr.Length > 256) ? v_buffStr.Substring(0, 255) : v_buffStr), Excel.XlLookAt.xlPart, Excel.XlSearchOrder.xlByRows, false, false, Type.Missing, Type.Missing);
-        } catch(Exception ex) {
-          throw new EBioException(String.Format("Ошибка при установке параметра в книге. Сообщение: {0}. Параметр: [{1}]=>[{2}]", ex.Message, param, value), ex);
-        }
+      var buffStr = (String.IsNullOrEmpty(value) ? String.Empty : (value.Length > 256) ? value.Substring(0, 255) : value);
+      try {
+        ws.Cells.Replace(param, buffStr, Excel.XlLookAt.xlPart, Excel.XlSearchOrder.xlByRows, false, false, Type.Missing, Type.Missing);
+      } catch(Exception ex) {
+        throw new EBioException(String.Format("Ошибка при установке параметра в книге. Сообщение: {0}. Параметр: [{1}]=>[{2}]", ex.Message, param, value), ex);
+      }
     }
     private void _applyParamsToWs(CXLReport rpt, Excel.Worksheet ws) {
-      var v_rDef = this.Owner.RptDefinition;
-      if (v_rDef.RptParams != null) {
-        for (var i = 0; i < v_rDef.RptParams.Count; i++) {
-          var v_prmName = v_rDef.RptParams[i].Name;
-          var v_prmValue = v_rDef.RptParams.getReportParameter(rpt, v_prmName);
-          _setParam(ws, "#" + v_prmName + "#", v_prmValue);
+      var rDef = this.Owner.RptDefinition;
+      if (rDef.RptParams != null) {
+        for (var i = 0; i < rDef.RptParams.Count; i++) {
+          var prmName = rDef.RptParams[i].Name;
+          var prmValue = rDef.RptParams.GetReportParameter(rpt, prmName);
+          _setParam(ws, "#" + prmName + "#", prmValue);
         }
       }
-      _setParam(ws, CXLRDefinition.getParamMappingOfProp("ThrowCode"), v_rDef.ThrowCode);
-      _setParam(ws, CXLRDefinition.getParamMappingOfProp("FullCode"), v_rDef.FullCode);
-      _setParam(ws, CXLRDefinition.getParamMappingOfProp("ShortCode"), v_rDef.ShortCode);
-      _setParam(ws, CXLRDefinition.getParamMappingOfProp("Roles"), v_rDef.Roles);
-      _setParam(ws, CXLRDefinition.getParamMappingOfProp("Title"), v_rDef.Title);
-      _setParam(ws, CXLRDefinition.getParamMappingOfProp("Subject"), v_rDef.Subject);
-      _setParam(ws, CXLRDefinition.getParamMappingOfProp("Autor"), v_rDef.Autor);
+      _setParam(ws, CXLRDefinition.getParamMappingOfProp("ThrowCode"), rDef.ThrowCode);
+      _setParam(ws, CXLRDefinition.getParamMappingOfProp("FullCode"), rDef.FullCode);
+      _setParam(ws, CXLRDefinition.getParamMappingOfProp("ShortCode"), rDef.ShortCode);
+      _setParam(ws, CXLRDefinition.getParamMappingOfProp("Roles"), rDef.Roles);
+      _setParam(ws, CXLRDefinition.getParamMappingOfProp("Title"), rDef.Title);
+      _setParam(ws, CXLRDefinition.getParamMappingOfProp("Subject"), rDef.Subject);
+      _setParam(ws, CXLRDefinition.getParamMappingOfProp("Autor"), rDef.Autor);
       //this.setParam(ws, CXLRDefinition.getParamMappingOfProp("DBConnStr"), vRDef.DBConnStr);
-      _setParam(ws, CXLRDefinition.getParamMappingOfProp("SessionID"), v_rDef.SessionID);
-      _setParam(ws, CXLRDefinition.getParamMappingOfProp("UserName"), v_rDef.UserName);
-      _setParam(ws, CXLRDefinition.getParamMappingOfProp("RemoteIP"), v_rDef.RemoteIP);
-      _setParam(ws, CXLRDefinition.getParamMappingOfProp("RptLocalPath"), v_rDef.RptLocalPath);
-      _setParam(ws, CXLRDefinition.getParamMappingOfProp("TmpPath"), v_rDef.TmpPath);
-      _setParam(ws, CXLRDefinition.getParamMappingOfProp("LogPath"), v_rDef.LogPath);
+      _setParam(ws, CXLRDefinition.getParamMappingOfProp("SessionID"), rDef.SessionID);
+      _setParam(ws, CXLRDefinition.getParamMappingOfProp("UserName"), rDef.UserName);
+      _setParam(ws, CXLRDefinition.getParamMappingOfProp("RemoteIP"), rDef.RemoteIP);
+      _setParam(ws, CXLRDefinition.getParamMappingOfProp("RptLocalPath"), rDef.RptLocalPath);
+      _setParam(ws, CXLRDefinition.getParamMappingOfProp("TmpPath"), rDef.TmpPath);
+      _setParam(ws, CXLRDefinition.getParamMappingOfProp("LogPath"), rDef.LogPath);
     }
 
     /// <summary>
@@ -114,13 +113,13 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     /// <param name="wb"></param>
     /// <exception cref="Exception"></exception>
     public void Init(ref Excel.Workbook wb) {
-      var v_dsRange = ExcelSrv.GetRangeByName(ref wb, this.Cfg.rangeName);
+      var dsRange = ExcelSrv.GetRangeByName(ref wb, this.Cfg.rangeName);
       try {
-        if (v_dsRange == null)
+        if (dsRange == null)
           throw new Exception(String.Format("Именованный регион \"{0}\" не найден в шаблоне отчета!", this.Cfg.rangeName));
-        this._ds.Init(v_dsRange);
+        this._ds.Init(dsRange);
       } finally {
-        ExcelSrv.nar(ref v_dsRange);
+        ExcelSrv.nar(ref dsRange);
       }
     }
 
@@ -131,11 +130,11 @@ namespace Bio.Helpers.XLFRpt2.Engine {
     /// <param name="timeout"></param>
     public void BuildReport(ref Excel.Workbook wb, Int32 timeout) {
       this.Owner.writeLogLine("\tbldr:ds:(" + this.Cfg.alias + ") : Старт...");
-      var v_dsRange = ExcelSrv.GetRangeByName(ref wb, this.Cfg.rangeName);
+      var dsRange = ExcelSrv.GetRangeByName(ref wb, this.Cfg.rangeName);
       if(!this.Cfg.rangeName.Equals("none")) {
-        this.Owner.writeLogLine("\tbldr:ds:(" + this.Cfg.alias + ") : this.FDS.RootGroup.BuildReport(" + v_dsRange + ")...");
-        this._ds.RootGroup.BuildReport(v_dsRange);
-        this.Owner.writeLogLine("\tbldr:ds:(" + this.Cfg.alias + ") : this.FDS.RootGroup.BuildReport(" + v_dsRange + ") - OK.");
+        this.Owner.writeLogLine("\tbldr:ds:(" + this.Cfg.alias + ") : this.FDS.RootGroup.BuildReport(" + dsRange + ")...");
+        this._ds.RootGroup.BuildReport(dsRange);
+        this.Owner.writeLogLine("\tbldr:ds:(" + this.Cfg.alias + ") : this.FDS.RootGroup.BuildReport(" + dsRange + ") - OK.");
       } else {
         var v_row = this._ds.GetSingleRow(timeout);
         if(v_row != null)
