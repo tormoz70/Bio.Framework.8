@@ -893,6 +893,26 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
+    private CRTObject _lastLocatedRow;
+    private void _locate(Params bioParams, JsonStoreFilter locate, EventHandler<OnSelectEventArgs> callback, Boolean forceRemote = false) {
+      CRTObject v_row = null;
+      if (!forceRemote)
+        v_row = this._locateInternal(locate);
+      if (v_row != null)
+        this._doOnLocation(v_row, null, callback);
+      else {
+        this._curPage = 1;
+        this.Load(bioParams, (s, a) => {
+          if (a.Response.Success)
+            this._doOnLocation(this._lastLocatedRow, null, callback);
+          else
+            this._doOnLocation(null, a.Response.Ex, callback);
+
+        }, locate);
+      }
+    }
+
+
     private void _doOnLocation(CRTObject row, EBioException exception, EventHandler<OnSelectEventArgs> callback) {
       if (row != null) {
           this.SelectedItem = row;
@@ -1022,58 +1042,58 @@ namespace Bio.Framework.Client.SL {
       return null;
     }
 
-    private CRTObject _lastLocatedRow;
-    private void _locate(Params bioParams, JsonStoreFilter locate, EventHandler<OnSelectEventArgs> callback, Boolean forceRemote = false) {
-      CRTObject v_row = null;
-      if(!forceRemote)
-        v_row = this._locateInternal(locate);
-      if (v_row != null)
-        this._doOnLocation(v_row, null, callback);
-      else {
-        this._goto(bioParams, 0, "Поиск...", (s, a) => {
-          if (a.Response.Success)
-            this._doOnLocation(this._lastLocatedRow, null, callback);
-          else
-            this._doOnLocation(null, a.Response.Ex, callback);
+    //private CRTObject _lastLocatedRow;
+    //private void _locate(Params bioParams, JsonStoreFilter locate, EventHandler<OnSelectEventArgs> callback, Boolean forceRemote = false) {
+    //  CRTObject v_row = null;
+    //  if(!forceRemote)
+    //    v_row = this._locateInternal(locate);
+    //  if (v_row != null)
+    //    this._doOnLocation(v_row, null, callback);
+    //  else {
+    //    this._goto(bioParams, 0, "Поиск...", (s, a) => {
+    //      if (a.Response.Success)
+    //        this._doOnLocation(this._lastLocatedRow, null, callback);
+    //      else
+    //        this._doOnLocation(null, a.Response.Ex, callback);
 
-        }, locate);
-      }
-    }
+    //    }, locate);
+    //  }
+    //}
 
-    private LoadParams<EventHandler<OnSelectEventArgs>> _suspendLocateParams;
-    public void Locate(JsonStoreFilter locate, EventHandler<OnSelectEventArgs> callback, Boolean forceRemote) {
-      this._callOnShowDelaied(() => {
-        if (this.SuspendFirstLoad && this._isFirstLoading) {
-          this._suspendLocateParams = new LoadParams<EventHandler<OnSelectEventArgs>> {
-            BioParams = null,
-            Callback = callback,
-            Locate = (locate != null) ? (JsonStoreFilter)locate.Clone() : null
-          };
-          this._setBtnVisibility("btnRefreshFirst", Visibility.Visible);
-          this._isFirstLoading = false;
-        } else {
-          this._setBtnVisibility("btnRefreshFirst", Visibility.Collapsed);
-          var locateParams = this._suspendLocateParams ?? new LoadParams<EventHandler<OnSelectEventArgs>> {
-            BioParams = null,
-            Callback = callback,
-            Locate = (locate != null) ? (JsonStoreFilter)locate.Clone() : null
-          };
-          this._suspendLocateParams = null;
-          this._locate(locateParams.BioParams, locateParams.Locate, locateParams.Callback, forceRemote);
-        }
-      });
-    }
+    //private LoadParams<EventHandler<OnSelectEventArgs>> _suspendLocateParams;
+    //public void Locate(JsonStoreFilter locate, EventHandler<OnSelectEventArgs> callback, Boolean forceRemote) {
+    //  this._callOnShowDelaied(() => {
+    //    if (this.SuspendFirstLoad && this._isFirstLoading) {
+    //      this._suspendLocateParams = new LoadParams<EventHandler<OnSelectEventArgs>> {
+    //        BioParams = null,
+    //        Callback = callback,
+    //        Locate = (locate != null) ? (JsonStoreFilter)locate.Clone() : null
+    //      };
+    //      this._setBtnVisibility("btnRefreshFirst", Visibility.Visible);
+    //      this._isFirstLoading = false;
+    //    } else {
+    //      this._setBtnVisibility("btnRefreshFirst", Visibility.Collapsed);
+    //      var locateParams = this._suspendLocateParams ?? new LoadParams<EventHandler<OnSelectEventArgs>> {
+    //        BioParams = null,
+    //        Callback = callback,
+    //        Locate = (locate != null) ? (JsonStoreFilter)locate.Clone() : null
+    //      };
+    //      this._suspendLocateParams = null;
+    //      this._locate(locateParams.BioParams, locateParams.Locate, locateParams.Callback, forceRemote);
+    //    }
+    //  });
+    //}
 
     public void Locate(JsonStoreFilter locate, EventHandler<OnSelectEventArgs> callback) {
-      this.Locate(locate, callback, false);
+      this._locate(null, locate, callback);
     }
 
     public void Locate(JsonStoreFilter locate, Boolean forceRemote) {
-      this.Locate(locate, null, forceRemote);
+      this._locate(null, locate, null, forceRemote);
     }
 
     public void Locate(JsonStoreFilter locate) {
-      this.Locate(locate, null, false);
+      this._locate(null, locate, null);
     }
 
     public void Load(Params bioParams, AjaxRequestDelegate callback) {
