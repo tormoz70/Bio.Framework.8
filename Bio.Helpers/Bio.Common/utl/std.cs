@@ -1,5 +1,3 @@
-using System.Threading;
-
 namespace Bio.Helpers.Common {
   using System;
   using System.Text.RegularExpressions;
@@ -218,8 +216,8 @@ namespace Bio.Helpers.Common {
     public static String GetCookieByName(HttpCookieCollection vcook, String name) {
       foreach (String key in vcook.Keys) {
         if (String.Equals(key, name)) {
-          var v_httpCookie = vcook.Get(key);
-          if (v_httpCookie != null) return v_httpCookie.Value;
+          var httpCookie = vcook.Get(key);
+          if (httpCookie != null) return httpCookie.Value;
         }
       }
       return "null";
@@ -1138,8 +1136,11 @@ namespace Bio.Helpers.Common {
             var invalDec = (Decimal)Convert.ChangeType(inValue, typeof(Decimal), CultureInfo.CurrentCulture.NumberFormat);
             rslt = (!invalDec.Equals(new Decimal(0)));
           } else if (inType == typeof(String)) {
-            var valStr = ((String)inValue).ToUpper();
-            rslt = (valStr.Equals("1") || valStr.Equals("Y") || valStr.Equals("T") || valStr.ToUpper().Equals("TRUE") || valStr.ToUpper().Equals("ON"));
+            var s = ((String)inValue).ToUpper();
+            rslt = (s.Equals("1") || s.Equals("Y") || s.Equals("T") || s.ToUpper().Equals("TRUE") || s.ToUpper().Equals("ON"));
+          } else if (inType == typeof(Char)) {
+            var val = Char.ToUpper((Char)inValue);
+            rslt = ((val == '1') || (val == 'Y') || (val == 'T'));
           } else {
             throw new Exception("Значение типа " + tp + " не может быть представлено как boolean!!! ", null);
           }
@@ -1193,7 +1194,10 @@ namespace Bio.Helpers.Common {
             rslt = _convertToNullable(rslt);
 
         } else if (outType == typeof(String)) {
-          rslt = _objectAsString(inValue);
+          if (inType == typeof(Boolean))
+            rslt = (Boolean)inValue ? "1" : "0";
+          else
+            rslt = _objectAsString(inValue);
         }
 
         return rslt;
@@ -1442,19 +1446,19 @@ namespace Bio.Helpers.Common {
     /// <param name="fileName"></param>
     /// <returns></returns>
     public static String IncFileNameIndexIfExists(String fileName) {
-      var v_result = fileName;
+      var result = fileName;
       if(File.Exists(fileName)) {
-        var v_ext = Path.GetExtension(v_result);
+        var v_ext = Path.GetExtension(result);
         var vr = new Regex("[(]\\d+[)][\\.]", RegexOptions.IgnoreCase);
-        var v_match = vr.Match(v_result);
+        var v_match = vr.Match(result);
         if(v_match.Success) {
-          var v_numStr = v_match.Value.Substring(1, v_match.Value.Length - 3);
-          var v_num = Int16.Parse(v_numStr); v_num++;
-          v_result = vr.Replace(v_result, "(" + v_num + ").");
+          var numStr = v_match.Value.Substring(1, v_match.Value.Length - 3);
+          var num = Int16.Parse(numStr); num++;
+          result = vr.Replace(result, "(" + num + ").");
         } else
-          v_result = NormalizeDir(Path.GetDirectoryName(v_result)) + Path.GetFileNameWithoutExtension(v_result) + "(1)" + v_ext;
+          result = NormalizeDir(Path.GetDirectoryName(result)) + Path.GetFileNameWithoutExtension(result) + "(1)" + v_ext;
       }
-      return v_result;
+      return result;
     }
 
     /// <summary>
@@ -1464,20 +1468,20 @@ namespace Bio.Helpers.Common {
     /// <param name="pCurrentPath"></param>
     /// <param name="vText"></param>
     public static void TryLoadTextAsFile(String pCurrentPath, ref String vText) {
-      var v_currentDirectory = Directory.GetCurrentDirectory();
-      var v_currentPath = Path.GetFullPath(pCurrentPath);
-      Directory.SetCurrentDirectory(v_currentPath);
+      var currentDirectory = Directory.GetCurrentDirectory();
+      var currentPath = Path.GetFullPath(pCurrentPath);
+      Directory.SetCurrentDirectory(currentPath);
       try {
-        var v_sqlFileFN = vText;
-        if(File.Exists(v_sqlFileFN)) {
+        var sqlFileFN = vText;
+        if(File.Exists(sqlFileFN)) {
           try {
-            LoadWINFile(v_sqlFileFN, ref vText);
+            LoadWINFile(sqlFileFN, ref vText);
           } catch(Exception ex) {
-            throw new Exception("Ошибка при загрузке файла [" + v_sqlFileFN + "]. Сообщение: " + ex.Message);
+            throw new Exception("Ошибка при загрузке файла [" + sqlFileFN + "]. Сообщение: " + ex.Message);
           }
         }
       } finally {
-        Directory.SetCurrentDirectory(v_currentDirectory);
+        Directory.SetCurrentDirectory(currentDirectory);
       }
     }
 
@@ -1488,10 +1492,10 @@ namespace Bio.Helpers.Common {
     /// <param name="currentPath"></param>
     /// <param name="text"></param>
     public static void TryLoadMappedFiles(String currentPath, ref String text) {
-      var v_fileName = RegexFind(text, "(?<={text-file:).+(?=})", true);
-      var v_fileContent = v_fileName;
-      TryLoadTextAsFile(currentPath, ref v_fileContent);
-      text = text.Replace("{text-file:" + v_fileName + "}", v_fileContent);
+      var fileName = RegexFind(text, "(?<={text-file:).+(?=})", true);
+      var fileContent = fileName;
+      TryLoadTextAsFile(currentPath, ref fileContent);
+      text = text.Replace("{text-file:" + fileName + "}", fileContent);
     }
 
     /// <summary>
@@ -1534,22 +1538,22 @@ namespace Bio.Helpers.Common {
 #endif
 
 #if !SILVERLIGHT
-    private static void drawSeldCell(DataGridView grid, DataGridViewCellPaintingEventArgs a, Boolean focused) {
+    private static void _drawSeldCell(DataGridView grid, DataGridViewCellPaintingEventArgs a, Boolean focused) {
       if((a.State & DataGridViewElementStates.Selected) ==
                 DataGridViewElementStates.Selected) {
-        var v_cellSelection = (grid.SelectionMode == DataGridViewSelectionMode.CellSelect) ||
+        var cellSelection = (grid.SelectionMode == DataGridViewSelectionMode.CellSelect) ||
                                   (grid.SelectionMode == DataGridViewSelectionMode.RowHeaderSelect) ||
                                    (grid.SelectionMode == DataGridViewSelectionMode.ColumnHeaderSelect);
         var rct = new Rectangle(a.CellBounds.Location, a.CellBounds.Size);
-        rct.X = v_cellSelection || (a.ColumnIndex == 0) ? rct.X + 1 : rct.X;
+        rct.X = cellSelection || (a.ColumnIndex == 0) ? rct.X + 1 : rct.X;
         rct.Y = rct.Y + 1;
-        rct.Width = v_cellSelection || (a.ColumnIndex == grid.Columns.Count - 1) ? rct.Width - 3 : rct.Width;
+        rct.Width = cellSelection || (a.ColumnIndex == grid.Columns.Count - 1) ? rct.Width - 3 : rct.Width;
         rct.Height = rct.Height - 3;
 
         var v_borders = AnchorStyles.Bottom | AnchorStyles.Top;
-        if (v_cellSelection || (a.ColumnIndex == 0))
+        if (cellSelection || (a.ColumnIndex == 0))
           v_borders = v_borders | AnchorStyles.Left;
-        if (v_cellSelection || (a.ColumnIndex == grid.Columns.Count - 1))
+        if (cellSelection || (a.ColumnIndex == grid.Columns.Count - 1))
           v_borders = v_borders | AnchorStyles.Right;
 
         DrawAnSelctedCell(rct, focused, a.Graphics, v_borders);
@@ -1570,7 +1574,7 @@ namespace Bio.Helpers.Common {
       v_parts &= ~DataGridViewPaintParts.SelectionBackground;
       v_parts &= ~DataGridViewPaintParts.Focus;
       a.Paint(a.CellBounds, v_parts);
-      drawSeldCell(grid, a, focused);
+      _drawSeldCell(grid, a, focused);
       a.Handled = true;
     }
 #endif
@@ -1584,20 +1588,20 @@ namespace Bio.Helpers.Common {
     /// <param name="focused"></param>
     public static void DrawTreeSelectionAlt(TreeView tree, DrawTreeNodeEventArgs a, Boolean focused) {
 
-      var v_nodeBounds = a.Node.Bounds;
-      v_nodeBounds.Width += 10;
-      a.Graphics.FillRectangle(Brushes.White, v_nodeBounds);
-      DrawAnSelctedCell(v_nodeBounds, focused, a.Graphics, AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom);
+      var nodeBounds = a.Node.Bounds;
+      nodeBounds.Width += 10;
+      a.Graphics.FillRectangle(Brushes.White, nodeBounds);
+      DrawAnSelctedCell(nodeBounds, focused, a.Graphics, AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom);
 
-      var v_nodeFont = a.Node.TreeView.Font;
-      RectangleF v_nodeBoundsF = Rectangle.Inflate(v_nodeBounds, 0, 0);
-      a.Graphics.DrawString(a.Node.Text, v_nodeFont, Brushes.Black, v_nodeBoundsF);
+      var nodeFont = a.Node.TreeView.Font;
+      var nodeBoundsF = Rectangle.Inflate(nodeBounds, 0, 0);
+      a.Graphics.DrawString(a.Node.Text, nodeFont, Brushes.Black, nodeBoundsF);
       a.DrawDefault = false;
     }
 #endif
 
 #if !SILVERLIGHT
-    private static RegistryValueKind getRegistryType(Type type) {
+    private static RegistryValueKind _getRegistryType(Type type) {
       if (type != null) {
         if (type == typeof(Int16) || type == typeof(Int32) || type == typeof(Double) || type == typeof(Decimal))
           return RegistryValueKind.DWord;
@@ -1624,13 +1628,13 @@ namespace Bio.Helpers.Common {
       if(type == null)
         type = (value != null) ? value.GetType() : null;
       var val = value;
-      var knd = getRegistryType(type);
+      var knd = _getRegistryType(type);
       if (knd == RegistryValueKind.Unknown) {
         if (type != null) {
           var tc = TypeDescriptor.GetConverter(type);
           if (tc.CanConvertTo(typeof(String))) {
             val = tc.ConvertToString(val);
-            knd = getRegistryType(typeof(String));
+            knd = _getRegistryType(typeof(String));
           } else
             return;
         } else
@@ -1827,14 +1831,14 @@ namespace Bio.Helpers.Common {
     /// <returns></returns>
     public static String GetLocalIP() {
       var addrss = Dns.GetHostAddresses(Dns.GetHostName());
-      String v_localeIP = null;
+      String localeIP = null;
       foreach (var a in addrss) {
         if (a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork) {
-          v_localeIP = a.ToString();
+          localeIP = a.ToString();
           break;
         }
       }
-      return v_localeIP;
+      return localeIP;
     }
 
     /// <summary>
@@ -1843,9 +1847,9 @@ namespace Bio.Helpers.Common {
     /// <param name="sqlText"></param>
     /// <returns></returns>
     public static CommandType DetectCommandType(String sqlText) {
-      var v_hasSelect = RegexMatch(sqlText, @"\bSELECT\b", true).Success;
-      v_hasSelect = v_hasSelect && RegexMatch(sqlText, @"\bFROM\b", true).Success;
-      return v_hasSelect ? CommandType.Text : CommandType.StoredProcedure;
+      var hasSelect = RegexMatch(sqlText, @"\bSELECT\b", true).Success;
+      hasSelect = hasSelect && RegexMatch(sqlText, @"\bFROM\b", true).Success;
+      return hasSelect ? CommandType.Text : CommandType.StoredProcedure;
     }
 
 #endif
