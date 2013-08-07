@@ -403,6 +403,10 @@ namespace Bio.Helpers.Common.Types {
       }
     }
 
+    public Boolean HasProperty(String propertyName) {
+      return TypeFactory.FindPropertyOfObject(this, propertyName) != null;
+    }
+
     public T GetValue<T>(String propertyName) {
       return Utl.Convert2Type<T>(TypeFactory.GetValueOfPropertyOfObject(this, propertyName));
     }
