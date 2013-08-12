@@ -67,7 +67,7 @@ namespace Bio.Framework.Client.SL {
     }
 
     private String _bldBodyUrl() {
-      var prms = ajaxUTL.prepareRequestParams(new JsonStoreRequestGet {
+      var prms = ajaxUTL.PrepareRequestParams(new JsonStoreRequestGet {
         RequestType = RequestType.WebDB,
         BioCode = this.BioCode,
         BioParams = this.BioParams

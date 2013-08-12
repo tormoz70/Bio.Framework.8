@@ -72,7 +72,7 @@
     public void Request(AjaxRequest ajaxRequest, Int32 requestTimeout) {
       /*Подготовка запроса*/
       ajaxRequest.Timeout = requestTimeout;
-      ajaxUTL.getDataFromSrv(ajaxRequest);
+      ajaxUTL.GetDataFromSrv(ajaxRequest);
     }
 
     /// <summary>

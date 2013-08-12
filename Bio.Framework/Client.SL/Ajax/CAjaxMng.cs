@@ -107,18 +107,18 @@
           if ((response != null) && !response.Success) {
             //Debug.WriteLine("Request:3 - response.success:false");
             // Сервер вернул ошибку
-            EBioLogin vBioLoginExcp = CAjaxLogin.decBioLoginExcp(response.Ex);
-            if (vBioLoginExcp != null) {
+            var bioLoginExcp = CAjaxLogin.decBioLoginExcp(response.Ex);
+            if (bioLoginExcp != null) {
               //Debug.WriteLine("Request:4 - vBioLoginExcp:" + vBioLoginExcp.GetType().Name);
               // Попадаем сюда если сервер вернул сообщение связанное с логином (Например EBioStart-это значит, что соединение отсутствует и необходимо начать новую сессию)  
               // Сбрасываем параметры сессии
               ajaxUTL.sessionID = null;
-              if (vBioLoginExcp is EBioStart) {
+              if (bioLoginExcp is EBioStart) {
                 this.ConnectionState = ConnectionState.Connecting;
                 // - соединение отсутствует и сервер запросил параметры для новой сессии
                 // - запускаем процедуру логина.
                 //Debug.WriteLine("Request:5 - запускаем процедуру логина: this._loginPrc.processLogin");
-                this._loginPrc.processLogin(vBioLoginExcp, args.Request as BioRequest, (e, r) => {
+                this._loginPrc.processLogin(bioLoginExcp, args.Request as BioRequest, (e, r) => {
                   response.Ex = e;
                   if (response.Ex is EBioOk) {
                     //Debug.WriteLine("Request:6 - this._loginPrc.processLogin: response.ex == null");
@@ -185,6 +185,11 @@
                 this._loginPrc.assignCurUser((args.Response.Ex as EBioOk).Usr);
                 this.ConnectionState = ConnectionState.Connected;
                 //Debug.WriteLine("Request:10-1 - this._queue.Dequeue();");
+              } else {
+                //Debug.WriteLine("Request:10-2 - Непредвиденная ошибка.");
+                this.RequestState = RequestState.Error;
+                if (!args.Request.Silent) 
+                  msgBx.showError(args.Response.Ex, "Ошибка обращения к серверу", () => this._processCallback(v_clbck, this, args));
               }
             } 
             //Debug.WriteLine("Request:13 - Запрос выполнен.");
@@ -215,7 +220,7 @@
       }
     }
     public static String SessionIdParName {
-      get { return ajaxUTL.csSessionIdName; }
+      get { return ajaxUTL.CS_SESSION_ID_NAME; }
     }
 
     /// <summary>
@@ -224,7 +229,7 @@
     public static String SessionIdCookieStr {
       get {
         if(ajaxUTL.sessionID != null)
-          return ajaxUTL.csSessionIdName+"="+ajaxUTL.sessionID.Value;
+          return ajaxUTL.CS_SESSION_ID_NAME+"="+ajaxUTL.sessionID.Value;
         return null;
       }
     }

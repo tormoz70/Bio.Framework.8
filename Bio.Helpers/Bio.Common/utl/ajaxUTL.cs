@@ -1,14 +1,9 @@
 ﻿namespace Bio.Helpers.Common {
   using System;
-  using System.Text;
   using System.Net;
   using System.IO;
   using System.Threading;
-  using System.Collections;
-  using Bio.Helpers.Common;
-  using Bio.Helpers.Common.Types;
-  using System.ComponentModel;
-  using System.Collections.Generic;
+  using Types;
   using Newtonsoft.Json;
   using System.Reflection;
   /// <summary>
@@ -29,7 +24,7 @@
     /// <summary>
     /// Имя cookie HTTP-сессии
     /// </summary>
-    public const String csSessionIdName = "ASP.NET_SessionId";
+    public const String CS_SESSION_ID_NAME = "ASP.NET_SessionId";
     /// <summary>
     /// Время ожидания ответа от сервера.
     /// </summary>
@@ -40,11 +35,11 @@
     /// </summary>
     /// <param name="pLine">Строка</param>
     /// <param name="pOnLogLine">Метод пишущий в лог</param>
-    public static void addLogLine(String pLine, DOnLogLine pOnLogLine) {
+    public static void AddLogLine(String pLine, DOnLogLine pOnLogLine) {
 #if DEBUG
       if(pOnLogLine != null) {
-        String vThrName = Thread.CurrentThread.Name;
-        pOnLogLine(String.Format("{0} : [{1}] -:- {2}", DateTime.Now, vThrName, pLine));
+        var thrName = Thread.CurrentThread.Name;
+        pOnLogLine(String.Format("{0} : [{1}] -:- {2}", DateTime.Now, thrName, pLine));
       }
 #endif
     }
@@ -54,12 +49,9 @@
     /// </summary>
     /// <param name="pURL"></param>
     /// <returns></returns>
-    public static String extractBaseURL(String pURL) {
-      String[] vPrts = Utl.SplitString(pURL, '?');
-      if(vPrts.Length > 0)
-        return vPrts[0];
-      else
-        return null;
+    public static String ExtractBaseURL(String pURL) {
+      var prts = Utl.SplitString(pURL, '?');
+      return prts.Length > 0 ? prts[0] : null;
     }
 
 
@@ -189,93 +181,89 @@
 
 #else
     private static void _processResponseError(Exception e, AjaxRequest request) {
-      AjaxResponse vResponse = new AjaxResponse {
+      var response = new AjaxResponse {
         Ex = EBioException.CreateIfNotEBio(e),
         Success = false
       };
       if (request.Callback != null)
-        request.Callback(null, new AjaxResponseEventArgs { Request = request, Response = vResponse });
+        request.Callback(null, new AjaxResponseEventArgs { Request = request, Response = response });
     }
     /// <summary>
     /// Выполняет синхронный запрос к серверу
     /// </summary>
     /// <param name="request">URL</param>
-    public static void getDataFromSrv(AjaxRequest request) {
+    public static void GetDataFromSrv(AjaxRequest request) {
       try {
-        WebClient v_client = new WebClient();
-        v_client.Headers["Content-Type"] = "application/x-www-form-urlencoded";
-        v_client.UploadStringCompleted += new UploadStringCompletedEventHandler((Object sender, UploadStringCompletedEventArgs args) => {
+        var client = new WebClient();
+        client.Headers["Content-Type"] = "application/x-www-form-urlencoded";
+        client.UploadStringCompleted += (sender, args) => {
           if (args.Error == null) {
             Utl.UiThreadInvoke(new Action<Object, AjaxRequest, UploadStringCompletedEventArgs>((s, r, a) => {
               try {
-                JsonConverter[] c = ajaxUTL.getConvertersFromRequestType(r.GetType());
-                String vResponseText = a.Result;
-                AjaxResponse vResponse = ajaxUTL.CreResponseObject(null, vResponseText, c);
+                var c = GetConvertersFromRequestType(r.GetType());
+                var responseText = a.Result;
+                var response = CreResponseObject(null, responseText, c);
                 if (r.Callback != null)
-                  r.Callback(s, new AjaxResponseEventArgs { Request = r, Response = vResponse });
+                  r.Callback(s, new AjaxResponseEventArgs { Request = r, Response = response });
               } catch (Exception ex) {
                 _processResponseError(ex, r);
               }
             }), sender, (AjaxRequest)args.UserState, args);
           }else
             _processResponseError(args.Error, (AjaxRequest)args.UserState);
-        });
-        Uri uri = new Uri(request.URL, UriKind.Relative);
-        String vParamsToPost = prepareRequestParams(request);
-        v_client.UploadStringAsync(uri, "POST", vParamsToPost, request);
+        };
+        var uri = new Uri(request.URL, UriKind.Relative);
+        var paramsToPost = PrepareRequestParams(request);
+        client.UploadStringAsync(uri, "POST", paramsToPost, request);
       } catch (Exception e) {
         _processResponseError(e, request);
       }
     }
 
-    public static String prepareRequestParams(AjaxRequest request) {
-      Params vParams = request.BuildQParams(ajaxUTL.getConvertersFromRequestType(request.GetType()));
-      //vParams.Add("ajaxrqtimeout", "" + request.timeout);
-      return vParams.bldUrlParams();
+    public static String PrepareRequestParams(AjaxRequest request) {
+      var qParams = request.BuildQParams(GetConvertersFromRequestType(request.GetType()));
+      return qParams.bldUrlParams();
     }
 
     
-    public static void getFileFromSrv(AjaxRequest request, String appendUrlParams) {
-      Action<Exception> p_doOnErr = (e) => {
-        AjaxResponse vResponse = new AjaxResponse {
+    public static void GetFileFromSrv(AjaxRequest request, String appendUrlParams) {
+      Action<Exception> doOnErr = e => {
+        var response = new AjaxResponse {
           Ex = EBioException.CreateIfNotEBio(e),
           Success = false
         };
         if (request.Callback != null)
-          request.Callback(null, new AjaxResponseEventArgs { Request = request, Response = vResponse });
+          request.Callback(null, new AjaxResponseEventArgs { Request = request, Response = response });
       };
       try {
-        WebClient cli = new WebClient();
-        cli.OpenReadCompleted += new OpenReadCompletedEventHandler((Object sender, OpenReadCompletedEventArgs e) => {
+        var cli = new WebClient();
+        cli.OpenReadCompleted += (sender, e) => {
           if (e.Error == null) {
-            //if (callback != null)
-            //  callback(e);
             if (request.Callback != null) {
-              AjaxResponse vResponse = new AjaxResponse {
+              var response = new AjaxResponse {
                 Success = true
               };
               var a = new AjaxResponseEventArgs {
                 Request = request,
-                Response = vResponse, 
+                Response = response, 
                 Stream = new MemoryStream()
               };
               e.Result.CopyTo(a.Stream);
-              //e.Result.Flush();
               e.Result.Close();
               request.Callback(sender, a);
             }
 
 
           } else {
-            p_doOnErr(e.Error);
+            doOnErr(e.Error);
           }
-        });
-        String vParamsToPost = prepareRequestParams(request);
-        String v_appendUrlParams = String.IsNullOrEmpty(appendUrlParams) ? String.Empty : "&" + appendUrlParams;
-        Uri uri = new Uri(request.URL + "?" + vParamsToPost + v_appendUrlParams, UriKind.Relative);
+        };
+        var paramsToPost = PrepareRequestParams(request);
+        var urlParams = String.IsNullOrEmpty(appendUrlParams) ? String.Empty : "&" + appendUrlParams;
+        var uri = new Uri(request.URL + "?" + paramsToPost + urlParams, UriKind.Relative);
         cli.OpenReadAsync(uri);
       } catch (Exception ex) {
-        p_doOnErr(ex);
+        doOnErr(ex);
       }
     }
 #endif
@@ -292,37 +280,37 @@
     /// <param name="converters"></param>
     /// <returns></returns>
     public static AjaxResponse CreResponseObject(EBioException requestException, String responseText, JsonConverter[] converters) {
-      AjaxResponse vResponse = null;
+      AjaxResponse response;
       if (requestException == null) {
         try {
-          vResponse = AjaxResponse.Decode(responseText, converters);
-          vResponse.ResponseText = responseText;
+          response = AjaxResponse.Decode(responseText, converters);
+          response.ResponseText = responseText;
         } catch (Exception e) {
-          vResponse = new AjaxResponse() {
+          response = new AjaxResponse {
             Ex = new EBioException("Ошибка при восстановлении объекта Response. Сообщение: " + e.Message + "\nResponseText: " + responseText, e),
             ResponseText = responseText,
             Success = false
           };
         }
       } else {
-        vResponse = new AjaxResponse() {
+        response = new AjaxResponse {
           Ex = requestException,
           ResponseText = responseText,
           //request = pRequest,
           Success = false
         };
       }
-      return vResponse;
+      return response;
     }
 
-    public static JsonConverter[] getConvertersFromRequestType(Type rqType) {
+    public static JsonConverter[] GetConvertersFromRequestType(Type rqType) {
       if (rqType == null)
         return null;
       JsonConverter[] converters = null;
       MethodInfo[] ms = rqType.GetMethods();
       MethodInfo getConvertersMethod = null;
-      foreach (MethodInfo m in ms)
-        if (((MethodInfo)m).IsStatic && ((MethodInfo)m).Name.Equals("GetConverters")) {
+      foreach (var m in ms)
+        if (m.IsStatic && m.Name.Equals("GetConverters")) {
           getConvertersMethod = m;
           break;
         }
@@ -331,7 +319,7 @@
       if (converters == null) {
         var v_base_type = rqType.BaseType;
         if (v_base_type != null)
-          converters = getConvertersFromRequestType(v_base_type);
+          converters = GetConvertersFromRequestType(v_base_type);
       }
       return converters;
     }

@@ -127,7 +127,7 @@ namespace Bio.Framework.Client.SL {
 
     private void _loadModuleFromRmt(String moduleName, Action<AjaxResponseEventArgs> callback) {
       var v_curClientVersion = "cliver="+Utl.GetCurrentClientVersion();
-      ajaxUTL.getFileFromSrv(new BioRequest {
+      ajaxUTL.GetFileFromSrv(new BioRequest {
         URL = this.ServerUrl,
         RequestType = RequestType.asmbVer,
         BioParams = new Params(new Param { Name = "moduleName", Value = moduleName },
@@ -173,7 +173,7 @@ namespace Bio.Framework.Client.SL {
     }
 
     private void _loadRmtAssemblyVer(String moduleName, Action<AjaxResponseEventArgs> callback) {
-      ajaxUTL.getDataFromSrv(new BioRequest {
+      ajaxUTL.GetDataFromSrv(new BioRequest {
         URL = this.ServerUrl,
         RequestType = RequestType.asmbVer,
         BioParams = new Params(new Param { Name = "moduleName", Value = moduleName }),

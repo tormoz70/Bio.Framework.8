@@ -594,11 +594,11 @@ namespace Bio.Framework.Client.SL {
                   }
                 }
               } else {
-                if (BioGlobal.Debug) {
-                  var biorsp = args.Response as BioResponse;
-                  if (biorsp == null)
-                    throw new EBioException("Bad response: biorsp=null");
-                }
+                //if (BioGlobal.Debug) {
+                //  var biorsp = args.Response as BioResponse;
+                //  if (biorsp == null)
+                //    throw new EBioException("Bad response: biorsp=null");
+                //}
               }
             } finally {
               this._doOnAfterLoadData(args);

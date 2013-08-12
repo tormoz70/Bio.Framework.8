@@ -119,7 +119,7 @@
                 if (losp.HasResultFile) {
                   this._form.AddLineToLog("Для просмотра результата нажмите кнопку \"Открыть результат\".");
 
-                  String prms = ajaxUTL.prepareRequestParams(new RmtClientRequest {
+                  String prms = ajaxUTL.PrepareRequestParams(new RmtClientRequest {
                     RequestType = this.requestType,
                     BioCode = this.BioCode,
                     cmd = RmtClientRequestCmd.GetResult

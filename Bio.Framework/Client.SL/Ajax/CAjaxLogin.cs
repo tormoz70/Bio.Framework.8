@@ -65,7 +65,7 @@
         }
       };
 
-      ajaxUTL.getDataFromSrv(rq);
+      ajaxUTL.GetDataFromSrv(rq);
     }
 
     private void showLoginError(String pMsg, Action callback) {
