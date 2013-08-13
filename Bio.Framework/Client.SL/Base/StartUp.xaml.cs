@@ -27,7 +27,7 @@ namespace Bio.Framework.Client.SL {
 //#if !DEBUG
       if (!e.Handled) {
         e.Handled = true;
-        msgBx.showError(EBioException.CreateIfNotEBio(e.ExceptionObject), "Непредвиденная ошибка!", null);
+        msgBx.ShowError(EBioException.CreateIfNotEBio(e.ExceptionObject), "Непредвиденная ошибка!", null);
       }
 //#endif
     }

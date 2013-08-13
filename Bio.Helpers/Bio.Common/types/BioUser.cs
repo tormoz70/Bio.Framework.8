@@ -26,7 +26,7 @@ namespace Bio.Helpers.Common.Types {
     [DbValue("BIOROOT")]
     BioRoot,
     [DbValue("DEBUGGER")]
-    Debug,
+    Debugger,
     [DbValue("ADMIN")]
     Admin,
     [DbValue("WSADMIN")]
@@ -36,6 +36,12 @@ namespace Bio.Helpers.Common.Types {
     [DbValue("GUEST")]
     Guest
   };
+
+  public enum BioGrants {
+    [DbValue("DBG")]
+    Debuging
+  };
+
 #pragma warning restore 1591
 
   /// <summary>
@@ -137,15 +143,15 @@ namespace Bio.Helpers.Common.Types {
       String v_roles = null;
       if (roles != null) {
         foreach (var n in roles) {
-          var v_role = enumHelper.GetAttributeByValue<DbValueAttribute>(n).Value;
-          Utl.AppendStr(ref v_roles, v_role, ";");
+          var role = enumHelper.GetAttributeByValue<DbValueAttribute>(n).Value;
+          Utl.AppendStr(ref v_roles, role, ";");
         }
       }
       return this.CheckRoles(v_roles);
     }
 
     /// <summary>
-    /// Проверяет сразу несколько ролей
+    /// Проверяет наличие у пользователя хотябы одной из перечисленных ролей
     /// </summary>
     /// <param name="roles">Список ролей с разделителем [' ' | ';' | ',']</param>
     /// <returns></returns>
@@ -154,7 +160,23 @@ namespace Bio.Helpers.Common.Types {
     }
 
     /// <summary>
-    /// Проверяет сразу несколько разрешений
+    /// Проверяет наличие у пользователя хотябы одного из перечисленных разрешений
+    /// </summary>
+    /// <param name="grants"></param>
+    /// <returns></returns>
+    public Boolean CheckGrants(params Object[] grants) {
+      String v_grants = null;
+      if (grants != null) {
+        foreach (var n in grants) {
+          var grant = enumHelper.GetAttributeByValue<DbValueAttribute>(n).Value;
+          Utl.AppendStr(ref v_grants, grant, ";");
+        }
+      }
+      return this.CheckGrants(v_grants);
+    }
+
+    /// <summary>
+    /// Проверяет наличие у пользователя хотябы одного из перечисленных разрешений
     /// </summary>
     /// <param name="grants">Список разрешений с разделителем [' ' | ';' | ',']</param>
     /// <returns></returns>
@@ -185,7 +207,7 @@ namespace Bio.Helpers.Common.Types {
     /// Пользователь имеет разрешение "Отладчика", т.е. данный пользователь будет видеть отладочную информацию в сообщениях об ошибке
     /// </summary>
     public Boolean IsDebugger() {
-      return this.CheckRoles(BioRoles.Debug);
+      return this.CheckRoles(BioRoles.Debugger) || this.CheckGrants(BioGrants.Debuging);
     }
 
     #region ICloneable Members

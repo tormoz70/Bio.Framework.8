@@ -46,7 +46,7 @@ namespace Bio.Framework.Client.SL {
           isf.IncreaseQuotaTo(newSpace);
           this.DialogResult = true;
         } catch (Exception ex) {
-          msgBx.showError(ex.ToString(), "Ошибка расширения локального хранилища", null);
+          msgBx.ShowError(ex.ToString(), "Ошибка расширения локального хранилища", null);
         }
       }
     }

@@ -1,20 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 using System.IO;
 using Bio.Helpers.Common.Types;
 using Bio.Helpers.Common;
 
 namespace Bio.Helpers.Controls.SL {
-  public partial class msgBx : FloatableWindow {
+  public partial class msgBx {
     public msgBx() {
       InitializeComponent();
     }
@@ -29,67 +20,69 @@ namespace Bio.Helpers.Controls.SL {
     /// <param name="errorText">Текст ошибки или Json-строка объекта ошибки</param>
     /// <param name="title">Заголовок</param>
     /// <param name="callback"></param>
-    public static void showError(String errorText, String title, Action callback) {
-      EBioException vEx = null;
+    public static void ShowError(String errorText, String title, Action callback) {
+      EBioException ex = null;
       try {
-        vEx = EBioException.Decode(errorText);
+        ex = EBioException.Decode(errorText);
       } catch (Exception) { }
-      if (vEx != null) {
-        showError(vEx, title, callback);
+      if (ex != null) {
+        ShowError(ex, title, callback);
       } else {
-        showMsg(errorText, title, callback);
+        _showMsg(errorText, title, callback);
       }
     }
 
-    private static Boolean cbForceDebugMode = false;
-    public static String formatError(EBioException error) {
+    private const Boolean CB_FORCE_DEBUG_MODE = false;
+
+    public static String FormatError(EBioException error) {
       if (error != null) {
-        var v_show_debug = BioGlobal.Debug || BioGlobal.CurUsrIsDebugger || !BioGlobal.CurSessionIsLoggedOn;
-        StringWriter vS = new StringWriter();
-        var v_msg = error.ApplicationErrorMessage;
-        if (String.IsNullOrEmpty(v_msg))
-          v_msg = "Произошла непредвиденная ошибка! Просим извинения за причиненные неудобства.\n" +
+        var showDebug = BioGlobal.Debug || BioGlobal.CurUsrIsDebugger || !BioGlobal.CurSessionIsLoggedOn;
+        var stringWriter = new StringWriter();
+        var msg = error.ApplicationErrorMessage;
+        if (String.IsNullOrEmpty(msg))
+          msg = "Произошла непредвиденная ошибка! Просим извинения за причиненные неудобства.\n" +
                   "Попробуйте перезапустить браузер и повторить операцию через несколько минут.";
         else
-          v_msg = "Ошибка приложения:\n\t" + v_msg;
-        vS.WriteLine(v_msg);
-        vS.WriteLine(new String('*', 280));
+          msg = "Ошибка приложения:\n\t" + msg;
+        stringWriter.WriteLine(msg);
+        stringWriter.WriteLine(new String('*', 280));
 //#if DEBUG
-        if (v_show_debug || cbForceDebugMode) {
+        if (showDebug || CB_FORCE_DEBUG_MODE) {
           if (error.Message != null) {
-            vS.WriteLine("Ошибка системы [" + error.GetType().FullName + 
+            stringWriter.WriteLine("Ошибка системы [" + error.GetType().FullName + 
               ((error.InnerException != null) ? "("+error.InnerException.GetType().FullName+")" : null)
               + "]:");
-            vS.WriteLine("\t" + error.Message);
+            stringWriter.WriteLine("\t" + error.Message);
             if(error.InnerException != null)
-              vS.WriteLine("\t\t" + error.InnerException.Message);
-            vS.WriteLine(new String('*', 280));
+              stringWriter.WriteLine("\t\t" + error.InnerException.Message);
+            stringWriter.WriteLine(new String('*', 280));
           }
           if (error.StackTrace != null) {
-            vS.WriteLine("Trace:");
-            vS.WriteLine("\t" + error.StackTrace);
-            vS.WriteLine(new String('*', 280));
+            stringWriter.WriteLine("Trace:");
+            stringWriter.WriteLine("\t" + error.StackTrace);
+            stringWriter.WriteLine(new String('*', 280));
           }
           if (error.ServerTrace != null) {
-            vS.WriteLine("ServerTrace:");
-            vS.WriteLine("\t" + error.ServerTrace);
-            vS.WriteLine(new String('*', 280));
+            stringWriter.WriteLine("ServerTrace:");
+            stringWriter.WriteLine("\t" + error.ServerTrace);
+            stringWriter.WriteLine(new String('*', 280));
           }
         }
 //#endif
-        return vS.ToString();
-      } else
-        return null;
+        return stringWriter.ToString();
+      }
+      return null;
     }
+
     /// <summary>
     /// Выводит окно сообщения об ошибке
     /// </summary>
     /// <param name="error">Класс ошибки</param>
     /// <param name="title">Заголовок</param>
     /// <param name="callback"></param>
-    public static void showError(EBioException error, String title, Action callback) {
-      String vS = formatError(error);
-      showMsg(vS, title, callback);
+    public static void ShowError(EBioException error, String title, Action callback) {
+      var s = FormatError(error);
+      _showMsg(s, title, callback);
     }
 
     /// <summary>
@@ -98,19 +91,19 @@ namespace Bio.Helpers.Controls.SL {
     /// <param name="text">Текст сообщения</param>
     /// <param name="title">Заголовок</param>
     /// <param name="callback"></param>
-    private static void showMsg(String text, String title, Action callback) {
+    private static void _showMsg(String text, String title, Action callback) {
       if (!Utl.IsUiThread)
         Utl.UiThreadInvoke(() => {
-          showMsg(text, title, callback);
+          _showMsg(text, title, callback);
         });
       else {
-        msgBx vWin = new msgBx();
-        vWin.Title = title;
-        vWin.txtMsg.Text = text;
-        vWin.Closed += new EventHandler((Object sender, EventArgs e) => {
+        var win = new msgBx();
+        win.Title = title;
+        win.txtMsg.Text = text;
+        win.Closed += (sender, e) => {
           if (callback != null) callback();
-        });
-        vWin.ShowDialog();
+        };
+        win.ShowDialog();
       }
     }
 

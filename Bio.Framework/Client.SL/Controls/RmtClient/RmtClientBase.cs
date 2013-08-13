@@ -130,7 +130,7 @@
               } else if (losp.State == RemoteProcState.Breaked) {
                 this._form.AddLineToLog("Прервано пользователем.\n");
               } else if (losp.State == RemoteProcState.Error) {
-                this._form.AddLineToLog(msgBx.formatError(losp.Ex));
+                this._form.AddLineToLog(msgBx.FormatError(losp.Ex));
               }
               if (this._isDone)
                 this._doOnFinished(response);
@@ -163,7 +163,7 @@
       if (this._form != null) {
         this._form.DoOnChangeState(new RemoteProcessStatePack { State = RemoteProcState.Error });
         this._form.ChangeLastLogLine(msg + ":\n");
-        this._form.AddLineToLog(msgBx.formatError(EBioException.CreateIfNotEBio(ex)));
+        this._form.AddLineToLog(msgBx.FormatError(EBioException.CreateIfNotEBio(ex)));
       }
     }
 

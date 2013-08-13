@@ -1,20 +1,11 @@
 ﻿namespace Bio.Helpers.Ajax {
   using System;
-  using System.Collections.Generic;
-  using System.Text;
-  using System.Net;
-  using System.IO;
-  using System.Threading;
 #if !SILVERLIGHT
   using System.Web;
   using System.Windows.Forms;
 #endif
-  using System.ComponentModel;
-  using Bio.Helpers.Common.Types;
-  using System.Collections;
-  using Newtonsoft.Json;
-  using System.Reflection;
-  using Bio.Helpers.Common;
+  using Common.Types;
+  using Common;
 
 
 

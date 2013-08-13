@@ -145,7 +145,7 @@
                       this.RequestState = RequestState.Requested;
                       if (!args.Request.Silent) {
                         if (!(response.Ex is EBioAutenticationError))
-                          msgBx.showError(response.Ex, "Ошибка обращения к серверу", () => this._processCallback(v_clbck, this, args));
+                          msgBx.ShowError(response.Ex, "Ошибка обращения к серверу", () => this._processCallback(v_clbck, this, args));
                       }
                     }
                   }
@@ -157,7 +157,7 @@
                 this.ConnectionState = ConnectionState.Error;
                 this.RequestState = RequestState.Requested;
                 if (!args.Request.Silent) {
-                  msgBx.showError(response.Ex, "Ошибка обращения к серверу", () => {
+                  msgBx.ShowError(response.Ex, "Ошибка обращения к серверу", () => {
                     this._processCallback(v_clbck, this, args);
                   });
                 } else
@@ -168,7 +168,7 @@
               //this.ConnectionState = ConnectionState.Unconnected;
               this.RequestState = RequestState.Error;
               if (!args.Request.Silent) {
-                msgBx.showError(response.Ex, "Ошибка обращения к серверу", () => this._processCallback(v_clbck, this, args));
+                msgBx.ShowError(response.Ex, "Ошибка обращения к серверу", () => this._processCallback(v_clbck, this, args));
               } else
                 this._processCallback(v_clbck, this, args);
             }
@@ -189,7 +189,7 @@
                 //Debug.WriteLine("Request:10-2 - Непредвиденная ошибка.");
                 this.RequestState = RequestState.Error;
                 if (!args.Request.Silent) 
-                  msgBx.showError(args.Response.Ex, "Ошибка обращения к серверу", () => this._processCallback(v_clbck, this, args));
+                  msgBx.ShowError(args.Response.Ex, "Ошибка обращения к серверу", () => this._processCallback(v_clbck, this, args));
               }
             } 
             //Debug.WriteLine("Request:13 - Запрос выполнен.");

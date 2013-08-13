@@ -195,7 +195,7 @@ namespace Bio.Framework.Client.SL {
         if (callback != null)
           callback(a, assemly);
       } else {
-        msgBx.showError(EBioException.CreateIfNotEBio(a.Response.Ex), "Ошибка при загрузки модуля с сервера", () => {
+        msgBx.ShowError(EBioException.CreateIfNotEBio(a.Response.Ex), "Ошибка при загрузки модуля с сервера", () => {
           if (callback != null)
             callback(a, null);
         });
@@ -231,7 +231,7 @@ namespace Bio.Framework.Client.SL {
               });
             }
           } else {
-            msgBx.showError(a.Response.Ex, "Ошибка при получении атрибутов модуля с сервера", () => {
+            msgBx.ShowError(a.Response.Ex, "Ошибка при получении атрибутов модуля с сервера", () => {
               if (callback != null)
                 callback(a, null);
             });
@@ -340,7 +340,7 @@ namespace Bio.Framework.Client.SL {
             } else {
               var v_msg = String.Format("Ошибка при загрузке модуля {0} с сервера.", moduleName);
               var v_err = new EBioException(v_msg, e.Response.Ex);
-              msgBx.showError(v_err, "Загрузка модуля", null);
+              msgBx.ShowError(v_err, "Загрузка модуля", null);
             }
           } finally {
             if (v_rootPlgView != null)
