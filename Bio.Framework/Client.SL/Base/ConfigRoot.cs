@@ -51,6 +51,11 @@ namespace Bio.Framework.Client.SL {
     [DefaultValue(false)]
     public Boolean SuspendLoadDataInGrids { get; set; }
 
+    [Category("Соединение")]
+    [Description("Поддерживать соединение")]
+    [DefaultValue(false)]
+    public Boolean BeOnline { get; set; }
+
     /// <summary>
     /// Сохранить пароль
     /// </summary>
