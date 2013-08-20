@@ -23,11 +23,8 @@
       if (!rslt) {
         if (this._attrs == null)
           throw new Exception(String.Format("Для {0} необходимо описать {1}.", this.GetType().Name, typeof(ComboBoxRmtEditorAttribute).Name));
-        var v_owner = this.Property.Owner as CJSPropertyGrid;
-        if(v_owner == null)
-          throw new Exception(String.Format("{0} можно использовать только в {1}.", this.GetType().Name, typeof(CJSPropertyGrid).Name));
-        var v_cli = new JsonStoreClient() {
-          AjaxMng = v_owner.OwnerPlugin.Env.AjaxMng,
+        var v_cli = new JsonStoreClient {
+          AjaxMng = BioEnvironment.Instance.AjaxMng,
           BioCode = this._attrs.BioCode
         };
         this.cbo.Items.Clear();

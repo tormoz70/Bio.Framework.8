@@ -1,28 +1,18 @@
 ﻿using System;
-using System.Net;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Ink;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Shapes;
 using System.Reflection;
 using System.ComponentModel;
 using Bio.Helpers.Common;
 using Bio.Helpers.Common.Types;
-using Bio.Framework.Packets;
 
 namespace Bio.Framework.Client.SL {
 
   public abstract class CPluginBase {
-
-    public CPluginBase(IPlugin owner, IEnvironment env, String module, String name, String id) {
+    
+    protected CPluginBase(IPlugin owner, String module, String name, String id) {
       this.Params = new Params();
 
       this.Owner = owner;
-      this.Env = env;
       this.ModuleName = module;
       this.PluginName = name;
       this.PluginID = id;
@@ -48,26 +38,20 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    private Object GetMemberValue(MemberInfo mi, Type type) {
-      Attribute attr = Attribute.GetCustomAttribute(mi, typeof(InvisibleAttribute));
+    private Object _getMemberValue(MemberInfo mi, Type type) {
+      var attr = Attribute.GetCustomAttribute(mi, typeof(InvisibleAttribute));
       if (attr != null && ((InvisibleAttribute)attr).Invisible)
         return null;
       attr = Attribute.GetCustomAttribute(mi, typeof(DefaultValueAttribute));
-      Object defval = attr != null ? ((DefaultValueAttribute)attr).Value : null;
-      Object val = this.RetrieveValue(mi.Name, defval);
-      if (val != null) {
-        //if (val.GetType().Equals(typeof(System.String)) && !type.Equals(typeof(System.String))) {
-        //  TypeConverter tc = TypeDescriptor.GetConverter(type);
-        //  if (tc != null && tc.CanConvertFrom(typeof(System.String)))
-        //    val = tc.ConvertFromString((String)val);
-        //}
+      var defval = attr != null ? ((DefaultValueAttribute)attr).Value : null;
+      var val = this.RetrieveValue(mi.Name, defval);
+      if (val != null) 
         val = Utl.Convert2Type(val, type);
-      }
       return val;
     }
 
-    private void SetMemberValue(MemberInfo mi, Object val) {
-      Attribute attr = Attribute.GetCustomAttribute(mi, typeof(InvisibleAttribute));
+    private void _setMemberValue(MemberInfo mi, Object val) {
+      var attr = Attribute.GetCustomAttribute(mi, typeof(InvisibleAttribute));
       if (attr != null && ((InvisibleAttribute)attr).Invisible)
         return;
       this.StoreValue(mi.Name, val);
@@ -86,20 +70,20 @@ namespace Bio.Framework.Client.SL {
     /// Загружает все параметры конфигурации.
     /// </summary>
     public virtual void LoadCfg() {
-      ConfigRec cfg = this.Cfg as ConfigRec;
-      FieldInfo[] fia = cfg.GetType().GetFields();
-      foreach (FieldInfo fi in fia) {
+      var cfg = (ConfigRec)this.Cfg;
+      var fia = cfg.GetType().GetFields();
+      foreach (var fi in fia) {
         try {
-          Object val = this.GetMemberValue(fi, fi.FieldType);
+          var val = this._getMemberValue(fi, fi.FieldType);
           if (val != null)
             fi.SetValue(cfg, val);
         } catch (ArgumentException) {
         }
       }
-      PropertyInfo[] pia = cfg.GetType().GetProperties();
-      foreach (PropertyInfo pi in pia) {
+      var pia = cfg.GetType().GetProperties();
+      foreach (var pi in pia) {
         try {
-          Object val = this.GetMemberValue(pi, pi.PropertyType);
+          var val = this._getMemberValue(pi, pi.PropertyType);
           if (val != null)
             pi.SetValue(cfg, val, null);
         } catch (ArgumentException) {
@@ -111,16 +95,16 @@ namespace Bio.Framework.Client.SL {
     /// Сохраняет все параметры конфигурации.
     /// </summary>
     public virtual void SaveCfg() {
-      var cfg = this.Cfg as ConfigRec;
+      var cfg = (ConfigRec)this.Cfg;
       var fia = cfg.GetType().GetFields();
-      foreach (FieldInfo fi in fia) {
+      foreach (var fi in fia) {
         var val = fi.GetValue(cfg);
-        this.SetMemberValue(fi, val);
+        this._setMemberValue(fi, val);
       }
       var pia = cfg.GetType().GetProperties();
-      foreach (PropertyInfo pi in pia) {
+      foreach (var pi in pia) {
         var val = pi.GetValue(cfg, null);
-        this.SetMemberValue(pi, val);
+        this._setMemberValue(pi, val);
       }
     }
 
@@ -134,18 +118,16 @@ namespace Bio.Framework.Client.SL {
 
     public IPlugin Owner { get; private set; }
 
-    public IEnvironment Env { get; private set; }
-
     /// <summary>
     /// Параметры плагина
     /// </summary>
     public Params Params { get; private set; }
 
-    public void refreshData(Params prms, Boolean force) {
+    public void RefreshData(Params prms, Boolean force) {
       throw new NotImplementedException();
     }
 
-    public void refreshData(Params prms) {
+    public void RefreshData(Params prms) {
       throw new NotImplementedException();
     }
 
@@ -153,7 +135,7 @@ namespace Bio.Framework.Client.SL {
 
     //public event EventHandler<DataChangingCancelEventArgs> DataChanging;
 
-    private String genGlobalStoreValueName(String name) {
+    private String _genGlobalStoreValueName(String name) {
       return this.GetType().Name + "::" + name;
     }
 
@@ -164,7 +146,7 @@ namespace Bio.Framework.Client.SL {
     /// <param name="defVal">Значение по умолчанию.</param>
     /// <returns>Значение параметра.</returns>
     public virtual T RetrieveValue<T>(String name, T defVal) {
-      T rslt = this.Env.RestoreUserObject<T>(this.genGlobalStoreValueName(name), defVal);
+      T rslt = BioEnvironment.Instance.RestoreUserObject(this._genGlobalStoreValueName(name), defVal);
       return rslt; 
     }
 
@@ -174,21 +156,21 @@ namespace Bio.Framework.Client.SL {
     /// <param name="name">Имя параметра.</param>
     /// <param name="value">Значение параметра.</param>
     public virtual void StoreValue(String name, Object value) {
-      this.Env.StoreUserObject(this.genGlobalStoreValueName(name), value);
+      BioEnvironment.Instance.StoreUserObject(this._genGlobalStoreValueName(name), value);
     }
 
     #endregion
 
     #region ISelector Members
 
-    private const String csErrSelectorRealisation = "Для реализации функции выбора необходимо, чтобы View реализовывал интерфейс ISelectorView.";
+    private const String CS_ERR_SELECTOR_REALISATION = "Для реализации функции выбора необходимо, чтобы View реализовывал интерфейс ISelectorView.";
 
     public virtual void Select(VSelection selection, SelectorCallback callback) {
       var v_sel_view = this.View as ISelectorView;
       if (v_sel_view != null) {
         this.View.ShowSelector(selection, callback);
       } else
-        new NotImplementedException(csErrSelectorRealisation);
+        throw new NotImplementedException(CS_ERR_SELECTOR_REALISATION);
       
     }
 

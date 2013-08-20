@@ -92,7 +92,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CEnvironment.cs" />
+    <Compile Include="BioEnvironment.cs" />
     <Compile Include="ConfigRec.cs" />
     <Compile Include="ConfigRoot.cs" />
     <Compile Include="CPluginRootViewBase.cs" />

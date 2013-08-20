@@ -1,8 +1,7 @@
 namespace Bio.Framework.Client.SL {
   using System;
-  using Bio.Helpers.Common.Types;
-  using Bio.Framework.Packets;
-  using System.Windows.Controls;
+  using Helpers.Common.Types;
+  using Packets;
   using System.Windows;
 
   /// <summary>
@@ -102,11 +101,6 @@ namespace Bio.Framework.Client.SL {
     IPlugin Owner { get; }
 
     /// <summary>
-    /// —сылка на среду
-    /// </summary>
-    IEnvironment Env { get; }
-
-    /// <summary>
     /// ѕараметры плагина
     /// </summary>
     Params Params { get; }
@@ -116,12 +110,12 @@ namespace Bio.Framework.Client.SL {
     /// </summary>
     /// <param name="prms">¬ход. параметры</param>
     /// <param name="force">ќбновить данные не смотр€ ни на что, по умолчанию false</param>
-    void refreshData(Params prms, Boolean force);
+    void RefreshData(Params prms, Boolean force);
     /// <summary>
     /// ќбновление данных извне
     /// </summary>
     /// <param name="prms">¬ход. параметры</param>
-    void refreshData(Params prms);
+    void RefreshData(Params prms);
 
     ///// <summary>
     ///// —обытие используетс€, при необходимости оповестить внешние плагины об изменении данных.

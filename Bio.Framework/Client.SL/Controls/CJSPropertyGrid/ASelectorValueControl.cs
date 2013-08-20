@@ -98,7 +98,7 @@ namespace Bio.Framework.Client.SL.JSPropertyGrid {
     }
 
     public static void LoadSelector(IPlugin ownerPlg, String selectorName, Action<ISelector> callback) {
-      ownerPlg.Env.LoadPlugin(ownerPlg, selectorName, null, (a) => {
+      BioEnvironment.Instance.LoadPlugin(ownerPlg, selectorName, null, (a) => {
         var v_selector = a.Plugin as ISelector;
         if (callback != null)
           callback(v_selector);

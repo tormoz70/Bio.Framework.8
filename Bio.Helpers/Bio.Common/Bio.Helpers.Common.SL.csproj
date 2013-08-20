@@ -126,6 +126,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.SL.cs" />
+    <Compile Include="types\ASingleton.cs" />
     <Compile Include="types\BioUser.cs" />
     <Compile Include="types\AjaxRequest.cs" />
     <Compile Include="types\AjaxResponse.cs" />

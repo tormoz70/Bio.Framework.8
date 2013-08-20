@@ -12,18 +12,36 @@ using Bio.Helpers.Controls.SL;
 
 namespace Bio.Framework.Client.SL {
 
-  public class CEnvironment: IEnvironment {
-    private const String csRootContentPropName = "RootContent";
+  public class BioEnvironment: IEnvironment {
 
-    private Dictionary<String, AppDomain> _domains = null;
-    private Dictionary<String, IPlugin> _plugins = null;
-    
+    private readonly Dictionary<String, IPlugin> _plugins;
+
+    private static IEnvironment _instance;
+
+    private BioEnvironment(UserControl startUpControl) {
+      if (!Utl.DesignTime) {
+        this.StartUpControl = startUpControl;
+        this._plugins = new Dictionary<String, IPlugin>();
+      }
+    }
+
+    public static void Init(UserControl startUpControl) {
+      _instance = new BioEnvironment(startUpControl);
+    }
+
+    public static IEnvironment Instance {
+      get {
+        if (_instance == null)
+          throw new Exception(String.Format("Instance of {0} not inited!", typeof(BioEnvironment).Name));
+        return _instance;
+      }
+    }
+
     private void _regPlugin(String pluginID, IPlugin plg, Boolean throwError) {
       if (this._plugins.ContainsKey(pluginID)) {
         if (throwError)
           throw new Exception(String.Format("Модуль с ID:\"{0}\" в системе уже зарегестрирован!", pluginID));
-        else
-          return;
+        return;
       }
       this._plugins.Add(pluginID, plg);
     }
@@ -38,10 +56,10 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    private String _rootPluginName = null;
+    private String _rootPluginName;
     public void LoadRootPlugin(UIElement container, String rootPluginName) {
       this._rootPluginName = rootPluginName;
-      this.LoadPlugin(null, this._rootPluginName, (a) => {
+      this.LoadPlugin(null, this._rootPluginName, a => {
         if (a.Plugin != null) {
           this.PluginRoot = a.Plugin as IPluginRoot;
           a.Plugin.Show(container);
@@ -49,26 +67,18 @@ namespace Bio.Framework.Client.SL {
       });
     }
 
-    public CEnvironment(UserControl startUpControl) {
-      if (!Utl.DesignTime) {
-        this.StartUpControl = startUpControl;
-        this._domains = new Dictionary<String, AppDomain>();
-        this._plugins = new Dictionary<String, IPlugin>();
-      }
-    }
-
-    private const String csModuleVersionKeyPrefix = "moduleVersion";
+    private const String CS_MODULE_VERSION_KEY_PREFIX = "moduleVersion";
     private String _genModuleVersionKey(String moduleName) {
-      return String.Format(csModuleVersionKeyPrefix + "[{0}]", moduleName);
+      return String.Format(CS_MODULE_VERSION_KEY_PREFIX + "[{0}]", moduleName);
     }
 
-    private const Int64 ciQuota = 20 * 1000 * 1024;
+    private const Int64 CI_QUOTA = 20 * 1000 * 1024;
 
     public void IncreaseISQuota(Action<Boolean> callback) {
-      var v_curQuota = Utl.GetISQuota();
-      if (v_curQuota < ciQuota) {
+      var curQuota = Utl.GetISQuota();
+      if (curQuota < CI_QUOTA) {
         var rqf = new FrmPromptIncreaseQuotaIS();
-        rqf.ShowM(ciQuota, callback);
+        rqf.ShowM(CI_QUOTA, callback);
       } else {
         if (callback != null)
           callback(true);
@@ -76,47 +86,44 @@ namespace Bio.Framework.Client.SL {
     }
 
 
-    private const String csISPluginFolderName = "plugins";
+    private const String CS_IS_PLUGIN_FOLDER_NAME = "plugins";
     private void _saveModuleToLoc(Stream stream, String moduleName, String version) {
       if (stream != null) {
-        try {
-          using (var store = IsolatedStorageFile.GetUserStoreForApplication()) {
-            if (!store.DirectoryExists(csISPluginFolderName)) {
-              store.CreateDirectory(csISPluginFolderName);
-            }
-
-            String v_fileName = String.Format(@"{0}\{1}", csISPluginFolderName, moduleName);
-            if(store.FileExists(v_fileName))
-              store.DeleteFile(v_fileName);
-            using (var fs = store.OpenFile(v_fileName, FileMode.CreateNew)) {
-              stream.Position = 0;
-              stream.CopyTo(fs);
-              fs.Flush();
-              fs.Close();
-            }
+        using (var store = IsolatedStorageFile.GetUserStoreForApplication()) {
+          if (!store.DirectoryExists(CS_IS_PLUGIN_FOLDER_NAME)) {
+            store.CreateDirectory(CS_IS_PLUGIN_FOLDER_NAME);
           }
-          this.StoreUserObject(this._genModuleVersionKey(moduleName), version);
-        } finally {
+
+          var fileName = String.Format(@"{0}\{1}", CS_IS_PLUGIN_FOLDER_NAME, moduleName);
+          if(store.FileExists(fileName))
+            store.DeleteFile(fileName);
+          using (var fs = store.OpenFile(fileName, FileMode.CreateNew)) {
+            stream.Position = 0;
+            stream.CopyTo(fs);
+            fs.Flush();
+            fs.Close();
+          }
         }
+        this.StoreUserObject(this._genModuleVersionKey(moduleName), version);
       }
     }
 
     private void _clearCachedModules() {
       using (var store = IsolatedStorageFile.GetUserStoreForApplication()) {
-        if (store.DirectoryExists(csISPluginFolderName)) {
-          String[] v_files = store.GetFileNames(csISPluginFolderName + "\\*.*");
-          foreach (var f in v_files)
-            store.DeleteFile(csISPluginFolderName + "\\" + f);
-          store.DeleteDirectory(csISPluginFolderName);
+        if (store.DirectoryExists(CS_IS_PLUGIN_FOLDER_NAME)) {
+          var files = store.GetFileNames(CS_IS_PLUGIN_FOLDER_NAME + "\\*.*");
+          foreach (var f in files)
+            store.DeleteFile(CS_IS_PLUGIN_FOLDER_NAME + "\\" + f);
+          store.DeleteDirectory(CS_IS_PLUGIN_FOLDER_NAME);
         }
       }
       var userSettings = IsolatedStorageSettings.ApplicationSettings;
-      List<String> v_moduleVersionKeys = new List<String>();
+      var moduleVersionKeys = new List<String>();
       foreach(var c in userSettings){
-        if (c.Key.StartsWith(csModuleVersionKeyPrefix))
-          v_moduleVersionKeys.Add(c.Key);
+        if (c.Key.StartsWith(CS_MODULE_VERSION_KEY_PREFIX))
+          moduleVersionKeys.Add(c.Key);
       }
-      foreach (var c in v_moduleVersionKeys)
+      foreach (var c in moduleVersionKeys)
         userSettings.Remove(c);
       userSettings.Save();
     }
@@ -126,7 +133,7 @@ namespace Bio.Framework.Client.SL {
     }
 
     private void _loadModuleFromRmt(String moduleName, Action<AjaxResponseEventArgs> callback) {
-      var v_curClientVersion = "cliver="+Utl.GetCurrentClientVersion();
+      var curClientVersion = "cliver="+Utl.GetCurrentClientVersion();
       ajaxUTL.GetFileFromSrv(new BioRequest {
         URL = this.ServerUrl,
         RequestType = RequestType.asmbVer,
@@ -135,14 +142,14 @@ namespace Bio.Framework.Client.SL {
         Callback = (s, a) => {
           callback(a);
         }
-      }, v_curClientVersion);
+      }, curClientVersion);
     }
 
     private Assembly _loadModuleFromStream(Stream stream) {
       Assembly assembly = null;
       if (stream != null) {
         stream.Position = 0;
-        AssemblyPart assemblyPart = new AssemblyPart();
+        var assemblyPart = new AssemblyPart();
         using (var buf = new MemoryStream()) {
           stream.CopyTo(buf);
           assembly = assemblyPart.Load(buf);
@@ -154,9 +161,9 @@ namespace Bio.Framework.Client.SL {
     private Assembly _loadModuleFromLoc(String moduleName) {
       Assembly assembly = null;
       using (var store = IsolatedStorageFile.GetUserStoreForApplication()) {
-        String v_fileName = String.Format(@"{0}\{1}", csISPluginFolderName, moduleName);
-        if (store.FileExists(v_fileName)) {
-          using (var isoStream = store.OpenFile(v_fileName, FileMode.Open)) {
+        var fileName = String.Format(@"{0}\{1}", CS_IS_PLUGIN_FOLDER_NAME, moduleName);
+        if (store.FileExists(fileName)) {
+          using (var isoStream = store.OpenFile(fileName, FileMode.Open)) {
             assembly = this._loadModuleFromStream(isoStream);
           }
         }
@@ -165,11 +172,10 @@ namespace Bio.Framework.Client.SL {
     }
 
     private String _getRmtVer(AjaxResponseEventArgs a) {
-      BioResponse rsp = a.Response as BioResponse;
+      var rsp = a.Response as BioResponse;
       if (rsp != null)
         return Params.FindParamValue(rsp.BioParams, "moduleVersion") as String;
-      else
-        return null;
+      return null;
     }
 
     private void _loadRmtAssemblyVer(String moduleName, Action<AjaxResponseEventArgs> callback) {
@@ -187,10 +193,10 @@ namespace Bio.Framework.Client.SL {
       if (a.Response.Success) {
         // Сборка удачно загружена с сервера
         // загружаем ее
-        Assembly assemly = this._loadModuleFromStream(a.Stream);
+        var assemly = this._loadModuleFromStream(a.Stream);
         // Сохраняем ее в локальное хранилище
-        String v_loc_ver = moduleVersion;
-        this._saveModuleToLoc(a.Stream, moduleName, v_loc_ver);
+        var locVer = moduleVersion;
+        this._saveModuleToLoc(a.Stream, moduleName, locVer);
         // Возвращаем
         if (callback != null)
           callback(a, assemly);
@@ -208,25 +214,27 @@ namespace Bio.Framework.Client.SL {
     /// </summary>
     /// <param name="moduleName"></param>
     /// <param name="callback"></param>
+// ReSharper disable UnusedMember.Local
     private void _loadModuleUsingLocalStore0(String moduleName, Action<AjaxResponseEventArgs, Assembly> callback) {
+// ReSharper restore UnusedMember.Local
       // Загружаем версию модуля из локального хранилища
-      String v_loc_ver = this._getLocAssemblyVersion(moduleName);
-      if (!String.IsNullOrEmpty(v_loc_ver)) {
+      var locVer = this._getLocAssemblyVersion(moduleName);
+      if (!String.IsNullOrEmpty(locVer)) {
         // Загружаем с сервера описание весии этого модуля
-        this._loadRmtAssemblyVer(moduleName, (a) => {
+        this._loadRmtAssemblyVer(moduleName, a => {
           if (a.Response.Success) {
-            String v_rmt_ver = this._getRmtVer(a);
+            var rmtVer = this._getRmtVer(a);
             // Сравниваем версии локального модуля и модуля на сервере
-            if (String.Equals(v_loc_ver, v_rmt_ver)) {
+            if (String.Equals(locVer, rmtVer)) {
               // Версии равны возвращаем локальную сборку
               if (callback != null) {
-                Assembly assemly = this._loadModuleFromLoc(moduleName);
+                var assemly = this._loadModuleFromLoc(moduleName);
                 callback(a, assemly);
               }
             } else {
 
               // Версии не равны загружаем сборку с сервера
-              this._loadModuleFromRmt(moduleName, (a1) => {
+              this._loadModuleFromRmt(moduleName, a1 => {
                 this._doOnLoadRmtAssembly(moduleName, null, a1, callback);
               });
             }
@@ -239,16 +247,16 @@ namespace Bio.Framework.Client.SL {
         });
       } else {
         // Локальная версия модуля отсутствует
-        this._loadModuleFromRmt(moduleName, (a1) => {
+        this._loadModuleFromRmt(moduleName, a1 => {
           this._doOnLoadRmtAssembly(moduleName, null, a1, callback);
         });
       }
     }
 
-    private const String csModuleExtention = ".dll";
+    private const String CS_MODULE_EXTENTION = ".dll";
 
     private Boolean _moduleNameIsRootModuleName(String moduleName) {
-      return ((this._rootPluginName + csModuleExtention).Equals(moduleName, StringComparison.CurrentCultureIgnoreCase));
+      return ((this._rootPluginName + CS_MODULE_EXTENTION).Equals(moduleName, StringComparison.CurrentCultureIgnoreCase));
     }
 
     /// <summary>
@@ -259,41 +267,43 @@ namespace Bio.Framework.Client.SL {
     /// <param name="callback"></param>
     private void _loadModuleUsingLocalStore1(String moduleName, Action<AjaxResponseEventArgs, Assembly> callback) {
       // Определяем текущую версию основного модуля
-      var v_cur_mainVersion = Utl.GetCurrentClientVersion();
+      var curMainVersion = Utl.GetCurrentClientVersion();
       // Загружаем версию модуля из локального хранилища
-      var v_loc_ver = this._getLocAssemblyVersion(moduleName);
-      var v_doLoadRemote = false;
-      if (!String.IsNullOrEmpty(v_loc_ver)) {
+      var locVer = this._getLocAssemblyVersion(moduleName);
+      var doLoadRemote = false;
+      if (!String.IsNullOrEmpty(locVer)) {
         // Сравниваем версии локального модуля и модуля на сервере
-        if (String.Equals(v_loc_ver, v_cur_mainVersion)) {
+        if (String.Equals(locVer, curMainVersion)) {
           // Версии равны возвращаем локальную сборку
           if (callback != null) {
-            Assembly assemly = this._loadModuleFromLoc(moduleName);
+            var assemly = this._loadModuleFromLoc(moduleName);
             if (assemly != null)
               callback(new AjaxResponseEventArgs { Response = new AjaxResponse { Success = true } }, assemly);
             else
-              v_doLoadRemote = true;
+              doLoadRemote = true;
           }
         } else 
-          v_doLoadRemote = true;
+          doLoadRemote = true;
         
       } else 
-          v_doLoadRemote = true;
+          doLoadRemote = true;
       
-      if(v_doLoadRemote){
+      if(doLoadRemote){
         // Локальная версия модуля отсутствует
         if (this._moduleNameIsRootModuleName(moduleName))
           this._clearCachedModules(); // - очищаем cache
         // загружаем сборку с сервера
-        this._loadModuleFromRmt(moduleName, (a1) => {
-          this._doOnLoadRmtAssembly(moduleName, v_cur_mainVersion, a1, callback);
+        this._loadModuleFromRmt(moduleName, a1 => {
+          this._doOnLoadRmtAssembly(moduleName, curMainVersion, a1, callback);
         });
       }
     }
 
+// ReSharper disable UnusedMember.Local
     private void _loadModuleDirect(String moduleName, Action<AjaxResponseEventArgs, Assembly> callback) {
-      this._loadModuleFromRmt(moduleName, (a1) => {
-        Assembly assemly = this._loadModuleFromStream(a1.Stream);
+// ReSharper restore UnusedMember.Local
+      this._loadModuleFromRmt(moduleName, a1 => {
+        var assemly = this._loadModuleFromStream(a1.Stream);
         if (callback != null)
           callback(a1, assemly);
       });
@@ -301,56 +311,56 @@ namespace Bio.Framework.Client.SL {
 
     private delegate void LoadModuleDelegate(String moduleName, Action<AjaxResponseEventArgs, Assembly> callback);
     public void LoadPlugin(IPlugin ownerPlugin, String pluginName, String pluginID, Action<LoadPluginCompletedEventArgs> act) {
-      IPluginRootView v_rootPlgView = null;
+      IPluginRootView rootPlgView = null;
       if (this.PluginRoot != null)
-        v_rootPlgView = this.PluginRoot.View as IPluginRootView;
-      if (v_rootPlgView != null)
-        v_rootPlgView.showBusyIndicator("загрузка модуля...");
+        rootPlgView = this.PluginRoot.View as IPluginRootView;
+      if (rootPlgView != null)
+        rootPlgView.showBusyIndicator("загрузка модуля...");
       try {
         pluginID = pluginID ?? pluginName;
-        IPlugin vPlgExists = null;
+        IPlugin plgExists;
         // Проверяем а не загружен ли плагин уже...
-        if (this._plugins.TryGetValue(pluginID, out vPlgExists)) {
+        if (this._plugins.TryGetValue(pluginID, out plgExists)) {
           // - загружен
           if (act != null)
-            act(new LoadPluginCompletedEventArgs { Plugin = vPlgExists });
-          if (v_rootPlgView != null)
-            v_rootPlgView.hideBusyIndicator();
+            act(new LoadPluginCompletedEventArgs { Plugin = plgExists });
+          if (rootPlgView != null)
+            rootPlgView.hideBusyIndicator();
           return;
         }
         // - не загружен
-        String moduleName = pluginName + csModuleExtention;
+        var moduleName = pluginName + CS_MODULE_EXTENTION;
         // Запускаем процедуру загрузки плагина
-        LoadModuleDelegate v_loadModuleDelegate = null;
-        v_loadModuleDelegate = this._loadModuleUsingLocalStore1;
-        v_loadModuleDelegate(moduleName, (e, assembly) => {
+        LoadModuleDelegate loadModuleDelegate = this._loadModuleUsingLocalStore1;
+        loadModuleDelegate(moduleName, (e, assembly) => {
           // Сборка загружена. Создаем экземпляр плагина.
           try {
             if (assembly != null) {
-              Type plgType = findType(assembly.GetTypes(), typeof(IPlugin));
-              ConstructorInfo ci = plgType.GetConstructor(new Type[] { typeof(IPlugin), typeof(IEnvironment), typeof(String), typeof(String), typeof(String) });
-              IPlugin plg = ci.Invoke(new Object[] { ownerPlugin, this, moduleName, pluginName, pluginID }) as IPlugin;
-              if (plg == null)
-                plg = new PluginNotFoundDummy(ownerPlugin, this, moduleName, pluginName, pluginID);
-              // Регим его в системе
-              this._regPlugin(pluginID, plg, false);
-              // Возвращаем ссылку через callback
-              if (act != null)
-                act(new LoadPluginCompletedEventArgs { Plugin = plg });
+              var plgType = _findType(assembly.GetTypes(), typeof(IPlugin));
+              var ci = plgType.GetConstructor(new[] { typeof(IPlugin), typeof(String), typeof(String), typeof(String) });
+              if (ci != null) {
+                var plg = ci.Invoke(new Object[] { ownerPlugin, moduleName, pluginName, pluginID }) as IPlugin ??
+                          new PluginNotFoundDummy(ownerPlugin, moduleName, pluginName, pluginID);
+                // Регим его в системе
+                this._regPlugin(pluginID, plg, false);
+                // Возвращаем ссылку через callback
+                if (act != null)
+                  act(new LoadPluginCompletedEventArgs { Plugin = plg });
+              }
             } else {
               var v_msg = String.Format("Ошибка при загрузке модуля {0} с сервера.", moduleName);
               var v_err = new EBioException(v_msg, e.Response.Ex);
               msgBx.ShowError(v_err, "Загрузка модуля", null);
             }
           } finally {
-            if (v_rootPlgView != null)
-              v_rootPlgView.hideBusyIndicator();
+            if (rootPlgView != null)
+              rootPlgView.hideBusyIndicator();
           }
         });
-      } catch (Exception ex) {
-        if (v_rootPlgView != null)
-          v_rootPlgView.hideBusyIndicator();
-        throw ex;
+      } catch (Exception) {
+        if (rootPlgView != null)
+          rootPlgView.hideBusyIndicator();
+        throw;
       }
     }
     public void LoadPlugin(IPlugin ownerPlugin, String pluginName, Action<LoadPluginCompletedEventArgs> act) {
@@ -381,9 +391,9 @@ namespace Bio.Framework.Client.SL {
 
     public IPlugin this[int index] {
       get {
-        String[] v_keys = new String[this._plugins.Keys.Count];
-        this._plugins.Keys.CopyTo(v_keys, 0);
-        return this._plugins[v_keys[index]]; 
+        var keys = new String[this._plugins.Keys.Count];
+        this._plugins.Keys.CopyTo(keys, 0);
+        return this._plugins[keys[index]]; 
       }
     }
 
@@ -404,12 +414,11 @@ namespace Bio.Framework.Client.SL {
     /// <summary>
     /// Вызывается каждый раз при изменении состояния соединения
     /// </summary>
-    /// <param name="pConnState"></param>
-    private void doOnStateChanged(Object sender, AjaxStateChangedEventArgs args) {
+    private void _doOnStateChanged(Object sender, AjaxStateChangedEventArgs args) {
       this._connState = args.ConnectionState;
       this._reqstState = args.RequestState;
 
-      EventHandler<AjaxStateChangedEventArgs> events = this.OnStateChanged;
+      var events = this.OnStateChanged;
       if (events != null) {
         if (!Utl.IsUiThread) {
           Utl.UiThreadInvoke(new Action<IEnvironment, AjaxStateChangedEventArgs>((s, a) => {
@@ -439,12 +448,12 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    private IAjaxMng _ajaxMng = null;
+    private IAjaxMng _ajaxMng;
     public IAjaxMng AjaxMng {
       get {
         if (this._ajaxMng == null) {
           this._ajaxMng = new CAjaxMng(this);
-          this._ajaxMng.OnStateChanged += this.doOnStateChanged;
+          this._ajaxMng.OnStateChanged += this._doOnStateChanged;
         }
         return this._ajaxMng;
       }
@@ -502,7 +511,7 @@ namespace Bio.Framework.Client.SL {
       Utl.StoreUserObjectStrg(objName, obj);
     }
     public T RestoreUserObject<T>(String objName, T defObj) {
-      return Utl.RestoreUserObjectStrg<T>(objName, defObj);
+      return Utl.RestoreUserObjectStrg(objName, defObj);
     }
 
     #endregion
@@ -515,23 +524,23 @@ namespace Bio.Framework.Client.SL {
 
     #endregion
 
-    private static Type findType(Type[] types, Type type) {
+    private static Type _findType(Type[] types, Type type) {
       if ((types != null) && (type != null)) {
-        foreach (Type oType in types) {
-          if (type.IsClass && (oType.Equals(type) || oType.IsSubclassOf(type))) {
+        foreach (var oType in types) {
+          if (type.IsClass && (oType == type || oType.IsSubclassOf(type))) {
             return oType;
-          } else if (type.IsInterface) {
-            if ((oType.Equals(type) || oType.IsSubclassOf(type)))
+          }
+          if (type.IsInterface) {
+            if ((oType == type || oType.IsSubclassOf(type)))
               return oType;
-            else
-              foreach (Type ifc in oType.GetInterfaces())
-                if (ifc.Equals(type) || ifc.IsSubclassOf(type))
-                  return oType;
+            foreach (var ifc in oType.GetInterfaces())
+              if (ifc == type || ifc.IsSubclassOf(type))
+                return oType;
           }
         }
         return null;
-      } else
-        return null;
+      }
+      return null;
     }
 
     public String LastSuccessPwd { get; set; }
