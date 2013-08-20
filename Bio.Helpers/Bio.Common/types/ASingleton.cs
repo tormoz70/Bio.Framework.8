@@ -5,7 +5,9 @@ namespace Bio.Helpers.Common {
   public class ASingleton<T> where T : class, new() {
 
     private static volatile T _instance;
-    private static object _syncRoot = new Object();
+// ReSharper disable StaticFieldInGenericType
+    private static readonly object _syncRoot = new Object();
+// ReSharper restore StaticFieldInGenericType
 
     protected ASingleton() {}
 
