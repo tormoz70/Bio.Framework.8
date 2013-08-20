@@ -101,6 +101,8 @@
     <Reference Include="System.Windows.Browser" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CachedDS.cs" />
+    <Compile Include="CDSCache.cs" />
     <Compile Include="JSGridPropsCols.xaml.cs">
       <DependentUpon>JSGridPropsCols.xaml</DependentUpon>
     </Compile>
@@ -215,6 +217,10 @@
       <Project>{DC3C6F3D-2CA1-4278-9B79-63770FB3EA2D}</Project>
       <Name>Bio.Framework.Packets.SL</Name>
       <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Base\Bio.Framework.Client.SL.Base.csproj">
+      <Project>{844f8c7f-abc7-43db-8ce9-1657d696787d}</Project>
+      <Name>Bio.Framework.Client.SL.Base</Name>
     </ProjectReference>
     <ProjectReference Include="..\Interface\Bio.Framework.Client.SL.Interface.csproj">
       <Project>{D4411A4B-64D6-4F55-B463-5D680FED443A}</Project>

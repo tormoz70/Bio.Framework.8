@@ -10,7 +10,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using System.Collections.Generic;
 
-namespace Bio.Framework.Client.SL {
+namespace Bio.Framework.Client.SL.Controls {
   public class CDSCache : Dictionary<String, CachedDS> {
     public void loadData(Action<CachedDS> callback){
       var order = new LinkedList<CachedDS>(this.Values);

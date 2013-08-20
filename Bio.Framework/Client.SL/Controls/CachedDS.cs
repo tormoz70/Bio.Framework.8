@@ -12,7 +12,7 @@ using Bio.Helpers.Common.Types;
 using Bio.Framework.Packets;
 using System.Collections.Generic;
 
-namespace Bio.Framework.Client.SL {
+namespace Bio.Framework.Client.SL.Controls {
   public class CachedDS {
     public IAjaxMng ajaxMng { get; set; }
     public String bioCode { get; set; }

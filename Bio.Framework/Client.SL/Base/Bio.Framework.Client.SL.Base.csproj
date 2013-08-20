@@ -92,11 +92,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CDSCache.cs" />
     <Compile Include="CEnvironment.cs" />
     <Compile Include="ConfigRec.cs" />
     <Compile Include="ConfigRoot.cs" />
-    <Compile Include="CachedDS.cs" />
     <Compile Include="CPluginRootViewBase.cs" />
     <Compile Include="CPluginViewDialog.xaml.cs">
       <DependentUpon>CPluginViewDialog.xaml</DependentUpon>
@@ -153,11 +151,6 @@
     <ProjectReference Include="..\Ajax\Bio.Framework.Client.SL.Ajax.csproj">
       <Project>{3AB4271B-DD8B-4FB3-9831-DB382F82AE21}</Project>
       <Name>Bio.Framework.Client.SL.Ajax</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\Controls\Bio.Framework.Client.SL.Controls.csproj">
-      <Project>{F5BA02AA-0F77-4F98-BC99-7DA166FC7DDE}</Project>
-      <Name>Bio.Framework.Client.SL.Controls</Name>
       <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\Interface\Bio.Framework.Client.SL.Interface.csproj">
