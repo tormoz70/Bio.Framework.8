@@ -98,16 +98,22 @@ namespace Bio.Framework.Client.SL {
       return type.FullName.Replace('.', '_');
     }
 
+    public event EventHandler OnStore;
+
+    private void _doOnStore() {
+      var handler = OnStore;
+      if (handler != null) handler(this, EventArgs.Empty);
+    }
+
     public void Store() {
       var storeName = _genStoreName(this.GetType());
-      //var storeValue = jsonUtl.encode(this, null);
       BioEnvironment.Instance.StoreUserObject(storeName, this);
+      this._doOnStore();
     }
 
     public static T Restore<T> () where T:ConfigRec {
       var storeName = _genStoreName(typeof(T));
       var storeValue = BioEnvironment.Instance.RestoreUserObject(storeName, default(T));
-      //var result = jsonUtl.decode<T>(storeValue);
       return storeValue;
     }
 

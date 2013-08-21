@@ -7,5 +7,6 @@ namespace Bio.Framework.Client.SL {
     String GetDisplayName();
     String GetDescription();
     void Store();
+    event EventHandler OnStore;
   }
 }

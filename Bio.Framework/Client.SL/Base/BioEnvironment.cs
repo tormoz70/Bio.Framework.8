@@ -47,6 +47,7 @@ namespace Bio.Framework.Client.SL {
     }
 
     public event EventHandler<AjaxStateChangedEventArgs> OnStateChanged;
+    //public event EventHandler OnRootConfigStore;
 
     public UserControl StartUpControl { get; private set; }
 
@@ -61,10 +62,47 @@ namespace Bio.Framework.Client.SL {
       this._rootPluginName = rootPluginName;
       this.LoadPlugin(null, this._rootPluginName, a => {
         if (a.Plugin != null) {
-          this.PluginRoot = a.Plugin as IPluginRoot;
-          a.Plugin.Show(container);
+          this.PluginRoot = (IPluginRoot)a.Plugin;
+          this.PluginRoot.Show(container);
+          this.PluginRoot.Cfg.OnStore += this._doOnRootConfigStore;
+          if (this.PluginRoot.Cfg.BeOnline)
+            this._runBeOnlineTicker();
         }
       });
+    }
+
+    private Boolean _breakBeOnlineTicker;
+    private void _doBeOnlineTick() {
+      if (this._breakBeOnlineTicker)
+        return;
+      delayedStarter.Do(60 * 1000, () => {
+        this.AjaxMng.Request(new BioRequest {
+          RequestType = RequestType.doPing,
+          Prms = null,
+          Callback = (sndr, args) => {
+            var rsp = args.Response as BioResponse;
+            if ((rsp != null) && rsp.Success && !this._breakBeOnlineTicker)
+              this._doBeOnlineTick();
+          }
+        });
+      });
+    }
+
+    private void _runBeOnlineTicker() {
+      this._breakBeOnlineTicker = false;
+      this._doBeOnlineTick();
+    }
+    private void _stopBeOnlineTicker() {
+      this._breakBeOnlineTicker = true;
+    }
+
+    private void _doOnRootConfigStore(Object sender, EventArgs e) {
+      //var eve = this.OnRootConfigStore;
+      //if (eve != null) eve(sender, e);
+      if (((IConfigRoot) sender).BeOnline)
+        this._runBeOnlineTicker();
+      else
+        this._stopBeOnlineTicker();
     }
 
     private const String CS_MODULE_VERSION_KEY_PREFIX = "moduleVersion";
