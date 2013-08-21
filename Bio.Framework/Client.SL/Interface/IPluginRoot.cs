@@ -5,7 +5,7 @@ namespace Bio.Framework.Client.SL {
   /// Интерфейс root-плагинов
   /// </summary>
   public interface IPluginRoot: IPlugin {
-    IConfigRoot CfgRoot { get; }
+    IConfigRoot Cfg { get; }
     /// <summary>
     /// Название компании - производителя
     /// </summary>

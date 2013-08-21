@@ -1,19 +1,10 @@
 ﻿namespace Bio.Framework.Client.SL {
   using System;
-  using System.Collections.Generic;
-  using System.Text;
-  using System.Net;
-  using System.IO;
-  using System.Threading;
   using Bio.Helpers.Common;
   using Bio.Helpers.Common.Types;
-  using Bio.Framework.Packets;
-  using Bio.Helpers.Ajax;
-  using Newtonsoft.Json;
-  using System.Windows.Threading;
+  using Packets;
   using System.Windows;
-  using Bio.Helpers.Controls.SL;
-  
+
   /// <summary>
   /// Обработка запросов аутентикации
   /// </summary>
@@ -135,7 +126,7 @@
                     this.FOwner.Env.ConfigRoot.LastLoggedInUserPwd = vCurUsrPwd;
                   else
                     this.FOwner.Env.ConfigRoot.LastLoggedInUserPwd = String.Empty;
-                  (this.FOwner.Env.PluginRoot as IConfigurable).SaveCfg();
+                  ((IConfigurable<ConfigRoot>)this.FOwner.Env.PluginRoot).Cfg.Store();
                   if (callback != null) callback(vExcp);
                 } else if (vExcp is EBioAutenticationError) {
                   String v_errMsg = null;

@@ -2,7 +2,7 @@
 
 namespace Bio.Framework.Client.SL {
 
-  public class PluginNotFoundDummy : CPluginBase, IPlugin {
+  public class PluginNotFoundDummy : PluginBase, IPlugin {
 
     public PluginNotFoundDummy(IPlugin owner, String module, String name, String id)
       : base(owner, module, name, id) {

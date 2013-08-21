@@ -1,9 +1,10 @@
-﻿namespace Bio.Framework.Client.SL {
+﻿using Bio.Helpers.Common;
+
+namespace Bio.Framework.Client.SL {
   using System;
   using System.ComponentModel;
-  using System.Globalization;
   using System.Reflection;
-  using Bio.Helpers.Common.Types;
+  using Helpers.Common.Types;
 
   /// <summary>
   /// Базовый класс для описания настроек приложения или его модулей.
@@ -23,21 +24,20 @@
   /// <para>- DefaultValue - значение параметра по-умолчанию.</para>
   /// <para>- Invisible - true - не обрабатывать поле в конфигураторе. По-умолчанию false.</para>
   /// </summary>
-  public abstract class ConfigRec : Bio.Helpers.Common.Types.ICloneable, IConfigRec {
-    private Attribute[] attrCollection;
+  public abstract class ConfigRec : ICloneable, IConfigRec {
+    private Attribute[] _attrCollection;
 
     protected ConfigRec() {
-      PropertyInfo[] pdc = this.GetType().GetProperties();
-      foreach(PropertyInfo pd in pdc) {
-        //pd.GetCustomAttributes();
-        Object[] attrs = pd.GetCustomAttributes(typeof(DefaultValueAttribute), false);
-        DefaultValueAttribute attr = (attrs.Length == 0) ? null : attrs[0] as DefaultValueAttribute;
+      var pdc = this.GetType().GetProperties();
+      foreach(var pd in pdc) {
+        var attrs = pd.GetCustomAttributes(typeof(DefaultValueAttribute), false);
+        var attr = (attrs.Length == 0) ? null : attrs[0] as DefaultValueAttribute;
         if (attr != null)
           pd.SetValue(this, attr.Value, null);
       }
-      FieldInfo[] fia = this.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public);
-      foreach(FieldInfo fi in fia) {
-        object[] attrs = fi.GetCustomAttributes(typeof(DefaultValueAttribute), true);
+      var fia = this.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public);
+      foreach(var fi in fia) {
+        var attrs = fi.GetCustomAttributes(typeof(DefaultValueAttribute), true);
         if (attrs != null && attrs.Length > 0)
           fi.SetValue(this, ((DefaultValueAttribute)attrs[0]).Value);
       }
@@ -46,28 +46,27 @@
     /// <summary>
     /// Копирует значения свойств переданного объекта в экземпляр.
     /// </summary>
-    /// <param name="newVals">Объект, значения свойств которого будут скопированы.</param>
-    public void ApplyFrom(Object pSource) {
-      ApplyFromTo(pSource, this);
+    /// <param name="source">Объект, значения свойств которого будут скопированы.</param>
+    public void ApplyFrom(Object source) {
+      ApplyFromTo(source, this);
     }
 
     /// <summary>
     /// Копирует значения свойства одного объекта в другой.
     /// </summary>
-    /// <param name="pSource">Объект, из которого будут взяты значения свойств.</param>
-    /// <param name="pDest">Объект, в который будут скопированы значения свойств.</param>
-    public static void ApplyFromTo(Object pSource, Object pDest) {
-      if (pSource == null)
-        throw new ArgumentNullException("pSource");
-      if (pDest == null)
-        throw new ArgumentNullException("pDest");
-      PropertyInfo[] pdc = pSource.GetType().GetProperties();
-      PropertyInfo[] newpdc = pDest.GetType().GetProperties();
-      foreach (PropertyInfo pd in newpdc) {
-        foreach (PropertyInfo npd in pdc)
+    /// <param name="source">Объект, из которого будут взяты значения свойств.</param>
+    /// <param name="dest">Объект, в который будут скопированы значения свойств.</param>
+    public static void ApplyFromTo(Object source, Object dest) {
+      if (source == null)
+        throw new ArgumentNullException("source");
+      if (dest == null)
+        throw new ArgumentNullException("dest");
+      var pdc = source.GetType().GetProperties();
+      var newpdc = dest.GetType().GetProperties();
+      foreach (var pd in newpdc) {
+        foreach (var npd in pdc)
           if (npd.Name.Equals(pd.Name))
-            npd.SetValue(pDest, pd.GetValue(pSource, null), null);
-        //newpdc[pd.Name].SetValue(pDest, pd.GetValue(pSource));
+            npd.SetValue(dest, pd.GetValue(source, null), null);
       }
     }
 
@@ -90,9 +89,26 @@
     /// Возвращает описание класса, заданное атрибутом DescriptionAttribute.
     /// </summary>
     public String GetDescription() {
-      if (this.attrCollection == null)
-        this.attrCollection = (Attribute[])this.GetType().GetCustomAttributes(typeof(DescriptionAttribute), false);
-      return this.attrCollection.Length == 0 ? String.Empty : (this.attrCollection[0] as DescriptionAttribute).Description;
+      if (this._attrCollection == null)
+        this._attrCollection = (Attribute[])this.GetType().GetCustomAttributes(typeof(DescriptionAttribute), false);
+      return this._attrCollection.Length == 0 ? String.Empty : ((DescriptionAttribute)this._attrCollection[0]).Description;
+    }
+
+    private static String _genStoreName(Type type) {
+      return type.FullName.Replace('.', '_');
+    }
+
+    public void Store() {
+      var storeName = _genStoreName(this.GetType());
+      //var storeValue = jsonUtl.encode(this, null);
+      BioEnvironment.Instance.StoreUserObject(storeName, this);
+    }
+
+    public static T Restore<T> () where T:ConfigRec {
+      var storeName = _genStoreName(typeof(T));
+      var storeValue = BioEnvironment.Instance.RestoreUserObject(storeName, default(T));
+      //var result = jsonUtl.decode<T>(storeValue);
+      return storeValue;
     }
 
     #region ICloneable Members

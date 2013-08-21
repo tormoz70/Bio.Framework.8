@@ -5,7 +5,6 @@ namespace Bio.Framework.Client.SL {
   /// <summary>
   /// Класс, описывающий общие настройки приложения.
   /// </summary>
-  //[DisplayName("Приложение")]
   [Description("Приложение")]
   public class ConfigRoot : ConfigRec, IConfigRoot {
     /// <summary>
@@ -13,22 +12,6 @@ namespace Bio.Framework.Client.SL {
     /// </summary>
     public String LastLoggedInUserName { get; set; }
     public String LastLoggedInUserPwd { get; set; }
-    /*
-    /// <summary>
-    /// URL сервера.
-    /// </summary>
-    [Category("Соединение")]
-    //[DisplayName("URL сервера")]
-    [Description("URL сервера")]
-    [DefaultValue("")]
-    public String ServerUrl {
-      get {
-        String rslt = "srv.aspx"; //HtmlPage.Document.DocumentUri.AbsoluteUri.Replace(HtmlPage.Document.DocumentUri.AbsolutePath, "");
-        return rslt;
-      }
-      set { }
-    }
-    */
       
     /// <summary>
     /// Время ожидания ответа от сервера в секундах.
@@ -46,15 +29,15 @@ namespace Bio.Framework.Client.SL {
     [DefaultValue(true)]
     public Boolean AutoConnect { get; set; }
 
-    [Category("Обновление")]
-    [Description("Отложить загрузку данных в таблицах")]
-    [DefaultValue(false)]
-    public Boolean SuspendLoadDataInGrids { get; set; }
-
     [Category("Соединение")]
     [Description("Поддерживать соединение")]
     [DefaultValue(false)]
     public Boolean BeOnline { get; set; }
+
+    [Category("Обновление")]
+    [Description("Отложить загрузку данных в таблицах")]
+    [DefaultValue(false)]
+    public Boolean SuspendLoadDataInGrids { get; set; }
 
     /// <summary>
     /// Сохранить пароль

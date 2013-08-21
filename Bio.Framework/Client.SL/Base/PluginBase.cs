@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Windows;
-using System.Reflection;
-using System.ComponentModel;
-using Bio.Helpers.Common;
 using Bio.Helpers.Common.Types;
 
 namespace Bio.Framework.Client.SL {
 
-  public abstract class CPluginBase {
+  public abstract class PluginBase : IPlugin {
     
-    protected CPluginBase(IPlugin owner, String module, String name, String id) {
+    protected PluginBase(IPlugin owner, String module, String name, String id) {
       this.Params = new Params();
 
       this.Owner = owner;
@@ -35,76 +32,6 @@ namespace Bio.Framework.Client.SL {
     public void Close() {
       if (this.View != null) {
         this.View.Close();
-      }
-    }
-
-    private Object _getMemberValue(MemberInfo mi, Type type) {
-      var attr = Attribute.GetCustomAttribute(mi, typeof(InvisibleAttribute));
-      if (attr != null && ((InvisibleAttribute)attr).Invisible)
-        return null;
-      attr = Attribute.GetCustomAttribute(mi, typeof(DefaultValueAttribute));
-      var defval = attr != null ? ((DefaultValueAttribute)attr).Value : null;
-      var val = this.RetrieveValue(mi.Name, defval);
-      if (val != null) 
-        val = Utl.Convert2Type(val, type);
-      return val;
-    }
-
-    private void _setMemberValue(MemberInfo mi, Object val) {
-      var attr = Attribute.GetCustomAttribute(mi, typeof(InvisibleAttribute));
-      if (attr != null && ((InvisibleAttribute)attr).Invisible)
-        return;
-      this.StoreValue(mi.Name, val);
-    }
-
-    /// <summary>
-    /// Конфигурация плагина
-    /// </summary>
-    public virtual IConfigRec Cfg {
-      get {
-        throw new NotImplementedException();
-      }
-    }
-
-    /// <summary>
-    /// Загружает все параметры конфигурации.
-    /// </summary>
-    public virtual void LoadCfg() {
-      var cfg = (ConfigRec)this.Cfg;
-      var fia = cfg.GetType().GetFields();
-      foreach (var fi in fia) {
-        try {
-          var val = this._getMemberValue(fi, fi.FieldType);
-          if (val != null)
-            fi.SetValue(cfg, val);
-        } catch (ArgumentException) {
-        }
-      }
-      var pia = cfg.GetType().GetProperties();
-      foreach (var pi in pia) {
-        try {
-          var val = this._getMemberValue(pi, pi.PropertyType);
-          if (val != null)
-            pi.SetValue(cfg, val, null);
-        } catch (ArgumentException) {
-        }
-      }
-    }
-
-    /// <summary>
-    /// Сохраняет все параметры конфигурации.
-    /// </summary>
-    public virtual void SaveCfg() {
-      var cfg = (ConfigRec)this.Cfg;
-      var fia = cfg.GetType().GetFields();
-      foreach (var fi in fia) {
-        var val = fi.GetValue(cfg);
-        this._setMemberValue(fi, val);
-      }
-      var pia = cfg.GetType().GetProperties();
-      foreach (var pi in pia) {
-        var val = pi.GetValue(cfg, null);
-        this._setMemberValue(pi, val);
       }
     }
 

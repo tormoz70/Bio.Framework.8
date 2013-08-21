@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace Bio.Helpers.Common {
   using System;
   using System.Text.RegularExpressions;
@@ -2050,14 +2052,32 @@ namespace Bio.Helpers.Common {
     }
 
 #if SILVERLIGHT
-    public static void StoreUserObjectStrg(String objName, Object obj) {
+    public static Boolean IsBioType(Type type) {
+      return (type != null) && type.FullName.StartsWith("Bio.");
+    }
+
+    public static Boolean IsPrimitiveType(Type type) {
+      return (type != null) && (
+          (type == typeof(String)) ||
+          (type == typeof(Char)) || (type == typeof(Char?)) ||
+          (TypeIsNumeric(type)) ||
+          (type == typeof(Boolean)) || (type == typeof(Boolean?)) ||
+          (type == typeof(DateTime)) || (type == typeof(DateTime?))
+        );
+    }
+
+    public static void StoreUserObjectStrg(String objName, Object obj, JsonConverter[] converters = null) {
       if (!String.IsNullOrEmpty(objName)) {
         try {
           var userSettings = IsolatedStorageSettings.ApplicationSettings;
           if (userSettings.Contains(objName))
             userSettings.Remove(objName);
-          if (obj != null)
-            userSettings.Add(objName, obj);
+          if (obj != null) {
+            var storeValue = obj;
+            if (!IsPrimitiveType(storeValue.GetType()))
+              storeValue = jsonUtl.encode(storeValue, converters);
+            userSettings.Add(objName, storeValue);
+          }
           userSettings.Save();
         } catch (IsolatedStorageException ex) {
           // Isolated storage not enabled or an error occurred
@@ -2083,15 +2103,25 @@ namespace Bio.Helpers.Common {
       }
     }
 
-    public static T RestoreUserObjectStrg<T>(String objName, T defObj) {
+    public static T RestoreUserObjectStrg<T>(String objName, T defObj, JsonConverter[] converters = null) {
       try {
         var userSettings = IsolatedStorageSettings.ApplicationSettings;
-        T rslt;
-        if (userSettings.TryGetValue(objName, out rslt))
-          return rslt;
+        if (userSettings.Contains(objName)) {
+          if (IsPrimitiveType(typeof (T))) {
+            T rslt;
+            if (userSettings.TryGetValue(objName, out rslt))
+              return rslt;
+          } else {
+            String storeValue;
+            if (userSettings.TryGetValue(objName, out storeValue))
+              return jsonUtl.decode<T>(storeValue, converters);
+          }
+        }
       } catch (IsolatedStorageException ex) {
-        throw new EBioException(String.Format("Ошибка при восстановлении объекта {0} из IsolatedStorageSettings.ApplicationSettings.", objName), ex);
-      }
+        throw new EBioException(
+          String.Format("Ошибка при восстановлении объекта {0} из IsolatedStorageSettings.ApplicationSettings.", objName),
+          ex);
+      } catch (InvalidCastException) {}
       return defObj;
     }
 
@@ -2100,7 +2130,7 @@ namespace Bio.Helpers.Common {
       if (!String.IsNullOrEmpty(jsonObj)) {
         try {
           return jsonUtl.decode<T>(jsonObj);
-        } catch (Newtonsoft.Json.JsonSerializationException) {
+        } catch (JsonSerializationException) {
           return defObj;
         }
       }

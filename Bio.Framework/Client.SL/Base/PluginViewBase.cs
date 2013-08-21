@@ -6,16 +6,16 @@ using Bio.Helpers.Common;
 using Bio.Helpers.Common.Types;
 
 namespace Bio.Framework.Client.SL {
-  public class CPluginViewBase : UserControl, IPluginView {
+  public class PluginViewBase : UserControl, IPluginView {
     public IPlugin ownerPlugin { get; protected set; }
-    public CPluginViewBase() {
+    public PluginViewBase() {
       this.IsDialog = false;
       if(!Utl.DesignTime){
         this.Loaded += CPluginViewBase_Loaded;
       }
     }
 
-    public CPluginViewBase(IPlugin owner)
+    public PluginViewBase(IPlugin owner)
       : this() {
       this.ownerPlugin = owner;
     }
@@ -68,13 +68,13 @@ namespace Bio.Framework.Client.SL {
     /// Открыто в диалоговом окне
     /// </summary>
     public Boolean IsDialog { get; private set; }
-    protected CPluginViewDialog ownerWindow = null;
+    protected PluginViewDialog ownerWindow = null;
 
     public void ShowDialog(Action<Boolean?> callback) {
       this._callback = callback;
       this.IsDialog = true;
       if (this.ownerWindow == null) {
-        this.ownerWindow = new CPluginViewDialog(this);
+        this.ownerWindow = new PluginViewDialog(this);
         this.ownerWindow.Closed += ownerWindow_Closed;
         this.ownerWindow.Closing += ownerWindow_Closing;
         this.ownerWindow.OnShow += ownerWindow_OnShow;

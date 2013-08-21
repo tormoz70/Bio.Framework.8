@@ -72,7 +72,7 @@ namespace Bio.Framework.Client.SL {
         BioCode = this.BioCode,
         BioParams = this.BioParams
       });
-      return this.AjaxMng.Env.ServerUrl + "?" + prms;
+      return BioEnvironment.Instance.ServerUrl + "?" + prms;
     }
 
   }

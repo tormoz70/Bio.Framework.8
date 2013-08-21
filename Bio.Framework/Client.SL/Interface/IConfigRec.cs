@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Bio.Framework.Client.SL {
   public interface IConfigRec {
-    void ApplyFrom(Object pSource);
+    void ApplyFrom(Object source);
     Boolean ValidateCfg();
     String GetDisplayName();
     String GetDescription();
-
+    void Store();
   }
 }

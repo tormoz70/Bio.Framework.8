@@ -148,6 +148,10 @@
       <Name>Bio.Framework.Packets.SL</Name>
       <Private>False</Private>
     </ProjectReference>
+    <ProjectReference Include="..\Base\Bio.Framework.Client.SL.Base.csproj">
+      <Project>{844F8C7F-ABC7-43DB-8CE9-1657D696787D}</Project>
+      <Name>Bio.Framework.Client.SL.Base</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Interface\Bio.Framework.Client.SL.Interface.csproj">
       <Project>{D4411A4B-64D6-4F55-B463-5D680FED443A}</Project>
       <Name>Bio.Framework.Client.SL.Interface</Name>

@@ -3,18 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using Bio.Helpers.Controls.SL;
 using Bio.Helpers.Common.Extentions;
 
 namespace Bio.Framework.Client.SL {
-  public partial class CPluginViewDialog : FloatableWindow {
-    public CPluginViewDialog()
-      : base() {
+  public partial class PluginViewDialog {
+    public PluginViewDialog() {
       InitializeComponent();
     }
 
-    private List<Button> _dlgButtons = new List<Button>();
-    public List<Button> dlgButtons { get { return this._dlgButtons; } }
+    private readonly List<Button> _dlgButtons = new List<Button>();
+    public List<Button> DlgButtons { get { return this._dlgButtons; } }
 
     public void AddButtons(params PluginViewDialogButton[] buttons) {
       foreach (var b in buttons) {
@@ -44,8 +42,8 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    private CPluginViewBase _viewContent = null;
-    public CPluginViewDialog(CPluginViewBase viewContent)
+    private PluginViewBase _viewContent = null;
+    public PluginViewDialog(PluginViewBase viewContent)
       : base() {
       InitializeComponent();
       this._viewContent = viewContent;
@@ -80,7 +78,7 @@ namespace Bio.Framework.Client.SL {
           Caption = "OK",
           IsDisabled = false,
           OnClick = new RoutedEventHandler((s, a) => {
-            var root = (s as Button).GetRoot<CPluginViewDialog>((node) => { return node is CPluginViewDialog; });
+            var root = (s as Button).GetRoot<PluginViewDialog>((node) => { return node is PluginViewDialog; });
             root.DialogResult = true;
           })
         };
@@ -93,7 +91,7 @@ namespace Bio.Framework.Client.SL {
           Caption = "Отмена",
           IsDisabled = false,
           OnClick = new RoutedEventHandler((s, a) => {
-            var root = (s as Button).GetRoot<CPluginViewDialog>((node) => { return node is CPluginViewDialog; });
+            var root = (s as Button).GetRoot<PluginViewDialog>((node) => { return node is PluginViewDialog; });
             root.DialogResult = false;
           })
         };
@@ -105,7 +103,7 @@ namespace Bio.Framework.Client.SL {
           Name = "CloseButton",
           Caption = "Закрыть",
           OnClick = new RoutedEventHandler((s, a) => {
-            var root = (s as Button).GetRoot<CPluginViewDialog>((node) => { return node is CPluginViewDialog; });
+            var root = (s as Button).GetRoot<PluginViewDialog>((node) => { return node is PluginViewDialog; });
             root.DialogResult = false;
           })
         };

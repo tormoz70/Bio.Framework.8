@@ -11,7 +11,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 
 namespace Bio.Framework.Client.SL {
-  public partial class PluginNotFoundDummyView : CPluginViewBase, IPluginView {
+  public partial class PluginNotFoundDummyView : PluginViewBase, IPluginView {
     public PluginNotFoundDummyView() {
       InitializeComponent();
     }

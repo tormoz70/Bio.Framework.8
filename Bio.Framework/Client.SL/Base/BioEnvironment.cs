@@ -452,7 +452,7 @@ namespace Bio.Framework.Client.SL {
     public IAjaxMng AjaxMng {
       get {
         if (this._ajaxMng == null) {
-          this._ajaxMng = new CAjaxMng(this);
+          this._ajaxMng = new AjaxMng();
           this._ajaxMng.OnStateChanged += this._doOnStateChanged;
         }
         return this._ajaxMng;
@@ -503,7 +503,7 @@ namespace Bio.Framework.Client.SL {
 
     public IConfigRoot ConfigRoot {
       get {
-        return this.PluginRoot.CfgRoot;
+        return this.PluginRoot.Cfg;
       }
     }
 
@@ -511,7 +511,7 @@ namespace Bio.Framework.Client.SL {
       Utl.StoreUserObjectStrg(objName, obj);
     }
     public T RestoreUserObject<T>(String objName, T defObj) {
-      return Utl.RestoreUserObjectStrg(objName, defObj);
+      return Utl.RestoreUserObjectStrg(objName, default(T));
     }
 
     #endregion

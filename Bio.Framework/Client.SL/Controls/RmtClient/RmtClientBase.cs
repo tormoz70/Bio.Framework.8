@@ -124,7 +124,7 @@
                     BioCode = this.BioCode,
                     cmd = RmtClientRequestCmd.GetResult
                   });
-                  this._resultFileReferece = this.AjaxMng.Env.ServerUrl + "?" + prms;
+                  this._resultFileReferece = BioEnvironment.Instance.ServerUrl + "?" + prms;
 
                 }
               } else if (losp.State == RemoteProcState.Breaked) {
