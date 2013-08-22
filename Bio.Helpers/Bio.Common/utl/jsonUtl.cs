@@ -62,17 +62,17 @@ namespace Bio.Helpers.Common {
       return decode<T>(jsonString, new JsonConverter[0]);
     }
 
-    public static T decode<T>(String jsonString, JsonConverter[] coverters) {
-      JsonConverter[] v_coverters = coverters;
+    public static T decode<T>(String jsonString, JsonConverter[] converters, IReferenceResolver referenceResolver = null) {
       if (!String.IsNullOrEmpty(jsonString)) {
-        JsonSerializerSettings st = new JsonSerializerSettings() {
+        var st = new JsonSerializerSettings {
           ContractResolver = new CContractResolver(),
           TypeNameHandling = TypeNameHandling.Objects,
-          Converters = v_coverters
+          Converters = converters,
+          ReferenceResolver = referenceResolver
         };
         return JsonConvert.DeserializeObject<T>(jsonString, st);
-      } else
-        return default(T);
+      }
+      return default(T);
     }
 
     public static String encode(Object obj, JsonConverter[] coverters) {

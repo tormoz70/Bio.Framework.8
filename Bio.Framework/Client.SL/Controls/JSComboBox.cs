@@ -11,17 +11,17 @@ namespace Bio.Framework.Client.SL {
 
   public class JSComboBox : ComboBox {
 
-    private BindingExpression bE;
+    private BindingExpression _bE;
     public JSComboBox() {
       this.SelectionChanged += this._selectionChanged;
     }
 
     private void _selectionChanged(Object sender, SelectionChangedEventArgs e) {
-      if (this.bE == null) {
-        this.bE = this.GetBindingExpression(ComboBox.SelectedValueProperty);
+      if (this._bE == null) {
+        this._bE = this.GetBindingExpression(SelectedValueProperty);
       } else {
-        if (this.GetBindingExpression(ComboBox.SelectedValueProperty) == null) {
-          this.SetBinding(ComboBox.SelectedValueProperty, this.bE.ParentBinding);
+        if (this.GetBindingExpression(SelectedValueProperty) == null) {
+          this.SetBinding(SelectedValueProperty, this._bE.ParentBinding);
         }
       }
     }
@@ -40,10 +40,10 @@ namespace Bio.Framework.Client.SL {
         cbx.SelectedValuePath = items.metadata.Fields[0].Name;
         cbx.DisplayMemberPath = items.metadata.Fields[1].Name;
         if (addNullItem) {
-          var v_NullRow = items.NewRow();
-          v_NullRow.SetValue(cbx.SelectedValuePath, null);
-          v_NullRow.SetValue(cbx.DisplayMemberPath, "<не выбрано>");
-          (items.ds as IList).Insert(0, v_NullRow);
+          var nullRow = items.NewRow();
+          nullRow.SetValue(cbx.SelectedValuePath, null);
+          nullRow.SetValue(cbx.DisplayMemberPath, "<не выбрано>");
+          ((IList)items.ds).Insert(0, nullRow);
         }
         cbx.ItemsSource = items.ds;
         if (addNullItem)
@@ -52,7 +52,7 @@ namespace Bio.Framework.Client.SL {
     }
 
     public static void LoadItems(AjaxResponse prevResponse, IAjaxMng ajaxMng, ComboBox cbx, String bioCode, Params bioParams, Action<ComboBox, AjaxResponse> callback, Boolean addNullItem, Boolean useCache) {
-      if ((prevResponse != null) && (prevResponse.Success == false)) {
+      if ((prevResponse != null) && (!prevResponse.Success)) {
         if (callback != null)
           callback(cbx, prevResponse);
         return;
@@ -101,18 +101,15 @@ namespace Bio.Framework.Client.SL {
         var row = TypeFactory.CreateInstance(this.ds.First().GetType(), null, null);
         row.DisableEvents();
         try {
-          String v_intRowUID = Guid.NewGuid().ToString("N");
-          if (row != null) {
-            row[JsonStoreClient.CS_INTERNAL_ROWUID_FIELD_NAME] = v_intRowUID;
-          }
+          var intRowUID = Guid.NewGuid().ToString("N");
+          row[JsonStoreClient.CS_INTERNAL_ROWUID_FIELD_NAME] = intRowUID;
 
         } finally {
           row.EnableEvents();
         }
         return row;
-      } else
-        return null;
+      }
+      return null;
     }
-
   }
 }

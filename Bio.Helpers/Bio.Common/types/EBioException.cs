@@ -251,10 +251,10 @@ namespace Bio.Helpers.Common.Types {
       serializer.TypeNameHandling = TypeNameHandling.Objects;
       serializer.NullValueHandling = NullValueHandling.Ignore;
       //base.WriteJson(writer, value, serializer);
-      EBioException ex = value as EBioException;
+      var ex = value as EBioException;
       writer.WriteStartObject();
       writer.WritePropertyName(jsonUtl.TypePropertyName);
-      Type tp = ex.GetType();
+      var tp = ex.GetType();
       writer.WriteValue(ReflectionUtils.GetTypeName(tp, FormatterAssemblyStyle.Full));
       writer.WritePropertyName("Message");
       writer.WriteValue(ex.Message);
