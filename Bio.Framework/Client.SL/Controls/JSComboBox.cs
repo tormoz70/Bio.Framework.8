@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Windows.Controls;
+using Bio.Helpers.Common;
 using Bio.Helpers.Common.Types;
 using System.Collections;
 using System.Collections.Generic;
 using Bio.Framework.Packets;
 using System.Linq;
 using System.Windows.Data;
+using Newtonsoft.Json;
 
 namespace Bio.Framework.Client.SL {
 
@@ -27,12 +29,16 @@ namespace Bio.Framework.Client.SL {
     }
 
     private static void _storeItems(String bioCode, CbxItems items) {
-      //Utl.StoreUserObjectStrg("cbxItems-" + bioCode, items);
+      Utl.StoreUserObjectStrg("cbxItems-" + bioCode, items, new JsonConverter[] { new CbxItemsConverter() });
     }
 
     private static CbxItems _restoreItems(String bioCode) {
-      //return Utl.RestoreUserObjectStrg<CbxItems>("cbxItems-" + bioCode, null);
-      return null;
+      try {
+        return Utl.RestoreUserObjectStrg<CbxItems>("cbxItems-" + bioCode, null,
+                                                   new JsonConverter[] {new CbxItemsConverter()});
+      } catch (Exception) {
+        return null;
+      }
     }
 
     private static void _loadItems(ComboBox cbx, CbxItems items, Boolean addNullItem) {

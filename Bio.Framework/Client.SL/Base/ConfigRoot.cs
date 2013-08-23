@@ -47,6 +47,11 @@ namespace Bio.Framework.Client.SL {
     [DefaultValue(false)]
     public Boolean SavePassword { get; set; }
 
+    [Category("Обновление")]
+    [Description("Кешировать значения выпадающих списков")]
+    [DefaultValue(false)]
+    public Boolean CacheCbxItems { get; set; }
+
     /// <summary>
     /// Проверка значения
     /// </summary>

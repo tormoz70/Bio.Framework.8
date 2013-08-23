@@ -2086,6 +2086,26 @@ namespace Bio.Helpers.Common {
       }
     }
 
+    public static void DropUserObjectStrg(String objName) {
+      if (!String.IsNullOrEmpty(objName)) {
+        try {
+          var userSettings = IsolatedStorageSettings.ApplicationSettings;
+          var keys = new String[userSettings.Keys.Count];
+          userSettings.Keys.CopyTo(keys, 0);
+          foreach (var k in keys) {
+            if ((objName.EndsWith("*") && k.StartsWith(objName.Substring(0, objName.Length-1))) && 
+                (userSettings.Contains(k)))
+              userSettings.Remove(k);
+          }
+          userSettings.Save();
+        } catch (IsolatedStorageException ex) {
+          // Isolated storage not enabled or an error occurred
+          throw new EBioException(String.Format("Ошибка при удалении объекта {0} в IsolatedStorageSettings.ApplicationSettings.\n Сообщение: {1}", objName, ex.Message), ex);
+        }
+      }
+    }
+
+
     public static Int64 GetISQuota() {
       try {
         using (var isf = IsolatedStorageFile.GetUserStoreForApplication()) {

@@ -102,6 +102,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CachedDS.cs" />
+    <Compile Include="CbxItemsConverter.cs" />
     <Compile Include="CDSCache.cs" />
     <Compile Include="JSGridPropsCols.xaml.cs">
       <DependentUpon>JSGridPropsCols.xaml</DependentUpon>

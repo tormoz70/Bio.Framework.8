@@ -12,5 +12,6 @@ namespace Bio.Framework.Client.SL {
     Boolean SuspendLoadDataInGrids { get; set; }
 
     Boolean BeOnline { get; set; }
+    Boolean CacheCbxItems { get; set; }
   }
 }

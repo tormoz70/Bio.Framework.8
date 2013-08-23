@@ -91,7 +91,7 @@ namespace Bio.Framework.Client.SL {
     public long StartFrom { get; private set; }
 
     public const String CS_INTERNAL_ROWUID_FIELD_NAME = "InternalROWUID";
-    private List<PropertyMetadata> _genPropertyDefs(List<JsonStoreMetadataFieldDef> fieldDefs) {
+    public static List<PropertyMetadata> GeneratePropertyDefs(List<JsonStoreMetadataFieldDef> fieldDefs) {
       var rslt = new List<PropertyMetadata>();
       rslt.Add(new PropertyMetadata {
         Name = CS_INTERNAL_ROWUID_FIELD_NAME,
@@ -113,7 +113,7 @@ namespace Bio.Framework.Client.SL {
 
     private readonly TypeFactory _typeFactory = new TypeFactory();
     private Type _creRowType(List<JsonStoreMetadataFieldDef> fieldDefs) {
-      var propDefs = this._genPropertyDefs(fieldDefs);
+      var propDefs = GeneratePropertyDefs(fieldDefs);
       return this._typeFactory.CreateType(propDefs);
     }
 
