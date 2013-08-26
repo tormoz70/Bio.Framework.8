@@ -1,0 +1,281 @@
+CREATE OR REPLACE PACKAGE biosys.AI_DPBKP AS
+
+
+  procedure exp_schema(p_schema_name in varchar2, p_exp_path in varchar2);
+  procedure imp_schema(
+    p_from_schema in varchar2,
+    p_from_tss in varchar2,
+    p_from_file_name in varchar2,
+    p_from_path in varchar2,
+    p_to_schema in varchar2,
+    p_to_tss in varchar2);
+  function gen_dmp_file_name(p_schema_name in varchar2) return varchar2;
+  procedure exp_tables(p_schema in varchar2, p_tables_commalist in varchar2, p_dmp_file_name in varchar2, p_exp_path in varchar2);
+
+END;
+
+/
+CREATE OR REPLACE PACKAGE BODY biosys.AI_DPBKP AS
+
+  csOraDir4ExpImp varchar2(100) := 'DIR_DPUMP_BIOEXPIMP';
+
+  function gen_dmp_file_name(p_schema_name in varchar2) return varchar2
+  is
+    v_db_domain varchar2(100) := null;
+    v_db_name varchar2(100) := null;
+    v_host_name varchar2(100) := null;
+  begin
+    select sys_context('USERENV', 'DB_DOMAIN') into v_db_domain from dual;
+    select sys_context('USERENV', 'DB_NAME') into v_db_name from dual;
+    --select sys_context('USERENV', 'SERVER_HOST') into v_host_name from dual;
+    return replace(upper((case when v_host_name is null then null else v_host_name||'.' end)||
+      v_db_name||'.'||(case when v_db_domain is null then null else v_db_domain||'.' end)||
+      p_schema_name||'_'||to_char(sysdate, 'YYYYMMDD_HH24MISS')||'_DTPMP.DMP'), '$', '_');
+  end;
+
+  function open_dtpump_job(
+    p_job_name in varchar2,
+    p_job_mode in varchar2,
+    p_job_owner in varchar2,
+    p_operation in varchar2) return number
+  is
+    csJobOwner varchar2(100):= nvl(p_job_owner, user);
+    csJobName varchar2(100):= p_job_name;
+    vExistsStatus     varchar2(100);
+    result            number;
+  begin
+    begin
+      select a.state into vExistsStatus
+       from SYS.DBA_DATAPUMP_JOBS a
+       where a.owner_name = csJobOwner
+         and a.job_name = csJobName;
+    exception
+      when NO_DATA_FOUND then
+        vExistsStatus:='NOT_EXISTS';
+    end;
+    dbms_output.put_line('Status of job('||csJobName||') : '||vExistsStatus);
+    if vExistsStatus in ('UNDEFINED', 'NOT RUNNING') then
+      execute immediate 'drop table '||csJobName;
+      vExistsStatus:='NOT_EXISTS';
+    end if;
+
+    if vExistsStatus in ('NOT_EXISTS') then
+      dbms_output.put_line('Open job('||csJobName||') ... ');
+      result := DBMS_DATAPUMP.open(
+        operation   => p_operation,
+        job_mode    => p_job_mode,
+        remote_link => NULL,
+        job_name    => csJobName,
+        version     => 'LATEST');
+      dbms_output.put_line('Job('||csJobName||') opened. ');
+    else
+      dbms_output.put_line('Attach job('||csJobName||') ... ');
+      result := DBMS_DATAPUMP.attach(csJobName,csJobOwner);
+      dbms_output.put_line('Job('||csJobName||') attached. ');
+    end if;
+    dbms_output.put_line('Handle of job('||csJobName||') : '||result);
+    return result;
+  end;
+
+  procedure init_ora_directory(p_name in varchar2, p_path in varchar2)
+  is
+  begin
+    execute immediate 'CREATE OR REPLACE DIRECTORY '||p_name||' AS '''||p_path||'''';
+  end;
+
+  procedure exception_proccessor(
+    err_msg in varchar2,
+    p_dp_handle in number)
+  is
+  begin
+      dbms_output.put_line('Process exception: Begin');
+      dbms_output.put_line(' - Err:'||err_msg);
+      DBMS_DATAPUMP.stop_job(
+          handle => p_dp_handle,
+          immediate => 1,
+          keep_master => 0);
+      dbms_output.put_line(' - job('||p_dp_handle||'): stopped');
+      DBMS_DATAPUMP.detach(p_dp_handle);
+      dbms_output.put_line(' - job('||p_dp_handle||'): detached');
+      dbms_output.put_line('Process exception: End');
+  end;
+
+  procedure run_job(p_dp_handle in number, v_jstate out varchar2)
+  is
+  begin
+    DBMS_DATAPUMP.start_job(p_dp_handle);
+    dbms_output.put_line('passed:start_job('||p_dp_handle||')');
+    DBMS_DATAPUMP.wait_for_job(p_dp_handle, v_jstate);
+    dbms_output.put_line('passed:wait_for_job('||p_dp_handle||':state:'||v_jstate||')');
+    DBMS_DATAPUMP.detach(p_dp_handle);
+    dbms_output.put_line('passed:detach('||p_dp_handle||')');
+  end;
+
+  procedure exp_schema(p_schema_name in varchar2, p_exp_path in varchar2)
+  is
+    csSCHEMA2BKP varchar2(100):=p_schema_name;
+    csDMP_FILE varchar2(100):= gen_dmp_file_name(csSCHEMA2BKP);
+    csLOG_FILE varchar2(100):= csDMP_FILE||'(EXP).LOG';
+    csExpPath varchar2(500) := p_exp_path;
+    csJobName varchar2(100):='JDTPMPEXP_'||csSCHEMA2BKP;
+    l_dp_handle number;
+    l_jstate varchar2(100);
+  begin
+    init_ora_directory(csOraDir4ExpImp, csExpPath);
+    l_dp_handle := open_dtpump_job(csJobName, 'SCHEMA', null, 'EXPORT');
+    dbms_output.put_line('passed:open_dtpump_job('||csJobName||':'||l_dp_handle||')');
+    DBMS_DATAPUMP.add_file(
+      handle    => l_dp_handle,
+      filename  => csDMP_FILE,
+      directory => csOraDir4ExpImp);
+    dbms_output.put_line('passed:add_file('||csDMP_FILE||')');
+    DBMS_DATAPUMP.add_file(
+      handle    => l_dp_handle,
+      filename  => csLOG_FILE,
+      directory => csOraDir4ExpImp,
+      filetype  => DBMS_DATAPUMP.KU$_FILE_TYPE_LOG_FILE);
+    dbms_output.put_line('passed:add_file('||csLOG_FILE||')');
+    DBMS_DATAPUMP.metadata_filter(
+      handle => l_dp_handle,
+      name   => 'SCHEMA_EXPR',
+      value  => '= '''||csSCHEMA2BKP||'''');
+    dbms_output.put_line('passed:metadata_filter('||csSCHEMA2BKP||')');
+
+    run_job(l_dp_handle, l_jstate);
+  exception
+    when OTHERS then
+      exception_proccessor(SQLERRM, l_dp_handle);
+  end;
+
+  procedure exp_tables(p_schema in varchar2, p_tables_commalist in varchar2, p_dmp_file_name in varchar2, p_exp_path in varchar2)
+  is
+    csSCHEMA2BKP varchar2(100):=p_schema;
+    csTABLES2BKP varchar2(32000):=p_tables_commalist;
+    csDMP_FILE varchar2(100):= p_dmp_file_name;
+    csLOG_FILE varchar2(100):= p_dmp_file_name||'(EXP).LOG';
+    csExpPath varchar2(500) := p_exp_path;
+    csJobName varchar2(100):='JDTPMPEXP_TABLES_COMMALIST';
+    l_dp_handle number;
+    l_jstate varchar2(100);
+  begin
+    init_ora_directory(csOraDir4ExpImp, csExpPath);
+    l_dp_handle := open_dtpump_job(csJobName, 'SCHEMA', null, 'EXPORT');
+    dbms_output.put_line('passed:open_dtpump_job('||csJobName||':'||l_dp_handle||')');
+    DBMS_DATAPUMP.add_file(
+      handle    => l_dp_handle,
+      filename  => csDMP_FILE,
+      directory => csOraDir4ExpImp);
+    dbms_output.put_line('passed:add_file('||csDMP_FILE||')');
+    DBMS_DATAPUMP.add_file(
+      handle    => l_dp_handle,
+      filename  => csLOG_FILE,
+      directory => csOraDir4ExpImp,
+      filetype  => DBMS_DATAPUMP.KU$_FILE_TYPE_LOG_FILE);
+    dbms_output.put_line('passed:add_file('||csLOG_FILE||')');
+    DBMS_DATAPUMP.metadata_filter(
+      handle => l_dp_handle,
+      name   => 'SCHEMA_EXPR',
+      value  => '= '''||csSCHEMA2BKP||'''');
+    dbms_output.put_line('passed:metadata_filter('||csSCHEMA2BKP||')');
+    DBMS_DATAPUMP.metadata_filter(
+      handle => l_dp_handle,
+      name   => 'NAME_EXPR',
+      value  => 'IN (select regexp_substr('''||csTABLES2BKP||''',''[^,]+'', 1, level) from dual
+    connect by regexp_substr('''||csTABLES2BKP||''', ''[^,]+'', 1, level) is not null)',
+      object_path=> 'TABLE');
+    dbms_output.put_line('passed:metadata_filter('||csTABLES2BKP||')');
+
+    run_job(l_dp_handle, l_jstate);
+  exception
+    when OTHERS then
+      exception_proccessor(SQLERRM, l_dp_handle);
+  end;
+
+  procedure imp_schema(
+    p_from_schema in varchar2,
+    p_from_tss in varchar2,
+    p_from_file_name in varchar2,
+    p_from_path in varchar2,
+    p_to_schema in varchar2,
+    p_to_tss in varchar2)
+  is
+    csDMP_FILE varchar2(100):=p_from_file_name;
+    csLOG_FILE varchar2(100):= csDMP_FILE||'(IMP).LOG';
+    csSCHEMA_FROM varchar2(100):=p_from_schema;
+    csSCHEMA_TARGET varchar2(100):=p_to_schema;
+    csJobName varchar2(100):='JDTPMPIMP_'||csSCHEMA_FROM;
+    csImpPath varchar2(500) := p_from_path;
+    l_dp_handle       NUMBER;
+    l_jstate varchar2(100);
+    tbl_src_tss ai_utl.T_VARCHAR_TBL;
+    tbl_trgt_tss ai_utl.T_VARCHAR_TBL;
+  begin
+    dbms_output.put_line('imp_schema:start(');
+    dbms_output.put_line('  p_from_schema:'||p_from_schema);
+    dbms_output.put_line('  p_from_tss:'||p_from_tss);
+    dbms_output.put_line('  p_from_file_name:'||p_from_file_name);
+    dbms_output.put_line('  p_from_path:'||p_from_path);
+    dbms_output.put_line('  p_to_schema:'||p_to_schema);
+    dbms_output.put_line('  p_to_tss:'||p_to_tss);
+    dbms_output.put_line(');');
+    select * bulk collect into tbl_src_tss
+      from table(ai_utl.split_str(p_from_tss,','));
+    select * bulk collect into tbl_trgt_tss
+      from table(ai_utl.split_str(p_to_tss,','));
+    init_ora_directory(csOraDir4ExpImp, csImpPath);
+    dbms_output.put_line('passed:init_ora_directory('||csOraDir4ExpImp||':'||csImpPath||')');
+    l_dp_handle := open_dtpump_job(csJobName, 'SCHEMA', null, 'IMPORT');
+    dbms_output.put_line('passed:open_dtpump_job('||csJobName||':'||l_dp_handle||')');
+
+    DBMS_DATAPUMP.add_file(
+      handle    => l_dp_handle,
+      filename  => csDMP_FILE,
+      directory => csOraDir4ExpImp);
+    dbms_output.put_line('passed:add_file('||csDMP_FILE||')');
+
+    DBMS_DATAPUMP.add_file(
+      handle    => l_dp_handle,
+      filename  => csLOG_FILE,
+      directory => csOraDir4ExpImp,
+      filetype  => DBMS_DATAPUMP.KU$_FILE_TYPE_LOG_FILE);dbms_output.put_line('passed:add_file(log)');
+    dbms_output.put_line('passed:add_file('||csLOG_FILE||')');
+
+    DBMS_DATAPUMP.metadata_filter (
+      handle => l_dp_handle ,
+      name => 'SCHEMA_LIST' ,
+      value => ''''||csSCHEMA_FROM||'''');
+    dbms_output.put_line('passed:metadata_filter('||csSCHEMA_FROM||')');
+    if(csSCHEMA_TARGET is not null)and(csSCHEMA_TARGET <> csSCHEMA_FROM)then
+      DBMS_DATAPUMP.metadata_remap(
+        handle => l_dp_handle,
+        name => 'REMAP_SCHEMA',
+        old_value => csSCHEMA_FROM,
+        value => csSCHEMA_TARGET);
+      dbms_output.put_line(' - passed:metadata_remap(REMAP_SCHEMA:'||csSCHEMA_FROM||'->'||csSCHEMA_TARGET||')');
+      if tbl_trgt_tss.count = tbl_src_tss.count then
+        for i in 1..tbl_trgt_tss.count loop
+          DBMS_DATAPUMP.metadata_remap(
+            handle => l_dp_handle,
+            name => 'REMAP_TABLESPACE',
+            old_value => tbl_src_tss(i),
+            value => tbl_trgt_tss(i));
+          dbms_output.put_line(' - passed:metadata_remap(REMAP_TABLESPACE:'||tbl_src_tss(i)||'->'||tbl_trgt_tss(i)||')');
+        end loop;
+      else
+        raise_application_error(-20000, 'Списки переименования TSS должны иметь одинаковое кол-во элементов.');
+      end if;
+
+    end if;
+    DBMS_DATAPUMP.set_parameter (
+      handle => l_dp_handle ,
+      name => 'TABLE_EXISTS_ACTION' ,
+      value => 'REPLACE' );
+    dbms_output.put_line('passed:set_parameter(TABLE_EXISTS_ACTION:REPLACE)');
+    run_job(l_dp_handle, l_jstate);
+  exception
+    when OTHERS then
+      exception_proccessor(SQLERRM, l_dp_handle);
+  end;
+
+end;
+/

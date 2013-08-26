@@ -1,8 +1,7 @@
 namespace Bio.Framework.Server {
 	using System;
 	using System.Web;
-	using System.IO;
-  using Bio.Helpers.Common.Types;
+	using Bio.Helpers.Common.Types;
   using Bio.Helpers.Common;
 
   public class Handler:AHandlerBase {
