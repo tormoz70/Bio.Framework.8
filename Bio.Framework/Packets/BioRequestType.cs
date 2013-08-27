@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Bio.Framework.Packets {
+﻿namespace Bio.Framework.Packets {
   /// <summary>
   /// Типы запросов.
   /// DS - набор данных;

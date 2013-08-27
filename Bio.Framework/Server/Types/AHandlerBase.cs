@@ -1,18 +1,13 @@
 namespace Bio.Framework.Server {
   using System;
-  using System.Xml;
   using System.Web;
   using System.Web.SessionState;
-  using System.IO;
   using System.Threading;
   using System.Text;
   //using System.Diagnostics;
-
-  using System.Diagnostics;
   using Bio.Framework.Packets;
   using Bio.Helpers.Common;
   using Bio.Helpers.Common.Types;
-  using System.Collections.Specialized;
 
   /// <summary>
   /// Базовый обработчик, от него наследуются все

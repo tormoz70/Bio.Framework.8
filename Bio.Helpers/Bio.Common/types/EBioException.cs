@@ -3,11 +3,8 @@ namespace Bio.Helpers.Common.Types {
   using System.IO;
   using System.Xml;
   using System.Text;
-  using System.Collections.Generic;
-  using System.Reflection;
-  using System.Runtime.Serialization;
-  using System.Security.Permissions;
-  using Newtonsoft.Json.Converters;
+	using System.Reflection;
+	using Newtonsoft.Json.Converters;
   using Newtonsoft.Json;
   using Newtonsoft.Json.Utilities;
   using System.Runtime.Serialization.Formatters;
