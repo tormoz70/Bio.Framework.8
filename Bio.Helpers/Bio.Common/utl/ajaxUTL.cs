@@ -1,11 +1,15 @@
-﻿namespace Bio.Helpers.Common {
-  using System;
-  using System.Net;
-  using System.IO;
-  using System.Threading;
+﻿using System;
+using System.Net;
+using System.IO;
+using System.Threading;
+using System.Reflection;
+#if !SILVERLIGHT
+using System.Text;
+#endif
+
+namespace Bio.Helpers.Common {
   using Types;
   using Newtonsoft.Json;
-  using System.Reflection;
   /// <summary>
   /// Делегат добавления строки в лог
   /// </summary>
@@ -93,18 +97,18 @@
         if (sessionID != null) {
           FCli.CookieContainer.Add(sessionID);
         }
-        addLogLine("<request>: Host: " + vUri.Host, onLogLine);
-        addLogLine("<request>: URL: " + url, onLogLine);
+        AddLogLine("<request>: Host: " + vUri.Host, onLogLine);
+        AddLogLine("<request>: URL: " + url, onLogLine);
         FCli.Method = "POST";
         FCli.UserAgent = userAgentName;
-        addLogLine("<request>: Method: " + FCli.Method, onLogLine);
-        Params vParams = (prms == null) ? new Params() : prms;
+        AddLogLine("<request>: Method: " + FCli.Method, onLogLine);
+        var vParams = (prms == null) ? new Params() : prms;
         vParams.Add("ajaxrqtimeout", ""+FCli.Timeout);
-        String vParamsToPost = vParams.bldUrlParams();
+        var vParamsToPost = vParams.bldUrlParams();
 
         //String vParamsToPost = ((pParams == null) || (pParams.Count == 0)) ? "emptypost=yes" : pParams.bldUrlParams();
-        addLogLine("<request>: Params: " + vParamsToPost, onLogLine);
-        addLogLine("<request>: " + csSessionIdName + ": " + ((sessionID != null) ? sessionID.Value : "<null>"), onLogLine);
+        AddLogLine("<request>: Params: " + vParamsToPost, onLogLine);
+        AddLogLine("<request>: " + CS_SESSION_ID_NAME + ": " + ((sessionID != null) ? sessionID.Value : "<null>"), onLogLine);
         //if(vParamsToPost != null) {
         byte[] postArray = Encoding.UTF8.GetBytes(vParamsToPost);
         FCli.ContentType = "application/x-www-form-urlencoded";
@@ -134,7 +138,7 @@
           }
         }
         if((vRsp != null) && FCli.HaveResponse) {
-          Cookie vSessIdCoo = vRsp.Cookies[csSessionIdName];
+          Cookie vSessIdCoo = vRsp.Cookies[CS_SESSION_ID_NAME];
           if (vSessIdCoo != null) {
             sessionID = vSessIdCoo;
           }
@@ -146,20 +150,20 @@
             vCooDom = (sessionID != null) ? sessionID.Domain : "<null>";
             vCooPath = (sessionID != null) ? sessionID.Path : "<null>";
           }
-          addLogLine("<recived>: " + csSessionIdName + ": " + vSessionID, onLogLine);
-          addLogLine("<recived>: Domain: " + vCooDom, onLogLine);
-          addLogLine("<recived>: Path: " + vCooPath, onLogLine);
-          Stream data = vRsp.GetResponseStream();
-          StreamReader reader = new StreamReader(data, Encoding.UTF8);
+          AddLogLine("<recived>: " + CS_SESSION_ID_NAME + ": " + vSessionID, onLogLine);
+          AddLogLine("<recived>: Domain: " + vCooDom, onLogLine);
+          AddLogLine("<recived>: Path: " + vCooPath, onLogLine);
+          var data = vRsp.GetResponseStream();
+          var reader = new StreamReader(data, Encoding.UTF8);
           try {
             responseText = reader.ReadToEnd();
-            addLogLine("<recived>: " + responseText, onLogLine);
+            AddLogLine("<recived>: " + responseText, onLogLine);
           } catch (Exception ex) {
             requestException = new EBioException("Ошибка при получении ответа с сервера. Сообщение: " + ex.Message + "\n"
               + "Параметры: " + vUri.AbsoluteUri + "?" + vParamsToPost, ex);
             responseText = ex.ToString();
           } finally {
-            data.Close();
+            if (data != null) data.Close();
             reader.Close();
           }
           if (String.IsNullOrEmpty(responseText))

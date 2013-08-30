@@ -156,7 +156,7 @@ namespace Bio.Helpers.Common.Types {
     /// <param name="roles">Список ролей с разделителем [' ' | ';' | ',']</param>
     /// <returns></returns>
     public Boolean CheckRoles(String roles) {
-      return Utl.DelimitedLineHasCommonTags(this.Roles, roles, new[] { ' ', ';', ',' });
+      return this.IsBioRoot() || Utl.DelimitedLineHasCommonTags(this.Roles, roles, new[] { ' ', ';', ',' });
     }
 
     /// <summary>
@@ -200,14 +200,18 @@ namespace Bio.Helpers.Common.Types {
     /// Пользователь имеет наивысший уровень доступа
     /// </summary>
     public Boolean IsBioRoot() {
-      return this.CheckRoles(BioRoles.BioRoot);
+      var roleName = enumHelper.GetAttributeByValue<DbValueAttribute>(BioRoles.BioRoot).Value;
+      return Utl.DelimitedLineHasCommonTags(this.Roles, roleName, new[] { ' ', ';', ',' });
     }
 
     /// <summary>
     /// Пользователь имеет разрешение "Отладчика", т.е. данный пользователь будет видеть отладочную информацию в сообщениях об ошибке
     /// </summary>
     public Boolean IsDebugger() {
-      return this.CheckRoles(BioRoles.Debugger) || this.CheckGrants(BioGrants.Debuging);
+      var roleName = enumHelper.GetAttributeByValue<DbValueAttribute>(BioRoles.Debugger).Value;
+      var grantName = enumHelper.GetAttributeByValue<DbValueAttribute>(BioGrants.Debuging).Value;
+      return Utl.DelimitedLineHasCommonTags(this.Roles, roleName, new[] { ' ', ';', ',' })
+          || Utl.DelimitedLineHasCommonTags(this.Grants, grantName, new[] { ' ', ';', ',' });
     }
 
     #region ICloneable Members
