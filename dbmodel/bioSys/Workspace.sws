@@ -4,8 +4,8 @@
 
 <Workspace>
 	<Local Expanded="Yes">
-		<Model Expanded="Yes" ID="{A9EDB85B-C6F5-4CA7-BCE3-90D27F18EE59}" Name="biosys" Selected="Yes" Type="{CDE44E21-9669-11D1-9914-006097355D9B}" URL="biosys.pdm"/>
-		<Model Expanded="Yes" ID="{89727F81-73FC-4AD9-9F05-3A09FD35DDEB}" Loaded="No" Name="Общая структура системы" Type="{18112060-1A4B-11D1-83D9-444553540000}" URL="Общая структура системы.oom"/>
+		<Model Expanded="Yes" ID="{A9EDB85B-C6F5-4CA7-BCE3-90D27F18EE59}" Loaded="No" Name="biosys" Type="{CDE44E21-9669-11D1-9914-006097355D9B}" URL="biosys.pdm"/>
+		<Model Expanded="Yes" ID="{89727F81-73FC-4AD9-9F05-3A09FD35DDEB}" Name="Общая структура системы" Selected="Yes" Type="{18112060-1A4B-11D1-83D9-444553540000}" URL="Общая структура системы.oom"/>
 	</Local>
 	<BrowserModule Name="Repository"/>
 </Workspace>
