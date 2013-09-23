@@ -1439,6 +1439,15 @@ namespace Bio.Helpers.Common {
       return null;
     }
 
+    public static T GetAttributeOfType<T>(Type type) where T : Attribute {
+      var attrs = type.GetCustomAttributes(true);
+      foreach (var attr in attrs) {
+        if (attr.GetType() == typeof(T)) 
+          return (T)attr;
+      }
+      return null;
+    }
+
     /// <summary>
     /// Прикручивает к имени файла индекс если такой фай существует. 
     /// Например: 1) Если файл "some_file.ext" существует, то функция вернет "some_file(1).ext"
