@@ -1,3 +1,4 @@
+using System.Windows.Media;
 using Newtonsoft.Json;
 
 namespace Bio.Helpers.Common {
@@ -2251,5 +2252,20 @@ namespace Bio.Helpers.Common {
     }
 #endif
 
+    /// <summary>
+    /// Конвертирует строку вида "#RRGGBB" в SolidColorBrush
+    /// </summary>
+    /// <param name="color"></param>
+    /// <returns></returns>
+    public static SolidColorBrush RGB2Color(String color) {
+      var theAnswer = new SolidColorBrush();
+      const byte a = 255; // or whatever...
+
+      var r = (byte)(Convert.ToUInt32(color.Substring(1, 2), 16));
+      var g = (byte)(Convert.ToUInt32(color.Substring(3, 2), 16));
+      var b = (byte)(Convert.ToUInt32(color.Substring(5, 2), 16));
+      theAnswer.Color = Color.FromArgb(a, r, g, b);
+      return theAnswer;
+    }
   }
 }
