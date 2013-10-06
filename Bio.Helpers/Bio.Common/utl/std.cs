@@ -1,6 +1,3 @@
-using System.Windows.Media;
-using Newtonsoft.Json;
-
 namespace Bio.Helpers.Common {
   using System;
   using System.Text.RegularExpressions;
@@ -19,6 +16,8 @@ namespace Bio.Helpers.Common {
   using System.Windows.Browser;
   using System.Xml.Linq;
   using System.Windows.Resources;
+  using System.Windows.Media;
+  using Newtonsoft.Json;
 #endif
   using System.Collections.Generic;
   using System.Globalization;
@@ -2250,7 +2249,6 @@ namespace Bio.Helpers.Common {
       }
       return null;
     }
-#endif
 
     /// <summary>
     /// Конвертирует строку вида "#RRGGBB" в SolidColorBrush
@@ -2267,5 +2265,8 @@ namespace Bio.Helpers.Common {
       theAnswer.Color = Color.FromArgb(a, r, g, b);
       return theAnswer;
     }
+
+#endif
+
   }
 }
