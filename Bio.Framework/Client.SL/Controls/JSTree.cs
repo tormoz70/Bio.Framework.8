@@ -25,15 +25,15 @@ namespace Bio.Framework.Client.SL {
     public override void OnApplyTemplate() {
       base.OnApplyTemplate();
       if (this._treeView != null) {
-        this._treeView.SelectedItemChanged -= this.onSelectedItemChanged;
-        this._treeView.ContainerExpanded -= this.onContainerExpanded;
-        this._treeView.ContainerCollapsed -= this.onContainerCollapsed;
+        this._treeView.SelectedItemChanged -= this._onSelectedItemChanged;
+        this._treeView.ContainerExpanded -= this._onContainerExpanded;
+        this._treeView.ContainerCollapsed -= this._onContainerCollapsed;
       }
       this._treeView = this.GetTemplateChild("treeView") as CTreeView;
       if (this._treeView != null) {
-        this._treeView.SelectedItemChanged += this.onSelectedItemChanged;
-        this._treeView.ContainerExpanded += this.onContainerExpanded;
-        this._treeView.ContainerCollapsed += this.onContainerCollapsed;
+        this._treeView.SelectedItemChanged += this._onSelectedItemChanged;
+        this._treeView.ContainerExpanded += this._onContainerExpanded;
+        this._treeView.ContainerCollapsed += this._onContainerCollapsed;
       }
     }
 
@@ -43,6 +43,18 @@ namespace Bio.Framework.Client.SL {
     //  set { this.SetValue(ItemTemplateProperty, value); }
     //}
 
+    private Boolean _eventSelectedItemChangedEnabled = true;
+    public Boolean EventSelectedItemChangedEnabled {
+      get { return this._eventSelectedItemChangedEnabled; }
+    }
+
+    public void EventSelectedItemChangedEnable() {
+      this._eventSelectedItemChangedEnabled = true;
+    }
+    public void EventSelectedItemChangedDisable() {
+      this._eventSelectedItemChangedEnabled = false;
+    }
+
     public static DependencyProperty ItemsSourceProperty = DependencyProperty.Register("ItemsSource", typeof(IEnumerable), typeof(JSTree), new PropertyMetadata(null));
     public IEnumerable ItemsSource {
       get { return (IEnumerable)this.GetValue(ItemsSourceProperty); }
@@ -50,37 +62,39 @@ namespace Bio.Framework.Client.SL {
     }
 
     public event RoutedPropertyChangedEventHandler<Object> SelectedItemChanged;
-    private void onSelectedItemChanged(Object sender, RoutedPropertyChangedEventArgs<Object> e) {
-      RoutedPropertyChangedEventHandler<Object> handler = this.SelectedItemChanged;
-      if (handler != null) {
-        handler(sender, e);
+    private void _onSelectedItemChanged(Object sender, RoutedPropertyChangedEventArgs<Object> e) {
+      if (this.EventSelectedItemChangedEnabled) {
+        var handler = this.SelectedItemChanged;
+        if (handler != null)
+          handler(sender, e);
       }
     }
 
     public event RoutedEventHandler ContainerExpanded;
-    private void onContainerExpanded(Object sender, RoutedEventArgs e) {
-      RoutedEventHandler handler = this.ContainerExpanded;
-      if (handler != null) {
+    private void _onContainerExpanded(Object sender, RoutedEventArgs e) {
+      var handler = this.ContainerExpanded;
+      if (handler != null)
         handler(sender, e);
-      }
     }
+
     public event RoutedEventHandler ContainerCollapsed;
-    private void onContainerCollapsed(Object sender, RoutedEventArgs e) {
-      RoutedEventHandler handler = this.ContainerCollapsed;
-      if (handler != null) {
+    private void _onContainerCollapsed(Object sender, RoutedEventArgs e) {
+      var handler = this.ContainerCollapsed;
+      if (handler != null)
         handler(sender, e);
-      }
     }
 
     public event EventHandler<BeforeLoadItemChildrenEventArgs> BeforeLoadItemChildren;
     internal void processBeforeLoadItemChildren(JSTreeItemBase sender, BeforeLoadItemChildrenEventArgs args) {
-      EventHandler<BeforeLoadItemChildrenEventArgs> eve = this.BeforeLoadItemChildren;
+      var eve = this.BeforeLoadItemChildren;
       if (eve != null) {
         eve(sender, args);
       }
     }
 
-
+    public void UpdateInnerTreeView() {
+      this._treeView.UpdateLayout();
+    }
 
     public Object SelectedItem {
       get {
@@ -88,8 +102,25 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    public Boolean SelectItem(Object item) { 
-      return this._treeView.SelectItem(item);
+
+
+    public Boolean SelectItem(Object item) {
+      var treeItem = item as JSTreeItemBase;
+      if (treeItem != null && treeItem.Container != null) {
+        treeItem.Container.IsSelected = true;
+        treeItem.Container.IsExpanded = true;
+        return true;
+      }
+      return false;
+    }
+
+    public Boolean ExpandItem(Object item) {
+      var treeItem = item as JSTreeItemBase;
+      if (treeItem != null && treeItem.Container != null) {
+        treeItem.Container.IsExpanded = true;
+        return true;
+      }
+      return false;
     }
 
     public String SelectedPath {
