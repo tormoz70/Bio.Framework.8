@@ -9,11 +9,12 @@ namespace Bio.Helpers.XLFRpt2.Engine.XLRptParams {
 	/// </summary>
 	public static class Exts{
 
-		private static String _prepareParamValue(Params inParams, String paramText){
-      var rslt = paramText;
+		private static String _prepareParamValue(Params inParams, String paramText) {
+		  if (String.IsNullOrEmpty(paramText))
+		    return paramText;
       foreach (var t in inParams)
-        rslt = rslt.Replace("#" + t.Name + "#", t.ValueAsString());
-		  return rslt;
+        paramText = paramText.Replace("#" + t.Name + "#", t.ValueAsString());
+      return paramText;
 		}
 
     public static void MergeFromInParams(this Params prms, Params inParams) {

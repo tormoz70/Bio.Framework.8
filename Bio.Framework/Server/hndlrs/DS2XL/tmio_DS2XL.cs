@@ -138,8 +138,10 @@ namespace Bio.Framework.Server {
       rptCfg.extAttrs.userUID = this.BioSession.Cfg.CurUser.UID;
       rptCfg.extAttrs.remoteIP = this.BioSession.CurSessionRemoteIP;
       rptCfg.extAttrs.workPath = this.BioSession.Cfg.WorkspacePath;
-      foreach (var v_prm in this.bioParams)
-        rptCfg.inPrms.Add((Param) v_prm.Clone());
+      foreach (var prm in this.bioParams)
+        rptCfg.inPrms.Add((Param) prm.Clone());
+      foreach (var prm in this.bioParams)
+        rptCfg.rptPrms.Add(prm.Name, prm.Value, "str");
       rptCfg.debug = Xml.getAttribute<Boolean>(io.IniDocument.XmlDoc.DocumentElement, "debug", false);
       rptCfg.dss.Add(CXLReportDSConfig.DecodeFromBio(
         io.IniDocument.XmlDoc.DocumentElement,
