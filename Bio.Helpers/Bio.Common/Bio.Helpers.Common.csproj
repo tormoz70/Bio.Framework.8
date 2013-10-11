@@ -91,6 +91,7 @@
     <Compile Include="types\BioUser.cs" />
     <Compile Include="types\CFolderCfg.cs" />
     <Compile Include="types\CLogger.cs" />
+    <Compile Include="types\Logger.cs" />
     <Compile Include="types\Params.cs" />
     <Compile Include="types\DTParser.cs" />
     <Compile Include="types\dom4cs.cs" />

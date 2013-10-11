@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace Bio.Framework.Server {
   using System;
   using System.Web;
@@ -63,13 +65,17 @@ namespace Bio.Framework.Server {
     }
 
     private void _doGet(IDbConnection conn, XmlElement ds) {
+      var logger = new Logger(this.BioSession.Cfg.WorkspacePath, "debug.log") { Disabled = true };
       var cursor = new CJSCursor(conn, ds, this.bioCode);
       var rqst = this.BioRequest<JsonStoreRequestGet>();
+      logger.WriteLn("_doGet - start");
       cursor.Init(rqst);
+      logger.WriteLn("_doGet - cursor.Init - done");
       cursor.Open(rqst.Timeout);
+      logger.WriteLn("_doGet - cursor.Open - done");
       try {
         var sqlToJson = new CSQLtoJSON();
-        var packet = sqlToJson.Process(cursor);
+        var packet = sqlToJson.Process(cursor, logger);
         var rsp = new JsonStoreResponse {
           BioParams = this.bioParams,
           Ex = null,
@@ -77,11 +83,14 @@ namespace Bio.Framework.Server {
           TransactionID = this.TransactionID,
           packet = packet,
         };
+        logger.WriteLn("_doGet - sqlToJson.Process - done");
 
         this.Context.Response.Write(rsp.Encode());
+        logger.WriteLn("_doGet - Response.Write - done");
       } finally {
         cursor.Close();
       }
+      logger.WriteLn("_doGet - end");
     }
 
     private void _doGetSelectionPks(IDbConnection conn, XmlElement ds) {

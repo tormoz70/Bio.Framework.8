@@ -734,14 +734,11 @@ namespace Bio.Helpers.DOA {
         this.rowValues.Clear();
         if(this._dataReader.Read()) {
           this.curFetchedRowPos++;
-          if((this.curFetchedRowPos > FETCHED_ROW_LIMIT)) {
-            String v_ioCode = null;
-            var v_msg = "Запрос " + v_ioCode + "вернул более " + FETCHED_ROW_LIMIT + " записей. Проверьте параметры запроса.";
-            throw new EBioDOATooMuchRows(v_msg);
-          }
+          if((this.curFetchedRowPos > FETCHED_ROW_LIMIT)) 
+            throw new EBioDOATooMuchRows(String.Format("Запрос вернул более {0} записей. Проверьте параметры запроса.", FETCHED_ROW_LIMIT));
           for (var i = 0; i < this._dataReader.FieldCount; i++) {
-            var v_obj = !this._dataReader.IsDBNull(i) ? SQLUtils.OraDbValueAsObject(this._dataReader.GetOracleValue(i)) : null;
-            this.rowValues[this._dataReader.GetName(i).ToUpper()] = v_obj;
+            var obj = !this._dataReader.IsDBNull(i) ? SQLUtils.OraDbValueAsObject(this._dataReader.GetOracleValue(i)) : null;
+            this.rowValues[this._dataReader.GetName(i).ToUpper()] = obj;
           }
           return true;
         }
@@ -750,7 +747,7 @@ namespace Bio.Helpers.DOA {
         throw;
       } catch(Exception ex) {
         this.Close();
-        throw new EBioException("Ошибка при заполнении значений курсора. Сообщение: " + ex.Message, ex);
+        throw new EBioException(String.Format("Ошибка при заполнении значений курсора. Сообщение: {0}", ex.Message), ex);
 			}
 		}
 		

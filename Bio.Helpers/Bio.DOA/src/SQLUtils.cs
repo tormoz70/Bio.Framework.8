@@ -75,23 +75,23 @@ namespace Bio.Helpers.DOA {
           throw new ArgumentNullException("keyField");
         if(keyValue == null)
           throw new ArgumentNullException("keyValue");
-        var v_sql = String.Format("update {0} set {1} = :{2} where {3} = :{4}", tableName, fieldName, fieldName, keyField, keyField);
-        var v_oraSess = (OracleConnection)conn;
-        var v_scriptCmd = v_oraSess.CreateCommand();
-        v_scriptCmd.CommandText = v_sql;
+        var sql = String.Format("update {0} set {1} = :{2} where {3} = :{4}", tableName, fieldName, fieldName, keyField, keyField);
+        var oraSess = (OracleConnection)conn;
+        var scriptCmd = oraSess.CreateCommand();
+        scriptCmd.CommandText = sql;
 
-        var v_parFile = v_scriptCmd.Parameters.Add(fieldName, OracleDbType.Blob);
-        v_parFile.Direction = ParameterDirection.Input;
+        var parFile = scriptCmd.Parameters.Add(fieldName, OracleDbType.Blob);
+        parFile.Direction = ParameterDirection.Input;
         byte[] v_buffer = null;
         Utl.ReadBinFileInBuffer(fileName, ref v_buffer);
-        v_parFile.Value = v_buffer;
+        parFile.Value = v_buffer;
 
-        var v_parKeyValue = v_scriptCmd.Parameters.Add(keyField, (keyValue != null) ? DetectOraTypeByType(keyValue.GetType()) : OracleDbType.Varchar2);
-        v_parKeyValue.Value = keyValue;
-        v_parKeyValue.Direction = ParameterDirection.Input;
+        var parKeyValue = scriptCmd.Parameters.Add(keyField, DetectOraTypeByType(keyValue.GetType()));
+        parKeyValue.Value = keyValue;
+        parKeyValue.Direction = ParameterDirection.Input;
 
         try {
-          var r = v_scriptCmd.ExecuteNonQuery();
+          var r = scriptCmd.ExecuteNonQuery();
           if((deleteFile) && (r == 1))
             File.Delete(fileName);
         } catch(ThreadAbortException) {
@@ -99,7 +99,7 @@ namespace Bio.Helpers.DOA {
         } catch(Exception ex) {
           var errm = new StringWriter();
           errm.WriteLine("Ошибка при выполнении SQL. Сообщение: " + ex.Message);
-          errm.WriteLine("SQL: " + v_scriptCmd.CommandText);
+          errm.WriteLine("SQL: " + scriptCmd.CommandText);
           throw new EBioException(errm.ToString(), ex);
         }
       }
@@ -136,26 +136,26 @@ namespace Bio.Helpers.DOA {
     public static void ExecSQLCommandNonQuery(IDbConnection conn, ref String sql, Params prms) {
       if(!String.IsNullOrEmpty(sql)) {
         var v_sql = PrepareSQLForOlacleExecute(sql);
-        var v_oraSess = (OracleConnection)conn;
-        var v_scriptCmd = v_oraSess.CreateCommand();
-        v_scriptCmd.CommandText = v_sql;
+        var oraSess = (OracleConnection)conn;
+        var scriptCmd = oraSess.CreateCommand();
+        scriptCmd.CommandText = v_sql;
 
         if(prms != null) {
           foreach (var t in prms) {
-            var v_parReslt = v_scriptCmd.Parameters.Add(t.Name, (t.InnerObject != null) ? DetectOraTypeByType(t.InnerObject.GetType()) : OracleDbType.Varchar2);
-            v_parReslt.Value = t.InnerObject;
-            v_parReslt.Direction = ParameterDirection.Input;
+            var parReslt = scriptCmd.Parameters.Add(t.Name, (t.InnerObject != null) ? DetectOraTypeByType(t.InnerObject.GetType()) : OracleDbType.Varchar2);
+            parReslt.Value = t.InnerObject;
+            parReslt.Direction = ParameterDirection.Input;
           }
         }
 
         try {
-          v_scriptCmd.ExecuteNonQuery();
+          scriptCmd.ExecuteNonQuery();
         } catch(ThreadAbortException) {
           throw;
         } catch(Exception ex) {
           var errm = new StringWriter();
           errm.WriteLine("Ошибка при выполнении SQL. Сообщение: " + ex.Message);
-          errm.WriteLine("SQL: " + v_scriptCmd.CommandText);
+          errm.WriteLine("SQL: " + scriptCmd.CommandText);
           throw new EBioException(errm.ToString(), ex);
         }
       }
@@ -292,48 +292,48 @@ namespace Bio.Helpers.DOA {
     /// </summary>
     /// <returns></returns>
     public static Object OraDbValueAsObject(Object value) {
-      Object v_result = null;
+      Object valueAsObject = null;
       if (value != null) {
-        var v_type = value.GetType();
-        if (v_type == typeof(OracleString)) {
+        var type = value.GetType();
+        if (type == typeof(OracleString)) {
 
           if (!((OracleString)value).IsNull) {
-            var v_resultStr = ((OracleString)value).Value;
-            v_result = v_resultStr;
+            var resultStr = ((OracleString)value).Value;
+            valueAsObject = resultStr;
           }
-        } else if (v_type == typeof(OracleDecimal)) {
+        } else if (type == typeof(OracleDecimal)) {
           if (!((OracleDecimal)value).IsNull) {
             if (((OracleDecimal)value).IsInt) {
-              var v_resultDec = ((OracleDecimal)value).ToInt64();
-              v_result = v_resultDec;
+              var resultDec = ((OracleDecimal)value).ToInt64();
+              valueAsObject = resultDec;
             } else {
-              var v_vResultDec = ((OracleDecimal)value).ToDouble();
-              v_result = new Decimal(v_vResultDec);
+              var resultDec = ((OracleDecimal)value).ToDouble();
+              valueAsObject = new Decimal(resultDec);
             }
           }
-        } else if (v_type == typeof(OracleDate)) {
+        } else if (type == typeof(OracleDate)) {
           if (!((OracleDate)value).IsNull) {
-            var v_resultDt = ((OracleDate)value).Value;
-            v_result = v_resultDt; //DateTime.SpecifyKind(vResultDt, DateTimeKind.Utc);
+            var resultDt = ((OracleDate)value).Value;
+            valueAsObject = resultDt; //DateTime.SpecifyKind(vResultDt, DateTimeKind.Utc);
           }
-        } else if (v_type == typeof(OracleTimeStamp)) {
+        } else if (type == typeof(OracleTimeStamp)) {
           if (!((OracleTimeStamp)value).IsNull) {
-            var v_resultDt = ((OracleTimeStamp)value).Value;
-            v_result = v_resultDt;
+            var resultDt = ((OracleTimeStamp)value).Value;
+            valueAsObject = resultDt;
           }
-        } else if (v_type == typeof(OracleClob)) {
+        } else if (type == typeof(OracleClob)) {
           if (!((OracleClob)value).IsNull) {
             //var v_resultStr = Utl.EncodeANSI2UTF(((OracleClob)value).Value);
-            var v_resultStr = ((OracleClob)value).Value;
-            v_result = v_resultStr;
+            var resultStr = ((OracleClob)value).Value;
+            valueAsObject = resultStr;
           }
-        } else if (v_type == typeof(OracleBlob)) {
-          var v_resultAByte = ((OracleBlob)value).Value;
-          v_result = v_resultAByte;
+        } else if (type == typeof(OracleBlob)) {
+          var resultAByte = ((OracleBlob)value).Value;
+          valueAsObject = resultAByte;
         } else
-          v_result = value;
+          valueAsObject = value;
       }
-      return v_result;
+      return valueAsObject;
     }
 
     /// <summary>
@@ -341,14 +341,14 @@ namespace Bio.Helpers.DOA {
     /// </summary>
     /// <returns></returns>
     public static ParameterDirection DetectParamDirByName(String directionName) {
-      var v_parDir = ParameterDirection.Input;
+      var parDir = ParameterDirection.Input;
       if(String.Equals(directionName, "IN", StringComparison.OrdinalIgnoreCase))
-        v_parDir = ParameterDirection.Input;
+        parDir = ParameterDirection.Input;
       else if(String.Equals(directionName, "OUT", StringComparison.OrdinalIgnoreCase))
-        v_parDir = ParameterDirection.Output;
+        parDir = ParameterDirection.Output;
       else if(String.Equals(directionName, "IN/OUT", StringComparison.OrdinalIgnoreCase))
-        v_parDir = ParameterDirection.InputOutput;
-      return v_parDir;
+        parDir = ParameterDirection.InputOutput;
+      return parDir;
     }
 
     /// <summary>
@@ -358,7 +358,7 @@ namespace Bio.Helpers.DOA {
     /// <param name="oraType">Тип</param>
     /// <returns></returns>
     internal static Object StrAsOraValue(String value, OracleDbType oraType) {
-      Object v_rslt = null;
+      Object rslt = null;
       try {
         var culture = new CultureInfo(CultureInfo.CurrentCulture.Name, true) {
           NumberFormat = { NumberDecimalSeparator = "." }
@@ -366,16 +366,16 @@ namespace Bio.Helpers.DOA {
         switch (oraType) {
           case OracleDbType.Varchar2:
           case OracleDbType.Clob:
-            v_rslt = value;
+            rslt = value;
             break;
           case OracleDbType.Decimal:
-            v_rslt = Double.Parse(value.Replace(",", ".").Replace(" ", ""), culture);
+            rslt = Double.Parse(value.Replace(",", ".").Replace(" ", ""), culture);
             break;
           case OracleDbType.Date:
-            v_rslt = DateTimeParser.Instance.ParsDateTime(value);
+            rslt = DateTimeParser.Instance.ParsDateTime(value);
             break;
           case OracleDbType.Blob:
-            v_rslt = Convert.FromBase64String(value);
+            rslt = Convert.FromBase64String(value);
             break;
         }
       } catch (Exception ex) {
@@ -383,7 +383,7 @@ namespace Bio.Helpers.DOA {
           "При приведении значения \"" + value + "\" к типу " +
           enumHelper.NameOfValue(oraType) + " ", ex);
       }
-      return v_rslt;
+      return rslt;
     }
 
     /// <summary>
@@ -441,14 +441,14 @@ namespace Bio.Helpers.DOA {
     /// <param name="prm"></param>
     /// <returns></returns>
     public static Object FindParamValue(Params prms, OracleParameter prm) {
-      Object v_rslt = null;
+      Object rslt = null;
       if ((prms != null) && (prm != null)) {
-        var v_prm = FindParam(prms, prm.ParameterName);
-        if (v_prm != null) {
-          v_rslt = v_prm.Value;
+        var param = FindParam(prms, prm.ParameterName);
+        if (param != null) {
+          rslt = param.Value;
         }
       }
-      return v_rslt;
+      return rslt;
     }
 
     /// <summary>
