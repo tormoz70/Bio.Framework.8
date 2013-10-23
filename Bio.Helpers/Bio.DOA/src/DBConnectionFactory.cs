@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics;
 using Bio.Helpers.Common.Types;
 using System.Threading;
 using System.ComponentModel;
@@ -63,38 +64,37 @@ namespace Bio.Helpers.DOA {
 
     public IDbConnection CreateConnection(String connStr, String workspaceSchema, Action<DBConnBeforeEventArgs> beforeDBConnectCallback, 
                                                                   Action<DBConnAfterEventArgs> afterDBConnectCallback) {
-      var v_connStr = connStr;
       if (beforeDBConnectCallback != null) {
         var args = new DBConnBeforeEventArgs {
           Cancel = false,
-          ConnectionString = v_connStr
+          ConnectionString = connStr
         };
         beforeDBConnectCallback(args);
         if (args.Cancel) return null;
-        v_connStr = args.ConnectionString; 
+        connStr = args.ConnectionString; 
       }
-      IDbConnection v_result = this._factory.CreateConnection();
-      if (!String.IsNullOrEmpty(v_connStr) && (v_result != null)) {
-        v_result.ConnectionString = v_connStr;
+      IDbConnection result = this._factory.CreateConnection();
+      if (!String.IsNullOrEmpty(connStr) && (result != null)) {
+        result.ConnectionString = connStr;
         try {
-          v_result.Open();
+          result.Open();
         } catch (ThreadAbortException) {
           throw;
         } catch (Exception ex) {
           throw new EBioDBConnectionError("Ошибка соединения с базой данных. Сообщение сервера: " + ex.Message, ex);
         }
         if (!String.IsNullOrEmpty(workspaceSchema)) {
-          SQLCmd.ExecuteScript(v_result, "ALTER SESSION SET CURRENT_SCHEMA=" + workspaceSchema.ToUpper(), null, 60);
+          SQLCmd.ExecuteScript(result, "ALTER SESSION SET CURRENT_SCHEMA=" + workspaceSchema.ToUpper(), null, 60);
         }
         if (afterDBConnectCallback != null) {
           var args = new DBConnAfterEventArgs {
-            Connection = v_result
+            Connection = result
           };
           afterDBConnectCallback(args);
         }
 
       }
-      return v_result;
+      return result;
     }
     public IDbConnection CreateConnection() {
       return CreateConnection(null, null, null, null);
