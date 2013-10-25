@@ -1292,7 +1292,7 @@ namespace Bio.Framework.Client.SL {
     private void _autoRefreshTimer_Tick(Object sender, EventArgs e) {
       if (!this._autorefreshing) {
         this._autorefreshing = true;
-        this._jsClient.Load((s, a) => {
+        this.Refresh((s, a) => {
           this._autorefreshing = false;
         });
       }
