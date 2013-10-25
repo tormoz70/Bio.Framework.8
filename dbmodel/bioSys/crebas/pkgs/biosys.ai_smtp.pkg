@@ -210,7 +210,7 @@ AS
     -- Sending data
     --
     UTL_SMTP.open_data (v_conn);
-    wr_data (v_conn, 'Date: ' || TO_CHAR (SYSDATE - 0.5, 'dd Mon yy hh24:mi:ss')||crlf);
+    wr_data (v_conn, 'Date: ' || TO_CHAR(SYSTIMESTAMP,'DD Mon YYYY HH24:MI:SS TZHTZM')||crlf); --TO_CHAR (SYSDATE, 'dd Mon yy hh24:mi:ss')||crlf);
 
     wr_data (v_conn, 'To: ' || p_recipient||crlf);
     if(p_ccrecipient is not null)then
