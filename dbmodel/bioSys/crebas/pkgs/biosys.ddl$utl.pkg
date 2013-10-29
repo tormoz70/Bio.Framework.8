@@ -1,4 +1,5 @@
-CREATE OR REPLACE PACKAGE biosys.ddl$utl
+CREATE OR REPLACE 
+PACKAGE biosys.ddl$utl
 IS
     procedure reset_seq(seq_name in varchar2, tbl_name in varchar2, id_fld_name in varchar2, where_clause in varchar2);
     function table_exists(p_table_name in varchar2) return number;
@@ -16,7 +17,10 @@ IS
 
 END; -- Package spec
 /
-CREATE OR REPLACE PACKAGE BODY biosys.ddl$utl
+
+
+CREATE OR REPLACE 
+PACKAGE BODY biosys.ddl$utl
 IS
 
   procedure create_seq(
@@ -90,3 +94,4 @@ IS
 
 END;
 /
+

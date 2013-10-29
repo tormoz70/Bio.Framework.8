@@ -1,4 +1,5 @@
-CREATE OR REPLACE PACKAGE ai$utl
+CREATE OR REPLACE 
+PACKAGE biosys.ai$utl
   IS
    type T_VARCHAR_TBL is table of varchar2 (4000);
 
@@ -51,23 +52,25 @@ CREATE OR REPLACE PACKAGE ai$utl
   function prev_period(pPeriod in varchar2) return varchar2;
   function time_between_str(pDtStart in date, pDtEnd in date)return varchar2;
   function vchar2num(pAttrValue in varchar2) return number;
-    procedure pars_login(p_login in varchar2, v_usr_name out varchar2, v_usr_pwd out varchar2);
+  procedure pars_login(p_login in varchar2, v_usr_name out varchar2, v_usr_pwd out varchar2);
 
-    FUNCTION add_days(pDate IN DATE, pDays IN PLS_INTEGER) RETURN DATE;
+  function add_days(pDate in date, pDays in pls_integer) return date;
 
-    function lists_has_common(p_lst1 in varchar2, p_lst2 in varchar2, p_delimeter in varchar2) return number; --RESULT_CACHE;
+  function lists_has_common(p_lst1 in varchar2, p_lst2 in varchar2, p_delimeter in varchar2) return number; --RESULT_CACHE;
 
-    function pop_val_from_list(
-      vLIST in out nocopy varchar2,
-      pDelimeter in varchar2 default ',')return varchar2;
+  function pop_val_from_list(
+    vLIST in out nocopy varchar2,
+    pDelimeter in varchar2 default ',')return varchar2;
 
-    function day_of_week(p_date in date) return number;
-
-    function nextday(p_inday date, p_weekday varchar2) return date;
+  function day_of_week(p_date in date) return number;
+  function nextday(p_inday date, p_weekday varchar2) return date;
 
 END;
 /
-CREATE OR REPLACE PACKAGE BODY ai$utl
+
+
+CREATE OR REPLACE 
+PACKAGE BODY biosys.ai$utl
 IS
 
   /* Вытаскивает первый элемент из списка разделенного разделителями */
@@ -837,3 +840,4 @@ IS
 
 END;
 /
+

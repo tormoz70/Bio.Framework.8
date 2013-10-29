@@ -1,5 +1,6 @@
-CREATE OR REPLACE PACKAGE usr$mng
-  IS
+CREATE OR REPLACE 
+PACKAGE biosys.usr$mng
+IS
 
     cs_dont_change_field varchar2(100) := 'BIOSYS_DONT_CHANGE_FIELD';
 
@@ -16,7 +17,10 @@ CREATE OR REPLACE PACKAGE usr$mng
 
 END; -- Package spec
 /
-CREATE OR REPLACE PACKAGE BODY usr$mng
+
+
+CREATE OR REPLACE 
+PACKAGE BODY biosys.usr$mng
 IS
   subtype t_uid           is varchar2(32);
 
@@ -96,7 +100,6 @@ IS
     p_fio_fname in varchar2,
     p_fio_sname in varchar2,
     p_usr_phone in varchar2,
-    p_blocked in number,
     p_confirmed in number,
     p_extinfo in varchar2
   )
@@ -119,7 +122,6 @@ IS
         a.fio_fname = p_fio_fname,
         a.fio_sname = p_fio_sname,
         a.usr_phone = p_usr_phone,
-        a.blocked = p_blocked,
         a.confirmed = p_confirmed,
         a.extinfo = p_extinfo
       where a.usr_uid = upper(v_usr_uid);
@@ -128,9 +130,9 @@ IS
                           then login$utl.generate_pwd
                           else login$utl.encrypt_pwd(p_usr_pwd)
                      end;
-      insert into usr(usr_uid, org_id, workspace_id, usr_login, usr_pwd, fio_fam, fio_fname, fio_sname, reg_date, blocked,
+      insert into usr(usr_uid, org_id, workspace_id, usr_login, usr_pwd, fio_fam, fio_fname, fio_sname, reg_date,
                       email_addr, usr_phone, confirmed, garbaged, extinfo)
-      values(upper(sys_guid), p_org_id, p_workspace_id, p_usr_login, v_usr_pwd, p_fio_fam, p_fio_fname, p_fio_sname, sysdate, '0',
+      values(upper(sys_guid), p_org_id, p_workspace_id, p_usr_login, v_usr_pwd, p_fio_fam, p_fio_fname, p_fio_sname, sysdate,
               p_email_addr, p_usr_phone, '1', '0', p_extinfo)
       returning USR_UID into v_usr_uid;
     end if;
@@ -152,3 +154,4 @@ IS
 
 END;
 /
+

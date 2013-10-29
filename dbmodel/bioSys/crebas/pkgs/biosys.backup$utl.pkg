@@ -1,6 +1,6 @@
-CREATE OR REPLACE PACKAGE backup$utl AS
-
-
+CREATE OR REPLACE 
+PACKAGE biosys.backup$utl 
+IS
   procedure exp_schema(p_schema_name in varchar2, p_exp_path in varchar2);
   procedure imp_schema(
     p_from_schema in varchar2,
@@ -10,9 +10,15 @@ CREATE OR REPLACE PACKAGE backup$utl AS
     p_to_schema in varchar2,
     p_to_tss in varchar2);
   function gen_dmp_file_name(p_schema_name in varchar2) return varchar2;
+  procedure exp_tables(p_schema in varchar2, p_tables_commalist in varchar2, p_dmp_file_name in varchar2, p_exp_path in varchar2);
+
 END;
 /
-CREATE OR REPLACE PACKAGE BODY backup$utl AS
+
+
+CREATE OR REPLACE 
+PACKAGE BODY biosys.backup$utl 
+IS
 
   csOraDir4ExpImp varchar2(100) := 'DIR_DPUMP_BIOEXPIMP';
 
@@ -144,6 +150,50 @@ CREATE OR REPLACE PACKAGE BODY backup$utl AS
       exception_proccessor(SQLERRM, l_dp_handle);
   end;
 
+  procedure exp_tables(p_schema in varchar2, p_tables_commalist in varchar2, p_dmp_file_name in varchar2, p_exp_path in varchar2)
+  is
+    csSCHEMA2BKP varchar2(100):=p_schema;
+    csTABLES2BKP varchar2(32000):=p_tables_commalist;
+    csDMP_FILE varchar2(100):= p_dmp_file_name;
+    csLOG_FILE varchar2(100):= p_dmp_file_name||'(EXP).LOG';
+    csExpPath varchar2(500) := p_exp_path;
+    csJobName varchar2(100):='JDTPMPEXP_TABLES_COMMALIST';
+    l_dp_handle number;
+    l_jstate varchar2(100);
+  begin
+    init_ora_directory(csOraDir4ExpImp, csExpPath);
+    l_dp_handle := open_dtpump_job(csJobName, 'SCHEMA', null, 'EXPORT');
+    dbms_output.put_line('passed:open_dtpump_job('||csJobName||':'||l_dp_handle||')');
+    DBMS_DATAPUMP.add_file(
+      handle    => l_dp_handle,
+      filename  => csDMP_FILE,
+      directory => csOraDir4ExpImp);
+    dbms_output.put_line('passed:add_file('||csDMP_FILE||')');
+    DBMS_DATAPUMP.add_file(
+      handle    => l_dp_handle,
+      filename  => csLOG_FILE,
+      directory => csOraDir4ExpImp,
+      filetype  => DBMS_DATAPUMP.KU$_FILE_TYPE_LOG_FILE);
+    dbms_output.put_line('passed:add_file('||csLOG_FILE||')');
+    DBMS_DATAPUMP.metadata_filter(
+      handle => l_dp_handle,
+      name   => 'SCHEMA_EXPR',
+      value  => '= '''||csSCHEMA2BKP||'''');
+    dbms_output.put_line('passed:metadata_filter('||csSCHEMA2BKP||')');
+    DBMS_DATAPUMP.metadata_filter(
+      handle => l_dp_handle,
+      name   => 'NAME_EXPR',
+      value  => 'IN (select regexp_substr('''||csTABLES2BKP||''',''[^,]+'', 1, level) from dual
+    connect by regexp_substr('''||csTABLES2BKP||''', ''[^,]+'', 1, level) is not null)',
+      object_path=> 'TABLE');
+    dbms_output.put_line('passed:metadata_filter('||csTABLES2BKP||')');
+
+    run_job(l_dp_handle, l_jstate);
+  exception
+    when OTHERS then
+      exception_proccessor(SQLERRM, l_dp_handle);
+  end;
+
   procedure imp_schema(
     p_from_schema in varchar2,
     p_from_tss in varchar2,
@@ -232,3 +282,4 @@ CREATE OR REPLACE PACKAGE BODY backup$utl AS
 
 end;
 /
+

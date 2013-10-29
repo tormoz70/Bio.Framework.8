@@ -1,5 +1,6 @@
-CREATE OR REPLACE PACKAGE biosys.login$utl
-  IS
+CREATE OR REPLACE 
+PACKAGE biosys.login$utl
+IS
   /*
   Данный пакет предназначен для работы системы BioSys
   Является интерфейсом взаимодействия BioSys c RDBMS
@@ -134,7 +135,10 @@ CREATE OR REPLACE PACKAGE biosys.login$utl
 
 END;
 /
-CREATE OR REPLACE PACKAGE BODY biosys.login$utl
+
+
+CREATE OR REPLACE 
+PACKAGE BODY biosys.login$utl
 IS
   /*
     Это глобальные переменные в контексте текущего соединения
@@ -535,3 +539,4 @@ IS
 
 END;
 /
+

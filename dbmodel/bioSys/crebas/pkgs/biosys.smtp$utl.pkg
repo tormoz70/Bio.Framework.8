@@ -1,4 +1,6 @@
-CREATE OR REPLACE PACKAGE smtp$utl AS
+CREATE OR REPLACE 
+PACKAGE biosys.smtp$utl 
+IS
 
     PROCEDURE send (p_mailhost       IN VARCHAR2,
                     p_username       IN VARCHAR2,
@@ -19,8 +21,11 @@ CREATE OR REPLACE PACKAGE smtp$utl AS
 
 END;
 /
-CREATE OR REPLACE PACKAGE BODY smtp$utl
-AS
+
+
+CREATE OR REPLACE 
+PACKAGE BODY biosys.smtp$utl
+IS
   crlf                      VARCHAR2(2)  := CHR(13) || CHR(10);
   -- A unique string that demarcates boundaries of parts in a multi-part email
   -- The string should not appear inside the body of any part of the email.
@@ -149,7 +154,7 @@ AS
     end if;
   end;
 
-  PROCEDURE send (p_mailhost       IN VARCHAR2,
+  PROCEDURE send0 (p_mailhost       IN VARCHAR2,
                   p_username       IN VARCHAR2,
                   p_password       IN VARCHAR2,
                   p_port           IN NUMBER,
@@ -210,7 +215,7 @@ AS
     -- Sending data
     --
     UTL_SMTP.open_data (v_conn);
-    wr_data (v_conn, 'Date: ' || TO_CHAR (SYSDATE - 0.5, 'dd Mon yy hh24:mi:ss')||crlf);
+    wr_data (v_conn, 'Date: ' || TO_CHAR(SYSTIMESTAMP,'DD Mon YYYY HH24:MI:SS TZHTZM')||crlf); --TO_CHAR (SYSDATE, 'dd Mon yy hh24:mi:ss')||crlf);
 
     wr_data (v_conn, 'To: ' || p_recipient||crlf);
     if(p_ccrecipient is not null)then
@@ -255,6 +260,31 @@ AS
     UTL_SMTP.quit (v_conn);
   END;
 
+  PROCEDURE send (p_mailhost       IN VARCHAR2,
+                  p_username       IN VARCHAR2,
+                  p_password       IN VARCHAR2,
+                  p_port           IN NUMBER,
+                  p_sender         IN VARCHAR2,
+                  p_sender_name    IN VARCHAR2 default null,
+                  p_recipient      IN VARCHAR2,
+                  p_ccrecipient    IN VARCHAR2 default null,
+                  p_bccrecipient   IN VARCHAR2 default null,
+                  p_subject        IN VARCHAR2 default null,
+                  p_message_text   IN CLOB default EMPTY_CLOB(),
+                  p_message_html   IN CLOB default EMPTY_CLOB(),
+                  p_encoding       IN VARCHAR2 default 'windows-1251',
+                  p_filename       IN VARCHAR2 DEFAULT NULL,
+                  p_binaryfile     IN BLOB DEFAULT EMPTY_BLOB()
+                  )
+  is
+  begin
+    for c in (select * from table(ai$utl.split_str(p_recipient, ';'))) loop
+      send0(p_mailhost, p_username, p_password, p_port, p_sender,
+        p_sender_name, c.column_value, p_ccrecipient, p_bccrecipient, p_subject, p_message_text,
+          p_message_html, p_encoding, p_filename, p_binaryfile);
+    end loop;
+  end;
 
 END;
 /
+
