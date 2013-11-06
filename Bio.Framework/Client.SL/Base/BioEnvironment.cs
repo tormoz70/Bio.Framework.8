@@ -183,30 +183,30 @@ namespace Bio.Framework.Client.SL {
       }, curClientVersion);
     }
 
-    private Assembly _loadModuleFromStream(Stream stream) {
-      Assembly assembly = null;
-      if (stream != null) {
-        stream.Position = 0;
-        var assemblyPart = new AssemblyPart();
-        using (var buf = new MemoryStream()) {
-          stream.CopyTo(buf);
-          assembly = assemblyPart.Load(buf);
+    private void _loadModuleFromStream(Stream stream, Action<Assembly> callback) {
+      Utl.UiThreadInvoke(() => {
+        if (stream != null) {
+          stream.Position = 0;
+          var assemblyPart = new AssemblyPart();
+          using (var buf = new MemoryStream()) {
+            stream.CopyTo(buf);
+            var assembly = assemblyPart.Load(buf);
+            if (callback != null)
+              callback(assembly);
+          }
         }
-      }
-      return assembly;
+      });
     }
 
-    private Assembly _loadModuleFromLoc(String moduleName) {
-      Assembly assembly = null;
+    private void _loadModuleFromLoc(String moduleName, Action<Assembly> callback) {
       using (var store = IsolatedStorageFile.GetUserStoreForApplication()) {
         var fileName = String.Format(@"{0}\{1}", CS_IS_PLUGIN_FOLDER_NAME, moduleName);
         if (store.FileExists(fileName)) {
           using (var isoStream = store.OpenFile(fileName, FileMode.Open)) {
-            assembly = this._loadModuleFromStream(isoStream);
+            this._loadModuleFromStream(isoStream, callback);
           }
         }
       }
-      return assembly;
     }
 
     private String _getRmtVer(AjaxResponseEventArgs a) {
@@ -231,13 +231,14 @@ namespace Bio.Framework.Client.SL {
       if (a.Response.Success) {
         // Сборка удачно загружена с сервера
         // загружаем ее
-        var assemly = this._loadModuleFromStream(a.Stream);
-        // Сохраняем ее в локальное хранилище
-        var locVer = moduleVersion;
-        this._saveModuleToLoc(a.Stream, moduleName, locVer);
-        // Возвращаем
-        if (callback != null)
-          callback(a, assemly);
+        this._loadModuleFromStream(a.Stream, assemly => {
+          // Сохраняем ее в локальное хранилище
+          var locVer = moduleVersion;
+          this._saveModuleToLoc(a.Stream, moduleName, locVer);
+          // Возвращаем
+          if (callback != null)
+            callback(a, assemly);
+        });
       } else {
         msgBx.ShowError(EBioException.CreateIfNotEBio(a.Response.Ex), "Ошибка при загрузки модуля с сервера", () => {
           if (callback != null)
@@ -265,10 +266,10 @@ namespace Bio.Framework.Client.SL {
             // Сравниваем версии локального модуля и модуля на сервере
             if (String.Equals(locVer, rmtVer)) {
               // Версии равны возвращаем локальную сборку
-              if (callback != null) {
-                var assemly = this._loadModuleFromLoc(moduleName);
-                callback(a, assemly);
-              }
+                this._loadModuleFromLoc(moduleName, assemly => {
+                  if (callback != null) 
+                      callback(a, assemly);
+                });
             } else {
 
               // Версии не равны загружаем сборку с сервера
@@ -313,13 +314,13 @@ namespace Bio.Framework.Client.SL {
         // Сравниваем версии локального модуля и модуля на сервере
         if (String.Equals(locVer, curMainVersion)) {
           // Версии равны возвращаем локальную сборку
-          if (callback != null) {
-            var assemly = this._loadModuleFromLoc(moduleName);
-            if (assemly != null)
-              callback(new AjaxResponseEventArgs { Response = new AjaxResponse { Success = true } }, assemly);
-            else
+          this._loadModuleFromLoc(moduleName, assemly => {
+            if (assemly != null) {
+              if (callback != null)
+                callback(new AjaxResponseEventArgs {Response = new AjaxResponse {Success = true}}, assemly);
+            } else
               doLoadRemote = true;
-          }
+          });
         } else 
           doLoadRemote = true;
         
@@ -341,9 +342,10 @@ namespace Bio.Framework.Client.SL {
     private void _loadModuleDirect(String moduleName, Action<AjaxResponseEventArgs, Assembly> callback) {
 // ReSharper restore UnusedMember.Local
       this._loadModuleFromRmt(moduleName, a1 => {
-        var assemly = this._loadModuleFromStream(a1.Stream);
-        if (callback != null)
-          callback(a1, assemly);
+        this._loadModuleFromStream(a1.Stream, assemly => {
+          if (callback != null)
+            callback(a1, assemly);
+        });
       });
     }
 
