@@ -6,10 +6,6 @@ namespace Bio.Framework.Client.SL {
     }
     public PluginRootViewBase(IPluginRoot owner)
       : base(owner) {
-        this.OnShow += CPluginRootViewBase_OnShow;
-    }
-
-    void CPluginRootViewBase_OnShow(object sender, EventArgs e) {
     }
 
   }

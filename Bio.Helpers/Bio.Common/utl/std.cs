@@ -1,3 +1,5 @@
+using System.Threading;
+
 namespace Bio.Helpers.Common {
   using System;
   using System.Text.RegularExpressions;
@@ -1978,10 +1980,16 @@ namespace Bio.Helpers.Common {
     }
 
     public static void UiThreadInvoke(Action a) {
-      Deployment.Current.Dispatcher.BeginInvoke(a);
+      if (!IsUiThread)
+        Deployment.Current.Dispatcher.BeginInvoke(a);
+      else
+        a();
     }
     public static void UiThreadInvoke(Delegate d, params Object[] args) {
-      Deployment.Current.Dispatcher.BeginInvoke(d, args);
+      if (!IsUiThread)
+        Deployment.Current.Dispatcher.BeginInvoke(d, args);
+      else
+        d.DynamicInvoke(args);
     }
 
 

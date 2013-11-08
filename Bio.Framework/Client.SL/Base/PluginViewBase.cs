@@ -37,23 +37,25 @@ namespace Bio.Framework.Client.SL {
     /// </summary>
     public event EventHandler<PluginViewOnCloseEventArgs> OnClosed;
 
-    protected UIElement _container = null;
+    private UIElement _container;
     public void Show(UIElement container) {
+      this._shown = (this.Visibility == Visibility.Visible) && (this._container != null) && (this._container == container);
       if (container != null) {
         this._container = container;
         if (this._container is Panel)
           (this._container as Panel).Children.Add(this);
-        else if (this._container is ContentControl) {
+        else if ((this._container is ContentControl) && ((this._container as ContentControl).Content != this)) {
           (this._container as ContentControl).Content = this;
         }
+        if (this.Visibility == Visibility.Collapsed)
+          this.Visibility = Visibility.Visible;
         this._container.UpdateLayout();
-
-
+        this.UpdateLayout();
       }
     }
 
     void ownerWindow_Closing(object sender, CancelEventArgs e) {
-      e.Cancel = !this.doOnClosing();
+      e.Cancel = !this._doOnClosing();
     }
 
     void ownerWindow_Closed(Object sender, EventArgs e) {
@@ -62,7 +64,7 @@ namespace Bio.Framework.Client.SL {
 
     public virtual VSelection Selection { get; private set; }
     
-    private Action<Boolean?> _callback = null;
+    private Action<Boolean?> _callback;
 
     /// <summary>
     /// Открыто в диалоговом окне
@@ -86,9 +88,9 @@ namespace Bio.Framework.Client.SL {
     }
 
     void ownerWindow_OnShow(object sender, EventArgs e) {
-      var v_onShowDialog = this.OnShowDialog;
-      if (v_onShowDialog != null)
-        v_onShowDialog(sender, e);
+      var onShowDialog = this.OnShowDialog;
+      if (onShowDialog != null)
+        onShowDialog(sender, e);
     }
 
     /// <summary>
@@ -98,7 +100,7 @@ namespace Bio.Framework.Client.SL {
     /// <param name="callback">Возвращает значение DialogResult и выбранную запись</param>
     public void ShowSelector(VSelection selection, SelectorCallback callback) {
       this.Selection = selection;
-      this.ShowDialog((mr) => {
+      this.ShowDialog(mr => {
         if (callback != null) {
           callback(mr, new OnSelectEventArgs { 
             selection = this.Selection 
@@ -118,26 +120,34 @@ namespace Bio.Framework.Client.SL {
     }
 
 
-    private Boolean _closing = false;
-    private Boolean _shown = false;
+    private Boolean _closing;
+    private Boolean _shown;
 
     void CPluginViewBase_Loaded(object sender, RoutedEventArgs e) {
+    }
+
+    public override void OnApplyTemplate() {
+      base.OnApplyTemplate();
+    }
+
+    protected override Size ArrangeOverride(Size finalSize) {
       if (this._container != null) {
         if (!this._shown && !this._closing) {
           this._shown = true;
-          this.doOnShow();
+          this._doOnShow();
         }
       }
+      return base.ArrangeOverride(finalSize);
     }
 
-    private void doOnShow() {
-      EventHandler handler = this.OnShow;
+    private void _doOnShow() {
+      var handler = this.OnShow;
       if (handler != null) {
         handler(this, new EventArgs());
       }
     }
 
-    private void doOnClose() {
+    private void _doOnClose() {
       var handler = this.OnClosed;
       if (handler != null) {
         var a = new PluginViewOnCloseEventArgs(this.DialogResult);
@@ -151,18 +161,18 @@ namespace Bio.Framework.Client.SL {
       }
     }
 
-    private Boolean doOnClosing() {
-      Boolean v_cancel = false;
+    private Boolean _doOnClosing() {
+      var cancel = false;
       if (this._shown) {
         var handler = this.OnClosing;
         if (handler != null) {
-          var args = new CancelEventArgs() { Cancel = v_cancel };
+          var args = new CancelEventArgs { Cancel = cancel };
           handler(this, args);
-          v_cancel = args.Cancel;
+          cancel = args.Cancel;
         }
       }
-      this._closing = !v_cancel;
-      return !v_cancel;
+      this._closing = !cancel;
+      return !cancel;
     }
 
     private void _remove() {
@@ -173,7 +183,7 @@ namespace Bio.Framework.Client.SL {
       this._container = null;
 
       if (this._shown && this._closing) {
-        this.doOnClose();
+        this._doOnClose();
       }
       this._shown = false;
       this._closing = false;
@@ -184,12 +194,12 @@ namespace Bio.Framework.Client.SL {
         if (this.ownerWindow != null)
           this.ownerWindow.Close();
       } else {
-        if (this.doOnClosing())
+        if (this._doOnClosing())
           this._remove();
       }
     }
 
-    private PluginViewDialogButton[] _buttonDefs = null;
+    private PluginViewDialogButton[] _buttonDefs;
     /// <summary>
     /// Добавляет кнопки в диалоговое окно
     /// </summary>
@@ -203,8 +213,7 @@ namespace Bio.Framework.Client.SL {
     public Boolean? dialogResult { get; private set; }
     public VSelection selection { get; set; }
 
-    public PluginViewOnCloseEventArgs(Boolean? dialogResult)
-      : base() {
+    public PluginViewOnCloseEventArgs(Boolean? dialogResult) {
       this.dialogResult = dialogResult;
     }
   }
