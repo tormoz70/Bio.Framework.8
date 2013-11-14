@@ -84,6 +84,7 @@
     </Compile>
     <Compile Include="types\BackgroundThreatBase.cs" />
     <Compile Include="types\CConfigBase.cs" />
+    <Compile Include="types\EmptyNodeList.cs" />
     <Compile Include="types\IDBSessionFactory.cs" />
     <Compile Include="types\CThreadsQueue.cs" />
     <Compile Include="types\EBioDoa.cs" />
